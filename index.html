@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cósmica | Soporte Técnico Remoto</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden;scroll-behavior:smooth}
@@ -15,144 +14,206 @@ body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;ove
 .nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s}
 .nav a:hover{color:#22c55e}
 
-header{padding:120px 20px 80px;text-align:center}
-.logo-img{width:120px}
-.logo-text{font-size:42px;font-weight:700}
-.hero h1{font-size:42px;margin:15px 0}
-.hero p{color:#cbd5f5}
+/* MOBILE MENU */
+.menu-toggle{display:none;position:absolute;right:20px;top:12px;font-size:24px;cursor:pointer;color:#fff}
+@media(max-width:768px){
+  .nav{justify-content:flex-start;gap:0;flex-direction:column;align-items:stretch;height:60px;overflow:hidden;transition:.3s}
+  .nav.open{height:auto}
+  .nav a{display:block;padding:12px 0;text-align:center;width:100%}
+  .menu-toggle{display:block}
+}
 
-.button{display:inline-block;margin-top:20px;padding:16px 32px;background:#25D366;border-radius:12px;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 0 20px rgba(37,211,102,.4)}
-.button:hover{transform:scale(1.05)}
+header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
+.logo-img{width:120px;margin-bottom:10px}
+.logo-text{font-size:42px;font-weight:700;color:#fff}
+.hero h1{font-size:44px;margin:15px 0}
+.hero p{font-size:18px;color:#cbd5f5}
+
+.button{display:inline-block;margin-top:20px;padding:16px 32px;background:#25D366;border-radius:12px;color:#fff;text-decoration:none;font-weight:600;transition:.3s;box-shadow:0 0 20px rgba(37,211,102,.4)}
+.button:hover{transform:scale(1.08)}
 
 .section{padding:70px 20px;text-align:center}
-.title{font-size:30px}
+.title{font-size:30px;margin-bottom:10px}
 .subtitle{color:#94a3b8}
 
-.services,.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;margin-top:40px}
+.services,.pricing,.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;margin-top:40px}
+.card{background:rgba(255,255,255,0.05);padding:25px;border-radius:18px;backdrop-filter:blur(12px);transition:.3s;border:1px solid rgba(255,255,255,0.08)}
+.card:hover{transform:translateY(-8px);box-shadow:0 0 25px rgba(0,255,255,.15)}
 
-.card{background:rgba(255,255,255,0.05);padding:25px;border-radius:18px;border:1px solid rgba(255,255,255,0.08)}
+.price-card{background:linear-gradient(145deg,#020617,#0f172a);padding:35px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
+.price{font-size:32px;color:#22c55e;margin:10px 0}
+.highlight{border:2px solid #22c55e;transform:scale(1.05)}
 
-.price-card{padding:30px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
-.price{font-size:30px;color:#22c55e}
-.highlight{border:2px solid #22c55e}
+/* CTA asistencia */
+.asistencia-cta{max-width:500px;margin:30px auto;padding:40px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 30px rgba(0,255,255,0.15);transition:.3s}
+.asistencia-cta:hover{transform:translateY(-5px);box-shadow:0 0 40px rgba(0,255,255,0.25)}
+.cta-button{margin-top:20px;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 
-/* CTA NUEVO */
-.asistencia-cta{
-  max-width:500px;
-  margin:30px auto;
-  padding:40px;
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 0 30px rgba(0,255,255,0.15);
-  transition:.3s;
-}
-.asistencia-cta:hover{
-  transform:translateY(-5px);
-  box-shadow:0 0 40px rgba(0,255,255,0.25);
-}
-
-.cta-button{
-  margin-top:20px;
-  animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.05)}
-  100%{transform:scale(1)}
-}
+.testimonial{font-style:italic;color:#cbd5f5;position:relative;padding-top:60px}
+.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;position:absolute;top:-30px;left:50%;transform:translateX(-50%);border:3px solid #22c55e;box-shadow:0 0 15px rgba(34,197,94,.5)}
 
 .footer{background:#020617;padding:30px;text-align:center;color:#94a3b8}
+
+.whatsapp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;padding:16px 20px;border-radius:50%;font-size:22px;text-decoration:none;box-shadow:0 0 20px rgba(37,211,102,.7);z-index:1000}
+
+.fade{opacity:0;transform:translateY(20px);transition:all .6s ease}
+.fade.show{opacity:1;transform:translateY(0)}
+
+.badge{display:inline-block;margin-top:10px;padding:6px 12px;background:#22c55e;border-radius:20px;font-size:12px}
 </style>
 </head>
-
 <body>
 
 <nav class="nav">
+<div class="menu-toggle" onclick="toggleMenu()">☰</div>
 <a href="#inicio">Inicio</a>
 <a href="#servicios">Servicios</a>
 <a href="#planes">Planes</a>
 <a href="/asistencia.html">Asistencia</a>
+<a href="#testimonios">Clientes</a>
 <a href="#contacto">Contacto</a>
 </nav>
 
-<header id="inicio" class="hero">
-<img src="cosmica-logo.png" class="logo-img">
+<header id="inicio" class="hero fade">
+<img src="cosmica-logo.png" alt="logo cosmica" class="logo-img">
 <div class="logo-text">CÓSMICA</div>
-
+<div class="badge">Soporte remoto en toda Argentina</div>
 <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
-<p>La solucionamos en minutos, sin moverte de tu casa</p>
-
-<a class="button" href="https://wa.me/5493883298736">
-💬 Hablar por WhatsApp
-</a>
+<p>La solucionamos en minutos, sin que te muevas de tu casa</p>
+<p style="color:#facc15;margin-top:10px">⚡ Atención inmediata disponible ahora</p>
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20mi%20PC%20est%C3%A1%20lenta%2C%20necesito%20ayuda">💬 Hablar por WhatsApp</a>
 </header>
 
-<section id="servicios" class="section">
-<h2 class="title">Servicios</h2>
+<section class="section fade">
+<h2 class="title">¿Tu PC está lenta o con problemas?</h2>
+<p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
+</section>
 
+<section id="servicios" class="section fade">
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20ayuda" style="margin-bottom:20px">💬 Consultar ahora</a>
+<h2 class="title">Servicios</h2>
 <div class="services">
-<div class="card">💻 Optimización de PC</div>
-<div class="card">🦠 Eliminación de virus</div>
-<div class="card">📦 Instalación de programas</div>
-<div class="card">🌐 Soporte remoto inmediato</div>
+<div class="card">💻 Reparación completa y optimización de PC</div>
+<div class="card">🦠 Eliminación de virus y limpieza total del sistema</div>
+<div class="card">📦 Instalación de programas y configuración completa</div>
+<div class="card">🌐 Soporte remoto inmediato en minutos</div>
+<div class="card">🖨️ Reparación y reset de impresoras Epson</div>
 </div>
 </section>
 
-<section id="planes" class="section">
+<section id="planes" class="section fade">
+<p style="margin-top:10px;color:#22c55e">+500 PCs reparadas | Atención en toda Argentina</p>
 <h2 class="title">Planes</h2>
-
 <div class="pricing">
 <div class="price-card">
 <h3>Bronce</h3>
 <div class="price">$19.900</div>
-<p>Eliminación de virus</p>
+<p>Eliminación de virus y limpieza total del sistema</p>
 </div>
-
 <div class="price-card highlight">
 <h3>Oro ⭐</h3>
 <div class="price">$29.900</div>
 <p>Optimización + activaciones</p>
 </div>
-
 <div class="price-card">
 <h3>Platinum</h3>
 <div class="price">$39.900</div>
-<p>Todo incluido</p>
+<p>Todo incluido + programas</p>
 </div>
 </div>
 </section>
 
-<!-- 🔥 NUEVO BLOQUE -->
-<section class="section">
+<!-- CTA asistencia (reemplaza sección anterior) -->
+<section class="section fade">
 <h2 class="title">¿Necesitás ayuda ahora mismo?</h2>
 <p class="subtitle">Conectate con un técnico en minutos y solucioná tu problema sin moverte de tu casa.</p>
 
 <div class="card asistencia-cta">
+  <h3>Asistencia Remota</h3>
+  <p>Te guiamos paso a paso para conectarnos a tu PC y resolver el problema en el momento.</p>
+  <a class="button cta-button" href="/asistencia.html">🚀 Solicitar asistencia</a>
+</div>
+</section>
 
-<h3>Asistencia Remota</h3>
+<section id="testimonios" class="section fade">
+<h2 class="title">Clientes felices</h2>
+<div class="testimonials">
 
-<p>
-Te guiamos paso a paso para conectarnos a tu PC y resolver el problema en el momento.
-</p>
+<div class="card testimonial">
+<img src="cliente1.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+<p>“Tenía la computadora súper lenta, no podía trabajar. En menos de 30 minutos me la dejaron como nueva. No lo podía creer.”</p>
+<small>— Eliseo Galvan, Córdoba</small>
+</div>
 
-<a class="button cta-button" href="/asistencia.html">
-🚀 Solicitar asistencia
-</a>
+<div class="card testimonial">
+<img src="cliente2.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+<p>“Me resolvieron todo sin que tenga que salir de casa. Súper cómodo, rápido y muy profesionales.”</p>
+<small>— Mariana López, Rosario</small>
+</div>
+
+<div class="card testimonial">
+<img src="cliente3.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+<p>“Excelente atención, me guiaron en todo momento y solucionaron el problema al instante. Muy recomendable.”</p>
+<small>— Lucas Fernández, Mendoza</small>
+</div>
 
 </div>
 </section>
 
-<section id="contacto" class="section">
-<h2 class="title">Estamos listos para ayudarte🚀</h2>
+<section class="section fade">
+<h2 class="title">Antes vs Después</h2>
+<p class="subtitle">Resultados reales que se sienten desde el primer minuto</p>
 
-<a class="button" href="https://wa.me/5493883298736">
-🚀 Escribinos ahora
-</a>
+<div class="services">
+<div class="card">
+<h3>❌ Antes</h3>
+<ul style="list-style:none;padding:0;text-align:left;color:#cbd5f5">
+<li>⚠️ PC lenta, tarda en iniciar</li>
+<li>⚠️ Programas que no abren</li>
+<li>⚠️ Virus y publicidad molesta</li>
+<li>⚠️ Trabajos que no podés terminar</li>
+</ul>
+</div>
+
+<div class="card" style="border:2px solid #22c55e;box-shadow:0 0 25px rgba(34,197,94,.3)">
+<h3>✅ Después</h3>
+<ul style="list-style:none;padding:0;text-align:left">
+<li>🚀 Inicio rápido en segundos</li>
+<li>🚀 Programas funcionando perfecto</li>
+<li>🚀 Sistema limpio y optimizado</li>
+<li>🚀 Podés trabajar sin interrupciones</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section id="contacto" class="section fade">
+<h2 class="title">Estamos listos para ayudarte🚀</h2>
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
 </section>
 
 <footer class="footer">
-© Cósmica | cosmica.ar
+<p>© Cósmica | cosmica.ar</p>
 </footer>
+
+<a class="whatsapp-float" href="https://wa.me/5493883298736">💬 ¿Tu PC anda mal?</a>
+
+<script>
+const faders=document.querySelectorAll('.fade');
+const observer=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){entry.target.classList.add('show');}
+});});
+faders.forEach(el=>observer.observe(el));
+
+function toggleMenu(){
+document.querySelector('.nav').classList.toggle('open');
+}
+</script>
 
 </body>
 </html>
