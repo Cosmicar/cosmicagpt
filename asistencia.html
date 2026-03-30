@@ -7,7 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;text-align:center}
+body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;text-align:center;padding-top:70px}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:center;align-items:center;gap:30px;padding:15px;background:rgba(2,6,23,.7);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s}
+.nav a:hover{color:#22c55e}
+.nav-logo{position:absolute;left:20px;width:40px}
+.nav-whatsapp{position:absolute;right:60px;background:#25D366;padding:6px 12px;border-radius:8px;color:#fff;font-size:12px}
+.menu-toggle{display:none;position:absolute;right:20px;font-size:22px;cursor:pointer}
+
 .container{max-width:900px;margin:auto;padding:60px 20px}
 .logo{width:120px;margin-bottom:10px}
 h1{font-size:36px;margin:10px 0}
@@ -20,15 +29,29 @@ p{color:#cbd5f5}
 .footer{margin-top:40px;color:#94a3b8;font-size:14px}
 
 .anydesk-logo{width:200px;max-width:90%;margin:15px 0;display:block;filter:drop-shadow(0 0 12px rgba(255,0,0,0.5));}
-
 .id-img{width:380px;max-width:95%;margin:20px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 25px rgba(0,255,255,0.15), 0 10px 30px rgba(0,0,0,0.5);}
 
+/* MOBILE */
 @media(max-width:768px){
+  .nav{flex-direction:column;height:60px;overflow:hidden}
+  .nav.open{height:auto}
+  .nav a{display:block;padding:10px 0;width:100%}
+  .nav-logo{left:15px}
+  .nav-whatsapp{display:none}
+  .menu-toggle{display:block;right:15px}
   .anydesk-logo{width:140px}
 }
 </style>
 </head>
 <body>
+
+<nav class="nav">
+<img src="cosmica-logo.png" class="nav-logo">
+<div class="menu-toggle" onclick="toggleMenu()">☰</div>
+<a href="/">Inicio</a>
+<a href="/asistencia.html">Asistencia</a>
+<a href="https://wa.me/5493883298736" class="nav-whatsapp">WhatsApp</a>
+</nav>
 
 <div class="container">
 
@@ -70,6 +93,12 @@ p{color:#cbd5f5}
 </div>
 
 </div>
+
+<script>
+function toggleMenu(){
+document.querySelector('.nav').classList.toggle('open');
+}
+</script>
 
 </body>
 </html>
