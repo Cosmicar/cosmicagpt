@@ -7,8 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden}
-header{padding:80px 20px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
+body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden;scroll-behavior:smooth}
+/* NAV */
+.nav{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:center;gap:30px;padding:15px;background:rgba(2,6,23,.7);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s}
+.nav a:hover{color:#22c55e}
+header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
 .logo-img{width:120px;margin-bottom:10px}
 .logo-text{font-size:42px;font-weight:700;color:#fff}
 .hero h1{font-size:44px;margin:15px 0}
@@ -35,7 +39,15 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 </head>
 <body>
 
-<header class="hero fade">
+<nav class="nav">
+<a href="#inicio">Inicio</a>
+<a href="#servicios">Servicios</a>
+<a href="#planes">Planes</a>
+<a href="#testimonios">Clientes</a>
+<a href="#contacto">Contacto</a>
+</nav>
+
+<header id="inicio" class="hero fade">
 <img src="cosmica-logo.png" alt="logo cosmica" class="logo-img">
 <div class="logo-text">CÓSMICA</div>
 <div class="badge">Soporte remoto en toda Argentina</div>
@@ -49,7 +61,7 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 <p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
 </section>
 
-<section class="section fade">
+<section id="servicios" class="section fade">
 <h2 class="title">Servicios</h2>
 <div class="services">
 <div class="card">💻 Reparación y mantenimiento</div>
@@ -60,7 +72,7 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 </div>
 </section>
 
-<section class="section fade">
+<section id="planes" class="section fade">
 <h2 class="title">Planes</h2>
 <div class="pricing">
 <div class="price-card">
@@ -81,7 +93,7 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 </div>
 </section>
 
-<section class="section fade">
+<section id="testimonios" class="section fade">
 <h2 class="title">Clientes felices</h2>
 <div class="testimonials">
 
@@ -89,7 +101,7 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 <img src="cliente1.jpg" class="avatar">
 <div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
 <p>“Tenía la computadora súper lenta, no podía trabajar. En menos de 30 minutos me la dejaron como nueva. No lo podía creer.”</p>
-<small>— Eliseo Galván, Córdoba</small>
+<small>— Eliseo Galvan, Córdoba</small>
 </div>
 
 <div class="card testimonial">
@@ -138,8 +150,8 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 </div>
 </section>
 
-<section class="section fade">
-<h2 class="title">¿Listo para arreglar tu PC\?</h2>
+<section id="contacto" class="section fade">
+<h2 class="title">Estamos listos para ayudarte🚀</h2>
 <a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
 </section>
 
@@ -160,4 +172,5 @@ faders.forEach(el=>observer.observe(el));
 
 </body>
 </html>
+
 
