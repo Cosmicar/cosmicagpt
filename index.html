@@ -4,58 +4,111 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cósmica | Soporte Técnico Remoto</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-body {margin:0;font-family:Arial, sans-serif;background:#0b0f1a;color:#fff;}
-header {text-align:center;padding:40px 20px;background:linear-gradient(90deg,#ff7a00,#ff3c6f,#00bfff);} 
-h1 {margin:0;font-size:40px;}
-p {max-width:700px;margin:10px auto;}
-.section {padding:40px 20px;text-align:center;}
-.services {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
-.card {background:#111827;padding:20px;border-radius:12px;}
-.button {display:inline-block;margin-top:20px;padding:15px 25px;background:#25D366;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;}
-footer {text-align:center;padding:20px;background:#020617;font-size:14px;}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden}
+header{padding:80px 20px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
+.logo-img{width:120px;margin-bottom:10px}
+.logo-text{font-size:42px;font-weight:700;color:#fff}
+.hero h1{font-size:44px;margin:15px 0}
+.hero p{font-size:18px;color:#cbd5f5}
+.button{display:inline-block;margin-top:20px;padding:16px 32px;background:#25D366;border-radius:12px;color:#fff;text-decoration:none;font-weight:600;transition:.3s;box-shadow:0 0 20px rgba(37,211,102,.4)}
+.button:hover{transform:scale(1.08)}
+.section{padding:70px 20px;text-align:center}
+.title{font-size:30px;margin-bottom:10px}
+.subtitle{color:#94a3b8}
+.services,.pricing,.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;margin-top:40px}
+.card{background:rgba(255,255,255,0.05);padding:25px;border-radius:18px;backdrop-filter:blur(12px);transition:.3s;border:1px solid rgba(255,255,255,0.08)}
+.card:hover{transform:translateY(-8px);box-shadow:0 0 25px rgba(0,255,255,.15)}
+.price-card{background:linear-gradient(145deg,#020617,#0f172a);padding:35px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
+.price{font-size:32px;color:#22c55e;margin:10px 0}
+.highlight{border:2px solid #22c55e;transform:scale(1.05)}
+.testimonial{font-style:italic;color:#cbd5f5}
+.footer{background:#020617;padding:30px;text-align:center;color:#94a3b8}
+.whatsapp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;padding:16px 20px;border-radius:50%;font-size:22px;text-decoration:none;box-shadow:0 0 20px rgba(37,211,102,.7);z-index:1000}
+.fade{opacity:0;transform:translateY(20px);transition:all .6s ease}
+.fade.show{opacity:1;transform:translateY(0)}
+.badge{display:inline-block;margin-top:10px;padding:6px 12px;background:#22c55e;border-radius:20px;font-size:12px}
 </style>
 </head>
 <body>
-<header>
-<h1>CÓSMICA</h1>
-<p>Soporte técnico remoto en toda Argentina</p>
-<a class="button" href="https://wa.me/5493883298736">WhatsApp ahora</a>
+
+<header class="hero fade">
+<img src="cosmica-logo.png" alt="logo cosmica" class="logo-img">
+<div class="logo-text">CÓSMICA</div>
+<div class="badge">Soporte remoto en toda Argentina</div>
+<h1>Tu PC como nueva, sin moverte de tu casa</h1>
+<p>Soluciones rápidas, seguras y sin complicaciones.</p>
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20mi%20PC%20est%C3%A1%20lenta%2C%20necesito%20ayuda">💬 Hablar por WhatsApp</a>
 </header>
 
-<section class="section">
-<h2>¿Tu PC anda mal?</h2>
-<p>La reparamos rápido, sin que te muevas de tu casa.</p>
+<section class="section fade">
+<h2 class="title">¿Tu PC está lenta o con problemas?</h2>
+<p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
 </section>
 
-<section class="section">
-<h2>Servicios</h2>
+<section class="section fade">
+<h2 class="title">Servicios</h2>
 <div class="services">
-<div class="card">Reparación y mantenimiento de PC</div>
-<div class="card">Eliminación de virus</div>
-<div class="card">Instalación de programas</div>
-<div class="card">Soporte remoto</div>
-<div class="card">Impresoras Epson</div>
-<div class="card">Armado de PCs</div>
+<div class="card">💻 Reparación y mantenimiento</div>
+<div class="card">🦠 Eliminación de virus</div>
+<div class="card">📦 Instalación de programas</div>
+<div class="card">🌐 Soporte remoto inmediato</div>
+<div class="card">🖨️ Impresoras Epson</div>
+<div class="card">⚙️ Armado de PCs</div>
 </div>
 </section>
 
-<section class="section">
-<h2>Planes</h2>
-<div class="services">
-<div class="card">Bronce<br>$19.900</div>
-<div class="card">Oro<br>$29.900</div>
-<div class="card">Platinum<br>$39.900</div>
+<section class="section fade">
+<h2 class="title">Planes</h2>
+<div class="pricing">
+<div class="price-card">
+<h3>Bronce</h3>
+<div class="price">$19.900</div>
+<p>Eliminación de virus</p>
+</div>
+<div class="price-card highlight">
+<h3>Oro ⭐</h3>
+<div class="price">$29.900</div>
+<p>Optimización + activaciones</p>
+</div>
+<div class="price-card">
+<h3>Platinum</h3>
+<div class="price">$39.900</div>
+<p>Todo incluido + programas</p>
+</div>
 </div>
 </section>
 
-<section class="section">
-<h2>¿Por qué elegirnos?</h2>
-<p>Rápido, remoto y sin complicaciones. Atención personalizada y resultados garantizados.</p>
+<section class="section fade">
+<h2 class="title">Clientes felices</h2>
+<div class="testimonials">
+<div class="card testimonial">“Me solucionaron todo en 30 minutos.”</div>
+<div class="card testimonial">“Rápido y sin moverme de casa.”</div>
+<div class="card testimonial">“Excelente atención y resultado.”</div>
+</div>
 </section>
 
-<footer>
+<section class="section fade">
+<h2 class="title">¿Listo para arreglar tu PC?</h2>
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
+</section>
+
+<footer class="footer">
 <p>© Cósmica | cosmica.ar</p>
 </footer>
+
+<a class="whatsapp-float" href="https://wa.me/5493883298736">💬</a>
+
+<script>
+const faders=document.querySelectorAll('.fade');
+const observer=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){entry.target.classList.add('show');}
+});});
+faders.forEach(el=>observer.observe(el));
+</script>
+
 </body>
 </html>
