@@ -8,33 +8,45 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden;scroll-behavior:smooth}
+
 /* NAV */
 .nav{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:center;gap:30px;padding:15px;background:rgba(2,6,23,.7);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid rgba(255,255,255,.08)}
 .nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s}
 .nav a:hover{color:#22c55e}
+
 header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
 .logo-img{width:120px;margin-bottom:10px}
 .logo-text{font-size:42px;font-weight:700;color:#fff}
 .hero h1{font-size:44px;margin:15px 0}
 .hero p{font-size:18px;color:#cbd5f5}
+
 .button{display:inline-block;margin-top:20px;padding:16px 32px;background:#25D366;border-radius:12px;color:#fff;text-decoration:none;font-weight:600;transition:.3s;box-shadow:0 0 20px rgba(37,211,102,.4)}
 .button:hover{transform:scale(1.08)}
+
 .section{padding:70px 20px;text-align:center}
 .title{font-size:30px;margin-bottom:10px}
 .subtitle{color:#94a3b8}
+
 .services,.pricing,.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;margin-top:40px}
 .card{background:rgba(255,255,255,0.05);padding:25px;border-radius:18px;backdrop-filter:blur(12px);transition:.3s;border:1px solid rgba(255,255,255,0.08)}
 .card:hover{transform:translateY(-8px);box-shadow:0 0 25px rgba(0,255,255,.15)}
+
 .price-card{background:linear-gradient(145deg,#020617,#0f172a);padding:35px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
 .price{font-size:32px;color:#22c55e;margin:10px 0}
 .highlight{border:2px solid #22c55e;transform:scale(1.05)}
+
 .testimonial{font-style:italic;color:#cbd5f5;position:relative;padding-top:60px}
 .avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;position:absolute;top:-30px;left:50%;transform:translateX(-50%);border:3px solid #22c55e;box-shadow:0 0 15px rgba(34,197,94,.5)}
+
 .footer{background:#020617;padding:30px;text-align:center;color:#94a3b8}
+
 .whatsapp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;padding:16px 20px;border-radius:50%;font-size:22px;text-decoration:none;box-shadow:0 0 20px rgba(37,211,102,.7);z-index:1000}
+
 .fade{opacity:0;transform:translateY(20px);transition:all .6s ease}
 .fade.show{opacity:1;transform:translateY(0)}
+
 .badge{display:inline-block;margin-top:10px;padding:6px 12px;background:#22c55e;border-radius:20px;font-size:12px}
+
 /* MOBILE MENU */
 .menu-toggle{display:none;position:absolute;right:20px;top:12px;font-size:24px;cursor:pointer;color:#fff}
 @media(max-width:768px){
@@ -42,16 +54,6 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
   .nav.open{height:auto}
   .nav a{display:block;padding:12px 0;text-align:center;width:100%}
   .menu-toggle{display:block}
-}
-@media(max-width:768px){
-.nav{justify-content:flex-start;gap:0;flex-direction:column;align-items:stretch;height:60px;overflow:hidden;transition:.3s}
-.nav.open{height:300px}
-.nav a{display:block;padding:12px 0;text-align:center;width:100%}
-.menu-toggle{display:block}
-}
-.nav.open{height:260px}
-.nav a{display:block;padding:10px 0}
-.menu-toggle{display:block}
 }
 </style>
 </head>
@@ -62,6 +64,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <a href="#inicio">Inicio</a>
 <a href="#servicios">Servicios</a>
 <a href="#planes">Planes</a>
+<a href="#asistencia">Asistencia</a>
 <a href="#testimonios">Clientes</a>
 <a href="#contacto">Contacto</a>
 </nav>
@@ -115,6 +118,31 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 </div>
 </section>
 
+<!-- NUEVA SECCION ASISTENCIA -->
+<section id="asistencia" class="section fade">
+<h2 class="title">Asistencia Remota</h2>
+<p class="subtitle">Seguí estos pasos y en minutos te ayudamos</p>
+
+<div class="services">
+<div class="card">
+<h3>1. Descargá AnyDesk</h3>
+<a class="button" href="https://anydesk.com/es/downloads/windows" target="_blank">⬇ Descargar AnyDesk</a>
+</div>
+
+<div class="card">
+<h3>2. Abrí el programa</h3>
+<p>No hace falta instalarlo</p>
+</div>
+
+<div class="card">
+<h3>3. Enviá tu ID</h3>
+<a class="button" href="https://wa.me/5493883298736?text=Hola%20te%20env%C3%ADo%20mi%20ID%20de%20AnyDesk">💬 Enviar ID por WhatsApp</a>
+</div>
+</div>
+
+<p style="margin-top:20px;color:#22c55e">⚡ Atención en vivo, conexión inmediata</p>
+</section>
+
 <section id="testimonios" class="section fade">
 <h2 class="title">Clientes felices</h2>
 <div class="testimonials">
@@ -148,7 +176,6 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <p class="subtitle">Resultados reales que se sienten desde el primer minuto</p>
 
 <div class="services">
-
 <div class="card">
 <h3>❌ Antes</h3>
 <ul style="list-style:none;padding:0;text-align:left;color:#cbd5f5">
@@ -168,7 +195,6 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <li>🚀 Podés trabajar sin interrupciones</li>
 </ul>
 </div>
-
 </div>
 </section>
 
@@ -181,9 +207,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <p>© Cósmica | cosmica.ar</p>
 </footer>
 
-<a class="whatsapp-float" href="https://wa.me/5493883298736">
-💬 ¿Tu PC anda mal?
-</a></a>
+<a class="whatsapp-float" href="https://wa.me/5493883298736">💬 ¿Tu PC anda mal?</a>
 
 <script>
 const faders=document.querySelectorAll('.fade');
@@ -192,6 +216,7 @@ entries.forEach(entry=>{
 if(entry.isIntersecting){entry.target.classList.add('show');}
 });});
 faders.forEach(el=>observer.observe(el));
+
 function toggleMenu(){
 document.querySelector('.nav').classList.toggle('open');
 }
