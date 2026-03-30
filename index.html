@@ -24,7 +24,8 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 .price-card{background:linear-gradient(145deg,#020617,#0f172a);padding:35px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
 .price{font-size:32px;color:#22c55e;margin:10px 0}
 .highlight{border:2px solid #22c55e;transform:scale(1.05)}
-.testimonial{font-style:italic;color:#cbd5f5}
+.testimonial{font-style:italic;color:#cbd5f5;position:relative;padding-top:60px}
+.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;position:absolute;top:-30px;left:50%;transform:translateX(-50%);border:3px solid #22c55e;box-shadow:0 0 15px rgba(34,197,94,.5)}
 .footer{background:#020617;padding:30px;text-align:center;color:#94a3b8}
 .whatsapp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;padding:16px 20px;border-radius:50%;font-size:22px;text-decoration:none;box-shadow:0 0 20px rgba(37,211,102,.7);z-index:1000}
 .fade{opacity:0;transform:translateY(20px);transition:all .6s ease}
@@ -86,16 +87,22 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 <div class="testimonials">
 
 <div class="card testimonial">
+<img src="cliente1.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
 <p>“Tenía la computadora súper lenta, no podía trabajar. En menos de 30 minutos me la dejaron como nueva. No lo podía creer.”</p>
 <small>— Juan Pérez, Córdoba</small>
 </div>
 
 <div class="card testimonial">
+<img src="cliente2.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
 <p>“Me resolvieron todo sin que tenga que salir de casa. Súper cómodo, rápido y muy profesionales.”</p>
 <small>— Mariana López, Rosario</small>
 </div>
 
 <div class="card testimonial">
+<img src="cliente3.jpg" class="avatar">
+<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
 <p>“Excelente atención, me guiaron en todo momento y solucionaron el problema al instante. Muy recomendable.”</p>
 <small>— Lucas Fernández, Mendoza</small>
 </div>
@@ -133,7 +140,7 @@ header{padding:80px 20px;text-align:center;background:radial-gradient(circle at 
 </section>
 
 <section class="section fade">
-<h2 class="title">¿Listo para arreglar tu PC?</h2>
+<h2 class="title">¿Listo para arreglar tu PC\?</h2>
 <a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
 </section>
 
@@ -154,3 +161,4 @@ faders.forEach(el=>observer.observe(el));
 
 </body>
 </html>
+
