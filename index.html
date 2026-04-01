@@ -130,6 +130,46 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 .beneficios p{
   margin:5px 0;
 }
+/* GALACTICO GLOW ANIMADO */
+.galactico{
+  position:relative;
+  overflow:hidden;
+}
+
+.galactico::before{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:18px;
+  background:linear-gradient(120deg,#22c55e,#06b6d4,#a855f7,#22c55e);
+  background-size:300% 300%;
+  animation:galaxyGlow 6s linear infinite;
+  z-index:0;
+  filter:blur(8px);
+  opacity:0.7;
+}
+
+.galactico::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:#020617;
+  border-radius:18px;
+  z-index:1;
+}
+
+/* contenido arriba del glow */
+.galactico *{
+  position:relative;
+  z-index:2;
+}
+
+/* animación */
+@keyframes galaxyGlow{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
 </style>
 </head>
 <body>
@@ -182,7 +222,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
   <!-- BRONCE -->
   <div class="price-card">
-    <h3>Bronce</h3>
+    <h3>Orbital</h3>
     <div class="price">$19.900</div>
 
     <ul class="plan-list">
@@ -194,7 +234,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
     <p class="mini">Ideal para PCs lentas o infectadas</p>
 
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Bronce">
+    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Orbital">
       Contratar ahora
     </a>
   </div>
@@ -203,7 +243,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
   <div class="price-card highlight destacado">
     <div class="badge-top">🔥 MÁS ELEGIDO</div>
 
-    <h3>Oro ⭐</h3>
+    <h3>Estelar ⭐</h3>
     <div class="price">$29.900</div>
 
     <ul class="plan-list">
@@ -216,14 +256,14 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
     <p class="mini">La opción más elegida</p>
 
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">
+    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Estelar">
       Contratar ahora
     </a>
   </div>
 
   <!-- PLATINUM -->
   <div class="price-card">
-    <h3>Platinum</h3>
+    <h3>Galáctico</h3>
     <div class="price">$39.900</div>
 
     <ul class="plan-list">
@@ -236,8 +276,9 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
     <p class="mini">Experiencia completa sin límites</p>
 
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Platinum">
+    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Galáctico">
       Contratar ahora
+      <div class="price-card galactico"></div>
     </a>
   </div>
 
