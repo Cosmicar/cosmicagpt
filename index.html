@@ -93,6 +93,121 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <a href="#contacto">Contacto</a>
 </nav>
 
+.planes-section {
+  padding: 80px 20px;
+  text-align: center;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: #fff;
+}
+
+.titulo {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.subtitulo {
+  color: #9ca3af;
+  margin-bottom: 50px;
+}
+
+.planes-grid {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.plan-card {
+  background: #020617;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 30px;
+  width: 300px;
+  transition: 0.3s;
+  position: relative;
+}
+
+.plan-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+.plan-card h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.precio {
+  font-size: 32px;
+  color: #22c55e;
+  margin-bottom: 20px;
+}
+
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.plan-card ul li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.mini {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #22c55e;
+  color: #000;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #16a34a;
+  box-shadow: 0 0 12px #22c55e;
+}
+
+/* DESTACADO */
+.destacado {
+  border: 2px solid #22c55e;
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.3);
+}
+
+.badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  color: #000;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* BENEFICIOS */
+.beneficios {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #d1d5db;
+}
+
+.beneficios p {
+  margin: 5px 0;
+}
+
 <header id="inicio" class="hero fade">
 <img src="cosmica-logo.png" alt="logo cosmica" class="logo-img">
 <div class="logo-text">CÓSMICA</div>
@@ -120,26 +235,81 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 </div>
 </section>
 
-<section id="planes" class="section fade">
-<p style="margin-top:10px;color:#22c55e">+500 PCs reparadas | Atención en toda Argentina</p>
-<h2 class="title">Planes</h2>
-<div class="pricing">
-<div class="price-card">
-<h3>Bronce</h3>
-<div class="price">$19.900</div>
-<p>Eliminación de virus y limpieza total del sistema</p>
-</div>
-<div class="price-card highlight">
-<h3>Oro ⭐</h3>
-<div class="price">$29.900</div>
-<p>Optimización + activaciones</p>
-</div>
-<div class="price-card">
-<h3>Platinum</h3>
-<div class="price">$39.900</div>
-<p>Todo incluido + programas</p>
-</div>
-</div>
+<section class="planes-section">
+  <div class="container">
+    
+    <h2 class="titulo">Planes</h2>
+    <p class="subtitulo">
+      🚀 De lenta y llena de errores… a rápida y limpia en una sola sesión
+    </p>
+
+    <div class="planes-grid">
+
+      <!-- BRONCE -->
+      <div class="plan-card">
+        <h3>Bronce</h3>
+        <p class="precio">$19.900</p>
+
+        <ul>
+          <li>✔ Eliminación de virus, malware y spyware</li>
+          <li>✔ Limpieza profunda del sistema</li>
+          <li>✔ Mejora básica de rendimiento</li>
+          <li>✔ Revisión general del equipo</li>
+        </ul>
+
+        <p class="mini">Ideal para PCs lentas o infectadas</p>
+
+        <a href="#" class="btn">Contratar ahora</a>
+      </div>
+
+      <!-- ORO DESTACADO -->
+      <div class="plan-card destacado">
+        <div class="badge">🔥 MÁS ELEGIDO</div>
+        <h3>Oro ⭐</h3>
+        <p class="precio">$29.900</p>
+
+        <ul>
+          <li>✔ Todo lo del plan Bronce</li>
+          <li>✔ Optimización avanzada</li>
+          <li>✔ Activación de Windows</li>
+          <li>✔ Activación de Office</li>
+          <li>✔ Mejora de arranque y velocidad</li>
+        </ul>
+
+        <p class="mini">La opción más elegida</p>
+
+        <a href="#" class="btn">Contratar ahora</a>
+      </div>
+
+      <!-- PLATINUM -->
+      <div class="plan-card">
+        <h3>Platinum</h3>
+        <p class="precio">$39.900</p>
+
+        <ul>
+          <li>✔ Todo lo del plan Oro</li>
+          <li>✔ Instalación de programas</li>
+          <li>✔ Bloqueador de publicidades</li>
+          <li>✔ Configuración personalizada</li>
+          <li>✔ Atención prioritaria</li>
+        </ul>
+
+        <p class="mini">Experiencia completa sin límites</p>
+
+        <a href="#" class="btn">Contratar ahora</a>
+      </div>
+
+    </div>
+
+    <!-- BENEFICIOS -->
+    <div class="beneficios">
+      <p>✔ Atención remota en toda Argentina</p>
+      <p>✔ Sin moverte de tu casa</p>
+      <p>✔ Garantía de 90 días</p>
+      <p>✔ Soporte real, sin bots</p>
+    </div>
+
+  </div>
 </section>
 
 <!-- CTA asistencia (reemplaza sección anterior) -->
