@@ -4,7 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cósmica | Soporte Técnico Remoto</title>
-
+<!--Vamos a darle de comer contexto a Google, Bing y las IA. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ComputerRepair",
+  "name": "Cósmica",
+  "url": "https://cosmica.ar",
+  "telephone": "+5493883298736",
+  "areaServed": "AR",
+  "description": "Soporte técnico remoto en toda Argentina. Eliminación de virus, optimización de PC, instalación de programas y asistencia inmediata.",
+  "sameAs": [
+    "https://www.facebook.com/cosmica.arg/",
+    "https://www.instagram.com/cosmica.plus"
+  ]
+}
+</script>
+<!--FAQ. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Cuánto tarda el soporte técnico?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "La mayoría de los problemas se resuelven en menos de 1 hora mediante asistencia remota."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Necesito llevar la PC a algún lugar?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No, todo el servicio se realiza de forma remota, sin que tengas que moverte de tu casa."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Trabajan en toda Argentina?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí, brindamos soporte técnico remoto en todo el país."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Qué incluye el servicio?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Incluye eliminación de virus, optimización del sistema, instalación de programas y asistencia personalizada."
+      }
+    }
+  ]
+}
+</script>
 <!-- SEO / Open Graph -->
  <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -202,6 +258,44 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 .beneficios-grid p{
   margin:5px 0;
 }
+.faq-container{
+  max-width:700px;
+  margin:40px auto;
+  text-align:left;
+}
+
+.faq-item{
+  margin-bottom:10px;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  overflow:hidden;
+  background:rgba(255,255,255,0.03);
+}
+
+.faq-question{
+  width:100%;
+  padding:15px;
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  text-align:left;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.faq-question:hover{
+  color:#22c55e;
+}
+
+.faq-answer{
+  max-height:0;
+  overflow:hidden;
+  padding:0 15px;
+  color:#cbd5f5;
+  font-size:14px;
+  transition:max-height .4s ease;
+}
 </style>
 </head>
 <body>
@@ -392,7 +486,44 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 </div>
 </div>
 </section>
+<section class="section fade" id="faq">
 
+  <h2 class="title">Preguntas frecuentes</h2>
+  <p class="subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC</p>
+
+  <div class="faq-container">
+
+    <div class="faq-item">
+      <button class="faq-question">¿Cuánto tarda el soporte técnico?</button>
+      <div class="faq-answer">
+        La mayoría de los problemas se resuelven en menos de 1 hora mediante asistencia remota.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">¿Necesito llevar la PC a algún lugar?</button>
+      <div class="faq-answer">
+        No, todo el servicio se realiza de forma remota, sin que tengas que moverte de tu casa.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">¿Trabajan en toda Argentina?</button>
+      <div class="faq-answer">
+        Sí, brindamos soporte técnico remoto en todo el país.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question">¿Qué incluye el servicio?</button>
+      <div class="faq-answer">
+        Incluye eliminación de virus, optimización del sistema, instalación de programas y asistencia personalizada.
+      </div>
+    </div>
+
+  </div>
+
+</section>
 <section id="contacto" class="section fade">
 <h2 class="title">Estamos listos para ayudarte🚀</h2>
 <a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
@@ -400,6 +531,7 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
 <footer class="footer">
 <p>© Cósmica | cosmica.ar</p>
+<a href="/pc-lenta-jujuy.html">PC lenta en Jujuy</a>
 </footer>
 
 <a class="whatsapp-float" href="https://wa.me/5493883298736">💬 ¿Tu PC anda mal?</a>
@@ -416,6 +548,19 @@ function toggleMenu(){
 document.querySelector('.nav').classList.toggle('open');
 }
 </script>
+<script>
+document.querySelectorAll(".faq-question").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const answer = btn.nextElementSibling;
 
+    if(answer.style.maxHeight){
+      answer.style.maxHeight = null;
+    } else {
+      document.querySelectorAll(".faq-answer").forEach(a=>a.style.maxHeight=null);
+      answer.style.maxHeight = answer.scrollHeight + "px";
+    }
+  });
+});
+</script>
 </body>
 </html>
