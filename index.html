@@ -171,18 +171,24 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
 .beneficios-grid{
   display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:20px;
-  justify-items:center;
-  align-items:center;
-  text-align:center;
-  max-width:700px;
+  grid-template-columns:repeat(2, 1fr);
+  gap:14px 40px;
+  justify-items:start;
+  max-width:600px;
   margin:0 auto;
+  text-align:left;
+}
+.beneficios-grid div{
+  background:rgba(255,255,255,0.03);
+  padding:10px 14px;
+  border-radius:10px;
+  width:100%;
 }
 @media(max-width:768px){
   .beneficios-grid{
     grid-template-columns:1fr;
-    gap:12px;
+    text-align:center;
+    justify-items:center;
   }
 }
 .beneficios-box{
@@ -312,12 +318,12 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 <div class="beneficios-box">
   <h3>✔ Garantía Cósmica</h3>
 
-  <div class="beneficios-grid">
-    <p>✔ Atención remota en toda Argentina</p>
-    <p>✔ Sin moverte de tu casa</p>
-    <p>✔ Garantía de 90 días</p>
-    <p>✔ Soporte real, sin bots</p>
-  </div>
+ <div class="beneficios-grid">
+  <div>✔ Atención remota en toda Argentina</div>
+  <div>✔ Sin moverte de tu casa</div>
+  <div>✔ Garantía de 90 días</div>
+  <div>✔ Soporte real, sin bots</div>
+</div>
 </div>
 
 <!-- CTA asistencia (reemplaza sección anterior) -->
