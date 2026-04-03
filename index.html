@@ -144,6 +144,42 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
   background:linear-gradient(90deg,#22c55e,#4ade80);
   box-shadow:0 0 20px rgba(34,197,94,0.6);
 }
+.beneficios-box{
+  margin-top:50px;
+  padding:30px;
+  border-radius:18px;
+  background:linear-gradient(145deg,#020617,#0f172a);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 0 30px rgba(34,197,94,0.15);
+  max-width:800px;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:center;
+  transition:.3s;
+}
+
+.beneficios-box:hover{
+  box-shadow:0 0 40px rgba(34,197,94,0.3);
+  transform:translateY(-4px);
+}
+
+.beneficios-box h3{
+  margin-bottom:20px;
+  font-size:20px;
+  color:#22c55e;
+}
+
+.beneficios-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+  color:#cbd5f5;
+  font-size:14px;
+}
+
+.beneficios-grid p{
+  margin:5px 0;
+}
 </style>
 </head>
 <body>
@@ -257,12 +293,15 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 
 </section>
 
-<!-- BENEFICIOS -->
-<div class="beneficios">
-  <p>✔ Atención remota en toda Argentina</p>
-  <p>✔ Sin moverte de tu casa</p>
-  <p>✔ Garantía de 90 días</p>
-  <p>✔ Soporte real, sin bots</p>
+<div class="beneficios-box">
+  <h3>✔ Garantía Cósmica</h3>
+
+  <div class="beneficios-grid">
+    <p>✔ Atención remota en toda Argentina</p>
+    <p>✔ Sin moverte de tu casa</p>
+    <p>✔ Garantía de 90 días</p>
+    <p>✔ Soporte real, sin bots</p>
+  </div>
 </div>
 
 <!-- CTA asistencia (reemplaza sección anterior) -->
