@@ -485,25 +485,6 @@ body::after{
   backdrop-filter:blur(12px);
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
-
-/* HERO CON ENERGÍA */
-header{
-  position:relative;
-  background:
-    radial-gradient(circle at top, rgba(34,211,238,0.15), transparent 60%),
-    radial-gradient(circle at bottom, rgba(74,222,128,0.08), transparent 60%),
-    #020617;
-}
-
-header::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(34,211,238,0.25), transparent 60%);
-  pointer-events:none;
-}
-
 /* TITULO PRINCIPAL PRO */
 .hero h1{
   background:linear-gradient(90deg,#fff,#22d3ee);
@@ -639,12 +620,6 @@ a{
   text-shadow:
     0 0 20px rgba(34,211,238,0.4),
     0 0 40px rgba(34,211,238,0.3);
-}
-
-/* ===== LUZ CENTRAL MÁS FUERTE ===== */
-header::before{
-  background:
-    radial-gradient(circle at 50% 20%, rgba(34,211,238,0.35), transparent 60%);
 }
 
 /* ===== DESTACAR CTA PRINCIPAL ===== */
@@ -989,7 +964,6 @@ header::before{
 </footer>
 
 <a class="whatsapp-float" href="https://wa.me/5493883298736">🚀</a>
-
 <script>
 const faders=document.querySelectorAll('.fade');
 const observer=new IntersectionObserver(entries=>{
