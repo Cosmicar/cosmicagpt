@@ -713,7 +713,76 @@ a{
 .nav{
   box-shadow:0 0 20px rgba(34,211,238,0.1);
 }
+/* ===== HERO TIPO ARTEMIS ===== */
 
+.hero{
+  min-height:90vh;
+  display:flex;
+  align-items:center;
+  padding:80px 40px;
+
+  background:
+    linear-gradient(to right, rgba(2,6,23,0.9), rgba(2,6,23,0.4)),
+    url('https://images.unsplash.com/photo-1580428180121-d3d9c8b3b8f0?q=80&w=1600&auto=format&fit=crop');
+
+  background-size:cover;
+  background-position:right center;
+}
+
+/* CONTENIDO */
+.hero-content{
+  max-width:600px;
+}
+
+/* TITULO */
+.hero h1{
+  font-size:48px;
+  line-height:1.2;
+  color:#e2e8f0;
+  text-shadow:none;
+}
+
+/* TEXTO */
+.hero p{
+  margin-top:15px;
+  color:#cbd5f5;
+  font-size:16px;
+}
+
+/* BADGE */
+.hero-badge{
+  margin-top:20px;
+  display:inline-block;
+  background:rgba(74,222,128,0.15);
+  border:1px solid rgba(74,222,128,0.4);
+  color:#4ade80;
+  padding:8px 14px;
+  border-radius:20px;
+  font-size:13px;
+}
+
+/* BOTON */
+.hero .button{
+  margin-top:25px;
+  display:inline-block;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .hero{
+    padding:60px 20px;
+    text-align:center;
+    justify-content:center;
+  }
+
+  .hero-content{
+    max-width:100%;
+  }
+
+  .hero h1{
+    font-size:32px;
+  }
+}
 </style>
 </head>
 <body>
@@ -740,14 +809,20 @@ a{
 </nav>
 
 <main>
-<header id="inicio" class="hero fade">
-<img src="cosmica-logo.webp" alt="logo cosmica" loading="lazy" class="logo-img">
-<div class="logo-text">CÓSMICA</div>
-<div class="badge">Soporte remoto en toda Argentina</div>
-<h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
-<p>La solucionamos en minutos, sin que te muevas de tu casa</p>
-<p style="color:#facc15;margin-top:10px">⚡ Atención inmediata disponible ahora</p>
-<a class="button" href="https://wa.me/5493883298736?text=Hola%20mi%20PC%20est%C3%A1%20lenta%2C%20necesito%20ayuda">💬 Hablar por WhatsApp</a>
+<header class="hero">
+
+  <div class="hero-content">
+    <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
+
+    <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
+
+    <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
+
+    <a class="button" href="https://wa.me/5493883298736">
+      🚀 Solicitar asistencia
+    </a>
+  </div>
+
 </header>
 
 <section class="section fade">
