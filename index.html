@@ -457,6 +457,182 @@ a{
 *{
   transition:background .3s, box-shadow .3s, transform .3s;
 }
+/* ========================= */
+/* 🌌 MODO ARTEMIS COSMICA */
+/* ========================= */
+
+/* FONDO ESPACIAL PROFUNDO */
+body{
+  background:
+    radial-gradient(circle at 20% 10%, rgba(34,211,238,0.15), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(74,222,128,0.10), transparent 40%),
+    #020617;
+  background-attachment: fixed;
+}
+
+/* EFECTO VIÑETA (FOCO VISUAL) */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.5));
+}
+
+/* NAV GLASS */
+.nav{
+  background:rgba(2,6,23,0.6);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* HERO CON ENERGÍA */
+header{
+  position:relative;
+  background:
+    radial-gradient(circle at top, rgba(34,211,238,0.15), transparent 60%),
+    radial-gradient(circle at bottom, rgba(74,222,128,0.08), transparent 60%),
+    #020617;
+}
+
+header::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(34,211,238,0.25), transparent 60%);
+  pointer-events:none;
+}
+
+/* TITULO PRINCIPAL PRO */
+.hero h1{
+  background:linear-gradient(90deg,#fff,#22d3ee);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ESPACIADO GENERAL */
+.section{
+  padding:90px 20px;
+}
+
+/* BADGE MEJORADO */
+.badge{
+  background:#4ade80;
+  color:#022c22;
+  font-weight:600;
+  box-shadow:0 0 12px rgba(74,222,128,0.4);
+}
+
+/* BOTONES PRO */
+.button,
+.button:visited,
+.button:hover,
+.button:active{
+  text-decoration:none;
+}
+
+.button{
+  background:linear-gradient(90deg,#4ade80,#22c55e);
+  color:#022c22;
+  font-weight:600;
+  border:none;
+  box-shadow:0 0 20px rgba(74,222,128,0.4);
+  transition:.3s;
+}
+
+.button:hover{
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.5),
+    0 0 40px rgba(74,222,128,0.4);
+}
+
+/* CARDS ESTILO ARTEMIS */
+.card, .price-card{
+  background:rgba(2,6,23,0.75);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 0 20px rgba(34,211,238,0.15),
+    inset 0 0 20px rgba(34,211,238,0.05);
+  transition:.3s;
+}
+
+.card:hover, .price-card:hover{
+  transform:translateY(-6px);
+  box-shadow:
+    0 0 30px rgba(34,211,238,0.3),
+    0 0 50px rgba(74,222,128,0.2);
+}
+
+/* PLAN DESTACADO */
+.highlight{
+  border:2px solid #4ade80;
+  box-shadow:
+    0 0 30px rgba(74,222,128,0.4),
+    0 0 60px rgba(34,211,238,0.2);
+}
+
+/* TITULOS */
+.title{
+  font-size:34px;
+  background:linear-gradient(90deg,#fff,#22d3ee);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* SUBTITULOS */
+.subtitle{
+  color:#cbd5f5;
+}
+
+/* LINKS */
+a{
+  color:#93c5fd;
+}
+
+/* WHATSAPP FLOTANTE */
+.whatsapp-float{
+  background:linear-gradient(90deg,#4ade80,#22c55e);
+  color:#022c22;
+  box-shadow:
+    0 0 20px rgba(74,222,128,0.6),
+    0 0 40px rgba(34,211,238,0.3);
+}
+
+/* CTA ASISTENCIA */
+.asistencia-cta{
+  background:rgba(2,6,23,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.2),
+    inset 0 0 15px rgba(74,222,128,0.1);
+}
+
+/* FAQ */
+.faq-item{
+  background:rgba(2,6,23,0.7);
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.faq-question:hover{
+  color:#22d3ee;
+}
+
+/* BENEFICIOS */
+.beneficios-box{
+  background:rgba(2,6,23,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.2),
+    0 0 40px rgba(74,222,128,0.1);
+}
+
+/* SUAVIDAD GENERAL */
+*{
+  transition:background .3s, box-shadow .3s, transform .3s;
+}
 </style>
 </head>
 <body>
