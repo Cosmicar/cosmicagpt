@@ -322,6 +322,141 @@ header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circ
 .button{
   text-decoration: none;
 }
+/* ====== FONDO ESPACIAL MEJORADO ====== */
+body{
+  background:
+    radial-gradient(circle at 20% 10%, rgba(34,211,238,0.15), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(74,222,128,0.10), transparent 40%),
+    #020617;
+  background-attachment: fixed;
+}
+
+/* ====== NAV GLASS ====== */
+.nav{
+  background:rgba(2,6,23,0.6);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* ====== HERO MEJORADO ====== */
+header{
+  background:
+    radial-gradient(circle at top, rgba(34,211,238,0.15), transparent 60%),
+    radial-gradient(circle at bottom, rgba(74,222,128,0.08), transparent 60%),
+    #020617;
+}
+
+/* ====== BADGE PREMIUM ====== */
+.badge{
+  background:#4ade80;
+  color:#022c22;
+  font-weight:600;
+  box-shadow:0 0 12px rgba(74,222,128,0.4);
+}
+
+/* ====== BOTONES PRO ====== */
+.button{
+  background:linear-gradient(90deg,#4ade80,#22c55e);
+  color:#022c22;
+  font-weight:600;
+  border:none;
+  text-decoration:none;
+  box-shadow:0 0 20px rgba(74,222,128,0.4);
+  transition:.3s;
+}
+
+.button:hover{
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.5),
+    0 0 40px rgba(74,222,128,0.4);
+}
+
+/* ====== CARDS ESTILO ARTEMIS ====== */
+.card, .price-card{
+  background:rgba(2,6,23,0.75);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 0 20px rgba(34,211,238,0.15),
+    inset 0 0 20px rgba(34,211,238,0.05);
+  transition:.3s;
+}
+
+.card:hover, .price-card:hover{
+  transform:translateY(-6px);
+  box-shadow:
+    0 0 30px rgba(34,211,238,0.3),
+    0 0 50px rgba(74,222,128,0.2);
+}
+
+/* ====== PLAN DESTACADO ====== */
+.highlight{
+  border:2px solid #4ade80;
+  box-shadow:
+    0 0 30px rgba(74,222,128,0.4),
+    0 0 60px rgba(34,211,238,0.2);
+}
+
+/* ====== TITULOS MÁS IMPACTO ====== */
+.title{
+  font-size:34px;
+  background:linear-gradient(90deg,#fff,#22d3ee);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ====== SUBTEXTO MEJOR CONTRASTE ====== */
+.subtitle{
+  color:#cbd5f5;
+}
+
+/* ====== LINKS VISIBLES ====== */
+a{
+  color:#93c5fd;
+}
+
+/* ====== WHATSAPP FLOTANTE MEJORADO ====== */
+.whatsapp-float{
+  background:linear-gradient(90deg,#4ade80,#22c55e);
+  color:#022c22;
+  box-shadow:
+    0 0 20px rgba(74,222,128,0.6),
+    0 0 40px rgba(34,211,238,0.3);
+}
+
+/* ====== CTA BOX (ASISTENCIA) ====== */
+.asistencia-cta{
+  background:rgba(2,6,23,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.2),
+    inset 0 0 15px rgba(74,222,128,0.1);
+}
+
+/* ====== FAQ MEJORADO ====== */
+.faq-item{
+  background:rgba(2,6,23,0.7);
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.faq-question:hover{
+  color:#22d3ee;
+}
+
+/* ====== BENEFICIOS BOX ====== */
+.beneficios-box{
+  background:rgba(2,6,23,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 0 25px rgba(34,211,238,0.2),
+    0 0 40px rgba(74,222,128,0.1);
+}
+
+/* ====== SUAVIZADO GENERAL ====== */
+*{
+  transition:background .3s, box-shadow .3s, transform .3s;
+}
 </style>
 </head>
 <body>
