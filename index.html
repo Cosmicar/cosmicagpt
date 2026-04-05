@@ -783,6 +783,42 @@ a{
     font-size:32px;
   }
 }
+/* BOTON HAMBURGUESA */
+.menu-toggle{
+  display:none;
+  font-size:26px;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+  .menu-toggle{
+    display:block;
+  }
+
+  .nav-center{
+    position:absolute;
+    top:70px;
+    left:0;
+    width:100%;
+    background:#020617;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    padding:20px 0;
+
+    display:none;
+  }
+
+  .nav-center.active{
+    display:flex;
+  }
+}
+.nav-center{
+  box-shadow:0 0 20px rgba(34,211,238,0.2);
+}
 </style>
 </head>
 <body>
@@ -805,7 +841,7 @@ a{
   <div class="nav-right">
     <a class="nav-btn" href="/asistencia.html">Solicitar asistencia</a>
   </div>
-
+<div class="menu-toggle" onclick="toggleMenu()">☰</div>
 </nav>
 
 <main>
@@ -1065,6 +1101,11 @@ document.querySelectorAll(".faq-question").forEach(btn=>{
     }
   });
 });
+</script>
+<script>
+function toggleMenu(){
+  document.querySelector('.nav-center').classList.toggle('active');
+}
 </script>
 </body>
 </html>
