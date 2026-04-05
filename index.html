@@ -100,7 +100,27 @@ body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;ove
   .nav a{display:block;padding:12px 0;text-align:center;width:100%}
   .menu-toggle{display:block}
 }
+@media(max-width:768px){
 
+  /* NAV en columna */
+  .nav{
+    flex-wrap:wrap;
+    justify-content:space-between;
+  }
+
+  /* LOGO arriba */
+  .nav-left{
+    width:100%;
+    justify-content:center;
+  }
+
+  /* BOTON abajo del logo */
+  .nav-right{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
+  }
 header{padding:120px 20px 80px;text-align:center;background:radial-gradient(circle at top,#0f172a,#020617);} 
 .logo-img{width:120px;margin-bottom:10px}
 .logo-text{font-size:42px;font-weight:700;color:#fff}
