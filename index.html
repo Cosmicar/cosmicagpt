@@ -939,20 +939,45 @@ a{
 /* 🚀 HERO CON IMAGEN LATERAL */
 /* ========================= */
 
+/* 🚀 HERO CENTRADO CON IMAGEN DE FONDO */
 .hero {
   position: relative;
-  min-height: 75vh;
+  min-height: 80vh; /* Un poco más de altura para lucir la imagen */
   display: flex;
   align-items: center;
-  padding: 120px 40px 60px;
+  justify-content: center; /* Centra horizontalmente */
+  text-align: center;      /* Centra el texto */
+  padding: 120px 20px 60px;
 
-  background:
-    linear-gradient(to right, rgba(2,6,23,0.8) 30%, rgba(2,6,23,0) 80%),
-    url('https://cosmica.ar/hero-cosmica.webp');
-
+  /* Imagen de fondo con overlay oscuro para que el texto sea legible */
+  background: 
+    linear-gradient(rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 0.7)), 
+    url('hero-cosmica.webp');
+  
   background-repeat: no-repeat;
-  background-position: right center;
-  background-size: 60%;
+  background-position: center;
+  background-size: cover; /* Clave para que cubra todo el espacio */
+}
+
+/* Ajuste del contenedor para que no se pegue a los bordes */
+.hero-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.hero-content {
+  max-width: 800px; /* Más ancho para que el título respire */
+  z-index: 2;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column; /* Apila los elementos en móvil/centro */
+  align-items: center;
+  gap: 15px;
+  margin-top: 25px;
 }
 
 /* CONTENEDOR FLEX */
@@ -1036,24 +1061,19 @@ a{
 
 <main>
 <header class="hero">
-
   <div class="hero-container">
-
     <div class="hero-content">
       <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
-
       <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
-
+      
       <div class="hero-actions">
         <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
-
         <a class="button" href="https://wa.me/5493883298736">
           🚀 Solicitar asistencia
         </a>
       </div>
     </div>
   </div>
-
 </header>
 
 <section class="section fade">
