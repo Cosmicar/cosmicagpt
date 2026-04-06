@@ -945,6 +945,7 @@ a{
   display: flex;
   align-items: center;
   padding: 120px 40px 60px;
+   padding-right: 100px;
 
   background:
     linear-gradient(to right, rgba(2,6,23,0.8) 30%, rgba(2,6,23,0) 80%),
@@ -965,7 +966,9 @@ a{
 
 /* TEXTO */
 .hero-content{
-  max-width:550px;
+  max-width:650px;
+  z-index:2;
+  position:relative;
 }
 
 /* BOTONES */
@@ -987,6 +990,10 @@ a{
 /* MOBILE */
 @media(max-width:768px){
 
+  .hero{
+    padding:60px 20px;
+    padding-right:20px; /* 🔥 clave */
+  }
   .hero-container{
     flex-direction:column;
     text-align:center;
