@@ -980,6 +980,14 @@ a{
 .hero-badge, .hero .button {
   margin-top: 0 !important; /* Limpiamos márgenes viejos */
 }
+/* 📱 AJUSTE DE IMAGEN HERO SOLO PARA CELULARES */
+@media(max-width: 768px) {
+  .hero {
+    /* El primer valor (60%) mueve la imagen de izquierda a derecha. 
+       El segundo (center) la mantiene centrada arriba/abajo. */
+    background-position: 60% center !important; 
+  }
+}
 </style>
 </head>
 <body>
