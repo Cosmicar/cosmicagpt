@@ -999,6 +999,46 @@ a{
     justify-content: center;
   }
 }
+/* 🚨 CAJA DE ALERTA DE PROBLEMAS */
+.alerta-box {
+  background: linear-gradient(145deg, rgba(2, 6, 23, 0.9), rgba(15, 23, 42, 0.6));
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 24px;
+  padding: 50px 30px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 10px 40px rgba(34, 211, 238, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Un brillito sutil arriba de la caja */
+.alerta-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 150px; height: 2px;
+  background: #22d3ee;
+  box-shadow: 0 0 20px #22d3ee;
+}
+
+.alerta-icon {
+  font-size: 45px;
+  margin-bottom: 15px;
+  display: inline-block;
+  animation: flotar 3s ease-in-out infinite;
+}
+
+.alerta-box .button {
+  margin-top: 25px;
+}
+
+@keyframes flotar {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
 </style>
 </head>
 <body>
@@ -1044,8 +1084,14 @@ a{
 </header>
 
 <section class="section fade">
-<h2 class="title">¿Tu PC está lenta o con problemas?</h2>
-<p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
+  <div class="alerta-box">
+    <div class="alerta-icon">⏳</div>
+    <h2 class="title">¿Tu PC está lenta o con problemas?</h2>
+    <p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
+    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola,%20mi%20PC%20anda%20muy%20lenta%20y%20necesito%20ayuda">
+      💬 Hacer consulta rápida
+    </a>
+  </div>
 </section>
 
 <section id="servicios" class="section fade">
