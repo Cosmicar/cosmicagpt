@@ -926,66 +926,77 @@ a{
 }
 
 /* ========================================= */
-/* 🌌 HERO DEFINITIVO CENTRADO - CÓSMICA */
+/* 🌌 HERO ALINEADO A LA IZQUIERDA - CÓSMICA */
 /* ========================================= */
 .hero {
   position: relative;
   min-height: 85vh; 
   display: flex !important; 
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: flex-start; /* Cambiamos el anclaje a la izquierda */
+  text-align: left; /* Texto a la izquierda */
   padding: 120px 20px;
   width: 100%;
   
-  /* El fondo ahora sí se aplicará a todas las pantallas */
+  /* Clave 1: Degradado que oscurece la izquierda y deja casi transparente la derecha */
   background: 
-    linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.75)), 
+    linear-gradient(to right, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 50%, rgba(2, 6, 23, 0.1) 100%), 
     url('hero-cosmica.webp') !important;
   
   background-repeat: no-repeat;
-  background-position: center;
+  /* Clave 2: Forzamos que la imagen se apoye a la derecha */
+  background-position: right center !important; 
   background-size: cover !important;
 }
 
 .hero-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px; /* Hacemos el "cajón" más ancho para aprovechar el monitor */
   margin: 0 auto;
+  display: flex;
+  justify-content: flex-start; /* Tira el contenido a la izquierda */
   z-index: 5;
 }
 
 .hero-content {
   width: 100%;
+  max-width: 600px; /* Limitamos el texto a la mitad de la pantalla */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start; /* Alinea los elementos internos a la izquierda */
 }
 
-/* Alineamos el botón y la insignia al centro */
 .hero-actions {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Botones a la izquierda */
   gap: 15px;
   margin-top: 30px;
 }
 
 .hero-badge, .hero .button {
-  margin-top: 0 !important; /* Limpiamos márgenes viejos */
+  margin-top: 0 !important; 
 }
-/* 📱 AJUSTE DE IMAGEN HERO SOLO PARA CELULARES */
+
+/* 📱 COMPORTAMIENTO EN CELULARES */
 @media(max-width: 768px) {
   .hero {
-    /* El primer valor (60%) mueve la imagen de izquierda a derecha. 
-       El segundo (center) la mantiene centrada arriba/abajo. */
-    background-position: 60% center !important; 
+    /* En celular no hay espacio para lados, así que centramos y oscurecemos parejo */
+    justify-content: center;
+    text-align: center;
+    background: 
+      linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), 
+      url('hero-cosmica.webp') !important;
+    background-position: 60% center !important; /* Acá podés jugar con el 60% que hablábamos */
+    background-size: cover !important;
+  }
+  .hero-content {
+    align-items: center;
+  }
+  .hero-actions {
+    justify-content: center;
   }
 }
 </style>
