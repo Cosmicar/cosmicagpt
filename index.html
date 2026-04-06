@@ -954,16 +954,20 @@ a{
 /* 🚀 HERO CON IMAGEN LATERAL */
 /* ========================= */
 
-.hero{
-  padding:100px 40px 60px;
-}
 .hero {
   position: relative;
-  background: radial-gradient(circle at left, #020617 40%, transparent 70%),
-              url('/hero-cosmica.webp') right center / contain no-repeat;
-  min-height: 500px;
+  min-height: 90vh;
   display: flex;
   align-items: center;
+  padding: 100px 40px;
+
+  background:
+    linear-gradient(to right, rgba(2,6,23,0.95) 40%, rgba(2,6,23,0.3) 70%),
+    url('/hero-cosmica.webp');
+
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: contain;
 }
 
 /* CONTENEDOR FLEX */
@@ -1060,11 +1064,6 @@ a{
         </a>
       </div>
     </div>
-
-    <div class="hero-image">
-      <img src="hero-cosmica.webp" alt="soporte técnico cosmica">
-    </div>
-
   </div>
 
 </header>
