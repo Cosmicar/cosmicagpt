@@ -104,6 +104,13 @@ body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;ove
     flex-wrap:wrap;
     justify-content:space-between;
   }
+
+  /* LOGO arriba */
+  .nav-left{
+    width:100%;
+    justify-content:center;
+  }
+
   /* BOTON abajo del logo */
   .nav-right{
     width:100%;
@@ -826,7 +833,109 @@ a{
     display:flex;
   }
 }
+/* ========================= */
+/* 🔥 NAV LIMPIO DEFINITIVO */
+/* ========================= */
 
+.nav{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px 25px;
+  background:rgba(2,6,23,0.8);
+  backdrop-filter:blur(10px);
+  z-index:1000;
+}
+
+/* LOGO */
+.nav-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.nav-logo{
+  width:40px;
+}
+
+.nav-brand{
+  font-weight:700;
+}
+
+/* MENU */
+.nav-center{
+  display:flex;
+  gap:25px;
+}
+
+.nav-center a{
+  color:#cbd5f5;
+  text-decoration:none;
+  font-size:14px;
+}
+
+.nav-center a:hover{
+  color:#22d3ee;
+}
+
+/* BOTON */
+.nav-btn{
+  padding:10px 16px;
+  border-radius:10px;
+  background:#4ade80;
+  color:#022c22;
+  text-decoration:none;
+  font-weight:600;
+}
+
+/* HAMBURGUESA */
+.menu-toggle{
+  display:none;
+  font-size:26px;
+  cursor:pointer;
+}
+
+/* ========================= */
+/* 📱 MOBILE */
+/* ========================= */
+
+@media(max-width:768px){
+
+  .menu-toggle{
+    display:block;
+  }
+
+  .nav-center{
+    position:absolute;
+    top:60px;
+    left:0;
+    width:100%;
+    background:#020617;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    padding:20px 0;
+    display:none;
+  }
+
+  .nav-center.active{
+    display:flex;
+  }
+
+  .nav-right{
+    display:none;
+  }
+
+  .nav-left{
+    width:100%;
+    justify-content:center;
+  }
+
+}
 </style>
 </head>
 <body>
@@ -838,7 +947,7 @@ a{
     <span class="nav-brand">CÓSMICA</span>
   </div>
 
-  <div class="nav-center">
+  <div class="nav-center" id="menu">
     <a href="#inicio">Inicio</a>
     <a href="#servicios">Servicios</a>
     <a href="#planes">Planes</a>
@@ -849,7 +958,9 @@ a{
   <div class="nav-right">
     <a class="nav-btn" href="/asistencia.html">Solicitar asistencia</a>
   </div>
-<div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
 </nav>
 
 <main>
@@ -1093,7 +1204,7 @@ if(entry.isIntersecting){entry.target.classList.add('show');}
 faders.forEach(el=>observer.observe(el));
 
 function toggleMenu(){
-document.querySelector('.nav').classList.toggle('open');
+  document.getElementById("menu").classList.toggle("active");
 }
 </script>
 <script>
