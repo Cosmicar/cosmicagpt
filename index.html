@@ -935,103 +935,47 @@ a{
   border-bottom:1px solid rgba(255,255,255,0.05);
   box-shadow:none;
 }
-/* ========================= */
-/* 🚀 HERO CON IMAGEN LATERAL */
-/* ========================= */
-
-/* 🚀 HERO CENTRADO CON IMAGEN DE FONDO */
+/* 🌌 HERO UNIFICADO Y CENTRADO */
 .hero {
   position: relative;
-  min-height: 80vh; /* Un poco más de altura para lucir la imagen */
+  min-height: 85vh; 
   display: flex;
   align-items: center;
-  justify-content: center; /* Centra horizontalmente */
-  text-align: center;      /* Centra el texto */
-  padding: 120px 20px 60px;
-
-  /* Imagen de fondo con overlay oscuro para que el texto sea legible */
+  justify-content: center;
+  text-align: center;
+  padding: 120px 20px;
+  
+  /* Esto pone la imagen de fondo con un filtro oscuro para que se lea el texto */
   background: 
-    linear-gradient(rgba(2, 6, 23, 0.7), rgba(2, 6, 23, 0.7)), 
+    linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.75)), 
     url('hero-cosmica.webp');
   
   background-repeat: no-repeat;
   background-position: center;
-  background-size: cover; /* Clave para que cubra todo el espacio */
+  background-size: cover;
 }
 
-/* Ajuste del contenedor para que no se pegue a los bordes */
 .hero-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
+  max-width: 800px;
+  z-index: 5;
 }
 
-.hero-content {
-  max-width: 800px; /* Más ancho para que el título respire */
-  z-index: 2;
+.hero h1 {
+  font-size: clamp(32px, 5vw, 52px); /* Se ajusta solo al tamaño de pantalla */
+  line-height: 1.1;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #fff, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero-actions {
   display: flex;
-  flex-direction: column; /* Apila los elementos en móvil/centro */
+  flex-direction: column;
   align-items: center;
-  gap: 15px;
-  margin-top: 25px;
+  gap: 20px;
 }
-
-/* CONTENEDOR FLEX */
-.hero-container{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:40px;
-}
-
-/* TEXTO */
-.hero-content{
-  max-width:650px;
-  z-index:2;
-  position:relative;
-}
-
-/* BOTONES */
-.hero-actions{
-  display:flex;
-  gap:15px;
-  margin-top:20px;
-  flex-wrap:wrap;
-}
-
-/* IMAGEN */
-.hero-image img{
-  max-width:500px;
-  width:100%;
-  border-radius:20px;
-  opacity:0.95;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-
-  .hero-container{
-    flex-direction:column;
-    text-align:center;
-  }
-
-  .hero-image{
-    margin-top:30px;
-  }
-
-  .hero-image img{
-    max-width:100%;
-  }
-
-}
-.hero-image img{
-  filter:drop-shadow(0 0 30px rgba(34,211,238,0.2));
-}
-
 </style>
 </head>
 <body>
