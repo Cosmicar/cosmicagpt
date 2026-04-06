@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cósmica | Soporte Técnico Remoto</title>
-<!--Vamos a darle de comer contexto a Google, Bing y las IA. -->
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -20,7 +20,6 @@
   ]
 }
 </script>
-<!--FAQ. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -61,8 +60,8 @@
   ]
 }
 </script>
-<!-- SEO / Open Graph -->
- <meta property="og:image:width" content="1200">
+
+<meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="description" content="Soporte técnico remoto en toda Argentina. Eliminación de virus, optimización de PC, instalación de programas y asistencia inmediata.">
 <meta property="og:title" content="Cósmica | Soporte Técnico Remoto">
@@ -70,936 +69,194 @@
 <meta property="og:image" content="https://cosmica.ar/preview.jpg">
 <meta property="og:url" content="https://cosmica.ar">
 <meta property="og:type" content="website">
-<!-- Opcional Facebook App ID (no obligatorio) -->
 <meta property="fb:app_id" content="1234567890">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cósmica | Soporte Técnico Remoto">
 <meta name="twitter:description" content="Reparación y optimización de PC en minutos. Soporte remoto inmediato.">
 <meta name="twitter:image" content="https://cosmica.ar/preview.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;overflow-x:hidden;scroll-behavior:smooth}
-
-/* NAV */
-.nav{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:center;gap:30px;padding:15px;background:rgba(2,6,23,.7);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid rgba(255,255,255,.08)}
-.nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s}
-.nav a:hover{color:#4ade80}
-.nav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:nowrap; /* CLAVE */
-}
-@media(max-width:768px){
-
-  /* NAV en columna */
-  .nav{
-    flex-wrap:wrap;
-    justify-content:space-between;
-  }
-
-  /* LOGO arriba */
-  .nav-left{
-    width:100%;
-    justify-content:center;
-  }
-
-  /* BOTON abajo del logo */
-  .nav-right{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    margin-top:10px;
-  }
-}
-.button{
-  display:inline-block;
-  margin-top:20px;
-  padding:16px 32px;
-  background:#4ade80;
-  border-radius:12px;
-  color:#022c22;
-  font-weight:600;
-  transition:.3s;
-  box-shadow:0 0 20px rgba(37,211,102,.4)}
-
-.button:hover{transform:scale(1.08)}
-
-.section{padding:70px 20px;text-align:center}
-.title{font-size:30px;margin-bottom:10px}
-.subtitle{color:#cbd5f5}
-
-.services,.pricing,.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;margin-top:40px}
-.card{background:rgba(255,255,255,0.05);padding:25px;border-radius:18px;backdrop-filter:blur(12px);transition:.3s;border:1px solid rgba(255,255,255,0.08)}
-.card:hover{transform:translateY(-8px);box-shadow:0 0 25px rgba(0,255,255,.15)}
-
-.price-card{background:linear-gradient(145deg,#020617,#0f172a);padding:35px;border-radius:18px;border:1px solid rgba(255,255,255,0.1)}
-.price{font-size:32px;color:#4ade80;margin:10px 0}
-.highlight{border:2px solid #4ade80;transform:scale(1.05)}
-
-/* CTA asistencia */
-.asistencia-cta{max-width:500px;margin:30px auto;padding:40px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 30px rgba(0,255,255,0.15);transition:.3s}
-.asistencia-cta:hover{transform:translateY(-5px);box-shadow:0 0 40px rgba(0,255,255,0.25)}
-.cta-button{margin-top:20px;animation:pulse 2s infinite}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-
-.testimonial{font-style:italic;color:#cbd5f5;position:relative;padding-top:60px}
-.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;position:absolute;top:-30px;left:50%;transform:translateX(-50%);border:3px solid #4ade80;box-shadow:0 0 15px rgba(34,197,94,.5)}
-
-.footer{background:#020617;padding:30px;text-align:center;color:#94a3b8}
-
-.whatsapp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;padding:16px 20px;border-radius:50%;font-size:22px;text-decoration:none;box-shadow:0 0 20px rgba(37,211,102,.7);z-index:1000}
-
-.fade{opacity:0;transform:translateY(20px);transition:all .6s ease}
-.fade.show{opacity:1;transform:translateY(0)}
-
-.badge{
-  display:inline-block;
-  margin-top:10px;
-  padding:6px 12px;
-  background:#4ade80;
-  color:#022c22;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:600;
-}
-.plan-list{
-  list-style:none;
-  padding:0;
-  text-align:left;
-  margin:15px 0;
-  font-size:14px;
-  color:#cbd5f5;
-}
-
-.plan-list li{
-  margin-bottom:8px;
-}
-
-.mini{
-  font-size:13px;
-  color:#94a3b8;
-  margin:10px 0 15px;
-}
-
-.small-btn{
-  padding:10px 20px;
-  font-size:14px;
-}
-
-.destacado{
-  position:relative;
-  box-shadow:0 0 30px rgba(34,197,94,0.25);
-}
-
-.badge-top{
-  position:absolute;
-  top:-12px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#4ade80;
-  color:#000;
-  padding:6px 12px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:bold;
-}
-
-.beneficios{
-  margin-top:40px;
-  color:#cbd5f5;
-  font-size:14px;
-}
-
-.beneficios p{
-  margin:5px 0;
-}
-.price-card{
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  padding-bottom:30px;
-}
-
-.price-card .button{
-  margin-top:auto;
-}
-.galactico .button{
-  background:linear-gradient(90deg,#4ade80,#4ade80);
-  box-shadow:0 0 20px rgba(34,197,94,0.6);
-}
-.beneficios-box{
-  margin-top:50px;
-  padding:30px;
-  border-radius:18px;
-  background:linear-gradient(145deg,#020617,#0f172a);
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 0 30px rgba(34,197,94,0.15);
-  max-width:800px;
-  margin-left:auto;
-  margin-right:auto;
-  text-align:center;
-  transition:.3s;
-}
-
-.beneficios-box:hover{
-  box-shadow:0 0 40px rgba(34,197,94,0.3);
-  transform:translateY(-4px);
-}
-
-.beneficios-box h3{
-  margin-bottom:20px;
-  font-size:20px;
-  color:#4ade80;
-}
-
-.beneficios-grid{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:14px 40px;
-  justify-items:start;
-  max-width:600px;
-  margin:0 auto;
-  text-align:left;
-}
-.beneficios-grid div{
-  background:rgba(255,255,255,0.03);
-  padding:10px 14px;
-  border-radius:10px;
-  width:100%;
-}
-@media(max-width:768px){
-  .beneficios-grid{
-    grid-template-columns:1fr;
-    text-align:center;
-    justify-items:center;
-  }
-}
-.beneficios-box{
-  text-align:center;
-}
-
-.beneficios-box h3{
-  text-align:center;
-}
-
-.beneficios-grid p{
-  margin:5px 0;
-}
-.faq-container{
-  max-width:700px;
-  margin:40px auto;
-  text-align:left;
-}
-
-.faq-item{
-  margin-bottom:10px;
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;
-  overflow:hidden;
-  background:rgba(255,255,255,0.03);
-}
-
-.faq-question{
-  width:100%;
-  padding:15px;
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:15px;
-  text-align:left;
-  cursor:pointer;
-  transition:.3s;
-}
-
-.faq-question:hover{
-  color:#4ade80;
-}
-
-.faq-answer{
-  max-height:0;
-  overflow:hidden;
-  padding:0 15px;
-  color:#cbd5f5;
-  font-size:14px;
-  transition:max-height .4s ease;
-}
-.button{
-  text-decoration: none;
-}
-/* ====== FONDO ESPACIAL MEJORADO ====== */
-body{
+/* ========================================= */
+/* 1. BASE Y VARIABLES GLOBALES */
+/* ========================================= */
+* { box-sizing: border-box; transition: background .3s, box-shadow .3s, transform .3s; }
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
   background:
     radial-gradient(circle at 20% 10%, rgba(34,211,238,0.15), transparent 40%),
     radial-gradient(circle at 80% 0%, rgba(74,222,128,0.10), transparent 40%),
     #020617;
   background-attachment: fixed;
 }
-
-/* ====== NAV GLASS ====== */
-.nav{
-  background:rgba(2,6,23,0.6);
-  backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
-/* ====== HERO MEJORADO ====== */
-header:not(.hero){
-  background:
-    radial-gradient(circle at top, rgba(34,211,238,0.15), transparent 60%),
-    radial-gradient(circle at bottom, rgba(74,222,128,0.08), transparent 60%),
-    #020617;
-}
-
-/* ====== BADGE PREMIUM ====== */
-.badge{
-  background:#4ade80;
-  color:#022c22;
-  font-weight:600;
-  box-shadow:0 0 12px rgba(74,222,128,0.4);
-}
-
-/* ====== BOTONES PRO ====== */
-.button{
-  background:linear-gradient(90deg,#4ade80,#22c55e);
-  color:#022c22;
-  font-weight:600;
-  border:none;
-  text-decoration:none;
-  box-shadow:0 0 20px rgba(74,222,128,0.4);
-  transition:.3s;
-}
-
-.button:hover{
-  transform:translateY(-2px) scale(1.02);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.5),
-    0 0 40px rgba(74,222,128,0.4);
-}
-
-/* ====== CARDS ESTILO ARTEMIS ====== */
-.card, .price-card{
-  background:rgba(2,6,23,0.75);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    0 0 20px rgba(34,211,238,0.15),
-    inset 0 0 20px rgba(34,211,238,0.05);
-  transition:.3s;
-}
-
-.card:hover, .price-card:hover{
-  transform:translateY(-6px);
-  box-shadow:
-    0 0 30px rgba(34,211,238,0.3),
-    0 0 50px rgba(74,222,128,0.2);
-}
-
-/* ====== PLAN DESTACADO ====== */
-.highlight{
-  border:2px solid #4ade80;
-  box-shadow:
-    0 0 30px rgba(74,222,128,0.4),
-    0 0 60px rgba(34,211,238,0.2);
-}
-
-/* ====== TITULOS MÁS IMPACTO ====== */
-.title{
-  font-size:34px;
-  background:linear-gradient(90deg,#fff,#22d3ee);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* ====== SUBTEXTO MEJOR CONTRASTE ====== */
-.subtitle{
-  color:#cbd5f5;
-}
-
-/* ====== LINKS VISIBLES ====== */
-a{
-  color:#93c5fd;
-}
-
-/* ====== WHATSAPP FLOTANTE MEJORADO ====== */
-.whatsapp-float{
-  background:linear-gradient(90deg,#4ade80,#22c55e);
-  color:#022c22;
-  box-shadow:
-    0 0 20px rgba(74,222,128,0.6),
-    0 0 40px rgba(34,211,238,0.3);
-}
-
-/* ====== CTA BOX (ASISTENCIA) ====== */
-.asistencia-cta{
-  background:rgba(2,6,23,0.8);
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.2),
-    inset 0 0 15px rgba(74,222,128,0.1);
-}
-
-/* ====== FAQ MEJORADO ====== */
-.faq-item{
-  background:rgba(2,6,23,0.7);
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-.faq-question:hover{
-  color:#22d3ee;
-}
-
-/* ====== BENEFICIOS BOX ====== */
-.beneficios-box{
-  background:rgba(2,6,23,0.8);
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.2),
-    0 0 40px rgba(74,222,128,0.1);
-}
-
-/* ====== SUAVIZADO GENERAL ====== */
-*{
-  transition:background .3s, box-shadow .3s, transform .3s;
-}
-/* ========================= */
-/* 🌌 MODO ARTEMIS COSMICA */
-/* ========================= */
-
-/* FONDO ESPACIAL PROFUNDO */
-body{
-  background:
-    radial-gradient(circle at 20% 10%, rgba(34,211,238,0.15), transparent 40%),
-    radial-gradient(circle at 80% 0%, rgba(74,222,128,0.10), transparent 40%),
-    #020617;
-  background-attachment: fixed;
-}
-
-/* EFECTO VIÑETA (FOCO VISUAL) */
-body::after{
-  content:'';
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.5));
-}
-
-/* NAV GLASS */
-.nav{
-  background:rgba(2,6,23,0.6);
-  backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}
-/* TITULO PRINCIPAL PRO */
-.hero h1{
-  background:linear-gradient(90deg,#fff,#22d3ee);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* ESPACIADO GENERAL */
-.section{
-  padding:90px 20px;
-}
-
-/* BADGE MEJORADO */
-.badge{
-  background:#4ade80;
-  color:#022c22;
-  font-weight:600;
-  box-shadow:0 0 12px rgba(74,222,128,0.4);
-}
-
-/* BOTONES PRO */
-.button,
-.button:visited,
-.button:hover,
-.button:active{
-  text-decoration:none;
-}
-
-.button{
-  background:linear-gradient(90deg,#4ade80,#22c55e);
-  color:#022c22;
-  font-weight:600;
-  border:none;
-  box-shadow:0 0 20px rgba(74,222,128,0.4);
-  transition:.3s;
-}
-
-.button:hover{
-  transform:translateY(-2px) scale(1.02);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.5),
-    0 0 40px rgba(74,222,128,0.4);
-}
-
-/* CARDS ESTILO ARTEMIS */
-.card, .price-card{
-  background:rgba(2,6,23,0.75);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow:
-    0 0 20px rgba(34,211,238,0.15),
-    inset 0 0 20px rgba(34,211,238,0.05);
-  transition:.3s;
-}
-
-.card:hover, .price-card:hover{
-  transform:translateY(-6px);
-  box-shadow:
-    0 0 30px rgba(34,211,238,0.3),
-    0 0 50px rgba(74,222,128,0.2);
-}
-
-/* PLAN DESTACADO */
-.highlight{
-  border:2px solid #4ade80;
-  box-shadow:
-    0 0 30px rgba(74,222,128,0.4),
-    0 0 60px rgba(34,211,238,0.2);
-}
-
-/* TITULOS */
-.title{
-  font-size:34px;
-  background:linear-gradient(90deg,#fff,#22d3ee);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* SUBTITULOS */
-.subtitle{
-  color:#cbd5f5;
-}
-
-/* LINKS */
-a{
-  color:#93c5fd;
-}
-
-/* WHATSAPP FLOTANTE */
-.whatsapp-float{
-  background:linear-gradient(90deg,#4ade80,#22c55e);
-  color:#022c22;
-  box-shadow:
-    0 0 20px rgba(74,222,128,0.6),
-    0 0 40px rgba(34,211,238,0.3);
-}
-
-/* CTA ASISTENCIA */
-.asistencia-cta{
-  background:rgba(2,6,23,0.8);
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.2),
-    inset 0 0 15px rgba(74,222,128,0.1);
-}
-
-/* FAQ */
-.faq-item{
-  background:rgba(2,6,23,0.7);
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-.faq-question:hover{
-  color:#22d3ee;
-}
-
-/* BENEFICIOS */
-.beneficios-box{
-  background:rgba(2,6,23,0.8);
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:
-    0 0 25px rgba(34,211,238,0.2),
-    0 0 40px rgba(74,222,128,0.1);
-}
-
-/* SUAVIDAD GENERAL */
-*{
-  transition:background .3s, box-shadow .3s, transform .3s;
-}
-/* ===== IMPACTO HERO ===== */
-.hero h1{
-  font-size:48px;
-  text-shadow:
-    0 0 20px rgba(34,211,238,0.4),
-    0 0 40px rgba(34,211,238,0.3);
-}
-
-/* ===== DESTACAR CTA PRINCIPAL ===== */
-.button{
-  box-shadow:
-    0 0 25px rgba(74,222,128,0.7),
-    0 0 60px rgba(34,211,238,0.3);
-}
-
-/* ===== CARDS MÁS SUAVES (menos ruido) ===== */
-.card, .price-card{
-  box-shadow:
-    0 0 15px rgba(34,211,238,0.1),
-    inset 0 0 10px rgba(34,211,238,0.05);
-}
-
-/* ===== HOVER MÁS DRAMÁTICO ===== */
-.card:hover, .price-card:hover{
-  transform:translateY(-8px) scale(1.02);
-  box-shadow:
-    0 0 40px rgba(34,211,238,0.4),
-    0 0 60px rgba(74,222,128,0.3);
-}
-/* NAV DISTRIBUCIÓN */
-.nav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:15px 30px;
-}
-
-/* IZQUIERDA */
-.nav-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.nav-logo{
-  width:40px;
-}
-
-.nav-brand{
-  font-weight:700;
-  font-size:18px;
-}
-
-/* CENTRO */
-.nav-center{
-  display:flex;
-  gap:25px;
-}
-
-.nav-center a{
-  text-decoration:none;
-  color:#cbd5f5;
-  font-size:14px;
-  transition:.3s;
-}
-
-.nav-center a:hover{
-  color:#22d3ee;
-}
-
-/* DERECHA */
-.nav-right{
-  display:flex;
-}
-
-.nav-btn{
-  padding:10px 18px;
-  border-radius:10px;
-  background:rgba(34,211,238,0.1);
-  border:1px solid rgba(34,211,238,0.4);
-  color:#22d3ee;
-  text-decoration:none;
-  transition:.3s;
-}
-
-.nav-btn:hover{
-  background:#22d3ee;
-  color:#020617;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-  .nav-center{
-    display:none;
-  }
-}
-.nav{
-  box-shadow:0 0 20px rgba(34,211,238,0.1);
-}
-/* CONTENIDO */
-.hero-content{
-  max-width:600px;
-}
-
-/* TITULO */
-.hero h1{
-  font-size:48px;
-  line-height:1.2;
-  color:#e2e8f0;
-  text-shadow:none;
-}
-
-/* TEXTO */
-.hero p{
-  margin-top:15px;
-  color:#cbd5f5;
-  font-size:16px;
-}
-
-/* BADGE */
-.hero-badge{
-  margin-top:20px;
-  display:inline-block;
-  background:rgba(74,222,128,0.15);
-  border:1px solid rgba(74,222,128,0.4);
-  color:#4ade80;
-  padding:8px 14px;
-  border-radius:20px;
-  font-size:13px;
-}
-
-/* BOTON */
-.hero .button{
-  margin-top:25px;
-  display:inline-block;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-  .hero{
-    padding:60px 20px;
-    text-align:center;
-    justify-content:center;
-  }
-
-  .hero-content{
-    max-width:100%;
-  }
-
-  .hero h1{
-    font-size:32px;
-  }
-}
-/* BOTON HAMBURGUESA */
-.menu-toggle{
-  display:none;
-  font-size:26px;
-  color:#fff;
-  cursor:pointer;
-}
-
-/* MOBILE */
-@media(max-width:768px){
-
-  .menu-toggle{
-    display:block;
-  }
-
-  .nav-center{
-    position:absolute;
-    top:70px;
-    left:0;
-    width:100%;
-    background:#020617;
-    flex-direction:column;
-    align-items:center;
-    gap:20px;
-    padding:20px 0;
-
-    display:none;
-  }
-
-  .nav-center.active{
-    display:flex;
-  }
-}
-
-/* ========================= */
-/* 🔥 NAV LIMPIO DEFINITIVO */
-/* ========================= */
-
-.nav{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:15px 25px;
-  background:rgba(2,6,23,0.8);
-  backdrop-filter:blur(10px);
-  z-index:1000;
-}
-
-/* LOGO */
-.nav-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.nav-logo{
-  width:40px;
-}
-
-.nav-brand{
-  font-weight:700;
-}
-
-/* MENU */
-.nav-center{
-  display:flex;
-  gap:25px;
-}
-
-.nav-center a{
-  color:#cbd5f5;
-  text-decoration:none;
-  font-size:14px;
-}
-
-.nav-center a:hover{
-  color:#22d3ee;
-}
-
-/* BOTON */
-.nav-btn{
-  padding:10px 16px;
-  border-radius:10px;
-  background:#4ade80;
-  color:#022c22;
-  text-decoration:none;
-  font-weight:600;
-}
-
-/* HAMBURGUESA */
-.menu-toggle{
-  display:none;
-  font-size:26px;
-  cursor:pointer;
-}
-
-/* ========================= */
-/* 📱 MOBILE */
-/* ========================= */
-
-@media(max-width:768px){
-
-  .menu-toggle{
-    display:block;
-  }
-
-  .nav-center{
-    position:absolute;
-    top:60px;
-    left:0;
-    width:100%;
-    background:#020617;
-    flex-direction:column;
-    align-items:center;
-    gap:20px;
-    padding:20px 0;
-    display:none;
-  }
-
-  .nav-center.active{
-    display:flex;
-  }
-
-  .nav-right{
-    display:none;
-  }
-
-  .nav-left{
-    width:100%;
-    justify-content:center;
-  }
-
-  .nav-center{
-    box-shadow:0 0 20px rgba(34,211,238,0.2);
-  }
-} /* <--- ¡ESTA ES LA LLAVE QUE FALTABA Y ROMPÍA EL ESCRITORIO! */
-
-.nav{
-  border-bottom:1px solid rgba(255,255,255,0.05) !important;
-  box-shadow:none !important;
-}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.5));
+  z-index: -1;
+}
+a { color: #93c5fd; text-decoration: none; }
+.section { padding: 90px 20px; text-align: center; }
+.fade { opacity: 0; transform: translateY(20px); transition: all .6s ease; }
+.fade.show { opacity: 1; transform: translateY(0); }
+
+/* Tipografía */
+.title {
+  font-size: 34px;
+  background: linear-gradient(90deg, #fff, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+.subtitle { color: #cbd5f5; }
 
 /* ========================================= */
-/* 🌌 HERO ALINEADO A LA IZQUIERDA - CÓSMICA */
+/* 2. NAVEGACIÓN (NAV) */
+/* ========================================= */
+.nav {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: rgba(2,6,23,0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  z-index: 1000;
+}
+.nav-left { display: flex; align-items: center; gap: 10px; }
+.nav-logo { width: 40px; }
+.nav-brand { font-weight: 700; font-size: 18px; }
+.nav-center { display: flex; gap: 25px; }
+.nav-center a { color: #cbd5f5; font-size: 14px; }
+.nav-center a:hover { color: #22d3ee; }
+.nav-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #4ade80;
+  color: #022c22;
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(74,222,128,0.4);
+}
+.nav-btn:hover { transform: translateY(-2px) scale(1.02); }
+.menu-toggle { display: none; font-size: 26px; cursor: pointer; color: #fff; }
+
+/* ========================================= */
+/* 3. HERO SECTION */
 /* ========================================= */
 .hero {
   position: relative;
   min-height: 85vh; 
-  display: flex !important; 
+  display: flex; 
   align-items: center;
-  justify-content: flex-start; /* Cambiamos el anclaje a la izquierda */
-  text-align: left; /* Texto a la izquierda */
+  justify-content: flex-start; 
+  text-align: left; 
   padding: 120px 20px;
   width: 100%;
-  
-  /* Clave 1: Degradado que oscurece la izquierda y deja casi transparente la derecha */
   background: 
     linear-gradient(to right, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 50%, rgba(2, 6, 23, 0.1) 100%), 
-    url('hero-cosmica.webp') !important;
-  
+    url('hero-cosmica.webp');
   background-repeat: no-repeat;
-  /* Clave 2: Forzamos que la imagen se apoye a la derecha */
-  background-position: right center !important; 
-  background-size: cover !important;
+  background-position: right center; 
+  background-size: cover;
 }
-
 .hero-container {
   width: 100%;
-  max-width: 1100px; /* Hacemos el "cajón" más ancho para aprovechar el monitor */
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
-  justify-content: flex-start; /* Tira el contenido a la izquierda */
+  justify-content: flex-start; 
   z-index: 5;
 }
-
 .hero-content {
   width: 100%;
-  max-width: 600px; /* Limitamos el texto a la mitad de la pantalla */
+  max-width: 600px; 
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Alinea los elementos internos a la izquierda */
+  align-items: flex-start; 
 }
-
+.hero h1 {
+  font-size: 48px;
+  line-height: 1.2;
+  color: #e2e8f0;
+  text-shadow: 0 0 20px rgba(34,211,238,0.4);
+  margin: 0;
+}
+.hero p { margin-top: 15px; color: #cbd5f5; font-size: 16px; }
 .hero-actions {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start; /* Botones a la izquierda */
+  justify-content: flex-start; 
   gap: 15px;
   margin-top: 30px;
 }
 
-.hero-badge, .hero .button {
-  margin-top: 0 !important; 
+/* ========================================= */
+/* 4. COMPONENTES GLOBALES (Botones, Badges, Cards) */
+/* ========================================= */
+.button {
+  display: inline-block;
+  padding: 16px 32px;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  border-radius: 12px;
+  color: #022c22;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 0 25px rgba(74,222,128,0.5);
+  cursor: pointer;
+}
+.button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 40px rgba(34,211,238,0.4), 0 0 60px rgba(74,222,128,0.3);
+}
+.small-btn { padding: 10px 20px; font-size: 14px; }
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #4ade80;
+  color: #022c22;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(74,222,128,0.4);
+}
+.hero-badge {
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.4);
+  color: #4ade80;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+.card, .price-card {
+  background: rgba(2,6,23,0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 0 15px rgba(34,211,238,0.1), inset 0 0 10px rgba(34,211,238,0.05);
+}
+.card:hover, .price-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 30px rgba(34,211,238,0.3), 0 0 50px rgba(74,222,128,0.2);
 }
 
-/* 📱 COMPORTAMIENTO EN CELULARES */
-@media(max-width: 768px) {
-  .hero {
-    /* En celular no hay espacio para lados, así que centramos y oscurecemos parejo */
-    justify-content: center;
-    text-align: center;
-    background: 
-      linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), 
-      url('hero-cosmica.webp') !important;
-    background-position: 60% center !important; /* Acá podés jugar con el 60% que hablábamos */
-    background-size: cover !important;
-  }
-  .hero-content {
-    align-items: center;
-  }
-  .hero-actions {
-    justify-content: center;
-  }
-}
-/* 🚨 CAJA DE ALERTA DE PROBLEMAS */
+/* ========================================= */
+/* 5. SECCIONES ESPECÍFICAS */
+/* ========================================= */
+/* Alerta Box */
 .alerta-box {
   background: linear-gradient(145deg, rgba(2, 6, 23, 0.9), rgba(15, 23, 42, 0.6));
   border: 1px solid rgba(34, 211, 238, 0.2);
@@ -1011,45 +268,105 @@ a{
   position: relative;
   overflow: hidden;
 }
-
-/* Un brillito sutil arriba de la caja */
 .alerta-box::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 150px; height: 2px;
-  background: #22d3ee;
-  box-shadow: 0 0 20px #22d3ee;
+  content: ''; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%); width: 150px; height: 2px;
+  background: #22d3ee; box-shadow: 0 0 20px #22d3ee;
+}
+.alerta-icon { font-size: 45px; margin-bottom: 15px; display: inline-block; animation: flotar 3s ease-in-out infinite; }
+@keyframes flotar { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+
+/* Grillas */
+.services, .pricing, .testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  margin-top: 40px;
 }
 
-.alerta-icon {
-  font-size: 45px;
-  margin-bottom: 15px;
-  display: inline-block;
-  animation: flotar 3s ease-in-out infinite;
+/* Pricing */
+.price-card { display: flex; flex-direction: column; padding: 35px 25px; }
+.price { font-size: 32px; color: #4ade80; margin: 10px 0; font-weight: bold; }
+.plan-list { list-style: none; padding: 0; text-align: left; margin: 15px 0; font-size: 14px; color: #cbd5f5; flex-grow: 1; }
+.plan-list li { margin-bottom: 8px; }
+.mini { font-size: 13px; color: #94a3b8; margin: 10px 0 15px; }
+.highlight { border: 2px solid #4ade80; transform: scale(1.05); position: relative; }
+.badge-top { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #4ade80; color: #000; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.price-card .button { margin-top: auto; }
+
+/* Beneficios Extra */
+.beneficios-box {
+  background: rgba(2,6,23,0.8); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px; padding: 30px; margin: 50px auto 0;
+  max-width: 800px; box-shadow: 0 0 25px rgba(34,211,238,0.2);
+}
+.beneficios-box h3 { color: #4ade80; margin-top: 0; }
+.beneficios-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: left; }
+.beneficios-grid div { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 10px; }
+
+/* Testimonios */
+.testimonial { font-style: italic; color: #cbd5f5; position: relative; padding-top: 60px; }
+.avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); border: 3px solid #4ade80; box-shadow: 0 0 15px rgba(34,197,94,.5); }
+
+/* FAQ */
+.faq-container { max-width: 700px; margin: 40px auto; text-align: left; }
+.faq-item { margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(2,6,23,0.7); overflow: hidden; }
+.faq-question { width: 100%; padding: 15px; background: none; border: none; color: #fff; font-size: 15px; text-align: left; cursor: pointer; transition: .3s; }
+.faq-question:hover { color: #22d3ee; }
+.faq-answer { max-height: 0; overflow: hidden; padding: 0 15px; color: #cbd5f5; font-size: 14px; transition: max-height .4s ease; }
+
+/* Asistencia CTA */
+.asistencia-cta { max-width: 500px; margin: 30px auto; padding: 40px; }
+.cta-button { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+/* Footer y Flotantes */
+.footer { background: #020617; padding: 30px; text-align: center; color: #94a3b8; }
+.whatsapp-float {
+  position: fixed; bottom: 20px; right: 20px;
+  background: linear-gradient(90deg, #4ade80, #22c55e); color: #022c22;
+  padding: 16px 20px; border-radius: 50%; font-size: 22px;
+  box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
 }
 
-.alerta-box .button {
-  margin-top: 25px;
-}
-
-@keyframes flotar {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
+/* ========================================= */
+/* 6. RESPONSIVE (MÓVIL) */
+/* ========================================= */
+@media(max-width: 768px) {
+  .menu-toggle { display: block; }
+  .nav-center {
+    position: absolute; top: 60px; left: 0; width: 100%;
+    background: #020617; flex-direction: column; align-items: center;
+    gap: 20px; padding: 20px 0; display: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  }
+  .nav-center.active { display: flex; }
+  .nav-right { display: none; }
+  
+  .hero {
+    justify-content: center; text-align: center; padding: 100px 20px 60px;
+    background: 
+      linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), 
+      url('hero-cosmica.webp') !important;
+    background-position: 60% center !important; 
+    background-size: cover !important;
+  }
+  .hero-content { align-items: center; }
+  .hero h1 { font-size: 34px; }
+  .hero-actions { justify-content: center; }
+  
+  .highlight { transform: none; }
+  .beneficios-grid { grid-template-columns: 1fr; text-align: center; }
 }
 </style>
 </head>
 <body>
 
 <nav class="nav">
-
   <div class="nav-left">
     <img src="cosmica-logo.webp" alt="logo cosmica" class="nav-logo">
     <span class="nav-brand">CÓSMICA</span>
   </div>
-
   <div class="nav-center" id="menu">
     <a href="#inicio">Inicio</a>
     <a href="#servicios">Servicios</a>
@@ -1057,272 +374,227 @@ a{
     <a href="#testimonios">Clientes</a>
     <a href="#contacto">Contacto</a>
   </div>
-
   <div class="nav-right">
     <a class="nav-btn" href="/asistencia.html">Solicitar asistencia</a>
   </div>
-
   <div class="menu-toggle" onclick="toggleMenu()">☰</div>
-
 </nav>
 
 <main>
-<header class="hero">
-  <div class="hero-container">
-    <div class="hero-content">
-      <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
-      <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
-      
-      <div class="hero-actions">
-        <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
-        <a class="button" href="https://wa.me/5493883298736">
-          🚀 Solicitar asistencia
-        </a>
+  <header id="inicio" class="hero">
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
+        <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
+        <div class="hero-actions">
+          <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
+          <a class="button" href="https://wa.me/5493883298736">🚀 Solicitar asistencia</a>
+        </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<section class="section fade">
-  <div class="alerta-box">
-    <div class="alerta-icon">⏳</div>
-    <h2 class="title">¿Tu PC está lenta o con problemas?</h2>
-    <p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola,%20mi%20PC%20anda%20muy%20lenta%20y%20necesito%20ayuda">
-      💬 Hacer consulta rápida
-    </a>
-  </div>
-</section>
-<section id="servicios" class="section fade" style="padding-top: 20px;">
-  <h2 class="title">Servicios</h2>
-<div class="services">
-<div class="card">💻 Reparación completa y optimización de PC</div>
-<div class="card">🦠 Eliminación de virus y limpieza total del sistema</div>
-<div class="card">📦 Instalación de programas y configuración completa</div>
-<div class="card">🌐 Soporte remoto inmediato en minutos</div>
-<div class="card">🖨️ Reparación y reset de impresoras Epson</div>
-</div>
-</section>
+  <section class="section fade">
+    <div class="alerta-box">
+      <div class="alerta-icon">⏳</div>
+      <h2 class="title">¿Tu PC está lenta o con problemas?</h2>
+      <p class="subtitle">Estás perdiendo tiempo… nosotros lo recuperamos en minutos.</p>
+      <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola,%20mi%20PC%20anda%20muy%20lenta%20y%20necesito%20ayuda">
+        💬 Hacer consulta rápida
+      </a>
+    </div>
+  </section>
 
-<section id="planes" class="section fade">
+  <section id="servicios" class="section fade" style="padding-top: 20px;">
+    <h2 class="title">Servicios</h2>
+    <div class="services">
+      <div class="card">💻 Reparación completa y optimización de PC</div>
+      <div class="card">🦠 Eliminación de virus y limpieza total del sistema</div>
+      <div class="card">📦 Instalación de programas y configuración completa</div>
+      <div class="card">🌐 Soporte remoto inmediato en minutos</div>
+      <div class="card">🖨️ Reparación y reset de impresoras Epson</div>
+    </div>
+  </section>
 
-<p style="margin-top:10px;color:#4ade80">+500 PCs reparadas | Atención en toda Argentina</p>
+  <section id="planes" class="section fade">
+    <p style="margin-top:10px;color:#4ade80">+500 PCs reparadas | Atención en toda Argentina</p>
+    <h2 class="title">Planes</h2>
+    <p class="subtitle">🚀 De lenta y llena de errores… a rápida y limpia en una sola sesión</p>
 
-<h2 class="title">Planes</h2>
-<p class="subtitle">🚀 De lenta y llena de errores… a rápida y limpia en una sola sesión</p>
+    <div class="pricing">
+      <div class="price-card">
+        <h3>Orbital</h3>
+        <div class="price">$19.900</div>
+        <ul class="plan-list">
+          <li>✔ Eliminación de virus, malware y spyware</li>
+          <li>✔ Limpieza profunda del sistema</li>
+          <li>✔ Mejora básica de rendimiento</li>
+          <li>✔ Revisión general del equipo</li>
+        </ul>
+        <p class="mini">Ideal para PCs lentas o infectadas</p>
+        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Orbital">Contratar ahora</a>
+      </div>
 
-<div class="pricing">
+      <div class="price-card highlight">
+        <div class="badge-top">🔥 MÁS ELEGIDO</div>
+        <h3>Estelar ⭐</h3>
+        <div class="price">$29.900</div>
+        <ul class="plan-list">
+          <li>✔ Todo lo del plan Orbital</li>
+          <li>✔ Optimización avanzada</li>
+          <li>✔ Activación de Windows</li>
+          <li>✔ Activación de Office</li>
+          <li>✔ Mejora de arranque y velocidad</li>
+        </ul>
+        <p class="mini">La opción más elegida</p>
+        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Estelar">Contratar ahora</a>
+      </div>
 
-  <!-- BRONCE -->
-  <div class="price-card">
-    <h3>Orbital</h3>
-    <div class="price">$19.900</div>
-
-    <ul class="plan-list">
-      <li>✔ Eliminación de virus, malware y spyware</li>
-      <li>✔ Limpieza profunda del sistema</li>
-      <li>✔ Mejora básica de rendimiento</li>
-      <li>✔ Revisión general del equipo</li>
-    </ul>
-
-    <p class="mini">Ideal para PCs lentas o infectadas</p>
-
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Orbital">
-      Contratar ahora
-    </a>
-  </div>
-
-  <!-- ORO DESTACADO -->
-  <div class="price-card highlight destacado">
-    <div class="badge-top">🔥 MÁS ELEGIDO</div>
-
-    <h3>Estelar ⭐</h3>
-    <div class="price">$29.900</div>
-
-    <ul class="plan-list">
-      <li>✔ Todo lo del plan Bronce</li>
-      <li>✔ Optimización avanzada</li>
-      <li>✔ Activación de Windows</li>
-      <li>✔ Activación de Office</li>
-      <li>✔ Mejora de arranque y velocidad</li>
-    </ul>
-
-    <p class="mini">La opción más elegida</p>
-
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Estelar">
-      Contratar ahora
-    </a>
-  </div>
-
-  <!-- PLATINUM -->
-  <div class="price-card">
-    <h3>Galáctico</h3>
-    <div class="price">$39.900</div>
-
-    <ul class="plan-list">
-      <li>✔ Todo lo del plan Oro</li>
-      <li>✔ Instalación de programas</li>
-      <li>✔ Bloqueador de publicidades</li>
-      <li>✔ Configuración personalizada</li>
-      <li>✔ Atención prioritaria</li>
-    </ul>
-
-    <p class="mini">Experiencia completa sin límites</p>
-
-    <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Galáctico">
-      Contratar ahora
-    </a>
-  </div>
-
-</section>
-
-<div class="beneficios-box">
-  <h3>✔ Garantía Cósmica</h3>
-
- <div class="beneficios-grid">
-  <div>✔ Atención remota en toda Argentina</div>
-  <div>✔ Sin moverte de tu casa</div>
-  <div>✔ Garantía de 90 días</div>
-  <div>✔ Soporte real, sin bots</div>
-</div>
-</div>
-
-<!-- CTA asistencia (reemplaza sección anterior) -->
-<section class="section fade">
-<h2 class="title">¿Necesitás ayuda ahora mismo?</h2>
-<p class="subtitle">Conectate con un técnico en minutos y solucioná tu problema sin moverte de tu casa.</p>
-
-<div class="card asistencia-cta">
-  <h3>Asistencia Remota</h3>
-  <p>Te guiamos paso a paso para conectarnos a tu PC y resolver el problema en el momento.</p>
-  <a class="button cta-button" href="/asistencia.html">🚀 Solicitar asistencia</a>
-</div>
-</section>
-
-<section id="testimonios" class="section fade">
-<h2 class="title">Clientes felices</h2>
-<div class="testimonials">
-
-<div class="card testimonial">
-<img src="cliente1.jpg" class="avatar" alt="Cliente satisfecho servicio técnico Cósmica" loading="lazy">
-<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
-<p>“Tenía la computadora súper lenta, no podía trabajar. En menos de 30 minutos me la dejaron como nueva. No lo podía creer.”</p>
-<small>— Eliseo Galvan, Córdoba</small>
-</div>
-
-<div class="card testimonial">
-<img src="cliente2.jpg" class="avatar" alt="Cliente satisfecho servicio técnico Cósmica2" loading="lazy">
-<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
-<p>“Me resolvieron todo sin que tenga que salir de casa. Súper cómodo, rápido y muy profesionales.”</p>
-<small>— Mariana López, Rosario</small>
-</div>
-
-<div class="card testimonial">
-<img src="cliente3.jpg" class="avatar" alt="Cliente satisfecho servicio técnico Cósmica3" loading="lazy">
-<div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
-<p>“Excelente atención, me guiaron en todo momento y solucionaron el problema al instante. Muy recomendable.”</p>
-<small>— Lucas Fernández, Mendoza</small>
-</div>
-
-</div>
-</section>
-
-<section class="section fade">
-<h2 class="title">Antes vs Después</h2>
-<p class="subtitle">Resultados reales que se sienten desde el primer minuto</p>
-
-<div class="services">
-<div class="card">
-<h3>❌ Antes</h3>
-<ul style="list-style:none;padding:0;text-align:left;color:#cbd5f5">
-<li>⚠️ PC lenta, tarda en iniciar</li>
-<li>⚠️ Programas que no abren</li>
-<li>⚠️ Virus y publicidad molesta</li>
-<li>⚠️ Trabajos que no podés terminar</li>
-</ul>
-</div>
-
-<div class="card" style="border:2px solid #4ade80;box-shadow:0 0 25px rgba(34,197,94,.3)">
-<h3>✅ Después</h3>
-<ul style="list-style:none;padding:0;text-align:left">
-<li>🚀 Inicio rápido en segundos</li>
-<li>🚀 Programas funcionando perfecto</li>
-<li>🚀 Sistema limpio y optimizado</li>
-<li>🚀 Podés trabajar sin interrupciones</li>
-</ul>
-</div>
-</div>
-</section>
-<section class="section fade" id="faq">
-
-  <h2 class="title">Preguntas frecuentes</h2>
-  <p class="subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC</p>
-
-  <div class="faq-container">
-
-    <div class="faq-item">
-      <button class="faq-question">¿Cuánto tarda el soporte técnico?</button>
-      <div class="faq-answer">
-        La mayoría de los problemas se resuelven en menos de 1 hora mediante asistencia remota.
+      <div class="price-card">
+        <h3>Galáctico</h3>
+        <div class="price">$39.900</div>
+        <ul class="plan-list">
+          <li>✔ Todo lo del plan Estelar</li>
+          <li>✔ Instalación de programas</li>
+          <li>✔ Bloqueador de publicidades</li>
+          <li>✔ Configuración personalizada</li>
+          <li>✔ Atención prioritaria</li>
+        </ul>
+        <p class="mini">Experiencia completa sin límites</p>
+        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Galáctico">Contratar ahora</a>
       </div>
     </div>
 
-    <div class="faq-item">
-      <button class="faq-question">¿Necesito llevar la PC a algún lugar?</button>
-      <div class="faq-answer">
-        No, todo el servicio se realiza de forma remota, sin que tengas que moverte de tu casa.
+    <div class="beneficios-box">
+      <h3>✔ Garantía Cósmica</h3>
+      <div class="beneficios-grid">
+        <div>✔ Atención remota en toda Argentina</div>
+        <div>✔ Sin moverte de tu casa</div>
+        <div>✔ Garantía de 90 días</div>
+        <div>✔ Soporte real, sin bots</div>
       </div>
     </div>
+  </section>
 
-    <div class="faq-item">
-      <button class="faq-question">¿Trabajan en toda Argentina?</button>
-      <div class="faq-answer">
-        Sí, brindamos soporte técnico remoto en todo el país.
+  <section class="section fade">
+    <h2 class="title">¿Necesitás ayuda ahora mismo?</h2>
+    <p class="subtitle">Conectate con un técnico en minutos y solucioná tu problema sin moverte de tu casa.</p>
+    <div class="card asistencia-cta">
+      <h3>Asistencia Remota</h3>
+      <p>Te guiamos paso a paso para conectarnos a tu PC y resolver el problema en el momento.</p>
+      <a class="button cta-button" href="/asistencia.html">🚀 Solicitar asistencia</a>
+    </div>
+  </section>
+
+  <section id="testimonios" class="section fade">
+    <h2 class="title">Clientes felices</h2>
+    <div class="testimonials">
+      <div class="card testimonial">
+        <img src="cliente1.jpg" class="avatar" alt="Cliente satisfecho Cósmica" loading="lazy">
+        <div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+        <p>“Tenía la computadora súper lenta, no podía trabajar. En menos de 30 minutos me la dejaron como nueva. No lo podía creer.”</p>
+        <small>— Eliseo Galvan, Córdoba</small>
+      </div>
+      <div class="card testimonial">
+        <img src="cliente2.jpg" class="avatar" alt="Cliente satisfecho Cósmica2" loading="lazy">
+        <div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+        <p>“Me resolvieron todo sin que tenga que salir de casa. Súper cómodo, rápido y muy profesionales.”</p>
+        <small>— Mariana López, Rosario</small>
+      </div>
+      <div class="card testimonial">
+        <img src="cliente3.jpg" class="avatar" alt="Cliente satisfecho Cósmica3" loading="lazy">
+        <div style="margin-bottom:10px;color:#facc15;font-size:18px">★★★★★</div>
+        <p>“Excelente atención, me guiaron en todo momento y solucionaron el problema al instante. Muy recomendable.”</p>
+        <small>— Lucas Fernández, Mendoza</small>
       </div>
     </div>
+  </section>
 
-    <div class="faq-item">
-      <button class="faq-question">¿Qué incluye el servicio?</button>
-      <div class="faq-answer">
-        Incluye eliminación de virus, optimización del sistema, instalación de programas y asistencia personalizada.
+  <section class="section fade">
+    <h2 class="title">Antes vs Después</h2>
+    <p class="subtitle">Resultados reales que se sienten desde el primer minuto</p>
+    <div class="services">
+      <div class="card">
+        <h3>❌ Antes</h3>
+        <ul style="list-style:none;padding:0;text-align:left;color:#cbd5f5">
+          <li>⚠️ PC lenta, tarda en iniciar</li>
+          <li>⚠️ Programas que no abren</li>
+          <li>⚠️ Virus y publicidad molesta</li>
+          <li>⚠️ Trabajos que no podés terminar</li>
+        </ul>
+      </div>
+      <div class="card" style="border:2px solid #4ade80;box-shadow:0 0 25px rgba(34,197,94,.3)">
+        <h3>✅ Después</h3>
+        <ul style="list-style:none;padding:0;text-align:left">
+          <li>🚀 Inicio rápido en segundos</li>
+          <li>🚀 Programas funcionando perfecto</li>
+          <li>🚀 Sistema limpio y optimizado</li>
+          <li>🚀 Podés trabajar sin interrupciones</li>
+        </ul>
       </div>
     </div>
+  </section>
 
-  </div>
+  <section id="faq" class="section fade">
+    <h2 class="title">Preguntas frecuentes</h2>
+    <p class="subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC</p>
+    <div class="faq-container">
+      <div class="faq-item">
+        <button class="faq-question">¿Cuánto tarda el soporte técnico?</button>
+        <div class="faq-answer">La mayoría de los problemas se resuelven en menos de 1 hora mediante asistencia remota.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">¿Necesito llevar la PC a algún lugar?</button>
+        <div class="faq-answer">No, todo el servicio se realiza de forma remota, sin que tengas que moverte de tu casa.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">¿Trabajan en toda Argentina?</button>
+        <div class="faq-answer">Sí, brindamos soporte técnico remoto en todo el país.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question">¿Qué incluye el servicio?</button>
+        <div class="faq-answer">Incluye eliminación de virus, optimización del sistema, instalación de programas y asistencia personalizada.</div>
+      </div>
+    </div>
+  </section>
 
-</section>
-<section id="contacto" class="section fade">
-<h2 class="title">Estamos listos para ayudarte🚀</h2>
-<a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
-</section>
+  <section id="contacto" class="section fade">
+    <h2 class="title">Estamos listos para ayudarte🚀</h2>
+    <a class="button" href="https://wa.me/5493883298736?text=Hola%20necesito%20soporte%20t%C3%A9cnico">🚀 Escribinos ahora</a>
+  </section>
+
 </main>
+
 <footer class="footer">
-<p>© Cósmica | cosmica.ar</p>
-<a href="/pc-lenta-jujuy.html">PC lenta en Jujuy</a>
+  <p>© Cósmica | cosmica.ar</p>
+  <a href="/pc-lenta-jujuy.html">PC lenta en Jujuy</a>
 </footer>
 
 <a class="whatsapp-float" href="https://wa.me/5493883298736">🚀</a>
-<script>
-const faders=document.querySelectorAll('.fade');
-const observer=new IntersectionObserver(entries=>{
-entries.forEach(entry=>{
-if(entry.isIntersecting){entry.target.classList.add('show');}
-});});
-faders.forEach(el=>observer.observe(el));
 
+<script>
+// Animación de entrada (Fade in)
+const faders = document.querySelectorAll('.fade');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){ entry.target.classList.add('show'); }
+  });
+});
+faders.forEach(el => observer.observe(el));
+
+// Menú hamburguesa móvil
 function toggleMenu(){
   document.getElementById("menu").classList.toggle("active");
 }
-</script>
-<script>
-document.querySelectorAll(".faq-question").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    const answer = btn.nextElementSibling;
 
+// Acordeón de Preguntas Frecuentes (FAQ)
+document.querySelectorAll(".faq-question").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const answer = btn.nextElementSibling;
     if(answer.style.maxHeight){
       answer.style.maxHeight = null;
     } else {
-      document.querySelectorAll(".faq-answer").forEach(a=>a.style.maxHeight=null);
+      document.querySelectorAll(".faq-answer").forEach(a => a.style.maxHeight = null);
       answer.style.maxHeight = answer.scrollHeight + "px";
     }
   });
