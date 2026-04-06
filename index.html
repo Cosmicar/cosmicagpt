@@ -950,6 +950,63 @@ a{
   box-shadow:none;
 >>>>>>> parent of 10ee187 (Update index.html)
 }
+/* ========================= */
+/* 🚀 HERO CON IMAGEN LATERAL */
+/* ========================= */
+
+.hero{
+  padding:100px 40px 60px;
+}
+
+/* CONTENEDOR FLEX */
+.hero-container{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:40px;
+}
+
+/* TEXTO */
+.hero-content{
+  max-width:550px;
+}
+
+/* BOTONES */
+.hero-actions{
+  display:flex;
+  gap:15px;
+  margin-top:20px;
+  flex-wrap:wrap;
+}
+
+/* IMAGEN */
+.hero-image img{
+  max-width:500px;
+  width:100%;
+  border-radius:20px;
+  opacity:0.95;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+  .hero-container{
+    flex-direction:column;
+    text-align:center;
+  }
+
+  .hero-image{
+    margin-top:30px;
+  }
+
+  .hero-image img{
+    max-width:100%;
+  }
+
+}
+.hero-image img{
+  filter:drop-shadow(0 0 30px rgba(34,211,238,0.2));
+}
 </style>
 </head>
 <body>
@@ -980,16 +1037,26 @@ a{
 <main>
 <header class="hero">
 
-  <div class="hero-content">
-    <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
+  <div class="hero-container">
 
-    <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
+    <div class="hero-content">
+      <h1>Tu PC lenta te está haciendo perder tiempo y plata</h1>
 
-    <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
+      <p>La solucionamos en minutos, sin que te muevas de tu casa.</p>
 
-    <a class="button" href="https://wa.me/5493883298736">
-      🚀 Solicitar asistencia
-    </a>
+      <div class="hero-actions">
+        <div class="hero-badge">✔ Soporte remoto en toda Argentina</div>
+
+        <a class="button" href="https://wa.me/5493883298736">
+          🚀 Solicitar asistencia
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-image">
+      <img src="/img/hero-cosmica.webp" alt="soporte técnico cosmica">
+    </div>
+
   </div>
 
 </header>
