@@ -119,16 +119,6 @@ body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;ove
     margin-top:10px;
   }
 }
-header:not(.hero){
-  padding:120px 20px 80px;
-  text-align:center;
-  background:radial-gradient(circle at top,#0f172a,#020617);
-}
-.logo-img{width:120px;margin-bottom:10px}
-.logo-text{font-size:42px;font-weight:700;color:#fff}
-.hero h1{font-size:44px;margin:15px 0}
-.hero p{font-size:18px;color:#cbd5f5}
-
 .button{
   display:inline-block;
   margin-top:20px;
@@ -935,46 +925,49 @@ a{
   border-bottom:1px solid rgba(255,255,255,0.05);
   box-shadow:none;
 }
-/* 🌌 HERO UNIFICADO Y CENTRADO */
+/* 🌌 HERO DEFINITIVO CENTRADO - CÓSMICA */
 .hero {
   position: relative;
   min-height: 85vh; 
-  display: flex;
+  display: flex !important; /* Forzamos el modo flexible */
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 120px 20px;
+  width: 100%;
   
-  /* Esto pone la imagen de fondo con un filtro oscuro para que se lea el texto */
   background: 
     linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.75)), 
-    url('hero-cosmica.webp');
+    url('hero-cosmica.webp') !important;
   
   background-repeat: no-repeat;
   background-position: center;
-  background-size: cover;
+  background-size: cover !important;
 }
 
+/* Este contenedor es la clave para que no se vaya a la izquierda */
 .hero-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
+  margin: 0 auto;
   z-index: 5;
 }
 
-.hero h1 {
-  font-size: clamp(32px, 5vw, 52px); /* Se ajusta solo al tamaño de pantalla */
-  line-height: 1.1;
-  margin-bottom: 20px;
-  background: linear-gradient(90deg, #fff, #22d3ee);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero-content {
+  width: 100%;
 }
 
 .hero-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 20px;
+  width: 100%;
 }
 </style>
 </head>
