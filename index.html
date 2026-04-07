@@ -394,9 +394,37 @@ a { color: #93c5fd; text-decoration: none; }
   /* Agrega un poco de resplandor adicional al texto del plan Oro */
   text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.4);
 }
+/* Tonalidad Platinum Premium */
+.price-card.platinum { 
+  border: 2px solid #e5e7eb; 
+  /* Un resplandor sutil azulado/plateado para que no se pierda en el fondo */
+  box-shadow: 0 0 20px rgba(229, 231, 235, 0.1);
+}
 
 .price-card.platinum h3 { 
-  color: #e5e7eb; 
+  /* Gradiente metálico para el título estilo Gorillaz */
+  background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.8));
+  color: #e5e7eb; /* Fallback */
+}
+
+/* Efecto Hover específico para Platinum */
+.price-card.platinum:hover {
+  border-color: #f8fafc;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+  transform: translateY(-6px);
+}
+
+/* El precio en Platinum también puede tener un tono más gélido */
+.price-card.platinum .price {
+  color: #f1f5f9;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}.btn-platinum {
+  background: linear-gradient(90deg, #e2e8f0, #94a3b8) !important;
+  color: #0f172a !important;
+  box-shadow: 0 0 20px rgba(226, 232, 240, 0.3) !important;
 }
 /* ========================================= */
 /* 6. RESPONSIVE (MÓVIL) */
@@ -501,7 +529,7 @@ a { color: #93c5fd; text-decoration: none; }
           <li>✔ Revisión general del equipo</li>
         </ul>
         <p class="mini">Ideal para PCs lentas o infectadas</p>
-        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Orbital">Contratar ahora</a>
+        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Bronce">Contratar ahora</a>
       </div>
 
       <div class="price-card highlight oro oro-flash">
@@ -516,7 +544,7 @@ a { color: #93c5fd; text-decoration: none; }
           <li>✔ Mejora de arranque y velocidad</li>
         </ul>
         <p class="mini">La opción más elegida</p>
-        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Estelar">Contratar ahora</a>
+        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
       </div>
 
       <div class="price-card platinum">
@@ -530,7 +558,7 @@ a { color: #93c5fd; text-decoration: none; }
           <li>✔ Atención prioritaria</li>
         </ul>
         <p class="mini">Experiencia completa sin límites</p>
-        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Galáctico">Contratar ahora</a>
+        <a class="button small-btn btn-platinum" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Platinum">Contratar ahora</a>
       </div>
     </div>
 
