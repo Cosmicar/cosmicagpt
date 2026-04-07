@@ -329,7 +329,46 @@ a { color: #93c5fd; text-decoration: none; }
   padding: 16px 20px; border-radius: 50%; font-size: 22px;
   box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
 }
+/* ========================================= */
+/* ESTILOS DE BORDES Y ANIMACIÓN PARA PLANES */
+/* ========================================= */
 
+/* Contornos según el tipo de plan */
+.price-card.bronce { 
+  border: 2px solid #cd7f32; 
+}
+.price-card.oro { 
+  border: 2px solid #facc15; 
+}
+.price-card.platinum { 
+  border: 2px solid #e5e7eb; 
+}
+
+/* Opcional: Cambiar el color del badge superior a dorado para que combine */
+.badge-top.badge-oro {
+  background: #facc15;
+  color: #000;
+}
+
+/* Animación de parpadeo/brillo para el plan ORO */
+.oro-flash {
+  animation: oro-pulse 2s infinite;
+}
+
+@keyframes oro-pulse {
+  0% {
+    box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
+    border-color: #facc15;
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(250, 204, 21, 0.7);
+    border-color: #ffffff; /* Brillo blanco en el pico del parpadeo */
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
+    border-color: #facc15;
+  }
+}
 /* ========================================= */
 /* 6. RESPONSIVE (MÓVIL) */
 /* ========================================= */
@@ -436,8 +475,8 @@ a { color: #93c5fd; text-decoration: none; }
         <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Orbital">Contratar ahora</a>
       </div>
 
-      <div class="price-card highlight">
-        <div class="badge-top">🔥 MÁS ELEGIDO</div>
+      <div class="price-card highlight oro oro-flash">
+        <div class="badge-top badge-oro">🔥 MÁS ELEGIDO</div>
         <h3>Oro</h3>
         <div class="price">$29.900</div>
         <ul class="plan-list">
@@ -451,7 +490,7 @@ a { color: #93c5fd; text-decoration: none; }
         <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Estelar">Contratar ahora</a>
       </div>
 
-      <div class="price-card">
+      <div class="price-card platinum">
         <h3>Platinum</h3>
         <div class="price">$39.900</div>
         <ul class="plan-list">
