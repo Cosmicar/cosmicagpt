@@ -369,7 +369,26 @@ a { color: #93c5fd; text-decoration: none; }
 /* --- PLAN BRONCE --- */
 .price-card.bronce { border: 2px solid #cd7f32; }
 .price-card.bronce h3 { color: #cd7f32; }
+.price-card.bronce .price.price-bronce { 
+  color: #cd7f32 !important; 
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.4); /* Resplandor bronce sutil */
+}
 
+/* NUEVO: El botón Bronce Personalizado (Tono Cálido) */
+.price-card.bronce .button {
+  background: linear-gradient(90deg, #cd7f32, #b87333) !important; /* Degradado bronce cálido */
+  color: #022c22 !important; /* Texto oscuro para legibilidad */
+  font-weight: 800;
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.4) !important; /* Resplandor bronce */
+}
+
+/* Efecto hover específico para el botón bronce */
+.price-card.bronce .button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 35px rgba(205, 127, 50, 0.6) !important; /* Resplandor más intenso al pasar el mouse */
+}
+
+/* ... resto de los planes ... */
 /* --- PLAN ORO (EL PROTAGONISTA) --- */
 .price-card.oro-card {
   border: 3px solid #facc15 !important;
@@ -577,7 +596,7 @@ a { color: #93c5fd; text-decoration: none; }
     <div class="pricing">
       <div class="price-card bronce">
         <h3>Bronce</h3>
-        <div class="price">$19.900</div>
+        <div class="price price-bronce">$19.900</div>
         <ul class="plan-list">
           <li>✔ Eliminación de virus, malware y spyware</li>
           <li>✔ Limpieza profunda del sistema</li>
