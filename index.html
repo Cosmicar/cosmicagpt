@@ -389,42 +389,46 @@ a { color: #93c5fd; text-decoration: none; }
 }
 
 /* ... resto de los planes ... */
-/* --- PLAN ORO (UNIFICADO) --- */
-.price-card.oro { 
-  border: 3px solid #facc15 !important; 
-  background: rgba(15, 23, 42, 0.8) !important;
+/* --- PLAN ORO (EL PROTAGONISTA) --- */
+.price-card.oro-card {
+  border: 3px solid #facc15 !important;
+  transform: scale(1.08);
+  z-index: 10;
+  background: rgba(2, 6, 23, 0.95) !important;
+  box-shadow: 0 0 40px rgba(250, 204, 21, 0.25);
+  
+  /* NUEVO: Animación para el parpadeo del plan Oro */
+  animation: oro-card-highlight 3s infinite ease-in-out;
 }
-.price-card.oro h3, .price-card.oro .price { 
-  color: #facc15 !important; 
-  text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+.price-card.oro-card h3 { 
+  color: #facc15; 
+  text-shadow: 3px 3px 0px #000, 0 0 10px rgba(250,204,21,0.3);
 }
-.price-card.oro .button {
-  background: #facc15 !important;
+.btn-oro {
+  background: linear-gradient(90deg, #facc15, #eab308) !important;
   color: #000 !important;
   font-weight: 800;
   box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
+  animation: pulse-oro 2s infinite;
 }
 
-/* --- PLAN PLATINUM (UNIFICADO) --- */
+/* --- PLAN PLATINUM --- */
 .price-card.platinum { 
-  border: 2px solid #e5e7eb !important; 
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 0 20px rgba(229, 231, 235, 0.05);
 }
-.price-card.platinum h3, .price-card.platinum .price { 
-  color: #e5e7eb !important; 
-  text-shadow: 0 0 10px rgba(229, 231, 235, 0.2);
+.price-card.platinum h3 { 
+  background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.8));
 }
-.price-card.platinum .button {
-  background: #e5e7eb !important;
-  color: #000 !important;
-  font-weight: 800;
-  box-shadow: 0 0 20px rgba(229, 231, 235, 0.3) !important;
+.btn-platinum {
+  background: linear-gradient(90deg, #e2e8f0, #94a3b8) !important;
+  color: #0f172a !important;
+  box-shadow: 0 0 20px rgba(226, 232, 240, 0.2) !important;
 }
 
-/* Efecto Hover para todos los botones de colores */
-.price-card .button:hover {
-  transform: translateY(-3px) scale(1.03);
-  filter: brightness(1.1);
-}
 /* --- BADGE INTEGRADO --- */
 .badge-oro-container {
   position: absolute;
