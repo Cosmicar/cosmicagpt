@@ -330,101 +330,111 @@ a { color: #93c5fd; text-decoration: none; }
   padding: 16px 20px; border-radius: 50%; font-size: 22px;
   box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
 }
-/* ========================================= */
-/* ESTILOS DE BORDES Y ANIMACIÓN PARA PLANES */
-/* ========================================= */
+/* --- 1. CONSOLIDACIÓN DE FUENTES --- */
+/* Asegúrate de tener solo estos en el <head> */
+/* <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"> */
 
-/* Contornos según el tipo de plan */
-.price-card.bronce { 
-  border: 2px solid #cd7f32; 
-}
-.price-card.oro { 
-  border: 2px solid #facc15; 
-}
-.price-card.platinum { 
-  border: 2px solid #e5e7eb; 
-}
-
-/* Opcional: Cambiar el color del badge superior a dorado para que combine */
-.badge-top.badge-oro {
-  background: #facc15;
-  color: #000;
+/* --- 2. ESTILOS DE PLANES DEPURADOS --- */
+.pricing {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 50px;
+  flex-wrap: wrap;
 }
 
-/* Animación de parpadeo/brillo para el plan ORO */
-.oro-flash {
-  animation: oro-pulse 2s infinite;
+.price-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 25px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes oro-pulse {
-  0% {
-    box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
-    border-color: #facc15;
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(250, 204, 21, 0.7);
-    border-color: #ffffff; /* Brillo blanco en el pico del parpadeo */
-  }
-  100% {
-    box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
-    border-color: #facc15;
-  }
-}
-/* ========================================= */
-/* ESTILO GORILLAZ PARA LOS TÍTULOS DE PLANES */
-/* ========================================= */
-
+/* Títulos Estilo Gorillaz */
 .price-card h3 {
-  font-family: 'Permanent Marker', cursive; /* Aplica la nueva fuente */
-  font-size: 32px; /* Aumenta un poco el tamaño para que destaque */
-  letter-spacing: 2px;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 36px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  margin-top: 0;
-  margin-bottom: 5px;
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8); /* Sombra dura estilo cómic/grafiti */
+  margin: 0 0 10px 0;
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.8);
 }
 
-/* Colores específicos para cada título */
-.price-card.bronce h3 { 
-  color: #cd7f32; 
-}
+/* --- PLAN BRONCE --- */
+.price-card.bronce { border: 2px solid #cd7f32; }
+.price-card.bronce h3 { color: #cd7f32; }
 
-.price-card.oro h3 { 
+/* --- PLAN ORO (EL PROTAGONISTA) --- */
+.price-card.oro-card {
+  border: 3px solid #facc15 !important;
+  transform: scale(1.08);
+  z-index: 10;
+  background: rgba(2, 6, 23, 0.95) !important;
+  box-shadow: 0 0 40px rgba(250, 204, 21, 0.25);
+}
+.price-card.oro-card h3 { 
   color: #facc15; 
-  /* Agrega un poco de resplandor adicional al texto del plan Oro */
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.4);
+  text-shadow: 3px 3px 0px #000, 0 0 10px rgba(250,204,21,0.3);
 }
-/* Tonalidad Platinum Premium */
-.price-card.platinum { 
-  border: 2px solid #e5e7eb; 
-  /* Un resplandor sutil azulado/plateado para que no se pierda en el fondo */
-  box-shadow: 0 0 20px rgba(229, 231, 235, 0.1);
+.btn-oro {
+  background: linear-gradient(90deg, #facc15, #eab308) !important;
+  color: #000 !important;
+  font-weight: 800;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
+  animation: pulse-oro 2s infinite;
 }
 
+/* --- PLAN PLATINUM --- */
+.price-card.platinum { 
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 0 20px rgba(229, 231, 235, 0.05);
+}
 .price-card.platinum h3 { 
-  /* Gradiente metálico para el título estilo Gorillaz */
   background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.8));
-  color: #e5e7eb; /* Fallback */
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.8));
 }
-
-/* Efecto Hover específico para Platinum */
-.price-card.platinum:hover {
-  border-color: #f8fafc;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
-  transform: translateY(-6px);
-}
-
-/* El precio en Platinum también puede tener un tono más gélido */
-.price-card.platinum .price {
-  color: #f1f5f9;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-}.btn-platinum {
+.btn-platinum {
   background: linear-gradient(90deg, #e2e8f0, #94a3b8) !important;
   color: #0f172a !important;
-  box-shadow: 0 0 20px rgba(226, 232, 240, 0.3) !important;
+  box-shadow: 0 0 20px rgba(226, 232, 240, 0.2) !important;
+}
+
+/* --- BADGE INTEGRADO --- */
+.badge-oro-container {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+.badge-oro {
+  background: #facc15;
+  color: #000;
+  padding: 6px 20px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  white-space: nowrap;
+}
+
+@keyframes pulse-oro {
+  0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(250, 204, 21, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+}
+
+/* Ajuste móvil para no romper el escalado */
+@media (max-width: 768px) {
+  .price-card.oro-card { transform: scale(1); margin: 30px 0; }
+}
 }
 /* ========================================= */
 /* 6. RESPONSIVE (MÓVIL) */
@@ -519,7 +529,7 @@ a { color: #93c5fd; text-decoration: none; }
     <p class="subtitle">🚀 De lenta y llena de errores… a rápida y limpia en una sola sesión</p>
 
     <div class="pricing">
-      <div class="price-card">
+      <div class="price-card bronce">
         <h3>Bronce</h3>
         <div class="price">$19.900</div>
         <ul class="plan-list">
@@ -532,24 +542,26 @@ a { color: #93c5fd; text-decoration: none; }
         <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Bronce">Contratar ahora</a>
       </div>
 
-      <div class="price-card highlight oro oro-flash">
-        <div class="badge-top badge-oro">🔥 MÁS ELEGIDO</div>
-        <h3>Oro</h3>
-        <div class="price">$29.900</div>
-        <ul class="plan-list">
-          <li>✔ Todo lo del plan Bronce</li>
-          <li>✔ Optimización avanzada</li>
-          <li>✔ Activación de Windows</li>
-          <li>✔ Activación de Office</li>
-          <li>✔ Mejora de arranque y velocidad</li>
-        </ul>
-        <p class="mini">La opción más elegida</p>
-        <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
-      </div>
+      <div class="price-card oro-card">
+    <div class="badge-oro-container">
+      <span class="badge-oro">🔥 MÁS ELEGIDO</span>
+    </div>
+    <h3 class="title-oro">Oro</h3>
+    <div class="price price-oro">$29.900</div>
+    <ul class="plan-list">
+      <li>✔ Todo lo del plan Bronce</li>
+      <li>✔ Optimización avanzada</li>
+      <li>✔ Activación de Windows</li>
+      <li>✔ Activación de Office</li>
+      <li>✔ Mejora de arranque y velocidad</li>
+    </ul>
+    <p class="mini">La opción más elegida</p>
+    <a class="button small-btn btn-oro" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
+  </div>
 
       <div class="price-card platinum">
         <h3>Platinum</h3>
-        <div class="price">$39.900</div>
+        <div class="price price-platinum">$39.900</div>
         <ul class="plan-list">
           <li>✔ Todo lo del plan Oro</li>
           <li>✔ Instalación de programas</li>
