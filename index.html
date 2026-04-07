@@ -435,7 +435,6 @@ a { color: #93c5fd; text-decoration: none; }
 @media (max-width: 768px) {
   .price-card.oro-card { transform: scale(1); margin: 30px 0; }
 }
-}
 /* ========================================= */
 /* 6. RESPONSIVE (MÓVIL) - CORRECCIÓN TOTAL */
 /* ========================================= */
@@ -447,6 +446,7 @@ a { color: #93c5fd; text-decoration: none; }
     z-index: 1100;
     padding: 10px;
     cursor: pointer;
+    color: #fff;
   }
 
   /* Escondemos el botón de la derecha en móvil */
@@ -478,22 +478,17 @@ a { color: #93c5fd; text-decoration: none; }
     font-size: 26px;
     font-weight: 600;
     color: #fff;
-  }
-
-  /* Arreglo del Hero en móvil para que no se pise con el menú */
-  .hero {
-    background-position: 80% center !important;
-    text-align: center;
-    padding-top: 140px;
-  }
-  .hero-container { justify-content: center; }
-  .hero-content { align-items: center; }
-  .hero h1 { font-size: 32px; }
-
-  /* Ajuste de los planes para que no se vean gigantes */
+  }/* Ajustes para la tarjeta Oro en móviles */
   .price-card.oro-card { 
     transform: scale(1) !important; 
     margin: 30px 0 !important; 
+    border: 3px solid #facc15 !important;
+  }
+
+  /* Ajuste del Hero para evitar solapamientos */
+  .hero {
+    padding-top: 140px;
+    text-align: center;
   }
 }
 </style>
