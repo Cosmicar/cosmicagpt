@@ -437,60 +437,63 @@ a { color: #93c5fd; text-decoration: none; }
 }
 }
 /* ========================================= */
-/* 6. RESPONSIVE (MÓVIL) - CORREGIDO */
+/* 6. RESPONSIVE (MÓVIL) - CORRECCIÓN TOTAL */
 /* ========================================= */
-@media(max-width: 768px) {
+@media (max-width: 768px) {
+  /* Forzamos que el botón hamburguesa sea visible */
   .menu-toggle { 
     display: block !important; 
-    z-index: 1001;
+    font-size: 30px;
+    z-index: 1100;
+    padding: 10px;
+    cursor: pointer;
   }
 
+  /* Escondemos el botón de la derecha en móvil */
+  .nav-right { display: none !important; }
+
+  /* Ajustamos el contenedor del menú */
   .nav-center {
     display: none; /* Oculto por defecto */
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100vh;
-    background: rgba(2, 6, 23, 0.98); /* Fondo sólido para que no transparente los planes */
+    background: rgba(2, 6, 23, 0.98);
     backdrop-filter: blur(15px);
-    flex-direction: column; 
-    align-items: center;
     justify-content: center;
-    gap: 30px; 
-    z-index: 1000;
+    align-items: center;
+    gap: 25px;
+    z-index: 1050;
   }
 
-  /* Esta es la clase que activa el JS al hacer click */
-  .nav-center.active { 
-    display: flex !important; 
+  /* Clase que activa el JS */
+  .nav-center.active {
+    display: flex !important;
   }
 
   .nav-center a {
-    font-size: 24px; /* Más grandes para tocar con el dedo */
+    font-size: 26px;
     font-weight: 600;
+    color: #fff;
   }
 
-  .nav-right { display: none; } /* Ocultamos el botón repetido en móvil */
-  
+  /* Arreglo del Hero en móvil para que no se pise con el menú */
   .hero {
-    justify-content: center; 
-    text-align: center; 
-    padding: 120px 20px 60px;
-    background: 
-      linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), 
-      url('hero-cosmica.webp') !important;
-    background-position: center !important; 
+    background-position: 80% center !important;
+    text-align: center;
+    padding-top: 140px;
   }
-
+  .hero-container { justify-content: center; }
   .hero-content { align-items: center; }
   .hero h1 { font-size: 32px; }
-  .hero-actions { justify-content: center; }
-  
-  /* Ajuste de planes en móvil */
+
+  /* Ajuste de los planes para que no se vean gigantes */
   .price-card.oro-card { 
     transform: scale(1) !important; 
-    margin: 40px 0 !important; 
+    margin: 30px 0 !important; 
   }
 }
 </style>
@@ -719,10 +722,17 @@ const observer = new IntersectionObserver(entries => {
 });
 faders.forEach(el => observer.observe(el));
 
-// Menú hamburguesa móvil
-function toggleMenu(){
+// Función para abrir/cerrar
+function toggleMenu() {
   document.getElementById("menu").classList.toggle("active");
 }
+
+// NUEVO: Cerrar el menú automáticamente al hacer clic en un enlace
+document.querySelectorAll('#menu a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById("menu").classList.remove("active");
+  });
+});
 
 // Acordeón de Preguntas Frecuentes (FAQ)
 document.querySelectorAll(".faq-question").forEach(btn => {
