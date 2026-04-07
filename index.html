@@ -74,7 +74,8 @@
 <meta name="twitter:title" content="Cósmica | Soporte Técnico Remoto">
 <meta name="twitter:description" content="Reparación y optimización de PC en minutos. Soporte remoto inmediato.">
 <meta name="twitter:image" content="https://cosmica.ar/preview.jpg">
-
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -368,6 +369,34 @@ a { color: #93c5fd; text-decoration: none; }
     box-shadow: 0 0 15px rgba(250, 204, 21, 0.2);
     border-color: #facc15;
   }
+}
+/* ========================================= */
+/* ESTILO GORILLAZ PARA LOS TÍTULOS DE PLANES */
+/* ========================================= */
+
+.price-card h3 {
+  font-family: 'Permanent Marker', cursive; /* Aplica la nueva fuente */
+  font-size: 32px; /* Aumenta un poco el tamaño para que destaque */
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 5px;
+  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8); /* Sombra dura estilo cómic/grafiti */
+}
+
+/* Colores específicos para cada título */
+.price-card.bronce h3 { 
+  color: #cd7f32; 
+}
+
+.price-card.oro h3 { 
+  color: #facc15; 
+  /* Agrega un poco de resplandor adicional al texto del plan Oro */
+  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.4);
+}
+
+.price-card.platinum h3 { 
+  color: #e5e7eb; 
 }
 /* ========================================= */
 /* 6. RESPONSIVE (MÓVIL) */
