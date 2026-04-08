@@ -4,102 +4,255 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asistencia Remota | Cósmica</title>
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="/favicon.ico">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="https://cosmica.ar/favicon.ico" type="image/x-icon">
-<link rel="apple-touch-icon" href="https://cosmica.ar/favicon.ico">
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:'Poppins',sans-serif;background:#030712;color:#fff;text-align:center;padding-top:70px}
-
-/* NAV */
-.nav{position:fixed;top:0;left:0;width:100%;display:flex;justify-content:center;align-items:center;gap:30px;padding:15px;background:rgba(2,6,23,.7);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid rgba(255,255,255,.08);min-height:60px}
-.nav a{color:#cbd5f5;text-decoration:none;font-size:14px;transition:.3s;display:inline-block}
-.nav a:hover{color:#22c55e}
-.nav-logo{position:absolute;left:20px;width:40px}
-.nav-whatsapp{position:absolute;right:60px;background:#25D366;padding:6px 12px;border-radius:8px;color:#fff;font-size:12px;white-space:nowrap}
-.menu-toggle{display:none;position:absolute;right:20px;font-size:22px;cursor:pointer}
-
-.container{max-width:900px;margin:auto;padding:60px 20px}
-.logo{width:120px;margin-bottom:10px}
-h1{font-size:36px;margin:10px 0}
-p{color:#cbd5f5}
-.step{background:rgba(255,255,255,0.05);padding:25px;margin-top:20px;border-radius:16px;border:1px solid rgba(255,255,255,0.08)}
-.center{display:flex;flex-direction:column;align-items:center;justify-content:center}
-.button{display:inline-block;margin-top:15px;padding:14px 28px;background:#25D366;border-radius:10px;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 0 15px rgba(37,211,102,.5)}
-.button:hover{transform:scale(1.05)}
-.badge{display:inline-block;margin-top:10px;padding:6px 12px;background:#22c55e;border-radius:20px;font-size:12px}
-.footer{margin-top:40px;color:#94a3b8;font-size:14px}
-
-.anydesk-logo{width:200px;max-width:90%;margin:15px 0;display:block;filter:drop-shadow(0 0 12px rgba(255,0,0,0.5));}
-.id-img{width:380px;max-width:95%;margin:20px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 25px rgba(0,255,255,0.15), 0 10px 30px rgba(0,0,0,0.5);}
-
-/* MOBILE */
-@media(max-width:768px){
-  .nav{flex-direction:column;align-items:stretch;height:60px;overflow:hidden}
-  .nav.open{height:auto}
-  .nav a{display:block;padding:12px 0;text-align:center;width:100%}
-  .nav-logo{position:absolute;left:15px;top:12px;width:32px}
-  .menu-toggle{display:block;position:absolute;right:15px;top:12px}
-  .nav-whatsapp{display:none !important}
-  .anydesk-logo{width:140px}
+/* ========================================= */
+/* 1. BASE Y VARIABLES                       */
+/* ========================================= */
+* { box-sizing: border-box; transition: background .3s, box-shadow .3s, transform .3s; }
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background: #020617;
+  line-height: 1.6;
+  overflow-x: hidden;
 }
+a { color: #93c5fd; text-decoration: none; }
+
+/* ========================================= */
+/* 2. NAVEGACIÓN (CON TRANSICIÓN SUAVE)     */
+/* ========================================= */
+.nav {
+  position: fixed; top: 0; left: 0; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 25px; background: rgba(2,6,23,0.9);
+  backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08);
+  z-index: 2000;
+}
+.nav-left { display: flex; align-items: center; gap: 10px; }
+.nav-logo { width: 35px; }
+.nav-brand { font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+
+.nav-center { display: flex; gap: 25px; }
+.nav-center a { color: #cbd5f5; font-size: 14px; font-weight: 500; }
+.nav-center a:hover { color: #22d3ee; }
+
+.menu-toggle { display: none; font-size: 26px; cursor: pointer; color: #fff; }
+
+/* ========================================= */
+/* 3. CONTENIDO PRINCIPAL                    */
+/* ========================================= */
+.container { max-width: 800px; margin: 120px auto 60px; padding: 0 20px; text-align: center; }
+
+h1 { font-size: 32px; margin-bottom: 10px; color: #fff; text-shadow: 0 0 15px rgba(34,211,238,0.3); }
+p.intro { color: #cbd5f5; margin-bottom: 40px; }
+
+/* Pasos */
+.steps { text-align: left; margin-bottom: 50px; }
+.step {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.step-num {
+  background: #4ade80;
+  color: #022c22;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(74,222,128,0.4);
+}
+.step-content h3 { margin: 0 0 10px 0; font-size: 18px; color: #fff; }
+.step-content p { margin: 0; color: #cbd5f5; font-size: 15px; }
+
+.tip-box {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #94a3b8;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Botón de descarga */
+.btn-download {
+  display: inline-block;
+  padding: 16px 35px;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  color: #022c22;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 15px;
+  box-shadow: 0 0 25px rgba(74,222,128,0.4);
+}
+.btn-download:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.1); }
+
+/* CAJA DE SEGURIDAD (NUEVO) */
+.security-shield {
+  background: rgba(34, 211, 238, 0.05);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  margin-top: 40px;
+  text-align: left;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.shield-icon { font-size: 40px; }
+.security-text h4 { margin: 0 0 5px 0; color: #22d3ee; }
+.security-text p { margin: 0; font-size: 14px; color: #93c5fd; }
+
+/* ========================================= */
+/* 4. RESPONSIVE                             */
+/* ========================================= */
+@media (max-width: 768px) {
+  .menu-toggle { display: block; }
+  
+  .nav-center {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 65px; left: 0;
+    width: 100%;
+    max-height: 0; /* Cerrado por defecto */
+    overflow: hidden;
+    background: rgba(2, 6, 23, 0.98);
+    backdrop-filter: blur(15px);
+    transition: max-height 0.4s ease-in-out; /* Transición suave */
+    padding: 0;
+  }
+  
+  .nav-center.active {
+    max-height: 400px; /* Abierto */
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .nav-center a {
+    width: 100%;
+    text-align: center;
+    padding: 15px;
+    font-size: 18px;
+  }
+
+  .step { flex-direction: column; align-items: center; text-align: center; }
+  .security-shield { flex-direction: column; text-align: center; }
+}
+
+footer { padding: 40px; text-align: center; color: #64748b; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
 </style>
 </head>
 <body>
 
 <nav class="nav">
-<img src="cosmica-logo.png" class="nav-logo">
-<div class="menu-toggle" onclick="toggleMenu()">☰</div>
-<a href="/">Inicio</a>
-<a href="/asistencia.html">Asistencia</a>
-<a href="https://wa.me/5493883298736" class="nav-whatsapp">WhatsApp</a>
+  <div class="nav-left">
+    <a href="/index.html">
+        <img src="cosmica-logo.webp" alt="logo cosmica" class="nav-logo">
+    </a>
+    <span class="nav-brand">CÓSMICA</span>
+  </div>
+  
+  <div class="nav-center" id="menu">
+    <a href="/index.html#inicio">Inicio</a>
+    <a href="/index.html#servicios">Servicios</a>
+    <a href="/index.html#planes">Planes</a>
+    <a href="https://wa.me/5493883298736">Contacto</a>
+  </div>
+
+  <div class="menu-toggle" id="menuBtn" onclick="toggleMenu()">☰</div>
 </nav>
 
-<div class="container">
+<main class="container">
+  <h1>Asistencia Remota</h1>
+  <p class="intro">Seguí estos 3 simples pasos para que podamos conectarnos a tu PC y ayudarte.</p>
 
-<img src="cosmica-logo.png" class="logo">
-<h1>Asistencia Remota</h1>
-<div class="badge">Soporte en vivo</div>
-<p>Seguí estos pasos para que podamos ayudarte en minutos</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Descargá AnyDesk</h3>
+        <p>Es la herramienta oficial y segura que usamos para el soporte técnico.</p>
+        <a href="https://anydesk.com/es/downloads/windows" target="_blank" class="btn-download">⬇ Descargar AnyDesk</a>
+        <div class="tip-box">
+          💡 Tip: Si no ves la descarga, presioná <b>Ctrl + J</b> para abrir tus descargas.
+        </div>
+      </div>
+    </div>
 
-<div class="step">
-<h2>1. Descargá AnyDesk</h2>
-<div class="center">
-<img src="anydesk-logo.png" class="anydesk-logo">
-<p style="margin-top:10px">Una vez descargado, abrí el archivo para ejecutarlo. Generalmente lo vas a encontrar en la carpeta <b>Descargas</b>.</p>
-<a class="button" href="https://anydesk.com/es/downloads/windows" target="_blank">⬇ Descargar AnyDesk</a>
-</div>
-</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Ejecutá el archivo</h3>
+        <p>Hacé doble clic en el archivo descargado. No requiere instalación, solo se abre y listo.</p>
+      </div>
+    </div>
 
-<div class="step">
-<h2>2. Abrí el programa</h2>
-<p>No hace falta instalarlo, solo ejecutalo.</p>
-<p>Enviános el número de ID que aparece en la pantalla. Con ese dato podemos conectarnos y ayudarte.</p>
-</div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Pasanos tu ID</h3>
+        <p>Envianos por WhatsApp el número de 9 dígitos que aparece donde dice "Este puesto de trabajo".</p>
+      </div>
+    </div>
+  </div>
 
-<div class="step">
-<h2>3. Enviá tu ID</h2>
-<p>Uno de nuestros técnicos se va a comunicar con vos para continuar el servicio.</p>
-<p>Te recomendamos guardar tu trabajo y cerrar programas antes de la conexión.</p>
+  <div class="security-shield">
+    <div class="shield-icon">🛡️</div>
+    <div class="security-text">
+      <h4>Tu privacidad es nuestra prioridad</h4>
+      <p>Estás en una conexión cifrada de grado bancario. Vos podés ver cada movimiento del técnico en tu pantalla y podés cerrar la sesión en cualquier momento con un solo clic. No accedemos a tus archivos personales sin tu permiso explícito.</p>
+    </div>
+  </div>
+</main>
 
-<img src="anydesk-id-ejemplo.png" class="id-img">
-<p style="font-size:14px;color:#94a3b8">Ejemplo de dónde encontrar tu ID en AnyDesk</p>
-
-<a class="button" href="https://wa.me/5493883298736?text=Hola%20te%20env%C3%ADo%20mi%20ID%20de%20AnyDesk">💬 Enviar ID por WhatsApp</a>
-</div>
-
-<p style="margin-top:25px;color:#facc15">⚡ Atención inmediata disponible ahora</p>
-
-<div class="footer">
-© Cósmica | Soporte remoto en toda Argentina
-</div>
-
-</div>
+<footer>
+  <p>© <span id="year"></span> Cósmica | Soporte Técnico Remoto Profesional</p>
+</footer>
 
 <script>
-function toggleMenu(){
-document.querySelector('.nav').classList.toggle('open');
+// Año automático para el footer
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Lógica del menú móvil
+function toggleMenu() {
+  const menu = document.getElementById("menu");
+  const btn = document.getElementById("menuBtn");
+  menu.classList.toggle("active");
+  
+  // Cambiar el ícono de hamburguesa a X
+  if(menu.classList.contains("active")) {
+      btn.textContent = "✕";
+  } else {
+      btn.textContent = "☰";
+  }
 }
+
+// Cerrar menú al hacer clic en un link
+document.querySelectorAll('#menu a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById("menu").classList.remove("active");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
 </script>
 
 </body>
