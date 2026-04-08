@@ -61,25 +61,23 @@
 }
 </script>
 
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
 <meta name="description" content="Soporte técnico remoto en toda Argentina. Eliminación de virus, optimización de PC, instalación de programas y asistencia inmediata.">
 <meta property="og:title" content="Cósmica | Soporte Técnico Remoto">
 <meta property="og:description" content="Solucionamos tu PC en minutos, sin moverte de tu casa. Soporte remoto en toda Argentina.">
 <meta property="og:image" content="https://cosmica.ar/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://cosmica.ar">
 <meta property="og:type" content="website">
-<meta property="fb:app_id" content="1234567890">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cósmica | Soporte Técnico Remoto">
 <meta name="twitter:description" content="Reparación y optimización de PC en minutos. Soporte remoto inmediato.">
 <meta name="twitter:image" content="https://cosmica.ar/preview.jpg">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://cosmica.ar" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="canonical" href="https://cosmica.ar" />
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* ========================================= */
@@ -116,6 +114,7 @@ a { color: #93c5fd; text-decoration: none; }
   font-size: 34px;
   background: linear-gradient(90deg, #fff, #22d3ee);
   -webkit-background-clip: text;
+  background-clip: text; /* Corrección de advertencia VS Code */
   -webkit-text-fill-color: transparent;
   margin-bottom: 10px;
 }
@@ -278,7 +277,7 @@ a { color: #93c5fd; text-decoration: none; }
 .alerta-icon { font-size: 45px; margin-bottom: 15px; display: inline-block; animation: flotar 3s ease-in-out infinite; }
 @keyframes flotar { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 
-/* Gorillas */
+/* Grillas */
 .services, .pricing, .testimonials {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -286,7 +285,7 @@ a { color: #93c5fd; text-decoration: none; }
   margin-top: 40px;
 }
 
-/* Pricing */
+/* Pricing Base */
 .price-card { display: flex; flex-direction: column; padding: 35px 25px; }
 .price { font-size: 32px; color: #4ade80; margin: 10px 0; font-weight: bold; }
 .plan-list { list-style: none; padding: 0; text-align: left; margin: 15px 0; font-size: 14px; color: #cbd5f5; flex-grow: 1; }
@@ -330,11 +329,10 @@ a { color: #93c5fd; text-decoration: none; }
   padding: 16px 20px; border-radius: 50%; font-size: 22px;
   box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
 }
-/* --- 1. CONSOLIDACIÓN DE FUENTES --- */
-/* Asegúrate de tener solo estos en el <head> */
-/* <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"> */
 
-/* --- 2. ESTILOS DE PLANES DEPURADOS --- */
+/* ========================================= */
+/* 6. ESTILOS DE PLANES DEPURADOS Y COLORES  */
+/* ========================================= */
 .pricing {
   display: flex;
   align-items: stretch;
@@ -343,7 +341,6 @@ a { color: #93c5fd; text-decoration: none; }
   margin-top: 50px;
   flex-wrap: wrap;
 }
-
 .price-card {
   flex: 1;
   min-width: 280px;
@@ -354,8 +351,6 @@ a { color: #93c5fd; text-decoration: none; }
   position: relative;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
-/* Títulos Estilo Gorillaz */
 .price-card h3 {
   font-family: 'Permanent Marker', cursive;
   font-size: 36px;
@@ -370,24 +365,20 @@ a { color: #93c5fd; text-decoration: none; }
 .price-card.bronce h3 { color: #cd7f32; }
 .price-card.bronce .price.price-bronce { 
   color: #cd7f32 !important; 
-  text-shadow: 0 0 10px rgba(205, 127, 50, 0.4); /* Resplandor bronce sutil */
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.4); 
 }
-
-/* NUEVO: El botón Bronce Personalizado (Tono Cálido) */
+.price-card.bronce ul.plan-list li { color: #cd7f32; } /* Tildes de color */
 .price-card.bronce .button {
-  background: linear-gradient(90deg, #cd7f32, #b87333) !important; /* Degradado bronce cálido */
-  color: #022c22 !important; /* Texto oscuro para legibilidad */
+  background: linear-gradient(90deg, #cd7f32, #b87333) !important; 
+  color: #022c22 !important; 
   font-weight: 800;
-  box-shadow: 0 0 20px rgba(205, 127, 50, 0.4) !important; /* Resplandor bronce */
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.4) !important; 
 }
-
-/* Efecto hover específico para el botón bronce */
 .price-card.bronce .button:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 35px rgba(205, 127, 50, 0.6) !important; /* Resplandor más intenso al pasar el mouse */
+  box-shadow: 0 0 35px rgba(205, 127, 50, 0.6) !important; 
 }
 
-/* ... resto de los planes ... */
 /* --- PLAN ORO (EL PROTAGONISTA) --- */
 .price-card.oro-card {
   border: 3px solid #facc15 !important;
@@ -395,14 +386,13 @@ a { color: #93c5fd; text-decoration: none; }
   z-index: 10;
   background: rgba(2, 6, 23, 0.95) !important;
   box-shadow: 0 0 40px rgba(250, 204, 21, 0.25);
-  
-  /* NUEVO: Animación para el parpadeo del plan Oro */
   animation: oro-card-highlight 3s infinite ease-in-out;
 }
 .price-card.oro-card h3 { 
   color: #facc15; 
   text-shadow: 3px 3px 0px #000, 0 0 10px rgba(250,204,21,0.3);
 }
+.price-card.oro-card ul.plan-list li { color: #facc15; } /* Tildes de color */
 .btn-oro {
   background: linear-gradient(90deg, #facc15, #eab308) !important;
   color: #000 !important;
@@ -410,11 +400,11 @@ a { color: #93c5fd; text-decoration: none; }
   box-shadow: 0 0 20px rgba(250, 204, 21, 0.4) !important;
   animation: pulse-oro 2s infinite;
 }
-/* --- COLOR DEL PRECIO ORO --- */
 .price-card.oro-card .price.price-oro { 
   color: #facc15 !important; 
-  text-shadow: 0 0 15px rgba(250, 204, 21, 0.5); /* Resplandor dorado para destacar */
+  text-shadow: 0 0 15px rgba(250, 204, 21, 0.5); 
 }
+
 /* --- PLAN PLATINUM --- */
 .price-card.platinum { 
   border: 2px solid #e5e7eb;
@@ -423,19 +413,21 @@ a { color: #93c5fd; text-decoration: none; }
 .price-card.platinum h3 { 
   background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
+  background-clip: text; /* Corrección de advertencia VS Code */
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.8));
 }
+.price-card.platinum ul.plan-list li { color: #e2e8f0; } /* Tildes de color */
 .btn-platinum {
   background: linear-gradient(90deg, #e2e8f0, #94a3b8) !important;
   color: #0f172a !important;
   box-shadow: 0 0 20px rgba(226, 232, 240, 0.2) !important;
 }
-/* --- COLOR DEL PRECIO PLATINUM --- */
 .price-card.platinum .price.price-platinum { 
   color: #e2e8f0 !important; 
-  text-shadow: 0 0 10px rgba(226, 232, 240, 0.4); /* Resplandor plateado sutil */
+  text-shadow: 0 0 10px rgba(226, 232, 240, 0.4); 
 }
+
 /* --- BADGE INTEGRADO --- */
 .badge-oro-container {
   position: absolute;
@@ -460,28 +452,21 @@ a { color: #93c5fd; text-decoration: none; }
   70% { box-shadow: 0 0 0 15px rgba(250, 204, 21, 0); }
   100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
 }
-
-/* NUEVO: Definición de la animación para el plan Oro */
 @keyframes oro-card-highlight {
   0%, 100% {
     border-color: #facc15;
     box-shadow: 0 0 40px rgba(250, 204, 21, 0.25);
   }
   50% {
-    border-color: #fde047; /* Lighter, more intense gold */
-    box-shadow: 0 0 60px rgba(250, 204, 21, 0.6); /* Larger, more intense glow */
+    border-color: #fde047;
+    box-shadow: 0 0 60px rgba(250, 204, 21, 0.6);
   }
 }
 
-/* Ajuste móvil para no romper el escalado */
-@media (max-width: 768px) {
-  .price-card.oro-card { transform: scale(1); margin: 30px 0; }
-}
 /* ========================================= */
-/* 6. RESPONSIVE (MÓVIL) - CORRECCIÓN TOTAL */
+/* 7. RESPONSIVE (MÓVIL)                     */
 /* ========================================= */
 @media (max-width: 768px) {
-  /* Forzamos que el botón hamburguesa sea visible */
   .menu-toggle { 
     display: block !important; 
     font-size: 30px;
@@ -489,13 +474,9 @@ a { color: #93c5fd; text-decoration: none; }
     padding: 10px;
     cursor: pointer;
   }
-
-  /* Escondemos el botón de la derecha en móvil */
   .nav-right { display: none !important; }
-
-  /* Ajustamos el contenedor del menú */
   .nav-center {
-    display: none; /* Oculto por defecto */
+    display: none; 
     flex-direction: column;
     position: fixed;
     top: 0;
@@ -509,19 +490,8 @@ a { color: #93c5fd; text-decoration: none; }
     gap: 25px;
     z-index: 1050;
   }
-
-  /* Clase que activa el JS */
-  .nav-center.active {
-    display: flex !important;
-  }
-
-  .nav-center a {
-    font-size: 26px;
-    font-weight: 600;
-    color: #fff;
-  }
-
-  /* Arreglo del Hero en móvil para que no se pise con el menú */
+  .nav-center.active { display: flex !important; }
+  .nav-center a { font-size: 26px; font-weight: 600; color: #fff; }
   .hero {
     background-position: 80% center !important;
     text-align: center;
@@ -530,8 +500,6 @@ a { color: #93c5fd; text-decoration: none; }
   .hero-container { justify-content: center; }
   .hero-content { align-items: center; }
   .hero h1 { font-size: 32px; }
-
-  /* Ajuste de los planes para que no se vean gigantes */
   .price-card.oro-card { 
     transform: scale(1) !important; 
     margin: 30px 0 !important; 
@@ -616,21 +584,21 @@ a { color: #93c5fd; text-decoration: none; }
       </div>
 
       <div class="price-card oro-card">
-    <div class="badge-oro-container">
-      <span class="badge-oro">🔥 MÁS ELEGIDO</span>
-    </div>
-    <h3 class="title-oro">Oro</h3>
-    <div class="price price-oro">$29.900</div>
-    <ul class="plan-list">
-      <li>✔ Todo lo del plan Bronce</li>
-      <li>✔ Optimización avanzada</li>
-      <li>✔ Activación de Windows</li>
-      <li>✔ Activación de Office</li>
-      <li>✔ Mejora de arranque y velocidad</li>
-    </ul>
-    <p class="mini">La opción más elegida</p>
-    <a class="button small-btn btn-oro" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
-  </div>
+        <div class="badge-oro-container">
+          <span class="badge-oro">🔥 MÁS ELEGIDO</span>
+        </div>
+        <h3 class="title-oro">Oro</h3>
+        <div class="price price-oro">$29.900</div>
+        <ul class="plan-list">
+          <li>✔ Todo lo del plan Bronce</li>
+          <li>✔ Optimización avanzada</li>
+          <li>✔ Activación de Windows</li>
+          <li>✔ Activación de Office</li>
+          <li>✔ Mejora de arranque y velocidad</li>
+        </ul>
+        <p class="mini">La opción más elegida</p>
+        <a class="button small-btn btn-oro" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
+      </div>
 
       <div class="price-card platinum">
         <h3>Platinum</h3>
@@ -769,7 +737,7 @@ function toggleMenu() {
   document.getElementById("menu").classList.toggle("active");
 }
 
-// NUEVO: Cerrar el menú automáticamente al hacer clic en un enlace
+// Cierre de menú automático
 document.querySelectorAll('#menu a').forEach(link => {
   link.addEventListener('click', () => {
     document.getElementById("menu").classList.remove("active");
@@ -789,6 +757,6 @@ document.querySelectorAll(".faq-question").forEach(btn => {
   });
 });
 </script>
-<script language="JavaScript" type="text/javascript">TrustLogo("https://micuenta.donweb.com/img/sectigo_positive_sm.png", "CL1", "none");</script><a href="https://donweb.com/es-ar/certificados-ssl" id="comodoTL" title="Certificados SSL Argentina">Certificados SSL Argentina</a>
+<script language="JavaScript" type="text/javascript">TrustLogo("https://micuenta.donweb.com/img/sectigo_positive_sm.png", "CL1", "none");</script><a href="https://donweb.com/es-ar/certificados-ssl" id="comodoTL" title="Certificados SSL Argentina" style="display:block; text-align:center; margin-bottom:20px; color:#94a3b8; font-size:12px;">Certificados SSL Argentina</a>
 </body>
 </html>
