@@ -117,8 +117,17 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
   font-size: 13.5px;
   color: #fde047;
 }
+.important-note {
+  margin-top: 15px;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #fca5a5;
+}
 
-/* Botón de descarga principal */
+/* Botones */
 .btn-download {
   display: inline-block;
   padding: 16px 35px;
@@ -133,6 +142,21 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
   cursor: pointer;
 }
 .btn-download:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.1); }
+
+.btn-whatsapp-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25d366;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 15px;
+  text-decoration: none;
+  font-size: 14px;
+}
+.btn-whatsapp-step:hover { background: #128c7e; transform: translateY(-2px); }
 
 /* PLAN B: ALTERNATIVA RUSTDESK */
 .alt-download {
@@ -184,50 +208,32 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
 .security-text h4 { margin: 0 0 5px 0; color: #22d3ee; font-size: 18px; }
 .security-text p { margin: 0; font-size: 14px; color: #93c5fd; }
 
+/* Botón flotante WhatsApp */
+.whatsapp-float {
+  position: fixed; bottom: 20px; right: 20px;
+  background: linear-gradient(90deg, #4ade80, #22c55e); color: #022c22;
+  padding: 16px 20px; border-radius: 50%; font-size: 22px;
+  box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
+}
+
 /* ========================================= */
 /* 4. RESPONSIVE (CELULARES)                  */
 /* ========================================= */
 @media (max-width: 768px) {
   .menu-toggle { display: block; }
-  
   .nav-center {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 65px; left: 0;
-    width: 100%;
-    max-height: 0; /* Menú cerrado */
-    overflow: hidden;
-    background: rgba(2, 6, 23, 0.98);
-    backdrop-filter: blur(15px);
-    transition: max-height 0.4s ease-in-out;
-    padding: 0;
+    display: flex; flex-direction: column; position: fixed;
+    top: 65px; left: 0; width: 100%; max-height: 0; overflow: hidden;
+    background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(15px);
+    transition: max-height 0.4s ease-in-out; padding: 0;
   }
-  
-  .nav-center.active {
-    max-height: 500px; /* Menú abierto */
-    padding: 20px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  
-  .nav-center a {
-    width: 100%;
-    text-align: center;
-    padding: 15px;
-    font-size: 20px;
-  }
-
+  .nav-center.active { max-height: 500px; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .nav-center a { width: 100%; text-align: center; padding: 15px; font-size: 20px; }
   .step { flex-direction: column; align-items: center; text-align: center; }
   .security-shield { flex-direction: column; text-align: center; }
 }
 
-footer { 
-  padding: 50px 20px; 
-  text-align: center; 
-  color: #64748b; 
-  font-size: 14px; 
-  border-top: 1px solid rgba(255,255,255,0.05); 
-}
+footer { padding: 50px 20px; text-align: center; color: #64748b; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
 </style>
 </head>
 <body>
@@ -269,7 +275,7 @@ footer {
         <details class="alt-download">
           <summary>¿AnyDesk te da error o no podés abrirlo?</summary>
           <div class="alt-content">
-            <p>Usá nuestra herramienta alternativa (RustDesk). Es ideal para PCs antiguas, Windows 7 o cuando AnyDesk falla.</p>
+            <p>Usá nuestra herramienta alternativa (RustDesk). Es ideal para PCs antiguas o cuando AnyDesk falla.</p>
             <a href="https://rustdesk.com/es/" target="_blank" class="btn-alt">⬇ Descargar RustDesk</a>
           </div>
         </details>
@@ -288,10 +294,18 @@ footer {
       <div class="step-num">3</div>
       <div class="step-content">
         <h3>Enviános tu ID</h3>
-        <p>Pasanos por WhatsApp el número de 9 dígitos que aparece en pantalla <b>(y la contraseña si la aplicación te muestra una)</b>.</p>
+        <p>Hacé clic en el botón de abajo para enviarnos tu ID por WhatsApp <b>(y la contraseña si la aplicación te muestra una)</b>.</p>
         
+        <a href="https://wa.me/5493883298736?text=Hola,%20ya%20abr%C3%AD%20el%20programa.%20Mi%20ID%20es:%20" target="_blank" class="btn-whatsapp-step">
+          💬 Enviar mi ID por WhatsApp
+        </a>
+
+        <div class="important-note">
+          🛑 <b>IMPORTANTE:</b> Dejá el programa abierto hasta que el técnico se conecte. Si lo cerrás, la conexión se perderá.
+        </div>
+
         <div class="alert-box">
-          ⚠️ <b>ATENCIÓN:</b> La imagen de abajo es solo ilustrativa. Por favor, <b>no le saques captura a esta página</b>. Envíanos el número que aparece dentro de tu programa AnyDesk/RustDesk.
+          ⚠️ <b>ATENCIÓN:</b> La imagen de abajo es solo ilustrativa. Por favor, <b>no le saques captura a esta página</b>.
         </div>
 
         <img src="anydesk-id-ejemplo.png" alt="Ejemplo de ID" class="img-tutorial">
@@ -312,21 +326,18 @@ footer {
   <p>© <span id="year"></span> Cósmica | Soporte Técnico Remoto Profesional</p>
 </footer>
 
+<a class="whatsapp-float" href="https://wa.me/5493883298736">🚀</a>
+
 <script>
-// Año automático
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Menú Móvil
 function toggleMenu() {
   const menu = document.getElementById("menu");
   const btn = document.getElementById("menuBtn");
   menu.classList.toggle("active");
-  
-  // Cambiar icono ☰ por ✕
   btn.textContent = menu.classList.contains("active") ? "✕" : "☰";
 }
 
-// Cerrar menú al tocar un link
 document.querySelectorAll('#menu a').forEach(link => {
   link.addEventListener('click', () => {
     document.getElementById("menu").classList.remove("active");
