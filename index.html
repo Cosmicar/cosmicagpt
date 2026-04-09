@@ -1073,7 +1073,8 @@ a { color: #93c5fd; text-decoration: none; }
     <p class="subtitle">Nuestra base de operaciones en San Salvador de Jujuy</p>
     
     <div class="map-container">
-      <iframe 
+      <iframe
+        title="Mapa de ubicación Cósmica" 
         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3639.1415934653844!2d-65.3045618237554!3d-24.184318784403162!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x941b0f46c694a9e7%3A0xc95311029016f40!2sRamirez%20de%20Velazco%20111%2C%20Y4600%20San%20Salvador%20de%20Jujuy%2C%20Jujuy!5e0!3m2!1ses-419!2sar!4v1711600000000!5m2!1ses-419!2sar" 
         allowfullscreen="" 
         loading="lazy" 
@@ -1207,6 +1208,13 @@ const counterObserver = new IntersectionObserver((entries) => {
 if (planesSection && counterElement) {
   counterObserver.observe(planesSection);
 }
+// Fix de accesibilidad para el logo SSL de DonWeb
+window.addEventListener('load', () => {
+  const sslImg = document.querySelector('img[src*="sectigo_positive_sm.png"]');
+  if (sslImg && !sslImg.hasAttribute('alt')) {
+    sslImg.setAttribute('alt', 'Certificado SSL Seguro Sectigo');
+  }
+});
 </script>
 <script language="JavaScript" type="text/javascript">TrustLogo("https://micuenta.donweb.com/img/sectigo_positive_sm.png", "CL1", "none");</script><a href="https://donweb.com/es-ar/certificados-ssl" id="comodoTL" title="Certificados SSL Argentina" style="display:block; text-align:center; margin-bottom:20px; color:#94a3b8; font-size:12px;">Certificados SSL Argentina</a>
 </body>
