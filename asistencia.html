@@ -26,7 +26,7 @@ body {
 a { color: #93c5fd; text-decoration: none; }
 
 /* ========================================= */
-/* 2. NAVEGACIÓN (CON TRANSICIÓN SUAVE)     */
+/* 2. NAVEGACIÓN                             */
 /* ========================================= */
 .nav {
   position: fixed; top: 0; left: 0; width: 100%;
@@ -38,18 +38,15 @@ a { color: #93c5fd; text-decoration: none; }
 .nav-left { display: flex; align-items: center; gap: 10px; }
 .nav-logo { width: 35px; }
 .nav-brand { font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-
 .nav-center { display: flex; gap: 25px; }
 .nav-center a { color: #cbd5f5; font-size: 14px; font-weight: 500; }
 .nav-center a:hover { color: #22d3ee; }
-
 .menu-toggle { display: none; font-size: 26px; cursor: pointer; color: #fff; }
 
 /* ========================================= */
 /* 3. CONTENIDO PRINCIPAL                    */
 /* ========================================= */
 .container { max-width: 800px; margin: 120px auto 60px; padding: 0 20px; text-align: center; }
-
 h1 { font-size: 32px; margin-bottom: 10px; color: #fff; text-shadow: 0 0 15px rgba(34,211,238,0.3); }
 p.intro { color: #cbd5f5; margin-bottom: 40px; }
 
@@ -78,11 +75,27 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
   flex-shrink: 0;
   box-shadow: 0 0 15px rgba(74,222,128,0.4);
 }
+.step-content { width: 100%; }
 .step-content h3 { margin: 0 0 10px 0; font-size: 18px; color: #fff; }
 .step-content p { margin: 0; color: #cbd5f5; font-size: 15px; }
 
+/* Imágenes en los pasos */
+.img-tutorial {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-top: 15px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.img-logo-app {
+  width: 140px;
+  margin-bottom: 15px;
+  display: block;
+}
+
 .tip-box {
-  margin-top: 10px;
+  margin-top: 15px;
   font-size: 13px;
   color: #94a3b8;
   font-style: italic;
@@ -91,7 +104,6 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
   gap: 5px;
 }
 
-/* Botón de descarga */
 .btn-download {
   display: inline-block;
   padding: 16px 35px;
@@ -105,7 +117,7 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
 }
 .btn-download:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.1); }
 
-/* CAJA DE SEGURIDAD (NUEVO) */
+/* CAJA DE SEGURIDAD */
 .security-shield {
   background: rgba(34, 211, 238, 0.05);
   border: 1px solid rgba(34, 211, 238, 0.2);
@@ -126,34 +138,14 @@ p.intro { color: #cbd5f5; margin-bottom: 40px; }
 /* ========================================= */
 @media (max-width: 768px) {
   .menu-toggle { display: block; }
-  
   .nav-center {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 65px; left: 0;
-    width: 100%;
-    max-height: 0; /* Cerrado por defecto */
-    overflow: hidden;
-    background: rgba(2, 6, 23, 0.98);
-    backdrop-filter: blur(15px);
-    transition: max-height 0.4s ease-in-out; /* Transición suave */
-    padding: 0;
+    display: flex; flex-direction: column; position: fixed;
+    top: 65px; left: 0; width: 100%; max-height: 0; overflow: hidden;
+    background: rgba(2, 6, 23, 0.98); backdrop-filter: blur(15px);
+    transition: max-height 0.4s ease-in-out; padding: 0;
   }
-  
-  .nav-center.active {
-    max-height: 400px; /* Abierto */
-    padding: 20px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  
-  .nav-center a {
-    width: 100%;
-    text-align: center;
-    padding: 15px;
-    font-size: 18px;
-  }
-
+  .nav-center.active { max-height: 400px; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .nav-center a { width: 100%; text-align: center; padding: 15px; font-size: 18px; }
   .step { flex-direction: column; align-items: center; text-align: center; }
   .security-shield { flex-direction: column; text-align: center; }
 }
@@ -166,7 +158,7 @@ footer { padding: 40px; text-align: center; color: #64748b; font-size: 14px; bor
 <nav class="nav">
   <div class="nav-left">
     <a href="/index.html">
-        <img src="cosmica-logo.webp" alt="logo cosmica" class="nav-logo">
+        <img src="cosmica-logo.png" alt="logo cosmica" class="nav-logo" onerror="this.src='cosmica-logo.webp'">
     </a>
     <span class="nav-brand">CÓSMICA</span>
   </div>
@@ -189,11 +181,12 @@ footer { padding: 40px; text-align: center; color: #64748b; font-size: 14px; bor
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
+        <img src="anydesk-logo.png" alt="Logo AnyDesk" class="img-logo-app">
         <h3>Descargá AnyDesk</h3>
         <p>Es la herramienta oficial y segura que usamos para el soporte técnico.</p>
         <a href="https://anydesk.com/es/downloads/windows" target="_blank" class="btn-download">⬇ Descargar AnyDesk</a>
         <div class="tip-box">
-          💡 Tip: Si no ves la descarga, presioná <b>Ctrl + J</b> para abrir tus descargas.
+          💡 Tip: Si no ves la descarga, presioná <b>Ctrl + J</b> para abrir tus descargas recientes.
         </div>
       </div>
     </div>
@@ -211,6 +204,7 @@ footer { padding: 40px; text-align: center; color: #64748b; font-size: 14px; bor
       <div class="step-content">
         <h3>Pasanos tu ID</h3>
         <p>Envianos por WhatsApp el número de 9 dígitos que aparece donde dice "Este puesto de trabajo".</p>
+        <img src="ejemplo-id.jpg" alt="Ejemplo de dónde encontrar el ID de AnyDesk" class="img-tutorial">
       </div>
     </div>
   </div>
@@ -229,16 +223,13 @@ footer { padding: 40px; text-align: center; color: #64748b; font-size: 14px; bor
 </footer>
 
 <script>
-// Año automático para el footer
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Lógica del menú móvil
 function toggleMenu() {
   const menu = document.getElementById("menu");
   const btn = document.getElementById("menuBtn");
   menu.classList.toggle("active");
   
-  // Cambiar el ícono de hamburguesa a X
   if(menu.classList.contains("active")) {
       btn.textContent = "✕";
   } else {
@@ -246,7 +237,6 @@ function toggleMenu() {
   }
 }
 
-// Cerrar menú al hacer clic en un link
 document.querySelectorAll('#menu a').forEach(link => {
   link.addEventListener('click', () => {
     document.getElementById("menu").classList.remove("active");
