@@ -84,16 +84,15 @@
 /* ========================================= */
 /* 1. BASE Y VARIABLES GLOBALES */
 /* ========================================= */
-* { box-sizing: border-box; transition: background .3s, box-shadow .3s, transform .3s; }
-body {
-  html {
+html {
   scroll-behavior: smooth;
 }
+* { box-sizing: border-box; transition: background .3s, box-shadow .3s, transform .3s; }
+body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
   color: #fff;
   overflow-x: hidden;
-  scroll-behavior: smooth;
   background:
     radial-gradient(circle at 20% 10%, rgba(34,211,238,0.15), transparent 40%),
     radial-gradient(circle at 80% 0%, rgba(74,222,128,0.10), transparent 40%),
@@ -282,7 +281,7 @@ a { color: #93c5fd; text-decoration: none; }
 @keyframes flotar { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 
 /* Grillas */
-.services, .pricing, .testimonials {
+.pricing, .testimonials {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 25px;
@@ -494,9 +493,14 @@ a { color: #93c5fd; text-decoration: none; }
     gap: 20px;
     z-index: 1050;
   }
-  .nav-center.active { display: flex !important; }
+  .nav-center.active { 
+    display: flex !important; 
+    max-height: 600px; 
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
   .nav-center a {
-    font-size: 22px; /* Bajamos un pelín el tamaño para que no scrollee */
+    font-size: 22px; 
     font-weight: 600;
   }
   .hero {
@@ -511,6 +515,7 @@ a { color: #93c5fd; text-decoration: none; }
     transform: scale(1) !important; 
     margin: 30px 0 !important; 
   }
+  .services { grid-template-columns: 1fr; } /* ARREGLO MÓVIL SERVICIOS */
 }
 /* ========================================= */
 /* ESTILOS DE RESEÑAS TIPO GOOGLE            */
@@ -618,6 +623,12 @@ a { color: #93c5fd; text-decoration: none; }
 /* ========================================= */
 /* ESTILOS DE SERVICIOS PREMIUM              */
 /* ========================================= */
+.services {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas forzadas en PC */
+  gap: 25px;
+  margin-top: 40px;
+}
 .service-card {
   background: rgba(2,6,23,0.75);
   border: 1px solid rgba(255,255,255,0.08);
@@ -933,22 +944,20 @@ a { color: #93c5fd; text-decoration: none; }
       </div>
 
     </div>
-    </div> <div class="cta-review">
+
+    <div class="cta-review">
       <p>¿Ya arreglamos tu PC? Ayudanos a seguir creciendo 🚀</p>
       <a href="https://g.page/r/CUYVFj2zsaPzEAE/review" target="_blank" rel="noopener noreferrer" class="btn-google">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Dejanos tu reseña en Google
       </a>
     </div>
-
-  </section> 
   </section>
-
 
   <section class="section fade">
     <h2 class="title">Antes vs Después</h2>
     <p class="subtitle">Resultados reales que se sienten desde el primer minuto</p>
-    <div class="services">
+    <div class="services" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
       <div class="card">
         <h3>❌ Antes</h3>
         <ul style="list-style:none;padding:0;text-align:left;color:#cbd5f5">
@@ -973,7 +982,9 @@ a { color: #93c5fd; text-decoration: none; }
   <section id="faq" class="section fade">
     <h2 class="title">Preguntas frecuentes</h2>
     <p class="subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC</p>
-    <div class="faq-item">
+    
+    <div class="faq-container">
+      <div class="faq-item">
         <button class="faq-question">¿Cuánto tarda el soporte técnico para una PC lenta?</button>
         <div class="faq-answer">Sabemos que una PC lenta te hace perder tiempo y plata. Por eso, la mayoría de los problemas de lentitud y virus se resuelven en menos de 1 hora mediante nuestra asistencia remota.</div>
       </div>
@@ -991,8 +1002,10 @@ a { color: #93c5fd; text-decoration: none; }
       </div>
     </div>
   </section>
-<section id="ubicacion" class="section fade">
-    <h2 class="title">¿Donde estamos?</h2> <p class="subtitle">Nuestra base de operaciones en San Salvador de Jujuy</p>
+
+  <section id="ubicacion" class="section fade">
+    <h2 class="title">¿Donde estamos?</h2> 
+    <p class="subtitle">Nuestra base de operaciones en San Salvador de Jujuy</p>
     
     <div class="map-container">
       <iframe 
@@ -1006,6 +1019,7 @@ a { color: #93c5fd; text-decoration: none; }
       📍 Ramirez de Velazco 111, San Salvador de Jujuy, Jujuy
     </div>
   </section>
+
   <section id="contacto" class="section fade">
     <div class="contacto-banner">
       <h2 class="title">¿Listo para que tu PC vuelva a volar? 🚀</h2>
