@@ -1081,32 +1081,39 @@ document.querySelectorAll(".faq-question").forEach(btn => {
   });
 });
 // Animación del contador de PCs (+500)
+const planesSection = document.getElementById('planes');
 const counterElement = document.getElementById('pc-counter');
 let counterAnimated = false;
 
 const counterObserver = new IntersectionObserver((entries) => {
-  if (entries[0].isIntersecting && !counterAnimated) {
-    counterAnimated = true;
-    let start = 0;
-    const end = 500;
-    const duration = 2000; // 2 segundos de animación
-    const increment = end / (duration / 16); 
-    
-    const updateCounter = () => {
-      start += increment;
-      if (start < end) {
-        counterElement.innerText = Math.ceil(start);
-        requestAnimationFrame(updateCounter);
-      } else {
-        counterElement.innerText = end; // Fija el final exacto
-      }
-    };
-    updateCounter();
-  }
-});
+  entries.forEach(entry => {
+    // Se activa cuando ve la sección de planes y si no se animó antes
+    if (entry.isIntersecting && !counterAnimated) {
+      counterAnimated = true;
+      let startTimestamp = null;
+      const duration = 2000; // Dura 2 segundos exactos
+      const finalValue = 500;
 
-if (counterElement) {
-  counterObserver.observe(counterElement);
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        
+        // Dibuja el número calculando el progreso del tiempo
+        counterElement.innerText = Math.floor(progress * finalValue);
+        
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          counterElement.innerText = finalValue;
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+  });
+}, { threshold: 0.1 }); // Le avisa al navegador ni bien asoma el 10% de la sección
+
+if (planesSection && counterElement) {
+  counterObserver.observe(planesSection);
 }
 </script>
 <script language="JavaScript" type="text/javascript">TrustLogo("https://micuenta.donweb.com/img/sectigo_positive_sm.png", "CL1", "none");</script><a href="https://donweb.com/es-ar/certificados-ssl" id="comodoTL" title="Certificados SSL Argentina" style="display:block; text-align:center; margin-bottom:20px; color:#94a3b8; font-size:12px;">Certificados SSL Argentina</a>
