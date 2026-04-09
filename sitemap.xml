@@ -1,14 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
     <loc>https://cosmica.ar/</loc>
     <priority>1.0</priority>
   </url>
-
   <url>
-    <loc>https://cosmica.ar/asistencia.html</loc>
+    <loc>https://cosmica.ar/pc-lenta-buenos-aires.html</loc>
     <priority>0.8</priority>
   </url>
-
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-caba.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-catamarca.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-chaco.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-chubut.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-cordoba.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-corrientes.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-entre-rios.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-formosa.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-jujuy.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-la-pampa.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-la-rioja.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-mendoza.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-misiones.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-neuquen.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-rio-negro.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-salta.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-san-juan.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-san-luis.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-santa-cruz.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-santa-fe.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-santiago-del-estero.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-tierra-del-fuego.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cosmica.ar/pc-lenta-tucuman.html</loc>
+    <priority>0.8</priority>
+  </url>
 </urlset>
