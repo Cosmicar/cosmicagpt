@@ -825,7 +825,7 @@ a { color: #93c5fd; text-decoration: none; }
   </section>
 
   <section id="planes" class="section fade">
-    <div class="trust-badge">⭐ +500 PCs reparadas | Atención en toda Argentina</div>
+    <div class="trust-badge">⭐ +<span id="pc-counter">0</span> PCs reparadas | Atención en toda Argentina</div>
     <h2 class="title">Planes</h2>
     <p class="subtitle">🚀 De lenta y llena de errores… a rápida y limpia en una sola sesión</p>
 
@@ -1080,6 +1080,34 @@ document.querySelectorAll(".faq-question").forEach(btn => {
     }
   });
 });
+// Animación del contador de PCs (+500)
+const counterElement = document.getElementById('pc-counter');
+let counterAnimated = false;
+
+const counterObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !counterAnimated) {
+    counterAnimated = true;
+    let start = 0;
+    const end = 500;
+    const duration = 2000; // 2 segundos de animación
+    const increment = end / (duration / 16); 
+    
+    const updateCounter = () => {
+      start += increment;
+      if (start < end) {
+        counterElement.innerText = Math.ceil(start);
+        requestAnimationFrame(updateCounter);
+      } else {
+        counterElement.innerText = end; // Fija el final exacto
+      }
+    };
+    updateCounter();
+  }
+});
+
+if (counterElement) {
+  counterObserver.observe(counterElement);
+}
 </script>
 <script language="JavaScript" type="text/javascript">TrustLogo("https://micuenta.donweb.com/img/sectigo_positive_sm.png", "CL1", "none");</script><a href="https://donweb.com/es-ar/certificados-ssl" id="comodoTL" title="Certificados SSL Argentina" style="display:block; text-align:center; margin-bottom:20px; color:#94a3b8; font-size:12px;">Certificados SSL Argentina</a>
 </body>
