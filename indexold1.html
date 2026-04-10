@@ -333,7 +333,11 @@ a { color: #93c5fd; text-decoration: none; }
 }
 /* --- 1. CONSOLIDACIÓN DE FUENTES --- */
 /* Asegúrate de tener solo estos en el <head> */
-/* <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"> */
+/* <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap">
+</noscript> */
 
 /* --- 2. ESTILOS DE PLANES DEPURADOS --- */
 .pricing {
