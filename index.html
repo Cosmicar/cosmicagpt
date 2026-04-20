@@ -765,6 +765,14 @@ a { color: #93c5fd; text-decoration: none; }
 .seo-links a:hover {
   color: #94a3b8;
 }
+.countdown {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #facc15;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+  letter-spacing: 1px;
+}
 </style>
 </head>
 <body>
@@ -871,6 +879,7 @@ a { color: #93c5fd; text-decoration: none; }
 
   <h3>Oro</h3>
 <p class="mini">⏳ Oferta por tiempo limitado</p>
+<div id="countdown-oro" class="countdown"></div>
   <div class="price price-oro">
     <span style="text-decoration: line-through; font-size:16px; color:#94a3b8;">
       $29.900
@@ -1225,6 +1234,29 @@ const counterObserver = new IntersectionObserver((entries) => {
 if (planesSection && counterElement) {
   counterObserver.observe(planesSection);
 }
+// Cuenta regresiva Plan Oro
+const countdownElement = document.getElementById("countdown-oro");
+
+// Duración: 24 horas (podés cambiarlo)
+let duration = 24 * 60 * 60;
+
+function updateCountdown() {
+  let hours = Math.floor(duration / 3600);
+  let minutes = Math.floor((duration % 3600) / 60);
+  let seconds = duration % 60;
+
+  countdownElement.innerHTML =
+    `⏳ ${hours.toString().padStart(2, '0')}:` +
+    `${minutes.toString().padStart(2, '0')}:` +
+    `${seconds.toString().padStart(2, '0')}`;
+
+  if (duration > 0) {
+    duration--;
+  }
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
 
 </script>
 
