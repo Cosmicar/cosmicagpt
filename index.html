@@ -765,6 +765,14 @@ a { color: #93c5fd; text-decoration: none; }
 .seo-links a:hover {
   color: #94a3b8;
 }
+/* Animación de parpadeo suave */
+@keyframes soft-blink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.05); }
+}
+.oferta-blink {
+    animation: soft-blink 1.5s infinite ease-in-out;
+}
 </style>
 </head>
 <body>
@@ -863,23 +871,23 @@ a { color: #93c5fd; text-decoration: none; }
         <a class="button small-btn" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Bronce">Contratar ahora</a>
       </div>
 
-      <div class="price-card oro-card">
-        <div class="badge-oro-container">
-          <span class="badge-oro">🔥 MÁS ELEGIDO</span>
-        </div>
-        <h3 class="title-oro">Oro</h3>
-        <div class="price price-oro">$29.900</div>
-        <ul class="plan-list">
-          <li>✔ Todo lo del plan Bronce</li>
-          <li>✔ Optimización avanzada</li>
-          <li>✔ Activación de Windows</li>
-          <li>✔ Activación de Office</li>
-          <li>✔ Mejora de arranque y velocidad</li>
-        </ul>
-        <p class="mini">La opción más elegida</p>
-        <a class="button small-btn btn-oro" href="https://wa.me/5493883298736?text=Hola quiero contratar el plan Oro">Contratar ahora</a>
-      </div>
+<div class="relative overflow-hidden p-8 rounded-2xl border-2 border-cyan-400 bg-slate-900/80">
+    <div class="absolute top-4 right-4 oferta-blink">
+        <span class="bg-cyan-400 text-slate-950 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
+            🔥 ¡OFERTA!
+        </span>
+    </div>
+    
+    <h3 class="text-2xl font-bold mb-2">Plan Oro</h3>
+    <p class="text-slate-400 text-sm mb-6">Soporte técnico premium completo</p>
 
+    <div class="mb-8">
+        <span class="text-slate-500 line-through text-sm block">$[PRECIO_VIEJO]</span>
+        <span class="text-5xl font-bold text-white">$[NUEVO_PRECIO]</span>
+        <span class="text-slate-400 text-sm">/servicio</span>
+    </div>
+
+    </div>
       <div class="price-card platinum">
         <h3>Platinum</h3>
         <div class="price price-platinum">$39.900</div>
