@@ -332,10 +332,21 @@ a { color: #93c5fd; text-decoration: none; }
 /* Footer y Flotantes */
 .footer { background: #020617; padding: 30px; text-align: center; color: #94a3b8; }
 .whatsapp-float {
-  position: fixed; bottom: 20px; right: 20px;
-  background: linear-gradient(90deg, #4ade80, #22c55e); color: #022c22;
-  padding: 16px 20px; border-radius: 50%; font-size: 22px;
-  box-shadow: 0 0 20px rgba(74,222,128,0.6); z-index: 1000;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #25D366;
+  padding: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(37,211,102,0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
 }
 
 /* ========================================= */
@@ -1163,7 +1174,11 @@ a { color: #93c5fd; text-decoration: none; }
   </div>
 </footer>
 
-<a class="whatsapp-float" href="https://wa.me/5493883298736">👨‍🚀</a>
+<a class="whatsapp-float" href="https://wa.me/5493883298736" target="_blank">
+  <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" 
+       alt="WhatsApp" 
+       style="width:28px;height:28px;">
+</a>
 
 <script>
 // Animación de entrada (Fade in)
