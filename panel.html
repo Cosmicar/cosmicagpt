@@ -49,7 +49,9 @@
 <button onclick="cargar()">Ver todos</button>
 
 <h2>Trabajos</h2>
-<div id="listaTrabajos"></div>
+<div id="listaTrabajos" style="color:gray; margin-top:10px;">
+  🔍 Buscá un cliente por DNI o presioná "Ver todos"
+</div>
 
 <script type="module">
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc } 
@@ -139,7 +141,6 @@ window.guardarCliente = async ()=>{
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
   provincia.value="";
 
-  cargar();
 };
 
 // EDITAR
@@ -198,6 +199,15 @@ window.anularGarantia = async(id)=>{
 
 // BUSCAR
 window.buscar = ()=>{
+  const dniFiltro = document.getElementById("busquedaDni").value.trim();
+
+  if(!dniFiltro){
+    alert("Ingresá un DNI para buscar");
+    return;
+  }
+
+  cargar(dniFiltro);
+};
   const dniFiltro = document.getElementById("busquedaDni").value.trim();
   cargar(dniFiltro);
 };
