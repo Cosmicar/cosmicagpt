@@ -77,6 +77,7 @@ import {
   collection, 
   addDoc, 
   getDocs, 
+  getDoc,
   doc, 
   query,
   where,
@@ -166,42 +167,43 @@ if (!nombre || !dni || !telefono || !provincia || !equipo || !problema) {
     }
 
     // 🔧 crear trabajo
-    await addDoc(collection(db, "trabajos"), {
-      clienteId: clienteId,
-      tipo: document.getElementById("tipo").value,
-      equipo: document.getElementById("equipo").value,
-      marca: document.getElementById("marca").value,
-      modelo: document.getElementById("modelo").value,
-      problema: document.getElementById("problema").value,
-      estado: "Ingresado",
-      fechaIngreso: new Date().toISOString(),
-      garantiaDias: 90
-    });
+if (window.editandoTrabajoId) {
+  // ✏️ EDITAR trabajo existente
+  const refTrabajo = doc(db, "trabajos", window.editandoTrabajoId);
+  const refCliente = doc(db, "clientes", window.editandoClienteId);
 
-    alert("Ingreso guardado 😏");
+  await updateDoc(refCliente, {
+    nombre: nombre,
+    apellido: document.getElementById("apellido").value,
+    telefono: document.getElementById("telefono").value,
+    provincia: document.getElementById("provincia").value
+  });
 
-    // limpiar formulario
-    document.getElementById("nombre").value = "";
-    document.getElementById("apellido").value = "";
-    document.getElementById("dni").value = "";
-    document.getElementById("telefono").value = "";
-    document.getElementById("provincia").value = "";
-    document.getElementById("equipo").value = "";
-    document.getElementById("marca").value = "";
-    document.getElementById("modelo").value = "";
-    document.getElementById("problema").value = "";
+  await updateDoc(refTrabajo, {
+    tipo: document.getElementById("tipo").value,
+    equipo: document.getElementById("equipo").value,
+    marca: document.getElementById("marca").value,
+    modelo: document.getElementById("modelo").value,
+    problema: document.getElementById("problema").value
+  });
 
-    cargarTrabajos();
+  window.editandoTrabajoId = null;
+  window.editandoClienteId = null;
 
-  } catch (e) {
-    console.error(e);
-    alert("Error al guardar");
-  }
-
-  btn.disabled = false;
-};
-
-
+} else {
+  // 🔧 crear trabajo nuevo
+  await addDoc(collection(db, "trabajos"), {
+    clienteId: clienteId,
+    tipo: document.getElementById("tipo").value,
+    equipo: document.getElementById("equipo").value,
+    marca: document.getElementById("marca").value,
+    modelo: document.getElementById("modelo").value,
+    problema: document.getElementById("problema").value,
+    estado: "Ingresado",
+    fechaIngreso: new Date().toISOString(),
+    garantiaDias: 90
+  });
+}
 
 // ⏳ GARANTÍA
 function calcularGarantia(fechaIngreso, diasGarantia) {
@@ -215,7 +217,39 @@ function calcularGarantia(fechaIngreso, diasGarantia) {
 
 // 🔄 CAMBIAR ESTADO
 window.cambiarEstado = async function(id, nuevoEstado) {
-  window.reingresarTrabajo = async function(id) {
+window.editandoTrabajoId = null;
+window.editandoClienteId = null;
+
+window.editarTrabajo = async function(trabajoId, clienteId) {
+  const refTrabajo = doc(db, "trabajos", trabajoId);
+  const refCliente = doc(db, "clientes", clienteId);
+
+  const trabajoSnap = await getDoc(refTrabajo);
+  const clienteSnap = await getDoc(refCliente);
+
+  if (trabajoSnap.exists() && clienteSnap.exists()) {
+    const trabajo = trabajoSnap.data();
+    const cliente = clienteSnap.data();
+
+    document.getElementById("nombre").value = cliente.nombre || "";
+    document.getElementById("apellido").value = cliente.apellido || "";
+    document.getElementById("dni").value = cliente.dni || "";
+    document.getElementById("telefono").value = cliente.telefono || "";
+    document.getElementById("provincia").value = cliente.provincia || "";
+
+    document.getElementById("tipo").value = trabajo.tipo || "";
+    document.getElementById("equipo").value = trabajo.equipo || "";
+    document.getElementById("marca").value = trabajo.marca || "";
+    document.getElementById("modelo").value = trabajo.modelo || "";
+    document.getElementById("problema").value = trabajo.problema || "";
+
+    window.editandoTrabajoId = trabajoId;
+    window.editandoClienteId = clienteId;
+
+    alert("Modo edición activado ✏️");
+  }
+};
+window.reingresarTrabajo = async function(id) {
   const ref = doc(db, "trabajos", id);
 
   await updateDoc(ref, {
@@ -301,9 +335,10 @@ async function cargarTrabajos() {
         Estado: <b>${trabajo.estado}</b><br><br>
 
 ${trabajo.estado !== "Entregado" ? `
-  <button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
-  <button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
-  <button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
+<button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
+<button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
+<button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
+<button onclick="editarTrabajo('${id}', '${trabajo.clienteId}')">Editar</button>
 ` : `<b style="color:lime;">✔ Entregado</b>`}
 
         <br><br>
