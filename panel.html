@@ -217,6 +217,20 @@ function calcularGarantia(fechaIngreso, diasGarantia) {
 window.cambiarEstado = async function(id, nuevoEstado) {
   const ref = doc(db, "trabajos", id);
 
+  const trabajosSnapshot = await getDocs(collection(db, "trabajos"));
+  let estadoActual = "";
+
+  trabajosSnapshot.forEach(docSnap => {
+    if (docSnap.id === id) {
+      estadoActual = docSnap.data().estado;
+    }
+  });
+
+  if (estadoActual === "Entregado") {
+    alert("Este trabajo ya fue entregado y no puede modificarse");
+    return;
+  }
+
   await updateDoc(ref, {
     estado: nuevoEstado
   });
@@ -263,9 +277,11 @@ async function cargarTrabajos() {
 
         Estado: <b>${trabajo.estado}</b><br><br>
 
-        <button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
-        <button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
-        <button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
+${trabajo.estado !== "Entregado" ? `
+  <button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
+  <button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
+  <button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
+` : `<b style="color:lime;">✔ Entregado</b>`}
 
         <br><br>
 
