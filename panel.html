@@ -14,6 +14,9 @@
 
 <button onclick="guardarCliente()">Guardar</button>
 
+<h2>Clientes</h2>
+<div id="lista"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -49,6 +52,42 @@ window.guardarCliente = async function() {
     alert("Error al guardar");
   }
 }
+import { getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+function calcularGarantia(fechaIngreso, diasGarantia) {
+  const inicio = new Date(fechaIngreso);
+  const hoy = new Date();
+  const diff = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
+  return diasGarantia - diff;
+}
+
+async function cargarClientes() {
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "clientes"));
+
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    const dias = calcularGarantia(data.fechaIngreso, data.garantiaDias);
+
+    let color = "green";
+    if (dias <= 0) color = "red";
+    else if (dias <= 5) color = "orange";
+
+    contenedor.innerHTML += `
+      <div style="margin-bottom:10px;">
+        <b>${data.nombre} ${data.apellido}</b> | DNI: ${data.dni} <br>
+        <span style="color:${color}">
+          Garantía: ${dias} días
+        </span>
+      </div>
+    `;
+  });
+}
+
+// cargar al iniciar
+cargarClientes();
 </script>
 
 </body>
