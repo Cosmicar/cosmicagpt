@@ -7,21 +7,21 @@
 
 <h2>Ingreso de trabajo</h2>
 
-<input id="nombre" placeholder="Nombre"><br>
+<input id="nombre" placeholder="Nombre *"><br>
 <input id="apellido" placeholder="Apellido"><br>
-<input id="dni" placeholder="DNI" onblur="buscarCliente()"><br>
-<input id="telefono" placeholder="Teléfono"><br>
-<input id="provincia" placeholder="Provincia"><br><br>
+<input id="dni" placeholder="DNI *" onblur="buscarCliente()"><br>
+<input id="telefono" placeholder="Teléfono *"><br>
+<input id="provincia" placeholder="Provincia *"><br><br>
 
 <select id="tipo">
   <option value="taller">Taller</option>
   <option value="remoto">Remoto</option>
 </select><br>
 
-<input id="equipo" placeholder="Equipo (PC, notebook, impresora)"><br>
+<input id="equipo" placeholder="Equipo (PC, notebook, impresora) *"><br>
 <input id="marca" placeholder="Marca"><br>
 <input id="modelo" placeholder="Modelo"><br>
-<textarea id="problema" placeholder="Descripción del problema"></textarea><br>
+<textarea id="problema" placeholder="Descripción del problema *"></textarea><br>
 
 <button id="btnGuardar" onclick="guardarCliente()">Guardar ingreso</button>
 
