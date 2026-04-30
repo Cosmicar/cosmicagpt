@@ -56,7 +56,7 @@
 <div id="listaTrabajos"></div>
 
 <script type="module">
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc } 
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { initializeApp } 
@@ -218,6 +218,13 @@ window.reingresarTrabajo = async function(id){
 };
 
 window.anularGarantia = async function(id){
+  window.borrarTrabajo = async function(id){
+  if (!confirm("¿Eliminar este trabajo?")) return;
+
+  await deleteDoc(doc(db,"trabajos",id));
+
+  cargarTrabajos();
+};
   await updateDoc(doc(db,"trabajos",id),{garantiaDias:0});
   cargarTrabajos();
 };
@@ -244,12 +251,13 @@ async function cargarTrabajos(){
       ${t.equipo}<br>
       Estado: ${t.estado}<br>
 
-      ${t.estado!=="Entregado"?`
-      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Rep</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-      `:`✔ Entregado`}
+${t.estado!=="Entregado"?`
+<button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
+<button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
+<button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+<button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
+<button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
+`:`✔ Entregado`}
 
       ${t.estado==="Entregado"?`
       <br>Garantía: ${dias} días<br>
