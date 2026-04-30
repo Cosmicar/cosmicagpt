@@ -23,7 +23,7 @@
 <input id="modelo" placeholder="Modelo"><br>
 <input id="problema" placeholder="Problema"><br>
 
-<button onclick="guardarTodo()">Guardar ingreso</button>
+<button onclick="guardarCliente()">Guardar ingreso</button>
 
 <h2>Trabajos registrados</h2>
 <div id="listaTrabajos"></div>
@@ -48,20 +48,35 @@ const db = getFirestore(app);
 // 🚀 guardar cliente
 window.guardarCliente = async function() {
   try {
-    await addDoc(collection(db, "clientes"), {
+    // 1 crear cliente
+    const clienteRef = await addDoc(collection(db, "clientes"), {
       nombre: document.getElementById("nombre").value,
       apellido: document.getElementById("apellido").value,
       dni: document.getElementById("dni").value,
       telefono: document.getElementById("telefono").value,
+      provincia: document.getElementById("provincia").value,
+      fechaAlta: new Date().toISOString()
+    });
+
+    // 2 crear trabajo
+    await addDoc(collection(db, "trabajos"), {
+      clienteId: clienteRef.id,
+      tipo: document.getElementById("tipo").value,
+      equipo: document.getElementById("equipo").value,
+      marca: document.getElementById("marca").value,
+      modelo: document.getElementById("modelo").value,
+      problema: document.getElementById("problema").value,
+      estado: "Ingresado",
       fechaIngreso: new Date().toISOString(),
       garantiaDias: 90
     });
 
-    alert("Cliente guardado 😏");
-     // 🔥 ACTUALIZA LA LISTA AUTOMÁTICAMENTE
+    alert("Ingreso guardado 😏");
+
     cargarTrabajos();
+
   } catch (e) {
-    console.error("Error:", e);
+    console.error(e);
     alert("Error al guardar");
   }
 }
@@ -74,41 +89,7 @@ function calcularGarantia(fechaIngreso, diasGarantia) {
   return diasGarantia - diff;
 }
 
-async function cargarClientes() {
-  const contenedor = document.getElementById("lista");
-  contenedor.innerHTML = "";
-
-  const querySnapshot = await getDocs(collection(db, "clientes"));
-
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-    const dias = calcularGarantia(data.fechaIngreso, data.garantiaDias);
-
-    let color = "green";
-    if (dias <= 0) color = "red";
-    else if (dias <= 5) color = "orange";
-
-    contenedor.innerHTML += `
-      <div style="margin-bottom:10px;">
-        <b>${data.nombre} ${data.apellido}</b> | DNI: ${data.dni} <br>
-        <span style="color:${color}">
-          Garantía: ${dias} días
-        </span>
-      </div>
-    `;
-  });
-}
-
 // cargar al iniciar
-cargarClientes();
-import { getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-function calcularGarantia(fechaIngreso, diasGarantia) {
-  const inicio = new Date(fechaIngreso);
-  const hoy = new Date();
-
-  const diff = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
-  return diasGarantia - diff;
-}
 async function cargarTrabajos() {
   const contenedor = document.getElementById("listaTrabajos");
   contenedor.innerHTML = "";
