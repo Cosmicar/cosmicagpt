@@ -25,6 +25,9 @@
 
 <button onclick="guardarTodo()">Guardar ingreso</button>
 
+<h2>Trabajos registrados</h2>
+<div id="listaTrabajos"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -55,6 +58,8 @@ window.guardarCliente = async function() {
     });
 
     alert("Cliente guardado 😏");
+     // 🔥 ACTUALIZA LA LISTA AUTOMÁTICAMENTE
+    cargarTrabajos();
   } catch (e) {
     console.error("Error:", e);
     alert("Error al guardar");
@@ -96,6 +101,51 @@ async function cargarClientes() {
 
 // cargar al iniciar
 cargarClientes();
+import { getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+function calcularGarantia(fechaIngreso, diasGarantia) {
+  const inicio = new Date(fechaIngreso);
+  const hoy = new Date();
+
+  const diff = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
+  return diasGarantia - diff;
+}
+async function cargarTrabajos() {
+  const contenedor = document.getElementById("listaTrabajos");
+  contenedor.innerHTML = "";
+
+  const trabajosSnapshot = await getDocs(collection(db, "trabajos"));
+  const clientesSnapshot = await getDocs(collection(db, "clientes"));
+
+  // mapear clientes
+  const clientes = {};
+  clientesSnapshot.forEach(doc => {
+    clientes[doc.id] = doc.data();
+  });
+
+  trabajosSnapshot.forEach(doc => {
+    const trabajo = doc.data();
+    const cliente = clientes[trabajo.clienteId];
+
+    const dias = calcularGarantia(trabajo.fechaIngreso, trabajo.garantiaDias);
+
+    let color = "green";
+    if (dias <= 0) color = "red";
+    else if (dias <= 5) color = "orange";
+
+    contenedor.innerHTML += `
+      <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+        <b>${cliente?.nombre || "?"} ${cliente?.apellido || ""}</b><br>
+        DNI: ${cliente?.dni || "-"}<br>
+        Equipo: ${trabajo.equipo} (${trabajo.marca})<br>
+        Estado: ${trabajo.estado}<br>
+        <span style="color:${color}">
+          Garantía: ${dias} días
+        </span>
+      </div>
+    `;
+  });
+}
+cargarTrabajos();
 </script>
 
 </body>
