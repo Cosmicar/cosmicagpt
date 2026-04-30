@@ -218,7 +218,11 @@ window.reingresarTrabajo = async function(id){
 };
 
 window.anularGarantia = async function(id){
-  window.borrarTrabajo = async function(id){
+  await updateDoc(doc(db,"trabajos",id),{garantiaDias:0});
+  cargarTrabajos();
+};
+
+window.borrarTrabajo = async function(id){
   if (!confirm("¿Eliminar este trabajo?")) return;
 
   await deleteDoc(doc(db,"trabajos",id));
