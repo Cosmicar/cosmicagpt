@@ -49,8 +49,8 @@
 <button onclick="cargar()">Ver todos</button>
 
 <h2>Trabajos</h2>
-<div id="listaTrabajos" style="color:gray; margin-top:10px;">
-  🔍 Buscá un cliente por DNI o presioná "Ver todos"
+<div id="listaTrabajos" style="color:gray;">
+  🔍 Buscá un cliente o presioná "Ver todos"
 </div>
 
 <script type="module">
@@ -140,61 +140,6 @@ window.guardarCliente = async ()=>{
 
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
   provincia.value="";
-
-};
-
-// EDITAR
-window.editarTrabajo = async(id,clienteId)=>{
-  const t = (await getDoc(doc(db,"trabajos",id))).data();
-  const c = (await getDoc(doc(db,"clientes",clienteId))).data();
-
-  nombre.value=c.nombre;
-  apellido.value=c.apellido;
-  dni.value=c.dni;
-  telefono.value=c.telefono;
-  provincia.value=c.provincia;
-
-  equipo.value=t.equipo;
-  marca.value=t.marca;
-  modelo.value=t.modelo;
-  problema.value=t.problema;
-
-  editandoTrabajoId=id;
-};
-
-// ESTADO
-window.cambiarEstado = async(id,e)=>{
-  const ref=doc(db,"trabajos",id);
-  const snap=await getDoc(ref);
-  if(snap.data().estado==="Entregado") return;
-
-  await updateDoc(ref,{estado:e});
-  cargar();
-};
-
-// BORRAR
-window.borrarTrabajo = async(id)=>{
-  if(!confirm("Eliminar?")) return;
-  await deleteDoc(doc(db,"trabajos",id));
-  cargar();
-};
-
-// GARANTÍA
-function dias(f,d){
-  return d - Math.floor((new Date()-new Date(f))/86400000);
-}
-
-window.reingresarTrabajo = async(id)=>{
-  await updateDoc(doc(db,"trabajos",id),{
-    estado:"En reparación",
-    fechaIngreso:new Date().toISOString()
-  });
-  cargar();
-};
-
-window.anularGarantia = async(id)=>{
-  await updateDoc(doc(db,"trabajos",id),{garantiaDias:0});
-  cargar();
 };
 
 // BUSCAR
@@ -202,13 +147,10 @@ window.buscar = ()=>{
   const dniFiltro = document.getElementById("busquedaDni").value.trim();
 
   if(!dniFiltro){
-    alert("Ingresá un DNI para buscar");
+    alert("Ingresá un DNI");
     return;
   }
 
-  cargar(dniFiltro);
-};
-  const dniFiltro = document.getElementById("busquedaDni").value.trim();
   cargar(dniFiltro);
 };
 
@@ -229,43 +171,38 @@ async function cargar(filtroDni=""){
 
     if(filtroDni && c?.dni !== filtroDni) return;
 
-    const d = dias(t.fechaIngreso,t.garantiaDias);
-
     cont.innerHTML+=`
-    <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
-
-      <b>${c?.nombre} ${c?.apellido}</b><br>
+    <div style="background:#111;color:#fff;padding:10px;margin:10px">
+      <b>${c?.nombre}</b><br>
       DNI: ${c?.dni}<br>
-      Tel: ${c?.telefono}<br>
-      Provincia: ${c?.provincia}<br><br>
+      ${t.equipo}<br>
+      Estado: ${t.estado}<br>
 
-      Tipo: ${t.tipo || "-"}<br>
-      Equipo: ${t.equipo}<br>
-      Marca: ${t.marca || "-"}<br>
-      Modelo: ${t.modelo || "-"}<br>
-      Problema: ${t.problema}<br><br>
-
-      Estado: <b>${t.estado}</b><br>
-
-      ${t.estado!=="Entregado"?`
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
       <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
-      `:`✔ Entregado`}
-
-      ${t.estado==="Entregado"?`
-      <br><br>Garantía: ${d} días<br>
-      ${d>0?`<button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>`:`Fuera de garantía`}
-      <button onclick="anularGarantia('${docSnap.id}')">Anular</button>
-      `:''}
-
+      <button onclick="borrarTrabajo('${docSnap.id}')">Borrar</button>
     </div>`;
   });
 }
 
-cargar();
+// ESTADO
+window.cambiarEstado = async(id,e)=>{
+  const ref=doc(db,"trabajos",id);
+  const snap=await getDoc(ref);
+  if(snap.data().estado==="Entregado") return;
+
+  await updateDoc(ref,{estado:e});
+  cargar();
+};
+
+// BORRAR
+window.borrarTrabajo = async(id)=>{
+  if(!confirm("Eliminar?")) return;
+  await deleteDoc(doc(db,"trabajos",id));
+  cargar();
+};
+
 </script>
 
 </body>
