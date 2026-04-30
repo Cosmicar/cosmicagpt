@@ -23,7 +23,7 @@
 <input id="modelo" placeholder="Modelo"><br>
 <textarea id="problema" placeholder="Descripción del problema"></textarea><br>
 
-<button onclick="guardarCliente()">Guardar ingreso</button>
+<button id="btnGuardar" onclick="guardarCliente()">Guardar ingreso</button>
 
 <h2>Trabajos registrados</h2>
 <div id="listaTrabajos"></div>
@@ -56,6 +56,22 @@ const db = getFirestore(app);
 // 🚀 guardar cliente
 window.guardarCliente = async function() {
   try {
+// No guarar con campos vacios
+const nombre = document.getElementById("nombre").value.trim();
+const dni = document.getElementById("dni").value.trim();
+
+if (!nombre || !dni) {
+  alert("Completá al menos Nombre y DNI");
+  return;
+}
+const btn = document.getElementById("btnGuardar");
+btn.disabled = true;
+
+try {
+  // ... tu lógica
+} finally {
+  btn.disabled = false;
+}
 // 🔍 manejar cliente sin duplicados
 const dni = document.getElementById("dni").value;
 
@@ -157,7 +173,7 @@ trabajos.reverse().forEach(docSnap => {
     let color = "green";
     if (dias <= 0) color = "red";
     else if (dias <= 5) color = "orange";
-
+const fecha = new Date(trabajo.fechaIngreso).toLocaleDateString();
 contenedor.innerHTML += `
   <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
     <b>${cliente?.nombre || "?"} ${cliente?.apellido || ""}</b><br>
