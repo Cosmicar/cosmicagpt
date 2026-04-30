@@ -9,7 +9,7 @@
 
 <input id="nombre" placeholder="Nombre"><br>
 <input id="apellido" placeholder="Apellido"><br>
-<input id="dni" placeholder="DNI"><br>
+<input id="dni" placeholder="DNI" onblur="buscarCliente()"><br>
 <input id="telefono" placeholder="Teléfono"><br>
 <input id="provincia" placeholder="Provincia"><br><br>
 
@@ -39,8 +39,9 @@ import {
   where,
   updateDoc 
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-// 🔑 TU CONFIG (ya la tenés, la dejo puesta)
+
 const firebaseConfig = {
   apiKey: "AIzaSyBgRCLYvSPLG4PIqPjHFGsPhu0EoxTLKCU",
   authDomain: "cosmica-clientes.firebaseapp.com",
@@ -53,51 +54,72 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🚀 guardar cliente
+
+
+// 🔍 AUTOCOMPLETAR CLIENTE
+window.buscarCliente = async function() {
+  const dni = document.getElementById("dni").value;
+
+  if (!dni) return;
+
+  const q = query(collection(db, "clientes"), where("dni", "==", dni));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const data = snapshot.docs[0].data();
+
+    document.getElementById("nombre").value = data.nombre || "";
+    document.getElementById("apellido").value = data.apellido || "";
+    document.getElementById("telefono").value = data.telefono || "";
+    document.getElementById("provincia").value = data.provincia || "";
+  } else {
+    document.getElementById("nombre").value = "";
+    document.getElementById("apellido").value = "";
+    document.getElementById("telefono").value = "";
+    document.getElementById("provincia").value = "";
+  }
+};
+
+
+
+// 🚀 GUARDAR CLIENTE + TRABAJO
 window.guardarCliente = async function() {
+  const btn = document.getElementById("btnGuardar");
+
   try {
-// No guarar con campos vacios
-const nombre = document.getElementById("nombre").value.trim();
-const dni = document.getElementById("dni").value.trim();
+    btn.disabled = true;
 
-if (!nombre || !dni) {
-  alert("Completá al menos Nombre y DNI");
-  return;
-}
-const btn = document.getElementById("btnGuardar");
-btn.disabled = true;
+    const nombre = document.getElementById("nombre").value.trim();
+    const dni = document.getElementById("dni").value.trim();
 
-try {
-  // ... tu lógica
-} finally {
-  btn.disabled = false;
-}
-// 🔍 manejar cliente sin duplicados
-const dni = document.getElementById("dni").value;
+    if (!nombre || !dni) {
+      alert("Completá al menos Nombre y DNI");
+      btn.disabled = false;
+      return;
+    }
 
-let clienteId;
+    let clienteId;
 
-// buscar cliente existente
-const q = query(collection(db, "clientes"), where("dni", "==", dni));
-const snapshot = await getDocs(q);
+    // 🔍 buscar cliente existente
+    const q = query(collection(db, "clientes"), where("dni", "==", dni));
+    const snapshot = await getDocs(q);
 
-if (!snapshot.empty) {
-  // ya existe → usarlo
-  clienteId = snapshot.docs[0].id;
-} else {
-  // no existe → crear nuevo
-  const clienteRef = await addDoc(collection(db, "clientes"), {
-    nombre: document.getElementById("nombre").value,
-    apellido: document.getElementById("apellido").value,
-    dni: dni,
-    telefono: document.getElementById("telefono").value,
-    provincia: document.getElementById("provincia").value,
-    fechaAlta: new Date().toISOString()
-  });
+    if (!snapshot.empty) {
+      clienteId = snapshot.docs[0].id;
+    } else {
+      const clienteRef = await addDoc(collection(db, "clientes"), {
+        nombre: nombre,
+        apellido: document.getElementById("apellido").value,
+        dni: dni,
+        telefono: document.getElementById("telefono").value,
+        provincia: document.getElementById("provincia").value,
+        fechaAlta: new Date().toISOString()
+      });
 
-  clienteId = clienteRef.id;
-}
-    // 2 crear trabajo
+      clienteId = clienteRef.id;
+    }
+
+    // 🔧 crear trabajo
     await addDoc(collection(db, "trabajos"), {
       clienteId: clienteId,
       tipo: document.getElementById("tipo").value,
@@ -111,32 +133,41 @@ if (!snapshot.empty) {
     });
 
     alert("Ingreso guardado 😏");
-    // limpiar formulario
-document.getElementById("nombre").value = "";
-document.getElementById("apellido").value = "";
-document.getElementById("dni").value = "";
-document.getElementById("telefono").value = "";
-document.getElementById("provincia").value = "";
-document.getElementById("equipo").value = "";
-document.getElementById("marca").value = "";
-document.getElementById("modelo").value = "";
-document.getElementById("problema").value = "";
 
-cargarTrabajos();
+    // limpiar formulario
+    document.getElementById("nombre").value = "";
+    document.getElementById("apellido").value = "";
+    document.getElementById("dni").value = "";
+    document.getElementById("telefono").value = "";
+    document.getElementById("provincia").value = "";
+    document.getElementById("equipo").value = "";
+    document.getElementById("marca").value = "";
+    document.getElementById("modelo").value = "";
+    document.getElementById("problema").value = "";
+
+    cargarTrabajos();
 
   } catch (e) {
     console.error(e);
     alert("Error al guardar");
   }
-}
 
+  btn.disabled = false;
+};
+
+
+
+// ⏳ GARANTÍA
 function calcularGarantia(fechaIngreso, diasGarantia) {
   const inicio = new Date(fechaIngreso);
   const hoy = new Date();
   const diff = Math.floor((hoy - inicio) / (1000 * 60 * 60 * 24));
   return diasGarantia - diff;
 }
-//funcion cambiar estado
+
+
+
+// 🔄 CAMBIAR ESTADO
 window.cambiarEstado = async function(id, nuevoEstado) {
   const ref = doc(db, "trabajos", id);
 
@@ -145,8 +176,11 @@ window.cambiarEstado = async function(id, nuevoEstado) {
   });
 
   cargarTrabajos();
-}
-// cargar al iniciar
+};
+
+
+
+// 📋 CARGAR TRABAJOS
 async function cargarTrabajos() {
   const contenedor = document.getElementById("listaTrabajos");
   contenedor.innerHTML = "";
@@ -154,47 +188,49 @@ async function cargarTrabajos() {
   const trabajosSnapshot = await getDocs(collection(db, "trabajos"));
   const clientesSnapshot = await getDocs(collection(db, "clientes"));
 
-  // mapear clientes
   const clientes = {};
   clientesSnapshot.forEach(doc => {
     clientes[doc.id] = doc.data();
   });
 
   const trabajos = [];
-trabajosSnapshot.forEach(docSnap => trabajos.push(docSnap));
+  trabajosSnapshot.forEach(docSnap => trabajos.push(docSnap));
 
-trabajos.reverse().forEach(docSnap => {
-  const id = docSnap.id;
-  const trabajo = docSnap.data();
-  const cliente = clientes[trabajo.clienteId];
+  trabajos.reverse().forEach(docSnap => {
+    const id = docSnap.id;
+    const trabajo = docSnap.data();
+    const cliente = clientes[trabajo.clienteId];
 
     const dias = calcularGarantia(trabajo.fechaIngreso, trabajo.garantiaDias);
+    const fecha = new Date(trabajo.fechaIngreso).toLocaleDateString();
 
     let color = "green";
     if (dias <= 0) color = "red";
     else if (dias <= 5) color = "orange";
-const fecha = new Date(trabajo.fechaIngreso).toLocaleDateString();
-contenedor.innerHTML += `
-  <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-    <b>${cliente?.nombre || "?"} ${cliente?.apellido || ""}</b><br>
-    DNI: ${cliente?.dni || "-"}<br>
-    Equipo: ${trabajo.equipo} (${trabajo.marca})<br>
 
-    Estado: <b>${trabajo.estado}</b><br><br>
+    contenedor.innerHTML += `
+      <div style="border:1px solid #ccc; padding:10px; margin:10px 0; background:#111; color:#eee;">
+        <b>${cliente?.nombre || "?"} ${cliente?.apellido || ""}</b><br>
+        DNI: ${cliente?.dni || "-"}<br>
+        Ingreso: ${fecha}<br>
+        Equipo: ${trabajo.equipo} (${trabajo.marca})<br>
 
-    <button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
-    <button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
-    <button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
+        Estado: <b>${trabajo.estado}</b><br><br>
 
-    <br><br>
+        <button onclick="cambiarEstado('${id}', 'En reparación')">Reparación</button>
+        <button onclick="cambiarEstado('${id}', 'Listo')">Listo</button>
+        <button onclick="cambiarEstado('${id}', 'Entregado')">Entregado</button>
 
-    <span style="color:${color}">
-      Garantía: ${dias} días
-    </span>
-  </div>
-`;
+        <br><br>
+
+        <span style="color:${color}">
+          Garantía: ${dias} días
+        </span>
+      </div>
+    `;
   });
 }
+
 cargarTrabajos();
 
 </script>
