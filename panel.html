@@ -6,22 +6,39 @@
 <body>
 
 <h2>Ingreso de trabajo</h2>
+<p style="color:red; font-size:14px;">* Campos obligatorios</p>
 
-<input id="nombre" placeholder="Nombre *"><br>
-<input id="apellido" placeholder="Apellido"><br>
-<input id="dni" placeholder="DNI *" onblur="buscarCliente()"><br>
-<input id="telefono" placeholder="Teléfono *"><br>
-<input id="provincia" placeholder="Provincia *"><br><br>
+<label>Nombre <span style="color:red">*</span></label><br>
+<input id="nombre"><br>
+
+<label>Apellido</label><br>
+<input id="apellido"><br>
+
+<label>DNI <span style="color:red">*</span></label><br>
+<input id="dni" onblur="buscarCliente()"><br>
+
+<label>Teléfono <span style="color:red">*</span></label><br>
+<input id="telefono"><br>
+
+<label>Provincia <span style="color:red">*</span></label><br>
+<input id="provincia"><br><br>
 
 <select id="tipo">
   <option value="taller">Taller</option>
   <option value="remoto">Remoto</option>
 </select><br>
 
-<input id="equipo" placeholder="Equipo (PC, notebook, impresora) *"><br>
-<input id="marca" placeholder="Marca"><br>
-<input id="modelo" placeholder="Modelo"><br>
-<textarea id="problema" placeholder="Descripción del problema *"></textarea><br>
+<label>Equipo <span style="color:red">*</span></label><br>
+<input id="equipo" placeholder="PC, notebook, impresora"><br>
+
+<label>Marca</label><br>
+<input id="marca"><br>
+
+<label>Modelo</label><br>
+<input id="modelo"><br>
+
+<label>Descripción del problema <span style="color:red">*</span></label><br>
+<textarea id="problema"></textarea><br>
 
 <button id="btnGuardar" onclick="guardarCliente()">Guardar ingreso</button>
 
