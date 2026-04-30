@@ -8,37 +8,26 @@
 <h2>Ingreso de trabajo</h2>
 <p style="color:red; font-size:14px;">* Campos obligatorios</p>
 
-<label>Nombre <span style="color:red">*</span></label><br>
-<input id="nombre" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"><br>
+<label>Nombre *</label><br>
+<input id="nombre"><br>
 
 <label>Apellido</label><br>
-<input id="apellido" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"><br>
+<input id="apellido"><br>
 
-<label>DNI <span style="color:red">*</span></label><br>
-<input id="dni" onblur="buscarCliente()" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
+<label>DNI *</label><br>
+<input id="dni" onblur="buscarCliente()" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><br>
 
-<label>Teléfono <span style="color:red">*</span></label><br>
-<input id="telefono" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
+<label>Teléfono *</label><br>
+<input id="telefono" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><br>
 
-<label>Provincia <span style="color:red">*</span></label><br>
+<label>Provincia *</label><br>
 <select id="provincia">
-  <option value="">Seleccionar provincia *</option>
-  <option>Buenos Aires</option><option>CABA</option><option>Catamarca</option>
-  <option>Chaco</option><option>Chubut</option><option>Córdoba</option>
-  <option>Corrientes</option><option>Entre Ríos</option><option>Formosa</option>
-  <option>Jujuy</option><option>La Pampa</option><option>La Rioja</option>
-  <option>Mendoza</option><option>Misiones</option><option>Neuquén</option>
-  <option>Río Negro</option><option>Salta</option><option>San Juan</option>
-  <option>San Luis</option><option>Santa Cruz</option><option>Santa Fe</option>
-  <option>Santiago del Estero</option><option>Tierra del Fuego</option><option>Tucumán</option>
+<option value="">Seleccionar</option>
+<option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
+<option>Córdoba</option><option>Salta</option><option>Tucumán</option>
 </select><br><br>
 
-<select id="tipo">
-  <option value="taller">Taller</option>
-  <option value="remoto">Remoto</option>
-</select><br>
-
-<label>Equipo <span style="color:red">*</span></label><br>
+<label>Equipo *</label><br>
 <input id="equipo"><br>
 
 <label>Marca</label><br>
@@ -47,194 +36,148 @@
 <label>Modelo</label><br>
 <input id="modelo"><br>
 
-<label>Descripción del problema <span style="color:red">*</span></label><br>
+<label>Problema *</label><br>
 <textarea id="problema"></textarea><br>
 
-<button id="btnGuardar" onclick="guardarCliente()">Guardar ingreso</button>
+<button onclick="guardarCliente()">Guardar</button>
 
-<h2>Trabajos registrados</h2>
+<h2>Trabajos</h2>
 <div id="listaTrabajos"></div>
 
 <script type="module">
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 const app = initializeApp({
-  apiKey: "AIzaSy...",
-  authDomain: "cosmica-clientes.firebaseapp.com",
-  projectId: "cosmica-clientes"
+  apiKey:"AIzaSy...",
+  authDomain:"cosmica-clientes.firebaseapp.com",
+  projectId:"cosmica-clientes"
 });
 
 const db = getFirestore(app);
 
-let editandoTrabajoId = null;
-let editandoClienteId = null;
+let editandoTrabajoId=null;
+let editandoClienteId=null;
 
 // AUTOCOMPLETE
-window.buscarCliente = async function() {
-  const dni = document.getElementById("dni").value;
-  if (!dni) return;
+window.buscarCliente = async ()=>{
+  const dniVal = dni.value;
+  if(!dniVal) return;
 
-  const q = query(collection(db, "clientes"), where("dni", "==", dni));
+  const q = query(collection(db,"clientes"), where("dni","==",dniVal));
   const snap = await getDocs(q);
 
-  if (!snap.empty) {
+  if(!snap.empty){
     const c = snap.docs[0].data();
-    nombre.value = c.nombre || "";
-    apellido.value = c.apellido || "";
-    telefono.value = c.telefono || "";
-    provincia.value = c.provincia || "";
+    nombre.value=c.nombre||"";
+    apellido.value=c.apellido||"";
+    telefono.value=c.telefono||"";
+    provincia.value=c.provincia||"";
   }
 };
 
-// GUARDAR / EDITAR
-window.guardarCliente = async function() {
-  const btn = document.getElementById("btnGuardar");
-  btn.disabled = true;
+// GUARDAR
+window.guardarCliente = async ()=>{
+  const nombreVal = nombre.value.trim();
+  const dniVal = dni.value.trim();
+  const tel = telefono.value.trim();
+  const prov = provincia.value;
+  const eq = equipo.value.trim();
+  const prob = problema.value.trim();
 
-  try {
-    const nombreVal = nombre.value.trim();
-    const dniVal = dni.value.trim();
-    const tel = telefono.value.trim();
-    const prov = provincia.value;
-    const eq = equipo.value.trim();
-    const prob = problema.value.trim();
-
-    if (!nombreVal || !dniVal || !tel || !prov || !eq || !prob) {
-      alert("Completá todos los campos obligatorios");
-      btn.disabled = false;
-      return;
-    }
-
-    let clienteId;
-
-    const q = query(collection(db, "clientes"), where("dni", "==", dniVal));
-    const snap = await getDocs(q);
-
-    if (!snap.empty) {
-      clienteId = snap.docs[0].id;
-    } else {
-      const ref = await addDoc(collection(db, "clientes"), {
-        nombre: nombreVal,
-        apellido: apellido.value,
-        dni: dniVal,
-        telefono: tel,
-        provincia: prov
-      });
-      clienteId = ref.id;
-    }
-
-    if (editandoTrabajoId) {
-      await updateDoc(doc(db,"clientes",editandoClienteId), {
-        nombre: nombreVal,
-        apellido: apellido.value,
-        telefono: tel,
-        provincia: prov
-      });
-
-      await updateDoc(doc(db,"trabajos",editandoTrabajoId), {
-        equipo: eq,
-        marca: marca.value,
-        modelo: modelo.value,
-        problema: prob
-      });
-
-      editandoTrabajoId = null;
-      editandoClienteId = null;
-
-    } else {
-      await addDoc(collection(db,"trabajos"),{
-        clienteId,
-        equipo: eq,
-        marca: marca.value,
-        modelo: modelo.value,
-        problema: prob,
-        estado:"Ingresado",
-        fechaIngreso: new Date().toISOString(),
-        garantiaDias:90
-      });
-    }
-
-    document.querySelectorAll("input, textarea").forEach(e=>e.value="");
-    provincia.value="";
-
-    cargarTrabajos();
-
-  } catch(e){
-    alert("Error");
+  if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob){
+    alert("Faltan datos");
+    return;
   }
 
-  btn.disabled = false;
+  let clienteId;
+
+  const q = query(collection(db,"clientes"), where("dni","==",dniVal));
+  const snap = await getDocs(q);
+
+  if(!snap.empty){
+    clienteId = snap.docs[0].id;
+  }else{
+    const ref = await addDoc(collection(db,"clientes"),{
+      nombre:nombreVal, apellido:apellido.value, dni:dniVal, telefono:tel, provincia:prov
+    });
+    clienteId = ref.id;
+  }
+
+  if(editandoTrabajoId){
+    await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
+      equipo:eq, marca:marca.value, modelo:modelo.value, problema:prob
+    });
+    editandoTrabajoId=null;
+  }else{
+    await addDoc(collection(db,"trabajos"),{
+      clienteId, equipo:eq, marca:marca.value, modelo:modelo.value, problema:prob,
+      estado:"Ingresado", fechaIngreso:new Date().toISOString(), garantiaDias:90
+    });
+  }
+
+  document.querySelectorAll("input,textarea").forEach(e=>e.value="");
+  provincia.value="";
+
+  cargar();
 };
 
 // EDITAR
-window.editarTrabajo = async function(id,clienteId){
-  const t = await getDoc(doc(db,"trabajos",id));
-  const c = await getDoc(doc(db,"clientes",clienteId));
+window.editarTrabajo = async(id,clienteId)=>{
+  const t = (await getDoc(doc(db,"trabajos",id))).data();
+  const c = (await getDoc(doc(db,"clientes",clienteId))).data();
 
-  const td = t.data();
-  const cd = c.data();
+  nombre.value=c.nombre;
+  apellido.value=c.apellido;
+  dni.value=c.dni;
+  telefono.value=c.telefono;
+  provincia.value=c.provincia;
 
-  nombre.value = cd.nombre;
-  apellido.value = cd.apellido;
-  dni.value = cd.dni;
-  telefono.value = cd.telefono;
-  provincia.value = cd.provincia;
+  equipo.value=t.equipo;
+  marca.value=t.marca;
+  modelo.value=t.modelo;
+  problema.value=t.problema;
 
-  equipo.value = td.equipo;
-  marca.value = td.marca;
-  modelo.value = td.modelo;
-  problema.value = td.problema;
-
-  editandoTrabajoId = id;
-  editandoClienteId = clienteId;
+  editandoTrabajoId=id;
 };
 
 // ESTADO
-window.cambiarEstado = async function(id,estado){
-  const ref = doc(db,"trabajos",id);
-  const snap = await getDoc(ref);
+window.cambiarEstado = async(id,e)=>{
+  const ref=doc(db,"trabajos",id);
+  const snap=await getDoc(ref);
+  if(snap.data().estado==="Entregado") return;
 
-  if (snap.data().estado === "Entregado") return;
+  await updateDoc(ref,{estado:e});
+  cargar();
+};
 
-  await updateDoc(ref,{estado});
-  cargarTrabajos();
+// BORRAR
+window.borrarTrabajo = async(id)=>{
+  if(!confirm("Eliminar?")) return;
+  await deleteDoc(doc(db,"trabajos",id));
+  cargar();
 };
 
 // GARANTÍA
-function diasRestantes(f,d){
-  return d - Math.floor((new Date()-new Date(f))/(1000*60*60*24));
+function dias(f,d){
+  return d - Math.floor((new Date()-new Date(f))/86400000);
 }
 
-window.reingresarTrabajo = async function(id){
+window.reingresarTrabajo = async(id)=>{
   await updateDoc(doc(db,"trabajos",id),{
-    estado:"En reparación",
-    fechaIngreso:new Date().toISOString()
+    estado:"En reparación", fechaIngreso:new Date().toISOString()
   });
-  cargarTrabajos();
+  cargar();
 };
 
-window.anularGarantia = async function(id){
+window.anularGarantia = async(id)=>{
   await updateDoc(doc(db,"trabajos",id),{garantiaDias:0});
-  cargarTrabajos();
+  cargar();
 };
 
-window.borrarTrabajo = async function(id){
-  if (!confirm("¿Eliminar este trabajo?")) return;
-
-  await deleteDoc(doc(db,"trabajos",id));
-
-  cargarTrabajos();
-};
-  await updateDoc(doc(db,"trabajos",id),{garantiaDias:0});
-  cargarTrabajos();
-};
-
-// LISTADO
-async function cargarTrabajos(){
+// LISTA
+async function cargar(){
   const cont = listaTrabajos;
   cont.innerHTML="";
 
@@ -247,32 +190,32 @@ async function cargarTrabajos(){
   tSnap.forEach(docSnap=>{
     const t=docSnap.data();
     const c=clientes[t.clienteId];
-    const dias = diasRestantes(t.fechaIngreso,t.garantiaDias);
+    const d = dias(t.fechaIngreso,t.garantiaDias);
 
-    cont.innerHTML += `
-    <div style="border:1px solid #ccc;padding:10px;margin:10px;background:#111;color:#eee">
+    cont.innerHTML+=`
+    <div style="background:#111;color:#fff;padding:10px;margin:10px">
       <b>${c?.nombre}</b><br>
       ${t.equipo}<br>
       Estado: ${t.estado}<br>
 
-${t.estado!=="Entregado"?`
-<button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
-<button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-<button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-<button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-<button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
-`:`✔ Entregado`}
+      ${t.estado!=="Entregado"?`
+      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
+      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
+      `:`✔ Entregado`}
 
       ${t.estado==="Entregado"?`
-      <br>Garantía: ${dias} días<br>
-      ${dias>0?`<button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>`:`Fuera`}
+      <br>Garantía: ${d} días
+      ${d>0?`<button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>`:`Fuera`}
       <button onclick="anularGarantia('${docSnap.id}')">Anular</button>
       `:''}
     </div>`;
   });
 }
 
-cargarTrabajos();
+cargar();
 </script>
 
 </body>
