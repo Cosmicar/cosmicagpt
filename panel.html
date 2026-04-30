@@ -9,10 +9,10 @@
 <p style="color:red; font-size:14px;">* Campos obligatorios</p>
 
 <label>Nombre <span style="color:red">*</span></label><br>
-<input id="nombre"><br>
+<input id="nombre" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"><br>
 
 <label>Apellido</label><br>
-<input id="apellido"><br>
+<input id="apellido" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')"><br>
 
 <label>DNI <span style="color:red">*</span></label><br>
 <input id="dni" onblur="buscarCliente()" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
