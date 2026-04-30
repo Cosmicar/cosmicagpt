@@ -89,15 +89,18 @@ window.guardarCliente = async function() {
   try {
     btn.disabled = true;
 
-    const nombre = document.getElementById("nombre").value.trim();
-    const dni = document.getElementById("dni").value.trim();
+const nombre = document.getElementById("nombre").value.trim();
+const dni = document.getElementById("dni").value.trim();
+const telefono = document.getElementById("telefono").value.trim();
+const provincia = document.getElementById("provincia").value.trim();
+const equipo = document.getElementById("equipo").value.trim();
+const problema = document.getElementById("problema").value.trim();
 
-    if (!nombre || !dni) {
-      alert("Completá al menos Nombre y DNI");
-      btn.disabled = false;
-      return;
-    }
-
+if (!nombre || !dni || !telefono || !provincia || !equipo || !problema) {
+  alert("Completá todos los campos obligatorios");
+  btn.disabled = false;
+  return;
+}
     let clienteId;
 
     // 🔍 buscar cliente existente
