@@ -15,13 +15,39 @@
 <input id="apellido"><br>
 
 <label>DNI <span style="color:red">*</span></label><br>
-<input id="dni" onblur="buscarCliente()"><br>
+<input id="dni" onblur="buscarCliente()" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
 
 <label>Teléfono <span style="color:red">*</span></label><br>
-<input id="telefono"><br>
+<input id="telefono" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')"><br>
 
 <label>Provincia <span style="color:red">*</span></label><br>
-<input id="provincia"><br><br>
+<select id="provincia">
+  <option value="">Seleccionar provincia *</option>
+  <option>Buenos Aires</option>
+  <option>CABA</option>
+  <option>Catamarca</option>
+  <option>Chaco</option>
+  <option>Chubut</option>
+  <option>Córdoba</option>
+  <option>Corrientes</option>
+  <option>Entre Ríos</option>
+  <option>Formosa</option>
+  <option>Jujuy</option>
+  <option>La Pampa</option>
+  <option>La Rioja</option>
+  <option>Mendoza</option>
+  <option>Misiones</option>
+  <option>Neuquén</option>
+  <option>Río Negro</option>
+  <option>Salta</option>
+  <option>San Juan</option>
+  <option>San Luis</option>
+  <option>Santa Cruz</option>
+  <option>Santa Fe</option>
+  <option>Santiago del Estero</option>
+  <option>Tierra del Fuego</option>
+  <option>Tucumán</option>
+</select><br><br>
 
 <select id="tipo">
   <option value="taller">Taller</option>
@@ -109,7 +135,7 @@ window.guardarCliente = async function() {
 const nombre = document.getElementById("nombre").value.trim();
 const dni = document.getElementById("dni").value.trim();
 const telefono = document.getElementById("telefono").value.trim();
-const provincia = document.getElementById("provincia").value.trim();
+const provincia = document.getElementById("provincia").value;
 const equipo = document.getElementById("equipo").value.trim();
 const problema = document.getElementById("problema").value.trim();
 
