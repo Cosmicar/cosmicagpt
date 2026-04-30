@@ -6,7 +6,7 @@
 <body>
 
 <h2>Ingreso de trabajo</h2>
-<p style="color:red; font-size:14px;">* Campos obligatorios</p>
+<p style="color:red;">* Campos obligatorios</p>
 
 <label>Nombre *</label><br>
 <input id="nombre"><br>
@@ -41,6 +41,13 @@
 
 <button onclick="guardarCliente()">Guardar</button>
 
+<hr>
+
+<h2>Buscar trabajos</h2>
+<input id="busquedaDni" placeholder="Ingresar DNI">
+<button onclick="buscar()">Buscar</button>
+<button onclick="cargar()">Ver todos</button>
+
 <h2>Trabajos</h2>
 <div id="listaTrabajos"></div>
 
@@ -58,7 +65,6 @@ const app = initializeApp({
 const db = getFirestore(app);
 
 let editandoTrabajoId=null;
-let editandoClienteId=null;
 
 // AUTOCOMPLETE
 window.buscarCliente = async ()=>{
@@ -100,20 +106,33 @@ window.guardarCliente = async ()=>{
     clienteId = snap.docs[0].id;
   }else{
     const ref = await addDoc(collection(db,"clientes"),{
-      nombre:nombreVal, apellido:apellido.value, dni:dniVal, telefono:tel, provincia:prov
+      nombre:nombreVal,
+      apellido:apellido.value,
+      dni:dniVal,
+      telefono:tel,
+      provincia:prov
     });
     clienteId = ref.id;
   }
 
   if(editandoTrabajoId){
     await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
-      equipo:eq, marca:marca.value, modelo:modelo.value, problema:prob
+      equipo:eq,
+      marca:marca.value,
+      modelo:modelo.value,
+      problema:prob
     });
     editandoTrabajoId=null;
   }else{
     await addDoc(collection(db,"trabajos"),{
-      clienteId, equipo:eq, marca:marca.value, modelo:modelo.value, problema:prob,
-      estado:"Ingresado", fechaIngreso:new Date().toISOString(), garantiaDias:90
+      clienteId,
+      equipo:eq,
+      marca:marca.value,
+      modelo:modelo.value,
+      problema:prob,
+      estado:"Ingresado",
+      fechaIngreso:new Date().toISOString(),
+      garantiaDias:90
     });
   }
 
@@ -166,7 +185,8 @@ function dias(f,d){
 
 window.reingresarTrabajo = async(id)=>{
   await updateDoc(doc(db,"trabajos",id),{
-    estado:"En reparación", fechaIngreso:new Date().toISOString()
+    estado:"En reparación",
+    fechaIngreso:new Date().toISOString()
   });
   cargar();
 };
@@ -176,8 +196,14 @@ window.anularGarantia = async(id)=>{
   cargar();
 };
 
+// BUSCAR
+window.buscar = ()=>{
+  const dniFiltro = document.getElementById("busquedaDni").value.trim();
+  cargar(dniFiltro);
+};
+
 // LISTA
-async function cargar(){
+async function cargar(filtroDni=""){
   const cont = listaTrabajos;
   cont.innerHTML="";
 
@@ -190,13 +216,26 @@ async function cargar(){
   tSnap.forEach(docSnap=>{
     const t=docSnap.data();
     const c=clientes[t.clienteId];
+
+    if(filtroDni && c?.dni !== filtroDni) return;
+
     const d = dias(t.fechaIngreso,t.garantiaDias);
 
     cont.innerHTML+=`
-    <div style="background:#111;color:#fff;padding:10px;margin:10px">
-      <b>${c?.nombre}</b><br>
-      ${t.equipo}<br>
-      Estado: ${t.estado}<br>
+    <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
+
+      <b>${c?.nombre} ${c?.apellido}</b><br>
+      DNI: ${c?.dni}<br>
+      Tel: ${c?.telefono}<br>
+      Provincia: ${c?.provincia}<br><br>
+
+      Tipo: ${t.tipo || "-"}<br>
+      Equipo: ${t.equipo}<br>
+      Marca: ${t.marca || "-"}<br>
+      Modelo: ${t.modelo || "-"}<br>
+      Problema: ${t.problema}<br><br>
+
+      Estado: <b>${t.estado}</b><br>
 
       ${t.estado!=="Entregado"?`
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
@@ -207,10 +246,11 @@ async function cargar(){
       `:`✔ Entregado`}
 
       ${t.estado==="Entregado"?`
-      <br>Garantía: ${d} días
-      ${d>0?`<button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>`:`Fuera`}
+      <br><br>Garantía: ${d} días<br>
+      ${d>0?`<button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>`:`Fuera de garantía`}
       <button onclick="anularGarantia('${docSnap.id}')">Anular</button>
       `:''}
+
     </div>`;
   });
 }
