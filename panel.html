@@ -215,6 +215,29 @@ function calcularGarantia(fechaIngreso, diasGarantia) {
 
 // 🔄 CAMBIAR ESTADO
 window.cambiarEstado = async function(id, nuevoEstado) {
+  window.reingresarTrabajo = async function(id) {
+  const ref = doc(db, "trabajos", id);
+
+  await updateDoc(ref, {
+    estado: "En reparación",
+    fechaIngreso: new Date().toISOString()
+  });
+
+  alert("Trabajo reingresado por garantía");
+
+  cargarTrabajos();
+};
+window.anularGarantia = async function(id) {
+  const ref = doc(db, "trabajos", id);
+
+  if (!confirm("¿Anular garantía de este trabajo?")) return;
+
+  await updateDoc(ref, {
+    garantiaDias: 0
+  });
+
+  cargarTrabajos();
+};
   const ref = doc(db, "trabajos", id);
 
   const trabajosSnapshot = await getDocs(collection(db, "trabajos"));
@@ -285,9 +308,20 @@ ${trabajo.estado !== "Entregado" ? `
 
         <br><br>
 
-        <span style="color:${color}">
-          Garantía: ${dias} días
-        </span>
+${trabajo.estado === "Entregado" ? `
+  <br>
+  <span style="color:${color}">
+    Garantía: ${dias} días
+  </span><br><br>
+
+  ${dias > 0 ? `
+    <button onclick="reingresarTrabajo('${id}')">Reingreso</button>
+  ` : `
+    <button disabled>Fuera de garantía</button>
+  `}
+
+  <button onclick="anularGarantia('${id}')">Anular garantía</button>
+` : ``}
       </div>
     `;
   });
