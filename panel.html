@@ -5,17 +5,25 @@
 </head>
 <body>
 
-<h2>Registrar Cliente</h2>
+<h2>Ingreso de trabajo</h2>
 
 <input id="nombre" placeholder="Nombre"><br>
 <input id="apellido" placeholder="Apellido"><br>
 <input id="dni" placeholder="DNI"><br>
 <input id="telefono" placeholder="Teléfono"><br>
+<input id="provincia" placeholder="Provincia"><br><br>
 
-<button onclick="guardarCliente()">Guardar</button>
+<select id="tipo">
+  <option value="taller">Taller</option>
+  <option value="remoto">Remoto</option>
+</select><br>
 
-<h2>Clientes</h2>
-<div id="lista"></div>
+<input id="equipo" placeholder="Equipo (PC, notebook, impresora)"><br>
+<input id="marca" placeholder="Marca"><br>
+<input id="modelo" placeholder="Modelo"><br>
+<input id="problema" placeholder="Problema"><br>
+
+<button onclick="guardarTodo()">Guardar ingreso</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
