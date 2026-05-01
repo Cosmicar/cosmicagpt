@@ -80,6 +80,7 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+
 let editandoTrabajoId = null;
 let editandoClienteId = null;
 
@@ -100,14 +101,8 @@ window.buscarCliente = async ()=>{
   }
 };
 
-// GUARDAR
-window.guardarCliente = async ()=>{
-  const nombreVal = nombre.value.trim();
-  const dniVal = dni.value.trim();
-  const tel = telefono.value.trim();
-  const prov = provincia.value;
-  const eq = equipo.value.trim();
-  const prob = problema.value.trim();
+// EDITAR
+window.editarTrabajo = async function(trabajoId, clienteId){
   const t = (await getDoc(doc(db,"trabajos",trabajoId))).data();
   const c = (await getDoc(doc(db,"clientes",clienteId))).data();
 
@@ -128,6 +123,15 @@ window.guardarCliente = async ()=>{
 
   alert("Modo edición activado ✏️");
 };
+
+// GUARDAR
+window.guardarCliente = async ()=>{
+  const nombreVal = nombre.value.trim();
+  const dniVal = dni.value.trim();
+  const tel = telefono.value.trim();
+  const prov = provincia.value;
+  const eq = equipo.value.trim();
+  const prob = problema.value.trim();
 
   if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob){
     alert("Faltan datos");
@@ -155,74 +159,62 @@ window.guardarCliente = async ()=>{
   const tipo = document.getElementById("tipo").value;
   const prefijo = tipo === "remoto" ? "REM" : "TAL";
 
-  const tSnap = await getDocs(collection(db,"trabajos"));
-
-  let contador = 0;
-  tSnap.forEach(docSnap=>{
-    const t = docSnap.data();
-    if (t.tipo === tipo) contador++;
-  });
-
-  const numero = contador + 1;
-  const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
-
   if(editandoTrabajoId){
-  await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
-    tipo,
-    equipo:eq,
-    marca:marca.value,
-    modelo:modelo.value,
-    problema:prob
-  });
 
-  await updateDoc(doc(db,"clientes",editandoClienteId),{
-    nombre:nombreVal,
-    apellido:apellido.value,
-    telefono:tel,
-    provincia:prov
-  });
+    await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
+      tipo,
+      equipo:eq,
+      marca:marca.value,
+      modelo:modelo.value,
+      problema:prob
+    });
 
-  editandoTrabajoId = null;
-  editandoClienteId = null;
+    await updateDoc(doc(db,"clientes",editandoClienteId),{
+      nombre:nombreVal,
+      apellido:apellido.value,
+      telefono:tel,
+      provincia:prov
+    });
 
-  alert("Orden actualizada correctamente");
+    editandoTrabajoId = null;
+    editandoClienteId = null;
 
-}else{
-  const tipo = document.getElementById("tipo").value;
-  const prefijo = tipo === "remoto" ? "REM" : "TAL";
+    alert("Orden actualizada correctamente");
 
-  const tSnap = await getDocs(collection(db,"trabajos"));
+  }else{
 
-  let contador = 0;
-  tSnap.forEach(docSnap=>{
-    const t = docSnap.data();
-    if (t.tipo === tipo) contador++;
-  });
+    const tSnap = await getDocs(collection(db,"trabajos"));
+    let contador = 0;
 
-  const numero = contador + 1;
-  const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
+    tSnap.forEach(docSnap=>{
+      const t = docSnap.data();
+      if (t.tipo === tipo) contador++;
+    });
 
-  await addDoc(collection(db,"trabajos"),{
-    numeroOrden,
-    clienteId,
-    tipo,
-    equipo:eq,
-    marca:marca.value,
-    modelo:modelo.value,
-    problema:prob,
-    estado:"Ingresado",
-    fechaIngreso:new Date().toISOString(),
-    garantiaDias:90
-  });
+    const numero = contador + 1;
+    const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
 
-  alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
-}
+    await addDoc(collection(db,"trabajos"),{
+      numeroOrden,
+      clienteId,
+      tipo,
+      equipo:eq,
+      marca:marca.value,
+      modelo:modelo.value,
+      problema:prob,
+      estado:"Ingresado",
+      fechaIngreso:new Date().toISOString(),
+      garantiaDias:90
+    });
+
+    alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
+  }
+
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
   provincia.value="";
 };
 
 // BUSCAR
-window.editarTrabajo = async function(trabajoId, clienteId){
 window.buscar = ()=>{
   const valor = document.getElementById("busquedaDni").value.trim();
   if(!valor){
