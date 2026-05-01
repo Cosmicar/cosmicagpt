@@ -26,11 +26,13 @@
 <option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
 <option>Córdoba</option><option>Salta</option><option>Tucumán</option>
 </select><br><br>
+
 <label>Tipo de servicio *</label><br>
 <select id="tipo">
   <option value="taller">Taller</option>
   <option value="remoto">Remoto</option>
 </select><br><br>
+
 <label>Equipo *</label><br>
 <input id="equipo"><br>
 
@@ -78,8 +80,6 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
-
-let editandoTrabajoId=null;
 
 // AUTOCOMPLETE
 window.buscarCliente = async ()=>{
@@ -130,45 +130,34 @@ window.guardarCliente = async ()=>{
     clienteId = ref.id;
   }
 
-  if(editandoTrabajoId){
-    await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
-      equipo:eq,
-      marca:marca.value,
-      modelo:modelo.value,
-      problema:prob
-    });
-    editandoTrabajoId=null;
-  }else{
-const tipo = document.getElementById("tipo").value;
-const prefijo = tipo === "remoto" ? "REM" : "TAL";
+  const tipo = document.getElementById("tipo").value;
+  const prefijo = tipo === "remoto" ? "REM" : "TAL";
 
-// traer solo trabajos del mismo tipo
-const tSnap = await getDocs(collection(db,"trabajos"));
+  const tSnap = await getDocs(collection(db,"trabajos"));
 
-let contador = 0;
-tSnap.forEach(docSnap=>{
-  const t = docSnap.data();
-  if (t.tipo === tipo) contador++;
-});
+  let contador = 0;
+  tSnap.forEach(docSnap=>{
+    const t = docSnap.data();
+    if (t.tipo === tipo) contador++;
+  });
 
-const numero = contador + 1;
-const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
+  const numero = contador + 1;
+  const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
 
-const trabajoRef = await addDoc(collection(db,"trabajos"),{
-  numeroOrden,
-      clienteId,
-      tipo,
-      equipo:eq,
-      marca:marca.value,
-      modelo:modelo.value,
-      problema:prob,
-      estado:"Ingresado",
-      fechaIngreso:new Date().toISOString(),
-      garantiaDias:90
-    });
+  await addDoc(collection(db,"trabajos"),{
+    numeroOrden,
+    clienteId,
+    tipo,
+    equipo:eq,
+    marca:marca.value,
+    modelo:modelo.value,
+    problema:prob,
+    estado:"Ingresado",
+    fechaIngreso:new Date().toISOString(),
+    garantiaDias:90
+  });
 
-    alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
-  }
+  alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
 
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
   provincia.value="";
@@ -177,12 +166,10 @@ const trabajoRef = await addDoc(collection(db,"trabajos"),{
 // BUSCAR
 window.buscar = ()=>{
   const valor = document.getElementById("busquedaDni").value.trim();
-
   if(!valor){
     alert("Ingresá DNI o Nº de orden");
     return;
   }
-
   cargar(valor);
 };
 
@@ -215,18 +202,19 @@ window.cargar = async function(filtro=""){
     <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
       <b>${c?.nombre} ${c?.apellido}</b><br>
       DNI: ${c?.dni}<br>
-      Orden: ${t.numeroOrden || docSnap.id}<br>
-      Tipo: ${t.tipo || "-"}<br>
+      Orden: ${t.numeroOrden}<br>
+      Tipo: ${t.tipo}<br>
       Equipo: ${t.equipo}<br>
+
       Estado: ${t.estado}<br>
 
-Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString() : "-"}<br>
-Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString() : "-"}<br>
-Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString() : "-"}<br>
+      Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
+      Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
+      Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}<br>
 
-Problema: ${t.problema || "-"}<br>
-Marca: ${t.marca || "-"}<br>
-Modelo: ${t.modelo || "-"}<br>
+      Problema: ${t.problema}<br>
+      Marca: ${t.marca || "-"}<br>
+      Modelo: ${t.modelo || "-"}<br>
 
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
@@ -245,23 +233,22 @@ window.cambiarEstado = async(id,e)=>{
   if(snap.data().estado === "Entregado") return;
 
   let update = { estado: e };
-
   const ahora = new Date().toISOString();
 
-  if(e === "Listo"){
-    update.fechaReparado = ahora;
-  }
-
-  if(e === "Entregado"){
-    update.fechaEntregado = ahora;
-  }
+  if(e === "Listo") update.fechaReparado = ahora;
+  if(e === "Entregado") update.fechaEntregado = ahora;
 
   await updateDoc(ref, update);
-
   cargar();
 };
 
 // BORRAR
+window.borrarTrabajo = async(id)=>{
+  if(!confirm("Eliminar?")) return;
+  await deleteDoc(doc(db,"trabajos",id));
+  cargar();
+};
+
 // TICKET + QR
 window.imprimirTicket = async function(id){
   const t = (await getDoc(doc(db,"trabajos",id))).data();
@@ -272,40 +259,19 @@ window.imprimirTicket = async function(id){
     if(d.id === t.clienteId) cliente = d.data();
   });
 
-  const urlBase = window.location.origin + "/panel.html";
-  const urlFinal = urlBase + "?orden=" + t.numeroOrden;
-  const urlQR = encodeURIComponent(urlFinal);
+  const url = encodeURIComponent(window.location.origin + "/panel.html?orden=" + t.numeroOrden);
 
-  const ventana = window.open("", "_blank");
+  const v = window.open("", "_blank");
 
- window.imprimirTicket = async function(id){
-  const t = (await getDoc(doc(db,"trabajos",id))).data();
-  const cSnap = await getDocs(collection(db,"clientes"));
-
-  let cliente = {};
-  cSnap.forEach(d=>{
-    if(d.id === t.clienteId) cliente = d.data();
-  });
-
-  const urlBase = window.location.origin + "/panel.html";
-  const urlFinal = urlBase + "?orden=" + t.numeroOrden;
-  const urlQR = encodeURIComponent(urlFinal);
-
-  const ventana = window.open("", "_blank");
-
-  ventana.document.write(`
+  v.document.write(`
     <html>
-    <head>
-      <title>Orden</title>
-    </head>
-    <body style="font-family:Arial;">
+    <body style="font-family:Arial">
 
       <h2 style="text-align:center;">Órden de trabajo</h2>
 
-      <div style="text-align:center;">
+      <div style="text-align:center">
         <b>${t.numeroOrden}</b><br><br>
-
-        <img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${urlQR}">
+        <img id="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${url}">
       </div>
 
       <br>
@@ -322,30 +288,19 @@ window.imprimirTicket = async function(id){
 
       Estado: ${t.estado}<br>
 
-Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString() : "-"}<br>
-Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString() : "-"}<br>
-Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString() : "-"}<br>
+      Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
+      Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
+      Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}<br>
 
       <script>
-        const img = document.getElementById("qrImg");
-        img.onload = function(){
-          window.print();
-        };
+        document.getElementById("qr").onload = () => window.print();
       <\/script>
 
     </body>
     </html>
   `);
 
-  ventana.document.close();
-};
-};
-
-// BORRAR
-window.borrarTrabajo = async(id)=>{
-  if(!confirm("Eliminar?")) return;
-  await deleteDoc(doc(db,"trabajos",id));
-  cargar();
+  v.document.close();
 };
 </script>
 
