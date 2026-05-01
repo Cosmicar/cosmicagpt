@@ -259,29 +259,63 @@ window.imprimirTicket = async function(id){
 
   const ventana = window.open("", "_blank");
 
+ window.imprimirTicket = async function(id){
+  const t = (await getDoc(doc(db,"trabajos",id))).data();
+  const cSnap = await getDocs(collection(db,"clientes"));
+
+  let cliente = {};
+  cSnap.forEach(d=>{
+    if(d.id === t.clienteId) cliente = d.data();
+  });
+
+  const urlBase = window.location.origin + "/panel.html";
+  const urlFinal = urlBase + "?orden=" + t.numeroOrden;
+  const urlQR = encodeURIComponent(urlFinal);
+
+  const ventana = window.open("", "_blank");
+
   ventana.document.write(`
-    <h2 style="text-align:center;">Órden de trabajo</h2>
+    <html>
+    <head>
+      <title>Orden</title>
+    </head>
+    <body style="font-family:Arial;">
 
-    <div style="text-align:center;">
-      <b>${t.numeroOrden}</b><br><br>
+      <h2 style="text-align:center;">Órden de trabajo</h2>
 
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${urlQR}"><br><br>
-    </div>
+      <div style="text-align:center;">
+        <b>${t.numeroOrden}</b><br><br>
 
-    Cliente: ${cliente.nombre} ${cliente.apellido}<br>
-    DNI: ${cliente.dni}<br><br>
+        <img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${urlQR}">
+      </div>
 
-    Tipo: ${t.tipo}<br>
-    Equipo: ${t.equipo}<br>
-    Marca: ${t.marca}<br>
-    Modelo: ${t.modelo}<br><br>
+      <br>
 
-    Problema:<br>${t.problema}<br><br>
+      Cliente: ${cliente.nombre} ${cliente.apellido}<br>
+      DNI: ${cliente.dni}<br><br>
 
-    Estado: ${t.estado}<br>
+      Tipo: ${t.tipo}<br>
+      Equipo: ${t.equipo}<br>
+      Marca: ${t.marca}<br>
+      Modelo: ${t.modelo}<br><br>
+
+      Problema:<br>${t.problema}<br><br>
+
+      Estado: ${t.estado}<br>
+
+      <script>
+        const img = document.getElementById("qrImg");
+        img.onload = function(){
+          window.print();
+        };
+      <\/script>
+
+    </body>
+    </html>
   `);
 
-  ventana.print();
+  ventana.document.close();
+};
 };
 
 // BORRAR
