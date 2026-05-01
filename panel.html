@@ -234,11 +234,25 @@ Modelo: ${t.modelo || "-"}<br>
 
 // ESTADO
 window.cambiarEstado = async(id,e)=>{
-  const ref=doc(db,"trabajos",id);
-  const snap=await getDoc(ref);
-  if(snap.data().estado==="Entregado") return;
+  const ref = doc(db,"trabajos",id);
+  const snap = await getDoc(ref);
 
-  await updateDoc(ref,{estado:e});
+  if(snap.data().estado === "Entregado") return;
+
+  let update = { estado: e };
+
+  const ahora = new Date().toISOString();
+
+  if(e === "Listo"){
+    update.fechaReparado = ahora;
+  }
+
+  if(e === "Entregado"){
+    update.fechaEntregado = ahora;
+  }
+
+  await updateDoc(ref, update);
+
   cargar();
 };
 
@@ -302,6 +316,10 @@ window.imprimirTicket = async function(id){
       Problema:<br>${t.problema}<br><br>
 
       Estado: ${t.estado}<br>
+
+Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString() : "-"}<br>
+Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString() : "-"}<br>
+Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString() : "-"}<br>
 
       <script>
         const img = document.getElementById("qrImg");
