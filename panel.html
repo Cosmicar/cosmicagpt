@@ -219,6 +219,11 @@ window.cargar = async function(filtro=""){
       Tipo: ${t.tipo || "-"}<br>
       Equipo: ${t.equipo}<br>
       Estado: ${t.estado}<br>
+
+Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString() : "-"}<br>
+Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString() : "-"}<br>
+Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString() : "-"}<br>
+
 Problema: ${t.problema || "-"}<br>
 Marca: ${t.marca || "-"}<br>
 Modelo: ${t.modelo || "-"}<br>
