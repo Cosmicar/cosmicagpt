@@ -44,6 +44,7 @@
 <hr>
 
 <h2>Buscar trabajos</h2>
+
 <select id="filtroEstado" onchange="cargar()">
   <option value="">Todos los estados</option>
   <option value="Ingresado">Ingresado</option>
@@ -51,7 +52,8 @@
   <option value="Listo">Listo</option>
   <option value="Entregado">Entregado</option>
 </select>
-<input id="busquedaDni" placeholder="Ingresar DNI">
+
+<input id="busquedaDni" placeholder="DNI o Nº de orden">
 <button onclick="buscar()">Buscar</button>
 <button onclick="cargar()">Ver todos</button>
 
@@ -133,7 +135,7 @@ window.guardarCliente = async ()=>{
     });
     editandoTrabajoId=null;
   }else{
-    await addDoc(collection(db,"trabajos"),{
+    const trabajoRef = await addDoc(collection(db,"trabajos"),{
       clienteId,
       equipo:eq,
       marca:marca.value,
@@ -143,6 +145,8 @@ window.guardarCliente = async ()=>{
       fechaIngreso:new Date().toISOString(),
       garantiaDias:90
     });
+
+    alert("Registro exitoso Rey, tu número de orden es: " + trabajoRef.id);
   }
 
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
@@ -151,18 +155,18 @@ window.guardarCliente = async ()=>{
 
 // BUSCAR
 window.buscar = ()=>{
-  const dniFiltro = document.getElementById("busquedaDni").value.trim();
+  const valor = document.getElementById("busquedaDni").value.trim();
 
-  if(!dniFiltro){
-    alert("Ingresá un DNI");
+  if(!valor){
+    alert("Ingresá DNI o Nº de orden");
     return;
   }
 
-  cargar(dniFiltro);
+  cargar(valor);
 };
 
 // LISTA
-window.cargar = async function(filtroDni=""){
+window.cargar = async function(filtro=""){
   const cont = listaTrabajos;
   cont.innerHTML="";
 
@@ -178,52 +182,29 @@ window.cargar = async function(filtroDni=""){
     const t=docSnap.data();
     const c=clientes[t.clienteId];
 
-    if(filtroDni && c?.dni !== filtroDni) return;
+    if(filtro){
+      const okDni = c?.dni === filtro;
+      const okOrden = docSnap.id === filtro;
+      if(!okDni && !okOrden) return;
+    }
+
     if(estadoFiltro && t.estado !== estadoFiltro) return;
 
     cont.innerHTML+=`
-    <div style="background:#111;color:#fff;padding:10px;margin:10px">
-      <b>${c?.nombre}</b><br>
+    <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
+      <b>${c?.nombre} ${c?.apellido}</b><br>
       DNI: ${c?.dni}<br>
+      Orden: ${docSnap.id}<br>
       ${t.equipo}<br>
       Estado: ${t.estado}<br>
 
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
       <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="borrarTrabajo('${docSnap.id}')">Borrar</button>
+      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
     </div>`;
   });
 };
-  const cont = listaTrabajos;
-  cont.innerHTML="";
-
-  const tSnap = await getDocs(collection(db,"trabajos"));
-  const cSnap = await getDocs(collection(db,"clientes"));
-
-  const clientes={};
-  cSnap.forEach(d=>clientes[d.id]=d.data());
-
-  tSnap.forEach(docSnap=>{
-    const t=docSnap.data();
-    const c=clientes[t.clienteId];
-
-    if(filtroDni && c?.dni !== filtroDni) return;
-
-    cont.innerHTML+=`
-    <div style="background:#111;color:#fff;padding:10px;margin:10px">
-      <b>${c?.nombre}</b><br>
-      DNI: ${c?.dni}<br>
-      ${t.equipo}<br>
-      Estado: ${t.estado}<br>
-
-      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="borrarTrabajo('${docSnap.id}')">Borrar</button>
-    </div>`;
-  });
-}
 
 // ESTADO
 window.cambiarEstado = async(id,e)=>{
@@ -241,7 +222,6 @@ window.borrarTrabajo = async(id)=>{
   await deleteDoc(doc(db,"trabajos",id));
   cargar();
 };
-
 </script>
 
 </body>
