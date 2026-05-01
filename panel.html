@@ -139,13 +139,19 @@ window.guardarCliente = async ()=>{
     });
     editandoTrabajoId=null;
   }else{
-    const tSnap = await getDocs(collection(db,"trabajos"));
-const numero = tSnap.size + 1;
-
-const tipo = document.getElementById("tipo")?.value || "taller";
-
+const tipo = document.getElementById("tipo").value;
 const prefijo = tipo === "remoto" ? "REM" : "TAL";
 
+// traer solo trabajos del mismo tipo
+const tSnap = await getDocs(collection(db,"trabajos"));
+
+let contador = 0;
+tSnap.forEach(docSnap=>{
+  const t = docSnap.data();
+  if (t.tipo === tipo) contador++;
+});
+
+const numero = contador + 1;
 const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
 
 const trabajoRef = await addDoc(collection(db,"trabajos"),{
@@ -221,6 +227,7 @@ Modelo: ${t.modelo || "-"}<br>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
       <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
       <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
+      <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
     </div>`;
   });
 };
@@ -237,6 +244,35 @@ window.cambiarEstado = async(id,e)=>{
 
 // BORRAR
 window.borrarTrabajo = async(id)=>{
+  window.imprimirTicket = async function(id){
+  const t = (await getDoc(doc(db,"trabajos",id))).data();
+  const cSnap = await getDocs(collection(db,"clientes"));
+
+  let cliente = {};
+  cSnap.forEach(d=>{
+    if(d.id === t.clienteId) cliente = d.data();
+  });
+
+  const ventana = window.open("", "_blank");
+
+  ventana.document.write(`
+    <h2>Órden de trabajo</h2>
+    <b>${t.numeroOrden}</b><br><br>
+
+    Cliente: ${cliente.nombre} ${cliente.apellido}<br>
+    DNI: ${cliente.dni}<br><br>
+
+    Equipo: ${t.equipo}<br>
+    Marca: ${t.marca}<br>
+    Modelo: ${t.modelo}<br><br>
+
+    Problema:<br>${t.problema}<br><br>
+
+    Estado: ${t.estado}<br>
+  `);
+
+  ventana.print();
+};
   if(!confirm("Eliminar?")) return;
   await deleteDoc(doc(db,"trabajos",id));
   cargar();
