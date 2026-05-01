@@ -44,6 +44,13 @@
 <hr>
 
 <h2>Buscar trabajos</h2>
+<select id="filtroEstado" onchange="cargar()">
+  <option value="">Todos los estados</option>
+  <option value="Ingresado">Ingresado</option>
+  <option value="En reparación">En reparación</option>
+  <option value="Listo">Listo</option>
+  <option value="Entregado">Entregado</option>
+</select>
 <input id="busquedaDni" placeholder="Ingresar DNI">
 <button onclick="buscar()">Buscar</button>
 <button onclick="cargar()">Ver todos</button>
@@ -156,6 +163,38 @@ window.buscar = ()=>{
 
 // LISTA
 window.cargar = async function(filtroDni=""){
+  const cont = listaTrabajos;
+  cont.innerHTML="";
+
+  const estadoFiltro = document.getElementById("filtroEstado").value;
+
+  const tSnap = await getDocs(collection(db,"trabajos"));
+  const cSnap = await getDocs(collection(db,"clientes"));
+
+  const clientes={};
+  cSnap.forEach(d=>clientes[d.id]=d.data());
+
+  tSnap.forEach(docSnap=>{
+    const t=docSnap.data();
+    const c=clientes[t.clienteId];
+
+    if(filtroDni && c?.dni !== filtroDni) return;
+    if(estadoFiltro && t.estado !== estadoFiltro) return;
+
+    cont.innerHTML+=`
+    <div style="background:#111;color:#fff;padding:10px;margin:10px">
+      <b>${c?.nombre}</b><br>
+      DNI: ${c?.dni}<br>
+      ${t.equipo}<br>
+      Estado: ${t.estado}<br>
+
+      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+      <button onclick="borrarTrabajo('${docSnap.id}')">Borrar</button>
+    </div>`;
+  });
+};
   const cont = listaTrabajos;
   cont.innerHTML="";
 
