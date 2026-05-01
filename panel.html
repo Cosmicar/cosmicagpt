@@ -135,7 +135,13 @@ window.guardarCliente = async ()=>{
     });
     editandoTrabajoId=null;
   }else{
-    const trabajoRef = await addDoc(collection(db,"trabajos"),{
+    const tSnap = await getDocs(collection(db,"trabajos"));
+const numero = tSnap.size + 1;
+
+const numeroOrden = "COS-" + numero.toString().padStart(4, "0");
+
+const trabajoRef = await addDoc(collection(db,"trabajos"),{
+  numeroOrden,
       clienteId,
       equipo:eq,
       marca:marca.value,
@@ -146,7 +152,7 @@ window.guardarCliente = async ()=>{
       garantiaDias:90
     });
 
-    alert("Registro exitoso Rey, tu número de orden es: " + trabajoRef.id);
+    alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
   }
 
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
@@ -194,9 +200,12 @@ window.cargar = async function(filtro=""){
     <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
       <b>${c?.nombre} ${c?.apellido}</b><br>
       DNI: ${c?.dni}<br>
-      Orden: ${docSnap.id}<br>
+      Orden: ${t.numeroOrden || docSnap.id}<br>
       ${t.equipo}<br>
       Estado: ${t.estado}<br>
+Problema: ${t.problema || "-"}<br>
+Marca: ${t.marca || "-"}<br>
+Modelo: ${t.modelo || "-"}<br>
 
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
