@@ -80,6 +80,8 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+let editandoTrabajoId = null;
+let editandoClienteId = null;
 
 // AUTOCOMPLETE
 window.buscarCliente = async ()=>{
@@ -106,6 +108,27 @@ window.guardarCliente = async ()=>{
   const prov = provincia.value;
   const eq = equipo.value.trim();
   const prob = problema.value.trim();
+  window.editarTrabajo = async function(trabajoId, clienteId){
+  const t = (await getDoc(doc(db,"trabajos",trabajoId))).data();
+  const c = (await getDoc(doc(db,"clientes",clienteId))).data();
+
+  nombre.value = c.nombre;
+  apellido.value = c.apellido;
+  dni.value = c.dni;
+  telefono.value = c.telefono;
+  provincia.value = c.provincia;
+
+  document.getElementById("tipo").value = t.tipo;
+  equipo.value = t.equipo;
+  marca.value = t.marca;
+  modelo.value = t.modelo;
+  problema.value = t.problema;
+
+  editandoTrabajoId = trabajoId;
+  editandoClienteId = clienteId;
+
+  alert("Modo edición activado ✏️");
+};
 
   if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob){
     alert("Faltan datos");
@@ -144,6 +167,42 @@ window.guardarCliente = async ()=>{
   const numero = contador + 1;
   const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
 
+  if(editandoTrabajoId){
+  await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
+    tipo,
+    equipo:eq,
+    marca:marca.value,
+    modelo:modelo.value,
+    problema:prob
+  });
+
+  await updateDoc(doc(db,"clientes",editandoClienteId),{
+    nombre:nombreVal,
+    apellido:apellido.value,
+    telefono:tel,
+    provincia:prov
+  });
+
+  editandoTrabajoId = null;
+  editandoClienteId = null;
+
+  alert("Orden actualizada correctamente");
+
+}else{
+  const tipo = document.getElementById("tipo").value;
+  const prefijo = tipo === "remoto" ? "REM" : "TAL";
+
+  const tSnap = await getDocs(collection(db,"trabajos"));
+
+  let contador = 0;
+  tSnap.forEach(docSnap=>{
+    const t = docSnap.data();
+    if (t.tipo === tipo) contador++;
+  });
+
+  const numero = contador + 1;
+  const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
+
   await addDoc(collection(db,"trabajos"),{
     numeroOrden,
     clienteId,
@@ -156,6 +215,9 @@ window.guardarCliente = async ()=>{
     fechaIngreso:new Date().toISOString(),
     garantiaDias:90
   });
+
+  alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
+}
 
   alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
 
@@ -219,6 +281,7 @@ window.cargar = async function(filtro=""){
       <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
       <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
       <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
       <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
       <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
     </div>`;
