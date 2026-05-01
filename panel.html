@@ -108,7 +108,6 @@ window.guardarCliente = async ()=>{
   const prov = provincia.value;
   const eq = equipo.value.trim();
   const prob = problema.value.trim();
-  window.editarTrabajo = async function(trabajoId, clienteId){
   const t = (await getDoc(doc(db,"trabajos",trabajoId))).data();
   const c = (await getDoc(doc(db,"clientes",clienteId))).data();
 
@@ -218,14 +217,32 @@ window.guardarCliente = async ()=>{
 
   alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
 }
-
-  alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
-
   document.querySelectorAll("input,textarea").forEach(e=>e.value="");
   provincia.value="";
 };
 
 // BUSCAR
+window.editarTrabajo = async function(trabajoId, clienteId){
+  const t = (await getDoc(doc(db,"trabajos",trabajoId))).data();
+  const c = (await getDoc(doc(db,"clientes",clienteId))).data();
+
+  nombre.value = c.nombre;
+  apellido.value = c.apellido;
+  dni.value = c.dni;
+  telefono.value = c.telefono;
+  provincia.value = c.provincia;
+
+  document.getElementById("tipo").value = t.tipo;
+  equipo.value = t.equipo;
+  marca.value = t.marca;
+  modelo.value = t.modelo;
+  problema.value = t.problema;
+
+  editandoTrabajoId = trabajoId;
+  editandoClienteId = clienteId;
+
+  alert("Modo edición activado ✏️");
+};
 window.buscar = ()=>{
   const valor = document.getElementById("busquedaDni").value.trim();
   if(!valor){
