@@ -243,8 +243,8 @@ window.cambiarEstado = async(id,e)=>{
 };
 
 // BORRAR
-window.borrarTrabajo = async(id)=>{
-  window.imprimirTicket = async function(id){
+// TICKET + QR
+window.imprimirTicket = async function(id){
   const t = (await getDoc(doc(db,"trabajos",id))).data();
   const cSnap = await getDocs(collection(db,"clientes"));
 
@@ -253,15 +253,25 @@ window.borrarTrabajo = async(id)=>{
     if(d.id === t.clienteId) cliente = d.data();
   });
 
+  const urlBase = window.location.origin + "/panel.html";
+  const urlFinal = urlBase + "?orden=" + t.numeroOrden;
+  const urlQR = encodeURIComponent(urlFinal);
+
   const ventana = window.open("", "_blank");
 
   ventana.document.write(`
-    <h2>Órden de trabajo</h2>
-    <b>${t.numeroOrden}</b><br><br>
+    <h2 style="text-align:center;">Órden de trabajo</h2>
+
+    <div style="text-align:center;">
+      <b>${t.numeroOrden}</b><br><br>
+
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${urlQR}"><br><br>
+    </div>
 
     Cliente: ${cliente.nombre} ${cliente.apellido}<br>
     DNI: ${cliente.dni}<br><br>
 
+    Tipo: ${t.tipo}<br>
     Equipo: ${t.equipo}<br>
     Marca: ${t.marca}<br>
     Modelo: ${t.modelo}<br><br>
@@ -273,6 +283,9 @@ window.borrarTrabajo = async(id)=>{
 
   ventana.print();
 };
+
+// BORRAR
+window.borrarTrabajo = async(id)=>{
   if(!confirm("Eliminar?")) return;
   await deleteDoc(doc(db,"trabajos",id));
   cargar();
