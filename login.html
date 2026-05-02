@@ -66,11 +66,25 @@ window.crearUsuario = async ()=>{
   }
 
   try{
-    await createUserWithEmailAndPassword(auth, email, pass);
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
-    alert("Usuario creado correctamente");
+    // 🔥 guardar como operador en Firestore
+    const uid = cred.user.uid;
 
-    // 🔥 redirige al panel directamente
+    await fetch(`https://firestore.googleapis.com/v1/projects/cosmica-clientes/databases/(default)/documents/usuarios/${uid}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fields: {
+          rol: { stringValue: "operador" }
+        }
+      })
+    });
+
+    alert("Usuario creado como operador");
+
     window.location.href = "panel.html";
 
   }catch(e){
