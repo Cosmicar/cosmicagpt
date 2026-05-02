@@ -55,6 +55,8 @@
 
 <label>Problema *</label><br>
 <textarea id="problema"></textarea><br>
+<label>Precio ($) *</label><br>
+<input id="precio" type="number"><br>
 
 <button onclick="guardarCliente()">Guardar</button>
 
@@ -75,6 +77,8 @@
 <button onclick="cargar()">Ver todos</button>
 
 <h2>Trabajos</h2>
+<h3>Total del día: $<span id="totalDia">0</span></h3>
+<h3>Total del mes: $<span id="totalMes">0</span></h3>
 <div id="listaTrabajos" style="color:gray;">
   🔍 Buscá un cliente o presioná "Ver todos"
 </div>
@@ -197,8 +201,9 @@ window.guardarCliente = async ()=>{
   const prov = provincia.value;
   const eq = equipo.value.trim();
   const prob = problema.value.trim();
+  const precioVal = parseFloat(document.getElementById("precio").value);
 
-  if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob){
+  if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob||isNaN(precioVal)){
     alert("Faltan datos");
     return;
   }
@@ -267,6 +272,7 @@ window.guardarCliente = async ()=>{
       marca:marca.value,
       modelo:modelo.value,
       problema:prob,
+      precio: precioVal,
       estado:"Ingresado",
       fechaIngreso:new Date().toISOString(),
       garantiaDias:90
@@ -294,6 +300,10 @@ window.buscar = ()=>{
 window.cargar = async function(filtro=""){
   const cont = listaTrabajos;
   cont.innerHTML="";
+  let totalDia = 0;
+const hoy = new Date().toISOString().split("T")[0];
+let totalMes = 0;
+const mesActual = new Date().toISOString().slice(0,7);
   let resultados = [];
   const estadoFiltro = document.getElementById("filtroEstado").value;
 
@@ -305,6 +315,13 @@ window.cargar = async function(filtro=""){
 
   tSnap.forEach(docSnap=>{
     const t=docSnap.data();
+if(t.estado === "Entregado" && t.fechaIngreso && t.fechaIngreso.startsWith(hoy)){
+  totalDia += Number(t.precio || 0);
+}
+
+if(t.estado === "Entregado" && t.fechaIngreso && t.fechaIngreso.startsWith(mesActual)){
+  totalMes += Number(t.precio || 0);
+}
     const c=clientes[t.clienteId];
 
     if(filtro){
@@ -333,8 +350,10 @@ resultados.push({docSnap,t,c});
   </div>
 
   <div style="margin-bottom:10px;">
-    <b>Problema:</b><br>
-    ${t.problema}
+<b>Problema:</b><br>
+${t.problema}
+
+<br><br><b>Precio:</b> $${t.precio || 0}
   </div>
 
   <div style="margin-bottom:10px;">
@@ -383,6 +402,8 @@ const card = cards[0];
     card.scrollIntoView({behavior:"smooth", block:"center"});
   }
 }
+document.getElementById("totalDia").innerText = totalDia;
+document.getElementById("totalMes").innerText = totalMes;
 };
 
 // ESTADO
@@ -462,13 +483,11 @@ window.imprimirTicket = async function(id){
 
   v.document.close();
 };
-if(rolUsuario !== "admin"){
   document.querySelectorAll("button").forEach(btn=>{
     if(btn.innerText === "Borrar"){
       btn.style.display = "none";
     }
   });
-}
 </script>
 
 </body>
