@@ -16,11 +16,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-const app = initializeApp({
-  apiKey:"AIzaSy...",
-  authDomain:"cosmica-clientes.firebaseapp.com",
-  projectId:"cosmica-clientes"
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyBgRCLYvSPLG4PIqPjHFGsPhu0EoxTLKCU",
+  authDomain: "cosmica-clientes.firebaseapp.com",
+  projectId: "cosmica-clientes",
+  storageBucket: "cosmica-clientes.appspot.com",
+  messagingSenderId: "875572379632",
+  appId: "1:875572379632:web:db73498c6ffc9ec679a735"
+};
+
+const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
@@ -31,9 +36,10 @@ window.login = async ()=>{
   try{
     await signInWithEmailAndPassword(auth, email, pass);
     window.location.href = "panel.html";
-  }catch(e){
-    alert("Error de login");
   }
+  catch(e){
+  alert("Error: " + e.message);
+}
 };
 </script>
 
