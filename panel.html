@@ -89,9 +89,15 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // 🔐 PROTECCIÓN
+let authInicializado = false;
+
 onAuthStateChanged(auth, user=>{
-  if(!user){
-    window.location.href = "login.html";
+  if(!authInicializado){
+    authInicializado = true;
+
+    if(!user){
+      window.location.href = "login.html";
+    }
   }
 });
 function diasRestantes(fecha, dias){
