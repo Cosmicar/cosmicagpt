@@ -80,6 +80,13 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+function diasRestantes(fecha, dias){
+  if(!fecha) return 0;
+  const inicio = new Date(fecha);
+  const hoy = new Date();
+  const diff = Math.floor((hoy - inicio) / 86400000);
+  return dias - diff;
+}
 
 let editandoTrabajoId = null;
 let editandoClienteId = null;
@@ -319,13 +326,6 @@ window.cambiarEstado = async(id,e)=>{
   if(e === "Entregado") update.fechaEntregado = ahora;
 
   await updateDoc(ref, update);
-  function diasRestantes(fecha, dias){
-  if(!fecha) return 0;
-  const inicio = new Date(fecha);
-  const hoy = new Date();
-  const diff = Math.floor((hoy - inicio) / 86400000);
-  return dias - diff;
-}
   cargar();
 };
 
