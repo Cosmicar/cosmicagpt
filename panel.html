@@ -72,6 +72,7 @@
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const app = initializeApp({
   apiKey:"AIzaSy...",
@@ -80,6 +81,14 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 🔐 PROTECCIÓN
+onAuthStateChanged(auth, user=>{
+  if(!user){
+    window.location.href = "login.html";
+  }
+});
 function diasRestantes(fecha, dias){
   if(!fecha) return 0;
   const inicio = new Date(fecha);
