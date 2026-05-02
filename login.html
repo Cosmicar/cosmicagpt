@@ -45,8 +45,15 @@ window.login = async ()=>{
     await signInWithEmailAndPassword(auth, email, pass);
     window.location.href = "panel.html";
   }
-  catch(e){
-  alert("Error: " + e.message);
+catch(e){
+
+  if(
+  e.code === "auth/invalid-credential" ||
+  e.code === "auth/wrong-password"
+){
+  alert("despacio rey la clave esta mal");
+}
+
 }
 };
 window.crearUsuario = async ()=>{
