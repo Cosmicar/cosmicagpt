@@ -8,7 +8,7 @@
 <h2>Ingreso al sistema</h2>
 
 <input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Contraseña"><br><br>
+<input id="password" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter'){login()}"><br><br>
 
 <button onclick="login()">Ingresar</button>
 
