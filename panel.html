@@ -426,9 +426,7 @@ window.reingresarTrabajo = async function(id){
   const ref = doc(db,"trabajos",id);
 
   await updateDoc(ref,{
-    estado: "En reparación",
-    fechaReparado: null,
-    fechaEntregado: null
+    estado: "En reparación"
   });
 
   alert("Equipo reingresado correctamente 🔧");
