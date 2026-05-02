@@ -367,18 +367,24 @@ ${t.problema}
     Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}
   </div>
 
-  <div style="margin-top:10px;">
-    <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
-    <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-    <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-    <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-    <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
-    <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
+<div style="margin-top:10px;">
 
-    ${t.estado === "Entregado" && diasRestantes(t.fechaEntregado, t.garantiaDias) > 0 ? `
+  ${
+    t.estado !== "Entregado"
+    ? `
+      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
+      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
+      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
+      <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
+    `
+    : `
       <button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>
-    ` : ""}
-  </div>
+    `
+  }
+
+</div>
 
 </div>`;
   });
@@ -401,7 +407,7 @@ document.getElementById("totalMes").innerText = totalMes;
 
 // ESTADO
 window.cambiarEstado = async(id,e)=>{
-  const ref = doc(db,"trabajos",id);
+    const ref = doc(db,"trabajos",id);
   const snap = await getDoc(ref);
 
   if(snap.data().estado === "Entregado") return;
@@ -413,6 +419,20 @@ window.cambiarEstado = async(id,e)=>{
   if(e === "Entregado") update.fechaEntregado = ahora;
 
   await updateDoc(ref, update);
+  cargar();
+};
+window.reingresarTrabajo = async function(id){
+
+  const ref = doc(db,"trabajos",id);
+
+  await updateDoc(ref,{
+    estado: "En reparación",
+    fechaReparado: null,
+    fechaEntregado: null
+  });
+
+  alert("Equipo reingresado correctamente 🔧");
+
   cargar();
 };
 
