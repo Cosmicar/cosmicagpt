@@ -59,7 +59,7 @@
   <option value="Entregado">Entregado</option>
 </select>
 
-<input id="busquedaDni" placeholder="DNI o Nº de orden">
+<input id="busquedaDni" placeholder="DNI o Nº de orden" onkeydown="if(event.key==='Enter'){buscar()}">
 <button onclick="buscar()">Buscar</button>
 <button onclick="cargar()">Ver todos</button>
 
