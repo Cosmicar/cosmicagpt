@@ -11,10 +11,18 @@
 <input id="password" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter'){login()}"><br><br>
 
 <button onclick="login()">Ingresar</button>
+<hr>
+
+<h3>Crear cuenta</h3>
+
+<input id="newEmail" placeholder="Email"><br><br>
+<input id="newPass" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter'){crearUsuario()}"><br><br>
+
+<button onclick="crearUsuario()">Crear usuario</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgRCLYvSPLG4PIqPjHFGsPhu0EoxTLKCU",
@@ -40,6 +48,27 @@ window.login = async ()=>{
   catch(e){
   alert("Error: " + e.message);
 }
+};
+window.crearUsuario = async ()=>{
+  const email = document.getElementById("newEmail").value;
+  const pass = document.getElementById("newPass").value;
+
+  if(!email || !pass){
+    alert("Completá los datos");
+    return;
+  }
+
+  try{
+    await createUserWithEmailAndPassword(auth, email, pass);
+
+    alert("Usuario creado correctamente");
+
+    // 🔥 redirige al panel directamente
+    window.location.href = "panel.html";
+
+  }catch(e){
+    alert("Error: " + e.message);
+  }
 };
 </script>
 
