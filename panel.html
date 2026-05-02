@@ -249,31 +249,59 @@ window.cargar = async function(filtro=""){
 
     if(estadoFiltro && t.estado !== estadoFiltro) return;
 
-    cont.innerHTML+=`
-    <div style="background:#111;color:#fff;padding:10px;margin:10px;border:1px solid #333">
-      <b>${c?.nombre} ${c?.apellido}</b><br>
-      DNI: ${c?.dni}<br>
-      Orden: ${t.numeroOrden}<br>
-      Tipo: ${t.tipo}<br>
-      Equipo: ${t.equipo}<br>
+   cont.innerHTML+=`
+<div style="background:#111;color:#fff;padding:15px;margin:15px;border-radius:10px;border:1px solid #333">
 
-      Estado: ${t.estado}<br>
+  <div style="font-size:18px;font-weight:bold;margin-bottom:5px;">
+    ${c?.nombre} ${c?.apellido}
+  </div>
 
-      Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
-      Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
-      Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}<br>
+  <div style="font-size:13px;color:#ccc;margin-bottom:10px;">
+    DNI: ${c?.dni} | Orden: ${t.numeroOrden}
+  </div>
 
-      Problema: ${t.problema}<br>
-      Marca: ${t.marca || "-"}<br>
-      Modelo: ${t.modelo || "-"}<br>
+  <div style="margin-bottom:10px;">
+    <b>Equipo:</b> ${t.equipo} (${t.tipo})<br>
+    <b>Marca:</b> ${t.marca || "-"} | <b>Modelo:</b> ${t.modelo || "-"}
+  </div>
 
-      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
-      <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
-    </div>`;
+  <div style="margin-bottom:10px;">
+    <b>Problema:</b><br>
+    ${t.problema}
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <b>Estado:</b> ${t.estado}<br>
+
+    ${t.estado === "Entregado" ? `
+      <b>Garantía:</b> ${
+        diasRestantes(t.fechaEntregado, t.garantiaDias) > 0
+        ? diasRestantes(t.fechaEntregado, t.garantiaDias) + " días restantes"
+        : "Vencida"
+      }
+    ` : ""}
+  </div>
+
+  <div style="font-size:12px;color:#aaa;margin-bottom:10px;">
+    Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
+    Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
+    Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}
+  </div>
+
+  <div style="margin-top:10px;">
+    <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
+    <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
+    <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
+    <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
+    <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
+    <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
+
+    ${t.estado === "Entregado" && diasRestantes(t.fechaEntregado, t.garantiaDias) > 0 ? `
+      <button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>
+    ` : ""}
+  </div>
+
+</div>`;
   });
 };
 
@@ -291,6 +319,13 @@ window.cambiarEstado = async(id,e)=>{
   if(e === "Entregado") update.fechaEntregado = ahora;
 
   await updateDoc(ref, update);
+  function diasRestantes(fecha, dias){
+  if(!fecha) return 0;
+  const inicio = new Date(fecha);
+  const hoy = new Date();
+  const diff = Math.floor((hoy - inicio) / 86400000);
+  return dias - diff;
+}
   cargar();
 };
 
