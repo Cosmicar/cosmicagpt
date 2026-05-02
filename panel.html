@@ -423,15 +423,23 @@ window.cambiarEstado = async(id,e)=>{
 };
 window.reingresarTrabajo = async function(id){
 
-  const ref = doc(db,"trabajos",id);
+  try{
 
-  await updateDoc(ref,{
-    estado: "En reparación"
-  });
+    const ref = doc(db,"trabajos",id);
 
-  alert("Equipo reingresado correctamente 🔧");
+    // 🔥 SOLO CAMBIAMOS ESTADO
+    await updateDoc(ref,{
+      estado: "En reparación"
+    });
 
-  cargar();
+    alert("Equipo reingresado correctamente 🔧");
+
+    cargar();
+
+  }catch(e){
+    console.error(e);
+    alert("Error al reingresar: " + e.message);
+  }
 };
 
 // BORRAR
