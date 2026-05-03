@@ -422,18 +422,50 @@ window.cambiarEstado = async(id,e)=>{
   cargar();
 };
 window.reingresarTrabajo = async function(id){
-
   try{
+    const ref = doc(db, "trabajos", id);
+    const snap = await getDoc(ref);
+    const t = snap.data();
 
-    const ref = doc(db,"trabajos",id);
+    if(t.estado !== "Entregado"){
+      alert("Solo se puede reingresar un trabajo ya entregado.");
+      return;
+    }
 
-    // 🔥 SOLO CAMBIAMOS ESTADO
-    await updateDoc(ref,{
-      estado: "En reparación"
+    const confirmar = confirm(
+      `¿Reingresar el equipo ${t.equipo}?\n` +
+      `Se creará una nueva orden vinculada al cliente.`
+    );
+    if(!confirmar) return;
+
+    // Obtener nuevo número de orden
+    const tSnap = await getDocs(collection(db, "trabajos"));
+    let contador = 0;
+    tSnap.forEach(d => {
+      if(d.data().tipo === t.tipo) contador++;
     });
 
-    alert("Equipo reingresado correctamente 🔧");
+    const prefijo = t.tipo === "remoto" ? "REM" : "TAL";
+    const nuevaOrden = prefijo + "-" + (contador + 1).toString().padStart(4, "0");
 
+    // Crear nueva orden con referencia a la anterior
+    await addDoc(collection(db, "trabajos"), {
+      numeroOrden: nuevaOrden,
+      clienteId: t.clienteId,
+      tipo: t.tipo,
+      equipo: t.equipo,
+      marca: t.marca,
+      modelo: t.modelo,
+      problema: t.problema,          // ← podés editarlo antes si querés
+      precio: t.precio,
+      estado: "Ingresado",
+      fechaIngreso: new Date().toISOString(),
+      garantiaDias: 90,
+      reingreso: true,               // ← marca que es reingreso
+      ordenOriginal: t.numeroOrden   // ← referencia a la orden anterior
+    });
+
+    alert(`Reingreso registrado. Nueva orden: ${nuevaOrden} 🔧`);
     cargar();
 
   }catch(e){
