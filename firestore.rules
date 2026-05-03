@@ -1,0 +1,137 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasUserProfile(uid) {
+      return exists(/databases/$(database)/documents/usuarios/$(uid));
+    }
+
+    function profile(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data;
+    }
+
+    function isActiveProfile(uid) {
+      return hasUserProfile(uid)
+        && profile(uid).activo != false
+        && profile(uid).rol in ['admin', 'operador'];
+    }
+
+    function isStaff() {
+      return signedIn() && isActiveProfile(request.auth.uid);
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && hasUserProfile(request.auth.uid)
+        && profile(request.auth.uid).activo != false
+        && profile(request.auth.uid).rol == 'admin';
+    }
+
+    function validRole(rol) {
+      return rol in ['admin', 'operador'];
+    }
+
+    function validServiceType(tipo) {
+      return tipo in ['taller', 'remoto'];
+    }
+
+    function validStatus(estado) {
+      return estado in ['Ingresado', 'En reparación', 'Listo', 'Entregado', 'Reingresada'];
+    }
+
+    function validStatusChange() {
+      let current = resource.data.estado;
+      let next = request.resource.data.estado;
+      return next == current
+        || (current in ['Ingresado', 'En reparación', 'Listo']
+          && next in ['Ingresado', 'En reparación', 'Listo', 'Entregado'])
+        || (current == 'Entregado' && next == 'Reingresada');
+    }
+
+    function validCliente() {
+      return request.resource.data.keys().hasOnly([
+          'nombre', 'apellido', 'dni', 'telefono', 'provincia'
+        ])
+        && request.resource.data.nombre is string
+        && request.resource.data.dni is string
+        && request.resource.data.telefono is string
+        && request.resource.data.provincia is string;
+    }
+
+    function validTrabajo() {
+      return request.resource.data.keys().hasOnly([
+          'numeroOrden', 'clienteId', 'tipo', 'equipo', 'marca', 'modelo',
+          'problema', 'precio', 'estado', 'fechaIngreso', 'fechaReparado',
+          'fechaEntregado', 'fechaReingreso', 'garantiaDias', 'reingreso',
+          'ordenOriginal'
+        ])
+        && request.resource.data.numeroOrden is string
+        && request.resource.data.clienteId is string
+        && validServiceType(request.resource.data.tipo)
+        && request.resource.data.equipo is string
+        && request.resource.data.problema is string
+        && request.resource.data.precio is number
+        && request.resource.data.precio >= 0
+        && validStatus(request.resource.data.estado);
+    }
+
+    match /usuarios/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['email', 'rol', 'activo', 'creadoEn'])
+        && request.resource.data.email is string
+        && validRole(request.resource.data.rol)
+        && request.resource.data.activo is bool;
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['email', 'rol', 'activo', 'creadoEn', 'actualizadoEn'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'rol', 'activo', 'actualizadoEn'])
+        && request.resource.data.email is string
+        && validRole(request.resource.data.rol)
+        && request.resource.data.activo is bool;
+      allow delete: if isAdmin() && request.auth.uid != uid;
+    }
+
+    match /clientes/{clienteId} {
+      allow read: if isStaff();
+      allow create: if isStaff() && validCliente();
+      allow update: if isStaff()
+        && validCliente()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'nombre', 'apellido', 'telefono', 'provincia'
+        ]);
+      allow delete: if isAdmin();
+    }
+
+    match /trabajos/{trabajoId} {
+      allow read: if isStaff();
+      allow create: if isStaff()
+        && validTrabajo()
+        && request.resource.data.estado == 'Ingresado';
+      allow update: if isStaff()
+        && validTrabajo()
+        && validStatusChange()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'tipo', 'equipo', 'marca', 'modelo', 'problema', 'precio',
+          'estado', 'fechaReparado', 'fechaEntregado', 'fechaReingreso'
+        ]);
+      allow delete: if isAdmin();
+    }
+
+    match /config/ordenes {
+      allow read: if isStaff();
+      allow create, update: if isStaff()
+        && request.resource.data.keys().hasOnly(['taller', 'remoto'])
+        && (!('taller' in request.resource.data) || request.resource.data.taller is number)
+        && (!('remoto' in request.resource.data) || request.resource.data.remoto is number);
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
