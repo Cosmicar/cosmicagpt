@@ -268,46 +268,43 @@ a { color: var(--primary-blue); text-decoration: none; }
 .price-card h3 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 0 0 5px 0; }
 
 /* --- PLAN BRONCE --- */
-.price-card.bronce { border: 1px solid rgba(255,255,255,0.1); }
-.price-card.bronce h3 { color: #fff; }
-.price-card.bronce .price.price-bronce { color: #fff; }
-.price-card.bronce .plan-list li::before { color: #fff; }
-.price-card.bronce .button { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.2); box-shadow: none; }
-.price-card.bronce .button:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); }
+.price-card.bronce { border: 1px solid rgba(255, 94, 0, 0.3); box-shadow: 0 10px 30px rgba(255, 94, 0, 0.05); }
+.price-card.bronce h3 { color: var(--cta-orange); }
+.price-card.bronce .price.price-bronce { color: var(--cta-orange); }
+.price-card.bronce .plan-list li::before { color: var(--cta-orange); }
+.price-card.bronce .button { background: transparent; color: var(--cta-orange); border: 1px solid var(--cta-orange); box-shadow: none; }
+.price-card.bronce .button:hover { background: var(--cta-orange); color: #fff; box-shadow: 0 8px 25px rgba(255, 94, 0, 0.4); }
 
 /* --- PLAN ORO (EL PROTAGONISTA) --- */
 .price-card.oro-card {
-  border: 1px solid transparent !important;
-  background: linear-gradient(var(--bg-navy), var(--bg-navy)) padding-box,
-              linear-gradient(135deg, var(--cta-orange), var(--accent-magenta)) border-box !important;
+  border: 1px solid var(--accent-magenta) !important;
+  background: var(--bg-surface);
   transform: scale(1.05); z-index: 10;
-  box-shadow: 0 20px 50px rgba(255,0,127,0.15);
+  box-shadow: 0 20px 50px rgba(255, 0, 127, 0.15);
 }
-.price-card.oro-card h3 {
-  background: linear-gradient(90deg, var(--cta-orange), var(--accent-magenta));
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-}
-.price-card.oro-card .plan-list li::before { color: var(--cta-orange); }
+.price-card.oro-card h3 { color: var(--accent-magenta); }
+.price-card.oro-card .plan-list li::before { color: var(--accent-magenta); }
 .btn-oro {
-  background: linear-gradient(90deg, var(--cta-orange), var(--accent-magenta)) !important;
-  color: #fff !important; box-shadow: 0 10px 25px rgba(255,94,0,0.4) !important; border: none !important;
+  background: var(--accent-magenta) !important;
+  color: #fff !important; box-shadow: 0 10px 25px rgba(255, 0, 127, 0.4) !important; border: none !important;
 }
-.btn-oro:hover { box-shadow: 0 15px 35px rgba(255,0,127,0.6) !important; }
-.price-card.oro-card .price.price-oro { color: #fff !important; }
+.btn-oro:hover { box-shadow: 0 15px 35px rgba(255, 0, 127, 0.6) !important; }
+.price-card.oro-card .price.price-oro { color: var(--accent-magenta) !important; }
 
 /* --- PLAN PLATINUM --- */
-.price-card.platinum { border: 1px solid rgba(0,229,255,0.3); background: linear-gradient(180deg, rgba(0,229,255,0.03) 0%, transparent 100%); }
+.price-card.platinum { border: 1px solid var(--primary-blue); box-shadow: 0 10px 40px rgba(0, 229, 255, 0.1); background: linear-gradient(180deg, rgba(0, 229, 255, 0.03) 0%, transparent 100%); }
 .price-card.platinum h3 { color: var(--primary-blue); }
 .price-card.platinum .plan-list li::before { color: var(--primary-blue); }
-.btn-platinum { background: var(--primary-blue) !important; color: #050B14 !important; box-shadow: 0 10px 25px rgba(0,229,255,0.3) !important; }
-.btn-platinum:hover { box-shadow: 0 15px 35px rgba(0,229,255,0.5) !important; }
+.btn-platinum { background: var(--primary-blue) !important; color: #050B14 !important; box-shadow: 0 10px 25px rgba(0, 229, 255, 0.3) !important; }
+.btn-platinum:hover { box-shadow: 0 15px 35px rgba(0, 229, 255, 0.5) !important; }
+.price-card.platinum .price.price-platinum { color: var(--primary-blue) !important; }
 
 /* --- BADGE INTEGRADO --- */
 .badge-oro-container { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); z-index: 20; }
 .badge-oro {
-  background: linear-gradient(90deg, var(--cta-orange), var(--accent-magenta)); color: #fff;
+  background: var(--accent-magenta); color: #fff;
   padding: 6px 24px; border-radius: var(--radius-pill); font-weight: 700; font-size: 13px;
-  box-shadow: 0 5px 15px rgba(255,0,127,0.4); white-space: nowrap; letter-spacing: 0.5px;
+  box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4); white-space: nowrap; letter-spacing: 0.5px;
 }
 
 /* ========================================= */
