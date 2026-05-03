@@ -1,86 +1,570 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Cósmica</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #07080f;
+      --surface: #0e0f1a;
+      --card:    #111220;
+      --border:  #1e2035;
+      --accent:  #00ffcc;
+      --accent2: #4f8ef7;
+      --danger:  #ff4d6d;
+      --warning: #ffaa00;
+      --success: #00cc88;
+      --purple:  #cc88ff;
+      --text:    #dde2f0;
+      --muted:   #6b7094;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700;
+      letter-spacing: 2px; color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-tag {
+      font-size: 12px; color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px;
+    }
+    .user-tag b { color: var(--accent); }
+    .btn-logout {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 12px; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex; gap: 4px;
+      padding: 12px 20px 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 20px; border-radius: 10px 10px 0 0;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      color: var(--muted); background: transparent;
+      border: 1px solid transparent; border-bottom: none;
+      transition: all .2s; white-space: nowrap;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      background: var(--bg); color: var(--accent);
+      border-color: var(--border);
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1060px; margin: 0 auto; padding: 24px 16px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── SECTION ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 17px; font-weight: 700;
+      color: var(--accent); letter-spacing: 1px;
+      margin-bottom: 18px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1/-1; }
+    label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+    label .req { color: var(--accent); margin-left: 2px; }
+    input, select, textarea {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text);
+      padding: 11px 14px; font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color .2s; outline: none; width: 100%;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: var(--card); }
+    input[type="date"] { color-scheme: dark; }
+
+    /* ── BOTONES ── */
+    .btn {
+      padding: 10px 18px; border-radius: 9px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 500;
+      transition: all .2s; font-family: 'DM Sans', sans-serif;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-primary  { background: var(--accent); color: #000; font-weight: 600; }
+    .btn-primary:hover { background: #00e8b8; transform: translateY(-1px); }
+    .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 7px; }
+    .btn-reparacion { background: #101828; color: var(--accent2); border: 1px solid #1e3050; }
+    .btn-reparacion:hover { background: var(--accent2); color: #fff; }
+    .btn-listo     { background: #0a2018; color: var(--success); border: 1px solid #0f3a25; }
+    .btn-listo:hover { background: var(--success); color: #000; }
+    .btn-entregado { background: #201800; color: var(--warning); border: 1px solid #3a2800; }
+    .btn-entregado:hover { background: var(--warning); color: #000; }
+    .btn-edit  { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+    .btn-edit:hover { border-color: var(--text); color: var(--text); }
+    .btn-danger { background: #200a10; color: var(--danger); border: 1px solid #400a1a; }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .btn-ticket { background: #0a1020; color: var(--accent2); border: 1px solid #1a2040; }
+    .btn-ticket:hover { background: var(--accent2); color: #fff; }
+    .btn-reingreso { background: #0a2020; color: var(--accent); border: 1px solid #1a4040; }
+    .btn-reingreso:hover { background: var(--accent); color: #000; }
+    .btn-wa { background: #0f2010; color: #25d366; border: 1px solid #1a4025; }
+    .btn-wa:hover { background: #25d366; color: #fff; }
+    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── MODO EDICIÓN ── */
+    .modo-edicion {
+      background: #0a2018; border: 1px solid var(--success);
+      color: var(--success); padding: 10px 16px;
+      border-radius: 9px; font-size: 13px; margin-bottom: 16px; display: none;
+    }
+
+    /* ── CARDS TRABAJOS ── */
+    .card-trabajo {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 14px;
+      transition: border-color .2s;
+    }
+    .card-trabajo:hover { border-color: #2e3050; }
+    .card-trabajo.alerta-demora { border-color: rgba(255,170,0,.4); }
+    .card-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 12px;
+      gap: 10px;
+    }
+    .card-nombre {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700;
+    }
+    .card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .badge {
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+    }
+    .badge-ingresado  { background: #0a1828; color: var(--accent2); border: 1px solid #1a3050; }
+    .badge-reparacion { background: #1e1400; color: var(--warning); border: 1px solid #3a2800; }
+    .badge-listo      { background: #061a10; color: var(--success); border: 1px solid #0f3020; }
+    .badge-entregado  { background: #141420; color: #888; border: 1px solid #2a2a40; }
+    .badge-reingresada{ background: #1a0a1a; color: var(--purple); border: 1px solid #3a1a3a; }
+
+    .demora-tag {
+      font-size: 11px; color: var(--warning);
+      background: rgba(255,170,0,.1);
+      border: 1px solid rgba(255,170,0,.2);
+      border-radius: 20px; padding: 3px 10px;
+      display: inline-block; margin-bottom: 8px;
+    }
+
+    .card-info {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; margin-bottom: 10px; font-size: 13px;
+    }
+    .card-info-item { color: var(--muted); }
+    .card-info-item b { color: var(--text); }
+    .card-problema {
+      background: var(--surface);
+      border-left: 3px solid var(--border);
+      padding: 9px 13px; border-radius: 0 8px 8px 0;
+      font-size: 13px; color: var(--muted); margin-bottom: 10px;
+    }
+    .card-precio {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .card-fechas { font-size: 11px; color: var(--muted); margin-bottom: 12px; line-height: 1.8; }
+    .card-garantia { font-size: 12px; color: var(--success); margin-bottom: 8px; }
+    .card-garantia.vencida { color: var(--danger); }
+    .card-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+    .reingresada-label { font-size: 12px; color: var(--purple); font-style: italic; }
+
+    /* ── MÓDULO INGRESOS ── */
+    .ingresos-filtros {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 20px; align-items: center;
+    }
+    .period-btn {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer;
+      font-size: 12px; font-family: 'DM Sans', sans-serif;
+      transition: all .2s;
+    }
+    .period-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .period-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+    .fecha-custom {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+    .fecha-custom input { width: 150px; padding: 7px 12px; font-size: 13px; }
+
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+    .kpi-value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 26px; font-weight: 700;
+      color: var(--accent); margin-top: 6px;
+    }
+    .kpi-value.blue  { color: var(--accent2); }
+    .kpi-value.green { color: var(--success); }
+    .kpi-value.white { color: var(--text); }
+
+    .ingresos-tabla {
+      width: 100%; border-collapse: collapse;
+    }
+    .ingresos-tabla th {
+      text-align: left; font-size: 11px; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--muted);
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+    }
+    .ingresos-tabla td {
+      padding: 11px 12px; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .ingresos-tabla tr:last-child td { border-bottom: none; }
+    .ingresos-tabla tr:hover td { background: rgba(255,255,255,.02); }
+    .ingresos-tabla .monto {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 700; color: var(--accent);
+    }
+    .tipo-badge {
+      font-size: 10px; padding: 3px 8px; border-radius: 10px;
+      text-transform: uppercase; font-weight: 600; letter-spacing: .5px;
+    }
+    .tipo-taller { background: #0a1828; color: var(--accent2); }
+    .tipo-remoto { background: #0a2018; color: var(--success); }
+
+    .btn-csv {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 16px; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif;
+      transition: all .2s;
+    }
+    .btn-csv:hover { border-color: var(--success); color: var(--success); }
+
+    /* ── BÚSQUEDA ── */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .search-bar input  { flex: 1; min-width: 160px; }
+    .search-bar select { min-width: 160px; }
+
+    /* ── TOTALES RÁPIDOS ── */
+    .totales {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-bottom: 20px;
+    }
+    .total-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .total-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .total-card .value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px; font-weight: 700; color: var(--accent); margin-top: 6px;
+    }
+
+    /* ── ADMIN ── */
+    .admin-section { display: none; }
+
+    /* ── EMPTY ── */
+    .empty-state { text-align: center; padding: 48px; color: var(--muted); }
+
+    @media(max-width:640px){
+      .form-grid { grid-template-columns: 1fr; }
+      .card-info  { grid-template-columns: 1fr; }
+      .kpi-grid   { grid-template-columns: 1fr 1fr; }
+      .totales    { grid-template-columns: 1fr; }
+      .tabs       { gap: 2px; }
+      .tab        { padding: 8px 12px; font-size: 12px; }
+    }
+  </style>
 </head>
 <body>
-<div style="background:#111;color:#fff;padding:10px;">
-  👤 <span id="usuarioLogueado">Cargando...</span>
-  <button onclick="logout()" style="float:right;">Cerrar sesión</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">CÓSMICA<span>ONLINE</span></div>
+  <div class="header-right">
+    <div class="user-tag">👤 <b id="usuarioLogueado">…</b></div>
+    <button class="btn-logout" onclick="logout()">Salir</button>
+  </div>
 </div>
-<!-- Crear usuario deshabilitado en panel -->
-<h2>Ingreso de trabajo</h2>
-<p style="color:red;">* Campos obligatorios</p>
 
-<label>Nombre *</label><br>
-<input id="nombre"><br>
-
-<label>Apellido</label><br>
-<input id="apellido"><br>
-
-<label>DNI *</label><br>
-<input id="dni" onblur="buscarCliente()" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><br>
-
-<label>Teléfono *</label><br>
-<input id="telefono" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><br>
-
-<label>Provincia *</label><br>
-<select id="provincia">
-<option value="">Seleccionar</option>
-<option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
-<option>Córdoba</option><option>Salta</option><option>Tucumán</option>
-</select><br><br>
-
-<label>Tipo de servicio *</label><br>
-<select id="tipo">
-  <option value="taller">Taller</option>
-  <option value="remoto">Remoto</option>
-</select><br><br>
-
-<label>Equipo *</label><br>
-<input id="equipo"><br>
-
-<label>Marca</label><br>
-<input id="marca"><br>
-
-<label>Modelo</label><br>
-<input id="modelo"><br>
-
-<label>Problema *</label><br>
-<textarea id="problema"></textarea><br>
-<label>Precio ($) *</label><br>
-<input id="precio" type="number"><br>
-
-<button onclick="guardarCliente()">Guardar</button>
-
-<hr>
-
-<h2>Buscar trabajos</h2>
-
-<select id="filtroEstado" onchange="cargar()">
-  <option value="">Todos los estados</option>
-  <option value="Ingresado">Ingresado</option>
-  <option value="En reparación">En reparación</option>
-  <option value="Listo">Listo</option>
-  <option value="Entregado">Entregado</option>
-</select>
-
-<input id="busquedaDni" placeholder="DNI o Nº de orden" onkeydown="if(event.key==='Enter'){buscar()}">
-<button onclick="buscar()">Buscar</button>
-<button onclick="cargar()">Ver todos</button>
-
-<h2>Trabajos</h2>
-<h3>Total del día: $<span id="totalDia">0</span></h3>
-<h3>Total del mes: $<span id="totalMes">0</span></h3>
-<div id="listaTrabajos" style="color:gray;">
-  🔍 Buscá un cliente o presioná "Ver todos"
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active"     onclick="showTab('trabajos')">🛠️ Trabajos</div>
+  <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
+  <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
+  <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')">⚙️ Admin</div>
 </div>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════════ TAB: TRABAJOS -->
+  <div class="tab-content active" id="tab-trabajos">
+    <div class="totales">
+      <div class="total-card">
+        <div class="label">Entregado hoy</div>
+        <div class="value">$<span id="totalDia">0</span></div>
+      </div>
+      <div class="total-card">
+        <div class="label">Entregado este mes</div>
+        <div class="value">$<span id="totalMes">0</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔍 Buscar trabajos</div>
+      <div class="search-bar">
+        <select id="filtroEstado" onchange="cargar()">
+          <option value="">Todos los estados</option>
+          <option value="Ingresado">Ingresado</option>
+          <option value="En reparación">En reparación</option>
+          <option value="Listo">Listo</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Reingresada">Reingresada</option>
+        </select>
+        <input id="busquedaDni" placeholder="DNI o Nº de orden…"
+          onkeydown="if(event.key==='Enter') buscar()">
+        <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
+        <button class="btn btn-sm btn-edit" onclick="limpiarBusqueda()">Ver todos</button>
+      </div>
+      <div id="listaTrabajos" class="empty-state">
+        🔍 Buscá un cliente o presioná "Ver todos"
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB: NUEVO -->
+  <div class="tab-content" id="tab-nuevo">
+    <div class="section">
+      <div class="section-title">📋 Ingreso de trabajo</div>
+      <div id="modoEdicionBanner" class="modo-edicion">
+        ✏️ Modo edición activo — Modificá los datos y guardá
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre <span class="req">*</span></label>
+          <input id="nombre" placeholder="Juan">
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input id="apellido" placeholder="Pérez">
+        </div>
+        <div class="form-group">
+          <label>DNI <span class="req">*</span></label>
+          <input id="dni" placeholder="12345678"
+            onblur="buscarClienteAutofill()"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        </div>
+        <div class="form-group">
+          <label>Teléfono <span class="req">*</span></label>
+          <input id="telefono" placeholder="3883000000"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        </div>
+        <div class="form-group">
+          <label>Provincia <span class="req">*</span></label>
+          <select id="provincia">
+            <option value="">Seleccionar…</option>
+            <option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
+            <option>Córdoba</option><option>Salta</option><option>Tucumán</option>
+            <option>Mendoza</option><option>Santa Fe</option><option>Entre Ríos</option>
+            <option>Misiones</option><option>Chaco</option><option>Formosa</option>
+            <option>Santiago del Estero</option><option>Catamarca</option>
+            <option>La Rioja</option><option>San Juan</option><option>San Luis</option>
+            <option>Neuquén</option><option>Río Negro</option><option>Chubut</option>
+            <option>Santa Cruz</option><option>Tierra del Fuego</option>
+            <option>La Pampa</option><option>Corrientes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de servicio <span class="req">*</span></label>
+          <select id="tipo">
+            <option value="taller">Taller</option>
+            <option value="remoto">Remoto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Equipo <span class="req">*</span></label>
+          <input id="equipo" placeholder="Notebook, PC, Impresora…">
+        </div>
+        <div class="form-group">
+          <label>Marca</label>
+          <input id="marca" placeholder="HP, Epson, Lenovo…">
+        </div>
+        <div class="form-group">
+          <label>Modelo</label>
+          <input id="modelo" placeholder="14-ep2013wm…">
+        </div>
+        <div class="form-group">
+          <label>Precio ($) <span class="req">*</span></label>
+          <input id="precio" type="number" min="0" placeholder="0">
+        </div>
+        <div class="form-group full">
+          <label>Problema <span class="req">*</span></label>
+          <textarea id="problema" placeholder="Describí el problema del equipo…"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+        <button class="btn btn-edit" id="btnCancelar"
+          style="display:none" onclick="cancelarEdicion()">✕ Cancelar edición</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB: INGRESOS -->
+  <div class="tab-content" id="tab-ingresos">
+    <div class="section">
+      <div class="section-title">💰 Gestión de ingresos</div>
+
+      <!-- Filtros de período -->
+      <div class="ingresos-filtros">
+        <button class="period-btn active" onclick="setPeriodo('hoy', this)">Hoy</button>
+        <button class="period-btn" onclick="setPeriodo('semana', this)">Esta semana</button>
+        <button class="period-btn" onclick="setPeriodo('mes', this)">Este mes</button>
+        <button class="period-btn" onclick="setPeriodo('mes_anterior', this)">Mes anterior</button>
+        <button class="period-btn" onclick="setPeriodo('custom', this)">Personalizado</button>
+      </div>
+
+      <div class="fecha-custom" id="fechaCustom" style="display:none; margin-bottom:16px;">
+        <input type="date" id="fechaDesde" onchange="cargarIngresos()">
+        <span style="color:var(--muted)">→</span>
+        <input type="date" id="fechaHasta" onchange="cargarIngresos()">
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total período</div>
+          <div class="kpi-value" id="kpiTotal">$0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Taller</div>
+          <div class="kpi-value blue" id="kpiTaller">$0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Remoto</div>
+          <div class="kpi-value green" id="kpiRemoto">$0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Órdenes</div>
+          <div class="kpi-value white" id="kpiOrdenes">0</div>
+        </div>
+      </div>
+
+      <!-- Tabla detalle -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:13px; color:var(--muted);">Detalle de entregas</span>
+        <button class="btn-csv" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="ingresos-tabla">
+          <thead>
+            <tr>
+              <th>Orden</th>
+              <th>Cliente</th>
+              <th>Equipo</th>
+              <th>Tipo</th>
+              <th>Fecha entrega</th>
+              <th>Monto</th>
+            </tr>
+          </thead>
+          <tbody id="ingresosTablaBody">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">
+              Seleccioná un período para ver el detalle
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ TAB: ADMIN -->
+  <div class="tab-content admin-section" id="tab-admin">
+    <div class="section">
+      <div class="section-title">⚙️ Crear usuario operador</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">
+        Los usuarios creados aquí tendrán rol <b style="color:var(--accent2)">operador</b> —
+        pueden gestionar trabajos pero no borrar ni acceder a este panel.
+      </p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Email del nuevo usuario</label>
+          <input id="newEmail" type="email" placeholder="operador@cosmica.ar">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input id="newPass" type="password" placeholder="Mínimo 6 caracteres">
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="crearUsuario()">✅ Crear usuario</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
 
 <script type="module">
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import {
+  getFirestore, collection, addDoc, getDocs, getDoc,
+  doc, query, where, updateDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  getAuth, onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgRCLYvSPLG4PIqPjHFGsPhu0EoxTLKCU",
@@ -91,448 +575,677 @@ const firebaseConfig = {
   appId: "1:875572379632:web:db73498c6ffc9ec679a735"
 };
 
-const app = initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
 const auth = getAuth(app);
 
-// 🔐 PROTECCIÓN
+let rolUsuario = "";
+let ingresosData = []; // para exportar CSV
+let periodoActual = "hoy";
 
-onAuthStateChanged(auth, user=>{
-  if(user){
-    document.getElementById("usuarioLogueado").innerText = user.email;
-  } else {
-    window.location.href = "login.html";
-  }
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = "login.html"; return; }
+
+  document.getElementById("usuarioLogueado").innerText = user.email;
+
+  // Verificar rol
+  try {
+    const uDoc = await getDoc(doc(db, "usuarios", user.uid));
+    if (uDoc.exists()) {
+      rolUsuario = uDoc.data().rol;
+      if (rolUsuario === "admin") {
+        // Mostrar tab y sección de admin
+        document.querySelectorAll(".admin-section").forEach(el => {
+          el.style.display = "";
+        });
+      }
+    }
+  } catch(e) { console.warn("No se pudo obtener rol:", e); }
 });
-window.logout = async ()=>{
+
+window.logout = async () => {
   await signOut(auth);
   window.location.href = "login.html";
 };
-window.crearUsuario = async ()=>{
-  const email = document.getElementById("newEmail").value;
-  const pass = document.getElementById("newPass").value;
 
-  if(!email || !pass){
-    alert("Completá los datos");
-    return;
-  }
-
-  const usuarioActual = auth.currentUser;
-
-  try{
-    // crea usuario (te cambia de sesión)
-    await createUserWithEmailAndPassword(auth, email, pass);
-
-    alert("Usuario creado correctamente");
-
-    // 🔥 volver al usuario original
-    await signOut(auth);
-
-    await signInWithEmailAndPassword(auth, usuarioActual.email, prompt("Reingresá tu contraseña admin"));
-
-  }catch(e){
-    alert("Error: " + e.message);
-  }
+// ── TABS ──────────────────────────────────────────────────────────────────────
+window.showTab = (id) => {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  const tabs = document.querySelectorAll(".tab");
+  const map  = { trabajos:0, nuevo:1, ingresos:2, admin:3 };
+  if (tabs[map[id]]) tabs[map[id]].classList.add("active");
 };
-function diasRestantes(fecha, dias){
-  if(!fecha) return 0;
-  const inicio = new Date(fecha);
-  const hoy = new Date();
-  const diff = Math.floor((hoy - inicio) / 86400000);
-  return dias - diff;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function diasDesde(fecha) {
+  if (!fecha) return 0;
+  return Math.floor((new Date() - new Date(fecha)) / 86400000);
 }
 
-let editandoTrabajoId = null;
-let editandoClienteId = null;
+function diasRestantes(fecha, dias) {
+  if (!fecha) return 0;
+  return dias - Math.floor((new Date() - new Date(fecha)) / 86400000);
+}
 
-// AUTOCOMPLETE
-window.buscarCliente = async ()=>{
-  const dniVal = dni.value;
-  if(!dniVal) return;
+function badgeEstado(estado) {
+  const cls = {
+    "Ingresado":     "badge-ingresado",
+    "En reparación": "badge-reparacion",
+    "Listo":         "badge-listo",
+    "Entregado":     "badge-entregado",
+    "Reingresada":   "badge-reingresada"
+  };
+  return `<span class="badge ${cls[estado]||""}">${estado}</span>`;
+}
 
+function limpiarCampos() {
+  ["nombre","apellido","dni","telefono","equipo","marca","modelo","problema","precio"]
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+  document.getElementById("provincia").value = "";
+  document.getElementById("tipo").value = "taller";
+}
+
+// ── MODO EDICIÓN ──────────────────────────────────────────────────────────────
+let editandoTrabajoId  = null;
+let editandoClienteId  = null;
+
+window.cancelarEdicion = () => {
+  editandoTrabajoId = editandoClienteId = null;
+  limpiarCampos();
+  document.getElementById("modoEdicionBanner").style.display = "none";
+  document.getElementById("btnCancelar").style.display = "none";
+};
+
+// ── AUTOFILL por DNI ──────────────────────────────────────────────────────────
+window.buscarClienteAutofill = async () => {
+  const dniVal = document.getElementById("dni").value.trim();
+  if (!dniVal) return;
   const q = query(collection(db,"clientes"), where("dni","==",dniVal));
   const snap = await getDocs(q);
-
-  if(!snap.empty){
+  if (!snap.empty) {
     const c = snap.docs[0].data();
-    nombre.value=c.nombre||"";
-    apellido.value=c.apellido||"";
-    telefono.value=c.telefono||"";
-    provincia.value=c.provincia||"";
+    document.getElementById("nombre").value   = c.nombre   || "";
+    document.getElementById("apellido").value = c.apellido || "";
+    document.getElementById("telefono").value = c.telefono || "";
+    document.getElementById("provincia").value = c.provincia || "";
   }
 };
 
-// EDITAR
-window.editarTrabajo = async function(trabajoId, clienteId){
+// ── EDITAR ────────────────────────────────────────────────────────────────────
+window.editarTrabajo = async (trabajoId, clienteId) => {
   const t = (await getDoc(doc(db,"trabajos",trabajoId))).data();
   const c = (await getDoc(doc(db,"clientes",clienteId))).data();
 
-  nombre.value = c.nombre;
-  apellido.value = c.apellido;
-  dni.value = c.dni;
-  telefono.value = c.telefono;
-  provincia.value = c.provincia;
-
-  document.getElementById("tipo").value = t.tipo;
-  equipo.value = t.equipo;
-  marca.value = t.marca;
-  modelo.value = t.modelo;
-  problema.value = t.problema;
+  document.getElementById("nombre").value    = c.nombre    || "";
+  document.getElementById("apellido").value  = c.apellido  || "";
+  document.getElementById("dni").value       = c.dni       || "";
+  document.getElementById("telefono").value  = c.telefono  || "";
+  document.getElementById("provincia").value = c.provincia || "";
+  document.getElementById("tipo").value      = t.tipo      || "taller";
+  document.getElementById("equipo").value    = t.equipo    || "";
+  document.getElementById("marca").value     = t.marca     || "";
+  document.getElementById("modelo").value    = t.modelo    || "";
+  document.getElementById("problema").value  = t.problema  || "";
+  document.getElementById("precio").value    = t.precio    ?? 0;
 
   editandoTrabajoId = trabajoId;
   editandoClienteId = clienteId;
 
-  alert("Modo edición activado ✏️");
+  document.getElementById("modoEdicionBanner").style.display = "block";
+  document.getElementById("btnCancelar").style.display = "inline-flex";
+
+  showTab("nuevo");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-// GUARDAR
-window.guardarCliente = async ()=>{
-  const nombreVal = nombre.value.trim();
-  const dniVal = dni.value.trim();
-  const tel = telefono.value.trim();
-  const prov = provincia.value;
-  const eq = equipo.value.trim();
-  const prob = problema.value.trim();
+// ── GUARDAR ───────────────────────────────────────────────────────────────────
+window.guardarCliente = async () => {
+  const nombreVal = document.getElementById("nombre").value.trim();
+  const dniVal    = document.getElementById("dni").value.trim();
+  const tel       = document.getElementById("telefono").value.trim();
+  const prov      = document.getElementById("provincia").value;
+  const eq        = document.getElementById("equipo").value.trim();
+  const prob      = document.getElementById("problema").value.trim();
   const precioVal = parseFloat(document.getElementById("precio").value);
+  const tipo      = document.getElementById("tipo").value;
+  const ape       = document.getElementById("apellido").value.trim();
+  const marc      = document.getElementById("marca").value.trim();
+  const mod       = document.getElementById("modelo").value.trim();
 
-  if(!nombreVal||!dniVal||!tel||!prov||!eq||!prob||isNaN(precioVal)){
-    alert("Faltan datos");
+  if (!nombreVal||!dniVal||!tel||!prov||!eq||!prob||isNaN(precioVal)) {
+    alert("⚠️ Completá todos los campos obligatorios (*)");
     return;
   }
 
+  // Cliente
   let clienteId;
-
-  const q = query(collection(db,"clientes"), where("dni","==",dniVal));
+  const q    = query(collection(db,"clientes"), where("dni","==",dniVal));
   const snap = await getDocs(q);
 
-  if(!snap.empty){
+  if (!snap.empty) {
     clienteId = snap.docs[0].id;
-  }else{
-    const ref = await addDoc(collection(db,"clientes"),{
-      nombre:nombreVal,
-      apellido:apellido.value,
-      dni:dniVal,
-      telefono:tel,
-      provincia:prov
+  } else {
+    const ref = await addDoc(collection(db,"clientes"), {
+      nombre: nombreVal, apellido: ape, dni: dniVal, telefono: tel, provincia: prov
     });
     clienteId = ref.id;
   }
 
-  const tipo = document.getElementById("tipo").value;
-  const prefijo = tipo === "remoto" ? "REM" : "TAL";
-
-  if(editandoTrabajoId){
-
-    await updateDoc(doc(db,"trabajos",editandoTrabajoId),{
-      tipo,
-      equipo:eq,
-      marca:marca.value,
-      modelo:modelo.value,
-      problema:prob
+  if (editandoTrabajoId) {
+    await updateDoc(doc(db,"trabajos",editandoTrabajoId), {
+      tipo, equipo:eq, marca:marc, modelo:mod, problema:prob, precio:precioVal
     });
-
-    await updateDoc(doc(db,"clientes",editandoClienteId),{
-      nombre:nombreVal,
-      apellido:apellido.value,
-      telefono:tel,
-      provincia:prov
+    await updateDoc(doc(db,"clientes",editandoClienteId), {
+      nombre:nombreVal, apellido:ape, telefono:tel, provincia:prov
     });
+    editandoTrabajoId = editandoClienteId = null;
+    document.getElementById("modoEdicionBanner").style.display = "none";
+    document.getElementById("btnCancelar").style.display = "none";
+    alert("✅ Orden actualizada correctamente");
+  } else {
+    const prefijo  = tipo === "remoto" ? "REM" : "TAL";
+    const tSnap    = await getDocs(collection(db,"trabajos"));
+    let contador   = 0;
+    tSnap.forEach(d => { if (d.data().tipo === tipo) contador++; });
+    const numeroOrden = prefijo + "-" + (contador + 1).toString().padStart(4,"0");
 
-    editandoTrabajoId = null;
-    editandoClienteId = null;
-
-    alert("Orden actualizada correctamente");
-
-  }else{
-
-    const tSnap = await getDocs(collection(db,"trabajos"));
-    let contador = 0;
-
- tSnap.forEach(docSnap=>{
-  const t = docSnap.data();
-  if (t.tipo === tipo) contador++;
-});
-
-    const numero = contador + 1;
-    const numeroOrden = prefijo + "-" + numero.toString().padStart(4, "0");
-
-    await addDoc(collection(db,"trabajos"),{
-      numeroOrden,
-      clienteId,
-      tipo,
-      equipo:eq,
-      marca:marca.value,
-      modelo:modelo.value,
-      problema:prob,
-      precio: precioVal,
-      estado:"Ingresado",
-      fechaIngreso:new Date().toISOString(),
-      garantiaDias:90
+    await addDoc(collection(db,"trabajos"), {
+      numeroOrden, clienteId, tipo, equipo:eq, marca:marc, modelo:mod,
+      problema:prob, precio:precioVal, estado:"Ingresado",
+      fechaIngreso: new Date().toISOString(), garantiaDias: 90
     });
-
-    alert("Registro exitoso Rey, tu número de orden es: " + numeroOrden);
+    alert("✅ Registrado. Orden: " + numeroOrden);
   }
 
-  document.querySelectorAll("input,textarea").forEach(e=>e.value="");
-  provincia.value="";
-};
-
-// BUSCAR
-window.buscar = ()=>{
-  const valor = document.getElementById("busquedaDni").value.trim();
-
-  if(!valor){
-    return; // 🔥 no hace nada (silencioso)
-  }
-
-  cargar(valor);
-};
-
-// LISTA
-window.cargar = async function(filtro=""){
-  const cont = listaTrabajos;
-  cont.innerHTML="";
-  let totalDia = 0;
-const hoy = new Date().toISOString().split("T")[0];
-let totalMes = 0;
-const mesActual = new Date().toISOString().slice(0,7);
-  let resultados = [];
-  const estadoFiltro = document.getElementById("filtroEstado").value;
-
-  const tSnap = await getDocs(collection(db,"trabajos"));
-  const cSnap = await getDocs(collection(db,"clientes"));
-
-  const clientes={};
-  cSnap.forEach(d=>clientes[d.id]=d.data());
-
-  tSnap.forEach(docSnap=>{
-    const t=docSnap.data();
-if(t.estado === "Entregado" && t.fechaIngreso && t.fechaIngreso.startsWith(hoy)){
-  totalDia += Number(t.precio || 0);
-}
-
-if(t.estado === "Entregado" && t.fechaIngreso && t.fechaIngreso.startsWith(mesActual)){
-  totalMes += Number(t.precio || 0);
-}
-    const c=clientes[t.clienteId];
-
-    if(filtro){
-      const okDni = c?.dni === filtro;
-      const okOrden = t.numeroOrden === filtro;
-      if(!okDni && !okOrden) return;
-    }
-
-  if(estadoFiltro && t.estado !== estadoFiltro) return;
-
-resultados.push({docSnap,t,c});
-   cont.innerHTML+=`
-<div class="card-trabajo" style="background:#111;color:#fff;padding:15px;margin:15px;border-radius:10px;border:1px solid #333">
-
-  <div style="font-size:18px;font-weight:bold;margin-bottom:5px;">
-    ${c?.nombre} ${c?.apellido}
-  </div>
-
-  <div style="font-size:13px;color:#ccc;margin-bottom:10px;">
-    DNI: ${c?.dni} | Orden: ${t.numeroOrden}
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <b>Equipo:</b> ${t.equipo} (${t.tipo})<br>
-    <b>Marca:</b> ${t.marca || "-"} | <b>Modelo:</b> ${t.modelo || "-"}
-  </div>
-
-  <div style="margin-bottom:10px;">
-<b>Problema:</b><br>
-${t.problema}
-
-<br><br><b>Precio:</b> $${t.precio || 0}
-  </div>
-
-  <div style="margin-bottom:10px;">
-    <b>Estado:</b> ${t.estado}<br>
-
-    ${t.estado === "Entregado" ? `
-      <b>Garantía:</b> ${
-        diasRestantes(t.fechaEntregado, t.garantiaDias) > 0
-        ? diasRestantes(t.fechaEntregado, t.garantiaDias) + " días restantes"
-        : "Vencida"
-      }
-    ` : ""}
-  </div>
-
-  <div style="font-size:12px;color:#aaa;margin-bottom:10px;">
-    Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
-    Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
-    Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}
-  </div>
-
-<div style="margin-top:10px;">
-
-  ${
-    t.estado !== "Entregado"
-    ? `
-      <button onclick="cambiarEstado('${docSnap.id}','En reparación')">Reparación</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Listo')">Listo</button>
-      <button onclick="cambiarEstado('${docSnap.id}','Entregado')">Entregado</button>
-      <button onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">Editar</button>
-      <button onclick="borrarTrabajo('${docSnap.id}')" style="background:red;color:white;">Borrar</button>
-      <button onclick="imprimirTicket('${docSnap.id}')">Ticket</button>
-    `
-    : `
-      <button onclick="reingresarTrabajo('${docSnap.id}')">Reingreso</button>
-    `
-  }
-
-</div>
-
-</div>`;
-  });
-  // 🔥 destacar si hay un solo resultado
-if(resultados.length === 1){
-  const cards = document.querySelectorAll(".card-trabajo");
-const card = cards[0];
-
-  if(card){
-    card.style.border = "2px solid #00ffcc";
-    card.style.boxShadow = "0 0 10px #00ffcc";
-
-    // 🔥 scroll automático
-    card.scrollIntoView({behavior:"smooth", block:"center"});
-  }
-}
-document.getElementById("totalDia").innerText = totalDia;
-document.getElementById("totalMes").innerText = totalMes;
-};
-
-// ESTADO
-window.cambiarEstado = async(id,e)=>{
-    const ref = doc(db,"trabajos",id);
-  const snap = await getDoc(ref);
-
-  if(snap.data().estado === "Entregado") return;
-
-  let update = { estado: e };
-  const ahora = new Date().toISOString();
-
-  if(e === "Listo") update.fechaReparado = ahora;
-  if(e === "Entregado") update.fechaEntregado = ahora;
-
-  await updateDoc(ref, update);
+  limpiarCampos();
+  showTab("trabajos");
   cargar();
 };
-window.reingresarTrabajo = async function(id){
-  try{
-    const ref = doc(db, "trabajos", id);
-    const snap = await getDoc(ref);
-    const t = snap.data();
 
-    if(t.estado !== "Entregado"){
-      alert("Solo se puede reingresar un trabajo ya entregado.");
+// ── BUSCAR ────────────────────────────────────────────────────────────────────
+window.buscar = () => {
+  const v = document.getElementById("busquedaDni").value.trim();
+  if (!v) return;
+  cargar(v);
+};
+
+window.limpiarBusqueda = () => {
+  document.getElementById("busquedaDni").value = "";
+  document.getElementById("filtroEstado").value = "";
+  cargar();
+};
+
+// ── CARGAR LISTA ──────────────────────────────────────────────────────────────
+window.cargar = async (filtro = "") => {
+  const cont = document.getElementById("listaTrabajos");
+  cont.innerHTML = "<div class='empty-state'>⏳ Cargando…</div>";
+
+  let totalDia = 0, totalMes = 0;
+  const hoy       = new Date().toISOString().split("T")[0];
+  const mesActual = new Date().toISOString().slice(0,7);
+  const estadoFiltro = document.getElementById("filtroEstado").value;
+
+  const [tSnap, cSnap] = await Promise.all([
+    getDocs(collection(db,"trabajos")),
+    getDocs(collection(db,"clientes"))
+  ]);
+
+  const clientes = {};
+  cSnap.forEach(d => clientes[d.id] = d.data());
+
+  let resultados = [];
+
+  tSnap.forEach(docSnap => {
+    const t = docSnap.data();
+    const c = clientes[t.clienteId];
+
+    // Totales usando fechaEntregado
+    if (t.estado === "Entregado" && t.fechaEntregado) {
+      if (t.fechaEntregado.startsWith(hoy))       totalDia += Number(t.precio||0);
+      if (t.fechaEntregado.startsWith(mesActual)) totalMes += Number(t.precio||0);
+    }
+
+    if (filtro) {
+      if (c?.dni !== filtro && t.numeroOrden !== filtro) return;
+    }
+    if (estadoFiltro && t.estado !== estadoFiltro) return;
+
+    resultados.push({ docSnap, t, c });
+  });
+
+  resultados.sort((a,b) => new Date(b.t.fechaIngreso) - new Date(a.t.fechaIngreso));
+
+  document.getElementById("totalDia").innerText = totalDia.toLocaleString("es-AR");
+  document.getElementById("totalMes").innerText = totalMes.toLocaleString("es-AR");
+
+  if (!resultados.length) {
+    cont.innerHTML = "<div class='empty-state'>😕 No se encontraron resultados</div>";
+    return;
+  }
+
+  cont.innerHTML = "";
+
+  resultados.forEach(({ docSnap, t, c }) => {
+    const card = document.createElement("div");
+    card.className = "card-trabajo";
+
+    // Alerta de demora (>5 días sin actualizar estado, si no está entregado/reingresado)
+    const diasSinMover = diasDesde(t.fechaIngreso);
+    const alertaDemora = diasSinMover > 5
+      && t.estado !== "Entregado"
+      && t.estado !== "Reingresada";
+    if (alertaDemora) card.classList.add("alerta-demora");
+
+    // Garantía
+    let garantiaHtml = "";
+    if (t.estado === "Entregado" && t.fechaEntregado) {
+      const dias = diasRestantes(t.fechaEntregado, t.garantiaDias||90);
+      garantiaHtml = dias > 0
+        ? `<div class="card-garantia">🛡️ Garantía: ${dias} días restantes</div>`
+        : `<div class="card-garantia vencida">⚠️ Garantía vencida</div>`;
+    }
+
+    // Botón WhatsApp
+    const telClean = (c?.telefono||"").replace(/\D/g,"");
+    const waMsg = encodeURIComponent(
+      `Hola ${c?.nombre}, te contactamos de Cósmica Online. ` +
+      `Tu equipo *${t.equipo}* (Orden ${t.numeroOrden}) está *${t.estado}*. ¡Cualquier consulta avisanos!`
+    );
+    const btnWa = telClean
+      ? `<a href="https://wa.me/549${telClean}?text=${waMsg}" target="_blank">
+           <button class="btn btn-sm btn-wa">💬 WhatsApp</button>
+         </a>`
+      : "";
+
+    // Botones según estado
+    const bloqueado = t.estado === "Entregado" || t.estado === "Reingresada";
+    let botonesHtml = "";
+
+    if (!bloqueado) {
+      botonesHtml = `
+        <button class="btn btn-sm btn-reparacion" onclick="cambiarEstado('${docSnap.id}','En reparación')">🔧 En reparación</button>
+        <button class="btn btn-sm btn-listo"      onclick="cambiarEstado('${docSnap.id}','Listo')">✅ Listo</button>
+        <button class="btn btn-sm btn-entregado"  onclick="cambiarEstado('${docSnap.id}','Entregado')">📦 Entregado</button>
+        <button class="btn btn-sm btn-edit"       onclick="editarTrabajo('${docSnap.id}','${t.clienteId}')">✏️ Editar</button>
+        ${rolUsuario === "admin" ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${docSnap.id}')">🗑️ Borrar</button>` : ""}
+        <button class="btn btn-sm btn-ticket"     onclick="imprimirTicket('${docSnap.id}')">🖨️ Ticket</button>
+        ${btnWa}
+      `;
+    } else if (t.estado === "Entregado") {
+      botonesHtml = `
+        <button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${docSnap.id}')">♻️ Reingresar</button>
+        <button class="btn btn-sm btn-ticket"    onclick="imprimirTicket('${docSnap.id}')">🖨️ Ticket</button>
+        ${btnWa}
+      `;
+    } else {
+      botonesHtml = `<span class="reingresada-label">♻️ Orden reingresada</span> ${btnWa}`;
+    }
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-nombre">${c?.nombre||"—"} ${c?.apellido||""}</div>
+          <div class="card-meta">
+            DNI: ${c?.dni||"—"} | Orden: ${t.numeroOrden||"—"}
+            ${t.ordenOriginal ? ` | Reingreso de: <b>${t.ordenOriginal}</b>` : ""}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          ${badgeEstado(t.estado)}
+          ${alertaDemora ? `<span class="demora-tag">⏰ ${diasSinMover} días sin actualizar</span>` : ""}
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-info-item"><b>Equipo:</b> ${t.equipo||"—"}</div>
+        <div class="card-info-item"><b>Tipo:</b> ${t.tipo||"—"}</div>
+        <div class="card-info-item"><b>Marca:</b> ${t.marca||"—"}</div>
+        <div class="card-info-item"><b>Modelo:</b> ${t.modelo||"—"}</div>
+      </div>
+      <div class="card-problema">📝 ${t.problema||"—"}</div>
+      <div class="card-precio">💰 $${(t.precio||0).toLocaleString("es-AR")}</div>
+      ${garantiaHtml}
+      <div class="card-fechas">
+        📅 Ingreso: ${t.fechaIngreso   ? new Date(t.fechaIngreso).toLocaleString("es-AR")   : "—"}<br>
+        🔧 Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "—"}<br>
+        📦 Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "—"}
+      </div>
+      <div class="card-buttons">${botonesHtml}</div>
+    `;
+
+    cont.appendChild(card);
+  });
+
+  // Destacar resultado único
+  if (resultados.length === 1) {
+    const card = cont.querySelector(".card-trabajo");
+    if (card) {
+      card.style.border = "2px solid var(--accent)";
+      card.style.boxShadow = "0 0 20px rgba(0,255,204,.15)";
+      card.scrollIntoView({ behavior:"smooth", block:"center" });
+    }
+  }
+};
+
+// ── CAMBIAR ESTADO ────────────────────────────────────────────────────────────
+window.cambiarEstado = async (id, estado) => {
+  const ref    = doc(db,"trabajos",id);
+  const actual = (await getDoc(ref)).data().estado;
+  if (actual === "Entregado" || actual === "Reingresada") return;
+
+  const upd = { estado };
+  if (estado === "Listo")     upd.fechaReparado  = new Date().toISOString();
+  if (estado === "Entregado") upd.fechaEntregado = new Date().toISOString();
+
+  await updateDoc(ref, upd);
+  cargar();
+};
+
+// ── REINGRESAR ────────────────────────────────────────────────────────────────
+window.reingresarTrabajo = async (id) => {
+  try {
+    const ref  = doc(db,"trabajos",id);
+    const t    = (await getDoc(ref)).data();
+
+    if (t.estado !== "Entregado") {
+      alert("Solo se puede reingresar una orden ya entregada.");
       return;
     }
 
-    const confirmar = confirm(
-      `¿Reingresar el equipo ${t.equipo}?\n` +
-      `Se creará una nueva orden vinculada al cliente.`
-    );
-    if(!confirmar) return;
+    if (!confirm(`¿Reingresar el equipo ${t.equipo}?\nSe creará una nueva orden para este cliente.`)) return;
 
-    // Obtener nuevo número de orden
-    const tSnap = await getDocs(collection(db, "trabajos"));
-    let contador = 0;
-    tSnap.forEach(d => {
-      if(d.data().tipo === t.tipo) contador++;
-    });
+    const nuevoPrecioStr = prompt("Precio para esta reparación:", t.precio ?? 0);
+    if (nuevoPrecioStr === null) return;
+    const nuevoPrecio = parseFloat(nuevoPrecioStr);
+    if (isNaN(nuevoPrecio)) { alert("Precio inválido."); return; }
 
     const prefijo = t.tipo === "remoto" ? "REM" : "TAL";
-    const nuevaOrden = prefijo + "-" + (contador + 1).toString().padStart(4, "0");
+    const tSnap   = await getDocs(collection(db,"trabajos"));
+    let contador  = 0;
+    tSnap.forEach(d => { if (d.data().tipo === t.tipo) contador++; });
+    const nuevaOrden = prefijo + "-" + (contador+1).toString().padStart(4,"0");
 
-    // Crear nueva orden con referencia a la anterior
-    await addDoc(collection(db, "trabajos"), {
-      numeroOrden: nuevaOrden,
-      clienteId: t.clienteId,
-      tipo: t.tipo,
-      equipo: t.equipo,
-      marca: t.marca,
-      modelo: t.modelo,
-      problema: t.problema,          // ← podés editarlo antes si querés
-      precio: t.precio ?? 0,
-      estado: "Ingresado",
-      fechaIngreso: new Date().toISOString(),
-      garantiaDias: 90,
-      reingreso: true,               // ← marca que es reingreso
-      ordenOriginal: t.numeroOrden   // ← referencia a la orden anterior
+    // Marcar original
+    await updateDoc(ref, { estado:"Reingresada", fechaReingreso: new Date().toISOString() });
+
+    // Nueva orden
+    await addDoc(collection(db,"trabajos"), {
+      numeroOrden:   nuevaOrden,
+      clienteId:     t.clienteId,
+      tipo:          t.tipo,
+      equipo:        t.equipo,
+      marca:         t.marca        ?? "",
+      modelo:        t.modelo       ?? "",
+      problema:      t.problema     ?? "",
+      precio:        nuevoPrecio,
+      estado:        "Ingresado",
+      fechaIngreso:  new Date().toISOString(),
+      garantiaDias:  90,
+      reingreso:     true,
+      ordenOriginal: t.numeroOrden
     });
 
-    alert(`Reingreso registrado. Nueva orden: ${nuevaOrden} 🔧`);
+    alert(`✅ Reingreso registrado. Nueva orden: ${nuevaOrden}`);
     cargar();
-
-  }catch(e){
+  } catch(e) {
     console.error(e);
     alert("Error al reingresar: " + e.message);
   }
 };
 
-// BORRAR
-window.borrarTrabajo = async(id)=>{
-  if(!confirm("Eliminar?")) return;
+// ── BORRAR ────────────────────────────────────────────────────────────────────
+window.borrarTrabajo = async (id) => {
+  if (!confirm("⚠️ ¿Eliminar esta orden? No se puede deshacer.")) return;
   await deleteDoc(doc(db,"trabajos",id));
   cargar();
 };
 
-// TICKET + QR
-window.imprimirTicket = async function(id){
+// ── TICKET ────────────────────────────────────────────────────────────────────
+window.imprimirTicket = async (id) => {
   const t = (await getDoc(doc(db,"trabajos",id))).data();
   const cSnap = await getDocs(collection(db,"clientes"));
-
   let cliente = {};
-  cSnap.forEach(d=>{
-    if(d.id === t.clienteId) cliente = d.data();
-  });
+  cSnap.forEach(d => { if (d.id === t.clienteId) cliente = d.data(); });
 
   const url = encodeURIComponent(window.location.origin + "/panel.html?orden=" + t.numeroOrden);
-
-  const v = window.open("", "_blank");
+  const v   = window.open("","_blank");
 
   v.document.write(`
-    <html>
-    <body style="font-family:Arial">
-
-      <h2 style="text-align:center;">Órden de trabajo</h2>
-
-      <div style="text-align:center">
-        <b>${t.numeroOrden}</b><br><br>
-        <img id="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${url}">
+    <html><head><title>Ticket ${t.numeroOrden}</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=DM+Sans:wght@400;500&display=swap');
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'DM Sans',sans-serif; font-size:13px; max-width:380px; margin:0 auto; padding:20px; color:#111; }
+      .header-ticket { text-align:center; margin-bottom:16px; }
+      .logo-t { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:2px; }
+      .sub-t  { font-size:11px; color:#888; margin-top:2px; }
+      .orden-num { font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; text-align:center; margin:10px 0; }
+      .qr-wrap { text-align:center; margin-bottom:12px; }
+      hr { border:none; border-top:1px dashed #ccc; margin:12px 0; }
+      .row { margin:5px 0; display:flex; justify-content:space-between; }
+      .row b { min-width:90px; color:#555; font-weight:500; }
+      .problema-box { background:#f5f5f5; border-radius:6px; padding:8px 10px; margin:6px 0; font-size:12px; }
+      .footer-ticket { text-align:center; font-size:11px; color:#888; margin-top:16px; }
+      .garantia-box { background:#e8f8f2; border-radius:6px; padding:8px 10px; text-align:center; font-size:12px; color:#0a7a50; }
+    </style>
+    </head>
+    <body>
+      <div class="header-ticket">
+        <div class="logo-t">CÓSMICA ONLINE</div>
+        <div class="sub-t">Servicio técnico integral · Jujuy, Argentina</div>
       </div>
 
-      <br>
+      <div class="orden-num">${t.numeroOrden}</div>
 
-      Cliente: ${cliente.nombre} ${cliente.apellido}<br>
-      DNI: ${cliente.dni}<br><br>
+      <div class="qr-wrap">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${url}" id="qr">
+      </div>
 
-      Tipo: ${t.tipo}<br>
-      Equipo: ${t.equipo}<br>
-      Marca: ${t.marca}<br>
-      Modelo: ${t.modelo}<br><br>
+      <hr>
+      <div class="row"><b>Cliente</b> ${cliente.nombre||""} ${cliente.apellido||""}</div>
+      <div class="row"><b>DNI</b> ${cliente.dni||"—"}</div>
+      <div class="row"><b>Teléfono</b> ${cliente.telefono||"—"}</div>
+      <hr>
+      <div class="row"><b>Tipo</b> ${t.tipo||"—"}</div>
+      <div class="row"><b>Equipo</b> ${t.equipo||"—"}</div>
+      <div class="row"><b>Marca</b> ${t.marca||"—"}</div>
+      <div class="row"><b>Modelo</b> ${t.modelo||"—"}</div>
+      <hr>
+      <div style="margin:5px 0;color:#555;font-size:12px;font-weight:500;">Problema reportado:</div>
+      <div class="problema-box">${t.problema||"—"}</div>
+      <hr>
+      <div class="row"><b>Precio</b> <b>$${(t.precio||0).toLocaleString("es-AR")}</b></div>
+      <div class="row"><b>Estado</b> ${t.estado||"—"}</div>
+      <hr>
+      <div class="row"><b>Ingreso</b>   ${t.fechaIngreso   ? new Date(t.fechaIngreso).toLocaleString("es-AR")   : "—"}</div>
+      <div class="row"><b>Reparado</b>  ${t.fechaReparado  ? new Date(t.fechaReparado).toLocaleString("es-AR")  : "—"}</div>
+      <div class="row"><b>Entregado</b> ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "—"}</div>
+      <hr>
+      <div class="garantia-box">🛡️ Garantía de ${t.garantiaDias||90} días por la reparación</div>
+      <div class="footer-ticket">
+        WhatsApp: 3883298736 · Ramírez de Velazco 111, SSJ<br>
+        www.cosmicaonline.com.ar
+      </div>
 
-      Problema:<br>${t.problema}<br><br>
-
-      Estado: ${t.estado}<br>
-
-      Ingreso: ${t.fechaIngreso ? new Date(t.fechaIngreso).toLocaleString("es-AR") : "-"}<br>
-      Reparado: ${t.fechaReparado ? new Date(t.fechaReparado).toLocaleString("es-AR") : "-"}<br>
-      Entregado: ${t.fechaEntregado ? new Date(t.fechaEntregado).toLocaleString("es-AR") : "-"}<br>
-
-      <script>
-        document.getElementById("qr").onload = () => window.print();
-      <\/script>
-
-    </body>
-    </html>
+      <script>document.getElementById("qr").onload = () => window.print();<\/script>
+    </body></html>
   `);
-
   v.document.close();
+};
+
+// ── MÓDULO INGRESOS ───────────────────────────────────────────────────────────
+function getRangoPeriodo(periodo) {
+  const hoy    = new Date();
+  const year   = hoy.getFullYear();
+  const month  = hoy.getMonth();
+  const day    = hoy.getDate();
+
+  if (periodo === "hoy") {
+    const ini = new Date(year, month, day, 0, 0, 0);
+    const fin = new Date(year, month, day, 23, 59, 59);
+    return [ini, fin];
+  }
+  if (periodo === "semana") {
+    const lunes = new Date(hoy);
+    lunes.setDate(day - ((hoy.getDay()||7) - 1));
+    lunes.setHours(0,0,0,0);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    domingo.setHours(23,59,59,999);
+    return [lunes, domingo];
+  }
+  if (periodo === "mes") {
+    return [new Date(year, month, 1, 0,0,0), new Date(year, month+1, 0, 23,59,59)];
+  }
+  if (periodo === "mes_anterior") {
+    return [new Date(year, month-1, 1, 0,0,0), new Date(year, month, 0, 23,59,59)];
+  }
+  if (periodo === "custom") {
+    const desde = document.getElementById("fechaDesde").value;
+    const hasta = document.getElementById("fechaHasta").value;
+    if (!desde || !hasta) return [null, null];
+    return [new Date(desde + "T00:00:00"), new Date(hasta + "T23:59:59")];
+  }
+  return [null, null];
+}
+
+window.setPeriodo = (periodo, btn) => {
+  periodoActual = periodo;
+  document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("fechaCustom").style.display = periodo === "custom" ? "flex" : "none";
+  cargarIngresos();
+};
+
+window.cargarIngresos = async () => {
+  const [desde, hasta] = getRangoPeriodo(periodoActual);
+
+  const [tSnap, cSnap] = await Promise.all([
+    getDocs(collection(db,"trabajos")),
+    getDocs(collection(db,"clientes"))
+  ]);
+
+  const clientes = {};
+  cSnap.forEach(d => clientes[d.id] = d.data());
+
+  let totalGeneral = 0, totalTaller = 0, totalRemoto = 0;
+  const filas = [];
+
+  tSnap.forEach(docSnap => {
+    const t = docSnap.data();
+    if (t.estado !== "Entregado" || !t.fechaEntregado) return;
+
+    const fe = new Date(t.fechaEntregado);
+    if (desde && hasta && (fe < desde || fe > hasta)) return;
+
+    const precio = Number(t.precio || 0);
+    totalGeneral += precio;
+    if (t.tipo === "taller") totalTaller += precio;
+    else                     totalRemoto += precio;
+
+    filas.push({ t, c: clientes[t.clienteId] || {}, fe, precio });
+  });
+
+  filas.sort((a,b) => b.fe - a.fe);
+  ingresosData = filas; // para CSV
+
+  document.getElementById("kpiTotal").innerText   = "$" + totalGeneral.toLocaleString("es-AR");
+  document.getElementById("kpiTaller").innerText  = "$" + totalTaller.toLocaleString("es-AR");
+  document.getElementById("kpiRemoto").innerText  = "$" + totalRemoto.toLocaleString("es-AR");
+  document.getElementById("kpiOrdenes").innerText = filas.length;
+
+  const tbody = document.getElementById("ingresosTablaBody");
+  if (!filas.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">
+      Sin entregas en el período seleccionado
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filas.map(({ t, c, fe, precio }) => `
+    <tr>
+      <td><b>${t.numeroOrden||"—"}</b></td>
+      <td>${c.nombre||"—"} ${c.apellido||""}</td>
+      <td>${t.equipo||"—"}</td>
+      <td><span class="tipo-badge tipo-${t.tipo||'taller'}">${t.tipo||"—"}</span></td>
+      <td>${fe.toLocaleDateString("es-AR")}</td>
+      <td class="monto">$${precio.toLocaleString("es-AR")}</td>
+    </tr>
+  `).join("");
+};
+
+// ── EXPORTAR CSV ──────────────────────────────────────────────────────────────
+window.exportarCSV = () => {
+  if (!ingresosData.length) { alert("No hay datos para exportar."); return; }
+
+  const headers = ["Orden","Cliente","DNI","Equipo","Tipo","Fecha Entrega","Monto"];
+  const rows = ingresosData.map(({ t, c, fe, precio }) => [
+    t.numeroOrden,
+    `${c.nombre||""} ${c.apellido||""}`.trim(),
+    c.dni || "",
+    t.equipo || "",
+    t.tipo || "",
+    fe.toLocaleDateString("es-AR"),
+    precio
+  ]);
+
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob(["\uFEFF" + csv], { type:"text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href  = URL.createObjectURL(blob);
+  link.download = `cosmica_ingresos_${new Date().toISOString().split("T")[0]}.csv`;
+  link.click();
+};
+
+// ── CREAR USUARIO (solo admin) ────────────────────────────────────────────────
+window.crearUsuario = async () => {
+  const email = document.getElementById("newEmail").value.trim();
+  const pass  = document.getElementById("newPass").value;
+
+  if (!email || !pass) { alert("Completá email y contraseña."); return; }
+  if (pass.length < 6) { alert("La contraseña debe tener al menos 6 caracteres."); return; }
+
+  const adminUser = auth.currentUser;
+  const adminPass = prompt("Para continuar, ingresá tu contraseña admin:");
+  if (!adminPass) return;
+
+  try {
+    // Crear usuario nuevo
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid  = cred.user.uid;
+
+    // Guardar rol operador en Firestore
+    await fetch(
+      `https://firestore.googleapis.com/v1/projects/cosmica-clientes/databases/(default)/documents/usuarios/${uid}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ fields: { rol:{ stringValue:"operador" } } })
+      }
+    );
+
+    alert("✅ Usuario operador creado: " + email);
+
+    // Volver a sesión admin
+    await signOut(auth);
+    await signInWithEmailAndPassword(auth, adminUser.email, adminPass);
+
+    document.getElementById("newEmail").value = "";
+    document.getElementById("newPass").value  = "";
+
+  } catch(e) {
+    alert("Error: " + e.message);
+    // Intentar recuperar sesión admin si falló a mitad
+    try {
+      await signOut(auth);
+      await signInWithEmailAndPassword(auth, adminUser.email, adminPass);
+    } catch(_) {}
+  }
 };
 </script>
 

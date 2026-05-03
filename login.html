@@ -1,28 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Login Cósmica</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cósmica Online — Acceso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080f;
+      --surface: #0e0f1a;
+      --border: #1e2035;
+      --accent: #00ffcc;
+      --accent-dim: rgba(0,255,204,.08);
+      --text: #dde2f0;
+      --muted: #6b7094;
+      --danger: #ff4d6d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Fondo animado */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,255,204,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,204,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove {
+      0%   { background-position: 0 0; }
+      100% { background-position: 40px 40px; }
+    }
+    .bg-glow {
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,255,204,.06) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Card */
+    .card {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 0 80px rgba(0,0,0,.6), 0 0 40px rgba(0,255,204,.04);
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(20px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,255,204,.2);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 14px;
+    }
+    .logo-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+    .logo-title span { color: var(--text); }
+    .logo-sub {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    input {
+      width: 100%;
+      background: #080910;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 13px 16px;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,255,204,.08);
+    }
+    input::placeholder { color: var(--muted); }
+
+    .btn-login {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all .2s;
+    }
+    .btn-login:hover {
+      background: #00e8b8;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,255,204,.2);
+    }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled {
+      background: #1a2a25;
+      color: #2a5a4a;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Error */
+    .error-msg {
+      background: rgba(255,77,109,.1);
+      border: 1px solid rgba(255,77,109,.3);
+      color: var(--danger);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .error-msg.show { display: block; animation: shake .3s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
+    .footer-text {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 32px;
+      letter-spacing: .5px;
+    }
+  </style>
 </head>
 <body>
 
-<h2>Ingreso al sistema</h2>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
 
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter'){login()}"><br><br>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🛰️</div>
+    <div class="logo-title">CÓSMICA<span>ONLINE</span></div>
+    <div class="logo-sub">Sistema de gestión</div>
+  </div>
 
-<button onclick="login()">Ingresar</button>
-<hr>
+  <div class="form-group">
+    <label>Email</label>
+    <input id="email" type="email" placeholder="usuario@cosmica.ar" autocomplete="username">
+  </div>
 
-<h3>Crear cuenta</h3>
+  <div class="form-group">
+    <label>Contraseña</label>
+    <input id="password" type="password" placeholder="••••••••"
+      autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') login()">
+  </div>
 
-<input id="newEmail" placeholder="Email"><br><br>
-<input id="newPass" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter'){crearUsuario()}"><br><br>
+  <button class="btn-login" id="btnLogin" onclick="login()">Ingresar</button>
+  <div class="error-msg" id="errorMsg"></div>
 
-<button onclick="crearUsuario()">Crear usuario</button>
+  <div class="footer-text">Cósmica Online © 2025 — Jujuy, Argentina</div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgRCLYvSPLG4PIqPjHFGsPhu0EoxTLKCU",
@@ -33,62 +227,45 @@ const firebaseConfig = {
   appId: "1:875572379632:web:db73498c6ffc9ec679a735"
 };
 
-const app = initializeApp(firebaseConfig);
-
+const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-window.login = async ()=>{
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  try{
-    await signInWithEmailAndPassword(auth, email, pass);
-    window.location.href = "panel.html";
-  }
-catch(e){
-
-  if(
-  e.code === "auth/invalid-credential" ||
-  e.code === "auth/wrong-password"
-){
-  alert("despacio rey la clave esta mal");
+function mostrarError(msg) {
+  const el = document.getElementById("errorMsg");
+  el.textContent = msg;
+  el.classList.remove("show");
+  void el.offsetWidth; // forzar reflow para reiniciar animación
+  el.classList.add("show");
 }
 
-}
-};
-window.crearUsuario = async ()=>{
-  const email = document.getElementById("newEmail").value;
-  const pass = document.getElementById("newPass").value;
+window.login = async () => {
+  const email = document.getElementById("email").value.trim();
+  const pass  = document.getElementById("password").value;
+  const btn   = document.getElementById("btnLogin");
 
-  if(!email || !pass){
-    alert("Completá los datos");
+  if (!email || !pass) {
+    mostrarError("Completá email y contraseña.");
     return;
   }
 
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+  btn.disabled = true;
+  btn.textContent = "Verificando...";
 
-    // 🔥 guardar como operador en Firestore
-    const uid = cred.user.uid;
-
-    await fetch(`https://firestore.googleapis.com/v1/projects/cosmica-clientes/databases/(default)/documents/usuarios/${uid}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        fields: {
-          rol: { stringValue: "operador" }
-        }
-      })
-    });
-
-    alert("Usuario creado como operador");
-
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
     window.location.href = "panel.html";
-
-  }catch(e){
-    alert("Error: " + e.message);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = "Ingresar";
+    if (
+      e.code === "auth/invalid-credential" ||
+      e.code === "auth/wrong-password" ||
+      e.code === "auth/user-not-found"
+    ) {
+      mostrarError("Email o contraseña incorrectos.");
+    } else {
+      mostrarError("Error al ingresar. Intentá de nuevo.");
+    }
   }
 };
 </script>
