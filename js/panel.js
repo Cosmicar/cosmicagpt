@@ -57,6 +57,7 @@ function boot() {
       $("usuarioLogueado").innerText = session.user.email || "Usuario";
       renderRoleUi();
       await loadInitialWorkList();
+      await actualizarTotalesDashboard();
     },
     onUnauthorized: () => {
       const orden = new URLSearchParams(window.location.search).get("orden");
@@ -107,9 +108,35 @@ async function loadInitialWorkList() {
       🔍 Buscá un DNI, número de orden o presioná "Ver todos".
     </div>
   `;
-  
-  // Cargar contabilidad del día por defecto
-  await cargarIngresos();
+}
+
+async function actualizarTotalesDashboard() {
+  try {
+    // 1. Consultar a la base de datos respetando RBAC
+    const trabajos = await listTrabajos(state.session?.profile);
+    
+    // 2. Cálculos matemáticos puros (sin inyectar listas visuales)
+    const hoy = new Date().toISOString().split("T")[0];
+    const mesActual = new Date().toISOString().slice(0, 7);
+    let totalDia = 0;
+    let totalMes = 0;
+
+    trabajos.forEach((t) => {
+      if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
+        if (String(t.fechaEntregado).startsWith(hoy)) totalDia += Number(t.precio || 0);
+        if (String(t.fechaEntregado).startsWith(mesActual)) totalMes += Number(t.precio || 0);
+      }
+    });
+
+    // 3. Modificar únicamente los elementos del DOM contables
+    const elDia = document.getElementById("totalDia");
+    const elMes = document.getElementById("totalMes");
+    if (elDia) elDia.innerText = formatMoney(totalDia);
+    if (elMes) elMes.innerText = formatMoney(totalMes);
+
+  } catch (error) {
+    console.error("No se pudo calcular la contabilidad del dashboard:", error);
+  }
 }
 
 function renderRoleUi() {
@@ -600,17 +627,8 @@ async function cargarIngresos() {
     let totalRemoto = 0;
     const filas = [];
 
-    const hoy = new Date().toISOString().split("T")[0];
-    const mesActual = new Date().toISOString().slice(0, 7);
-    let tabTrabajosTotalDia = 0;
-    let tabTrabajosTotalMes = 0;
-
     trabajos.forEach((t) => {
       if (t.estado !== WORK_STATUS.entregado || !t.fechaEntregado) return;
-
-      // Actualizar contabilidad rápida de la pestaña principal
-      if (String(t.fechaEntregado).startsWith(hoy)) tabTrabajosTotalDia += Number(t.precio || 0);
-      if (String(t.fechaEntregado).startsWith(mesActual)) tabTrabajosTotalMes += Number(t.precio || 0);
 
       const fe = new Date(t.fechaEntregado);
       if (desde && hasta && (fe < desde || fe > hasta)) return;
@@ -630,12 +648,6 @@ async function cargarIngresos() {
     $("kpiTaller").innerText = "$" + formatMoney(totalTaller);
     $("kpiRemoto").innerText = "$" + formatMoney(totalRemoto);
     $("kpiOrdenes").innerText = filas.length;
-
-    // Actualizar contadores de la vista "Trabajos" también
-    const elTotalDia = $("totalDia");
-    const elTotalMes = $("totalMes");
-    if (elTotalDia) elTotalDia.innerText = formatMoney(tabTrabajosTotalDia);
-    if (elTotalMes) elTotalMes.innerText = formatMoney(tabTrabajosTotalMes);
 
     const tbody = $("ingresosTablaBody");
     if (!filas.length) {
