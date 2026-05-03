@@ -13,7 +13,7 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "./firebase.js";
-import { COLLECTIONS, ORDER_PREFIX, SERVICE_TYPES, normalizeServiceType } from "./domain.js";
+import { COLLECTIONS, ORDER_PREFIX, SERVICE_TYPES, normalizeServiceType, ROLES } from "./domain.js";
 
 export async function findClienteByDni(dni) {
   const q = query(collection(db, COLLECTIONS.clientes), where("dni", "==", dni));
@@ -67,19 +67,35 @@ export async function listClientesMap() {
   return clientes;
 }
 
-export async function listTrabajos() {
-  const snap = await getDocs(collection(db, COLLECTIONS.trabajos));
-  return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-}
-
-export async function findTrabajosByClienteId(clienteId) {
-  const q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId));
+export async function listTrabajos(profile) {
+  let q;
+  if (profile?.rol === ROLES.operador) {
+    q = query(collection(db, COLLECTIONS.trabajos), where("tipo", "==", SERVICE_TYPES.taller));
+  } else {
+    q = collection(db, COLLECTIONS.trabajos);
+  }
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
-export async function findTrabajosByNumeroOrden(numeroOrden) {
-  const q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden));
+export async function findTrabajosByClienteId(clienteId, profile) {
+  let q;
+  if (profile?.rol === ROLES.operador) {
+    q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId), where("tipo", "==", SERVICE_TYPES.taller));
+  } else {
+    q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId));
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
+export async function findTrabajosByNumeroOrden(numeroOrden, profile) {
+  let q;
+  if (profile?.rol === ROLES.operador) {
+    q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden), where("tipo", "==", SERVICE_TYPES.taller));
+  } else {
+    q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden));
+  }
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 }

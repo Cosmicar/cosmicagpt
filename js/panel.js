@@ -281,7 +281,7 @@ async function cargar(filtro = "", options = {}) {
     let clientesWarning = "";
 
     if (cargarTodos) {
-      trabajos = await listTrabajos();
+      trabajos = await listTrabajos(state.session?.profile);
       try {
         clientes = await listClientesMap();
       } catch (error) {
@@ -289,7 +289,7 @@ async function cargar(filtro = "", options = {}) {
         console.warn("No se pudo cargar clientes:", error);
       }
     } else {
-      const porOrden = await findTrabajosByNumeroOrden(filtroLimpio);
+      const porOrden = await findTrabajosByNumeroOrden(filtroLimpio, state.session?.profile);
       let clienteEncontrado = null;
 
       try {
@@ -300,7 +300,7 @@ async function cargar(filtro = "", options = {}) {
       }
 
       const porCliente = clienteEncontrado
-        ? await findTrabajosByClienteId(clienteEncontrado.id).catch(() => [])
+        ? await findTrabajosByClienteId(clienteEncontrado.id, state.session?.profile).catch(() => [])
         : [];
 
       trabajos = mergeTrabajosById([...porOrden, ...porCliente]);
@@ -405,6 +405,8 @@ function renderTrabajoCard(t, c = {}) {
 
   const bloqueado = t.estado === WORK_STATUS.entregado || t.estado === WORK_STATUS.reingresada;
   const admin = isAdmin(state.session?.profile);
+  const operatorCanEdit = state.session?.profile?.rol === "operador" && t.tipo === "taller";
+  const canEdit = admin || operatorCanEdit;
   let botonesHtml = "";
 
   if (!bloqueado) {
@@ -412,7 +414,7 @@ function renderTrabajoCard(t, c = {}) {
       <button class="btn btn-sm btn-reparacion" onclick="cambiarEstado('${t.id}','${WORK_STATUS.enReparacion}')">En reparación</button>
       <button class="btn btn-sm btn-listo" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">Listo</button>
       <button class="btn btn-sm btn-entregado" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">Entregado</button>
-      <button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>
+      ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
       ${admin ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
       <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
       ${btnWa}
@@ -564,7 +566,7 @@ async function cargarIngresos() {
   try {
     const [desde, hasta] = getRangoPeriodo(state.periodoActual);
     const [trabajos, clientes] = await Promise.all([
-      listTrabajos(),
+      listTrabajos(state.session?.profile),
       listClientesMap()
     ]);
 
