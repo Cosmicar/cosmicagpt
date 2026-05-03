@@ -7,7 +7,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function hasUserDoc() {
+    function userExists() {
       return isAuth()
         && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
     }
@@ -16,206 +16,42 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
     }
 
-    function hasRole() {
-      return hasUserDoc()
-        && userData().activo != false
-        && userData().rol in ['admin', 'operador'];
-    }
-
     function isAdmin() {
-      return isAuth()
-        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == 'admin'
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.activo != false;
+      return userExists()
+        && userData().rol == 'admin';
     }
 
     function isOperador() {
-      return hasRole() && userData().rol == 'operador';
+      return userExists()
+        && userData().rol == 'operador';
     }
 
-    function validRole(rol) {
-      return rol in ['admin', 'operador'];
+    function hasRole() {
+      return isAdmin() || isOperador();
     }
 
-    function validTipo(tipo) {
-      return tipo in ['taller', 'remoto'];
-    }
-
-    function validEstado(estado) {
-      return estado in [
-        'Ingresado',
-        'En reparación',
-        'Listo',
-        'Entregado',
-        'Reingresada',
-        'Reingresado'
-      ];
-    }
-
-    function validEstadoUpdate() {
-      let before = resource.data.estado;
-      let after = request.resource.data.estado;
-
-      return after == before
-        || (
-          before in ['Ingresado', 'En reparación', 'Listo']
-          && after in ['Ingresado', 'En reparación', 'Listo', 'Entregado']
-        )
-        || (
-          before == 'Entregado'
-          && after in ['Reingresada', 'Reingresado']
-        );
-    }
-
-    function validClienteCreate() {
-      return request.resource.data.keys().hasOnly([
-          'nombre',
-          'apellido',
-          'dni',
-          'telefono',
-          'provincia'
-        ])
-        && request.resource.data.nombre is string
-        && request.resource.data.dni is string
-        && request.resource.data.telefono is string
-        && request.resource.data.provincia is string
-        && (!('apellido' in request.resource.data) || request.resource.data.apellido is string);
-    }
-
-    function validClienteUpdate() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'nombre',
-          'apellido',
-          'telefono',
-          'provincia'
-        ])
-        && request.resource.data.nombre is string
-        && request.resource.data.telefono is string
-        && request.resource.data.provincia is string
-        && (!('apellido' in request.resource.data) || request.resource.data.apellido is string);
-    }
-
-    function validTrabajoCreate() {
-      return request.resource.data.keys().hasOnly([
-          'numeroOrden',
-          'clienteId',
-          'tipo',
-          'equipo',
-          'marca',
-          'modelo',
-          'problema',
-          'precio',
-          'estado',
-          'fechaIngreso',
-          'fechaReparado',
-          'fechaEntregado',
-          'fechaReingreso',
-          'garantiaDias',
-          'reingreso',
-          'ordenOriginal'
-        ])
-        && request.resource.data.keys().hasAll([
-          'numeroOrden',
-          'clienteId',
-          'tipo',
-          'equipo',
-          'problema',
-          'precio',
-          'estado',
-          'fechaIngreso'
-        ])
-        && request.resource.data.numeroOrden is string
-        && request.resource.data.clienteId is string
-        && validTipo(request.resource.data.tipo)
-        && request.resource.data.equipo is string
-        && request.resource.data.problema is string
-        && request.resource.data.precio is number
-        && request.resource.data.precio >= 0
-        && request.resource.data.estado == 'Ingresado';
-    }
-
-    function validTrabajoUpdate() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'tipo',
-          'equipo',
-          'marca',
-          'modelo',
-          'problema',
-          'precio',
-          'estado',
-          'fechaReparado',
-          'fechaEntregado',
-          'fechaReingreso'
-        ])
-        && validEstadoUpdate()
-        && (!('estado' in request.resource.data) || validEstado(request.resource.data.estado))
-        && (!('tipo' in request.resource.data) || validTipo(request.resource.data.tipo))
-        && (!('precio' in request.resource.data) || (
-          request.resource.data.precio is number
-          && request.resource.data.precio >= 0
-        ))
-        && (!('equipo' in request.resource.data) || request.resource.data.equipo is string)
-        && (!('problema' in request.resource.data) || request.resource.data.problema is string);
-    }
-
-    function validUsuarioCreate() {
-      return request.resource.data.keys().hasOnly([
-          'email',
-          'rol',
-          'activo',
-          'creadoEn'
-        ])
-        && request.resource.data.email is string
-        && validRole(request.resource.data.rol)
-        && request.resource.data.activo is bool;
-    }
-
-    function validUsuarioUpdate() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'email',
-          'rol',
-          'activo',
-          'actualizadoEn'
-        ])
-        && request.resource.data.email is string
-        && validRole(request.resource.data.rol)
-        && request.resource.data.activo is bool;
-    }
-
-    function validOrdenesCounter() {
-      return request.resource.data.keys().hasOnly(['taller', 'remoto'])
-        && (!('taller' in request.resource.data) || request.resource.data.taller is number)
-        && (!('remoto' in request.resource.data) || request.resource.data.remoto is number);
-    }
-
-    // CLIENTES
     match /clientes/{docId} {
-      allow read: if hasRole();
-      allow create: if hasRole() && validClienteCreate();
-      allow update: if hasRole() && validClienteUpdate();
+      allow read: if isAuth();
+      allow create, update: if hasRole();
       allow delete: if isAdmin();
     }
 
-    // TRABAJOS
     match /trabajos/{docId} {
-      allow read: if hasRole();
-      allow create: if hasRole() && validTrabajoCreate();
-      allow update: if hasRole() && validTrabajoUpdate();
+      allow read: if isAuth();
+      allow create, update: if hasRole();
       allow delete: if isAdmin();
     }
 
-    // USUARIOS / ROLES
     match /usuarios/{uid} {
       allow read: if isAuth() && (request.auth.uid == uid || isAdmin());
-      allow create: if isAdmin() && validUsuarioCreate();
-      allow update: if isAdmin() && validUsuarioUpdate();
+      allow create, update: if isAdmin()
+        && request.resource.data.rol in ['admin', 'operador'];
       allow delete: if isAdmin() && request.auth.uid != uid;
     }
 
-    // CONTADOR DE ORDENES USADO POR js/work-repository.js
     match /config/ordenes {
-      allow read: if hasRole();
-      allow create, update: if hasRole() && validOrdenesCounter();
+      allow read: if isAuth();
+      allow create, update: if hasRole();
       allow delete: if false;
     }
 
