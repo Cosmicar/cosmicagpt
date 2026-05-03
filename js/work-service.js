@@ -1,4 +1,4 @@
-import { canChangeStatus, canDeleteWork, canReenterWork, normalizeServiceType, WORK_STATUS } from "./domain.js";
+import { canChangeStatus, canDeleteWork, canReenterWork, normalizeServiceType, WORK_STATUS, isAdmin } from "./domain.js";
 import { nowIso } from "./utils.js";
 import {
   addTrabajo,
@@ -9,7 +9,8 @@ import {
   publishPublicOrder,
   updateCliente,
   updateTrabajo,
-  upsertClienteByDni
+  upsertClienteByDni,
+  resetContabilidadBatch
 } from "./work-repository.js";
 
 export function validateWorkForm(values) {
@@ -149,4 +150,11 @@ export async function removeWork(id, profile) {
   }
   await deleteTrabajo(id);
   await deletePublicOrder(id).catch(() => {});
+}
+
+export async function resetAccountancy(profile) {
+  if (!isAdmin(profile)) {
+    throw new Error("Solo un administrador puede resetear la contabilidad.");
+  }
+  await resetContabilidadBatch();
 }

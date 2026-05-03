@@ -15,7 +15,8 @@ import {
   changeWorkStatus,
   reenterWork,
   removeWork,
-  saveWorkForm
+  saveWorkForm,
+  resetAccountancy
 } from "./work-service.js";
 import {
   $,
@@ -88,8 +89,9 @@ function bindGlobalActions() {
   window.imprimirTicket = imprimirTicket;
   window.setPeriodo = setPeriodo;
   window.cargarIngresos = cargarIngresos;
-  window.exportarCSV = exportarCSV;
+  window.exportarExcel = exportarExcel;
   window.crearUsuario = crearUsuario;
+  window.resetearContabilidad = resetearContabilidad;
 }
 
 async function loadInitialWorkList() {
@@ -616,33 +618,41 @@ async function cargarIngresos() {
   }
 }
 
-function exportarCSV() {
-  if (!state.ingresosData.length) {
-    alert("No hay datos para exportar.");
+function exportarExcel() {
+  if (!state.ingresosData || state.ingresosData.length === 0) {
+    alert("No hay datos para exportar en este período.");
     return;
   }
 
-  const headers = ["Orden", "Cliente", "DNI", "Equipo", "Tipo", "Fecha Entrega", "Monto"];
-  const rows = state.ingresosData.map(({ t, c, fe, precio }) => [
-    t.numeroOrden,
-    `${c.nombre || ""} ${c.apellido || ""}`.trim(),
-    c.dni || "",
-    t.equipo || "",
-    t.tipo || "",
-    fe.toLocaleDateString("es-AR"),
-    precio
-  ]);
+  const data = state.ingresosData.map(({ t, c, fe, precio }) => ({
+    "Orden": t.numeroOrden || "-",
+    "Cliente": `${c.nombre || ""} ${c.apellido || ""}`.trim() || "Sin nombre",
+    "DNI": c.dni || "",
+    "Equipo": t.equipo || "-",
+    "Tipo": t.tipo === "taller" ? "Taller" : "Remoto",
+    "Fecha Entrega": fe.toLocaleDateString("es-AR"),
+    "Monto": Number(precio || 0)
+  }));
 
-  const csv = [headers, ...rows]
-    .map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","))
-    .join("\n");
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Ingresos");
 
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `cosmica_ingresos_${new Date().toISOString().split("T")[0]}.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  XLSX.writeFile(workbook, `Ingresos_Cosmica_${new Date().toISOString().split("T")[0]}.xlsx`);
+}
+
+async function resetearContabilidad() {
+  if (!confirm("¿Estás seguro? Esto eliminará o reseteará todos los trabajos facturados de prueba.")) {
+    return;
+  }
+  try {
+    await resetAccountancy(state.session.user);
+    alert("✅ Contabilidad reseteada correctamente (precios en $0).");
+    await cargarIngresos();
+    await cargar(document.getElementById("busquedaDni").value.trim(), { fromFilter: true });
+  } catch (error) {
+    showAlertError(error, "No se pudo resetear la contabilidad.");
+  }
 }
 
 async function crearUsuario() {

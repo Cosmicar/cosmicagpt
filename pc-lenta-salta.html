@@ -268,43 +268,49 @@ a { color: var(--primary-blue); text-decoration: none; }
 .price-card h3 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 0 0 5px 0; }
 
 /* --- PLAN BRONCE --- */
-.price-card.bronce { border: 1px solid rgba(255, 94, 0, 0.3); box-shadow: 0 10px 30px rgba(255, 94, 0, 0.05); }
-.price-card.bronce h3 { color: var(--cta-orange); }
-.price-card.bronce .price.price-bronce { color: var(--cta-orange); }
-.price-card.bronce .plan-list li::before { color: var(--cta-orange); }
-.price-card.bronce .button { background: transparent; color: var(--cta-orange); border: 1px solid var(--cta-orange); box-shadow: none; }
-.price-card.bronce .button:hover { background: var(--cta-orange); color: #fff; box-shadow: 0 8px 25px rgba(255, 94, 0, 0.4); }
+.price-card.bronce { border: 1px solid rgba(205, 127, 50, 0.3); box-shadow: 0 10px 30px rgba(205, 127, 50, 0.05); }
+.price-card.bronce h3 { color: #CD7F32; }
+.price-card.bronce .price.price-bronce { color: #CD7F32; }
+.price-card.bronce .plan-list li::before { color: #CD7F32; }
+.price-card.bronce .button { background: transparent; color: #CD7F32; border: 1px solid #CD7F32; box-shadow: none; }
+.price-card.bronce .button:hover { background: #CD7F32; color: #fff; box-shadow: 0 8px 25px rgba(205, 127, 50, 0.4); }
 
 /* --- PLAN ORO (EL PROTAGONISTA) --- */
+@keyframes resplandor-oro {
+  0% { box-shadow: 0 15px 40px rgba(255, 215, 0, 0.15), inset 0 0 10px rgba(255, 215, 0, 0.05); border-color: rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 25px 60px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 215, 0, 0.2); border-color: rgba(255, 215, 0, 1); }
+  100% { box-shadow: 0 15px 40px rgba(255, 215, 0, 0.15), inset 0 0 10px rgba(255, 215, 0, 0.05); border-color: rgba(255, 215, 0, 0.5); }
+}
+
 .price-card.oro-card {
-  border: 1px solid var(--accent-magenta) !important;
+  border: 1px solid #FFD700 !important;
   background: var(--bg-surface);
   transform: scale(1.05); z-index: 10;
-  box-shadow: 0 20px 50px rgba(255, 0, 127, 0.15);
+  animation: resplandor-oro 2s infinite ease-in-out;
 }
-.price-card.oro-card h3 { color: var(--accent-magenta); }
-.price-card.oro-card .plan-list li::before { color: var(--accent-magenta); }
+.price-card.oro-card h3 { color: #FFD700; }
+.price-card.oro-card .plan-list li::before { color: #FFD700; }
 .btn-oro {
-  background: var(--accent-magenta) !important;
-  color: #fff !important; box-shadow: 0 10px 25px rgba(255, 0, 127, 0.4) !important; border: none !important;
+  background: #FFD700 !important;
+  color: #050B14 !important; box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4) !important; border: none !important;
 }
-.btn-oro:hover { box-shadow: 0 15px 35px rgba(255, 0, 127, 0.6) !important; }
-.price-card.oro-card .price.price-oro { color: var(--accent-magenta) !important; }
+.btn-oro:hover { box-shadow: 0 15px 35px rgba(255, 215, 0, 0.6) !important; }
+.price-card.oro-card .price.price-oro { color: #FFD700 !important; }
 
 /* --- PLAN PLATINUM --- */
-.price-card.platinum { border: 1px solid var(--primary-blue); box-shadow: 0 10px 40px rgba(0, 229, 255, 0.1); background: linear-gradient(180deg, rgba(0, 229, 255, 0.03) 0%, transparent 100%); }
-.price-card.platinum h3 { color: var(--primary-blue); }
-.price-card.platinum .plan-list li::before { color: var(--primary-blue); }
-.btn-platinum { background: var(--primary-blue) !important; color: #050B14 !important; box-shadow: 0 10px 25px rgba(0, 229, 255, 0.3) !important; }
-.btn-platinum:hover { box-shadow: 0 15px 35px rgba(0, 229, 255, 0.5) !important; }
-.price-card.platinum .price.price-platinum { color: var(--primary-blue) !important; }
+.price-card.platinum { border: 1px solid rgba(229, 228, 226, 0.3); box-shadow: 0 10px 40px rgba(229, 228, 226, 0.1); background: linear-gradient(180deg, rgba(229, 228, 226, 0.03) 0%, transparent 100%); }
+.price-card.platinum h3 { color: #E5E4E2; }
+.price-card.platinum .plan-list li::before { color: #E5E4E2; }
+.btn-platinum { background: #E5E4E2 !important; color: #050B14 !important; box-shadow: 0 10px 25px rgba(229, 228, 226, 0.3) !important; }
+.btn-platinum:hover { box-shadow: 0 15px 35px rgba(229, 228, 226, 0.5) !important; }
+.price-card.platinum .price.price-platinum { color: #E5E4E2 !important; }
 
 /* --- BADGE INTEGRADO --- */
 .badge-oro-container { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); z-index: 20; }
 .badge-oro {
-  background: var(--accent-magenta); color: #fff;
+  background: #FFD700; color: #050B14;
   padding: 6px 24px; border-radius: var(--radius-pill); font-weight: 700; font-size: 13px;
-  box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4); white-space: nowrap; letter-spacing: 0.5px;
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); white-space: nowrap; letter-spacing: 0.5px;
 }
 
 /* ========================================= */

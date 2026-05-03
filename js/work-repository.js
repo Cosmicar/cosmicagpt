@@ -9,7 +9,8 @@ import {
   runTransaction,
   setDoc,
   updateDoc,
-  where
+  where,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "./firebase.js";
 import { COLLECTIONS, ORDER_PREFIX, SERVICE_TYPES, normalizeServiceType } from "./domain.js";
@@ -173,4 +174,14 @@ export async function setOrderCounterBaseline({ taller, remoto }) {
     taller: Number(taller || 0),
     remoto: Number(remoto || 0)
   }, { merge: true });
+}
+
+export async function resetContabilidadBatch() {
+  const batch = writeBatch(db);
+  const snap = await getDocs(collection(db, COLLECTIONS.trabajos));
+  snap.docs.forEach((docSnap) => {
+    // Set price to 0 for all existing works to reset accounting without losing work history
+    batch.update(docSnap.ref, { precio: 0 });
+  });
+  await batch.commit();
 }
