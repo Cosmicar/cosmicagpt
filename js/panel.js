@@ -600,8 +600,17 @@ async function cargarIngresos() {
     let totalRemoto = 0;
     const filas = [];
 
+    const hoy = new Date().toISOString().split("T")[0];
+    const mesActual = new Date().toISOString().slice(0, 7);
+    let tabTrabajosTotalDia = 0;
+    let tabTrabajosTotalMes = 0;
+
     trabajos.forEach((t) => {
       if (t.estado !== WORK_STATUS.entregado || !t.fechaEntregado) return;
+
+      // Actualizar contabilidad rápida de la pestaña principal
+      if (String(t.fechaEntregado).startsWith(hoy)) tabTrabajosTotalDia += Number(t.precio || 0);
+      if (String(t.fechaEntregado).startsWith(mesActual)) tabTrabajosTotalMes += Number(t.precio || 0);
 
       const fe = new Date(t.fechaEntregado);
       if (desde && hasta && (fe < desde || fe > hasta)) return;
@@ -621,6 +630,12 @@ async function cargarIngresos() {
     $("kpiTaller").innerText = "$" + formatMoney(totalTaller);
     $("kpiRemoto").innerText = "$" + formatMoney(totalRemoto);
     $("kpiOrdenes").innerText = filas.length;
+
+    // Actualizar contadores de la vista "Trabajos" también
+    const elTotalDia = $("totalDia");
+    const elTotalMes = $("totalMes");
+    if (elTotalDia) elTotalDia.innerText = formatMoney(tabTrabajosTotalDia);
+    if (elTotalMes) elTotalMes.innerText = formatMoney(tabTrabajosTotalMes);
 
     const tbody = $("ingresosTablaBody");
     if (!filas.length) {
