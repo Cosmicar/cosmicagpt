@@ -102,8 +102,11 @@ async function loadInitialWorkList() {
     return;
   }
 
-  // Cargar todos los trabajos por defecto (sin necesidad de "Ver todos")
-  await cargar("", { cargarTodos: true });
+  $("listaTrabajos").innerHTML = `
+    <div class="empty-state">
+      🔍 Buscá un DNI, número de orden o presioná "Ver todos".
+    </div>
+  `;
   
   // Cargar contabilidad del día por defecto
   await cargarIngresos();
