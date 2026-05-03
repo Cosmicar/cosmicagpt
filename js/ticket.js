@@ -1,4 +1,4 @@
-import { getTrabajoWithCliente } from "./work-repository.js";
+import { getTrabajoWithCliente, publishPublicOrder } from "./work-repository.js";
 import { escapeHtml, formatDateTime, formatMoney } from "./utils.js";
 
 export async function printTicket(id) {
@@ -6,7 +6,11 @@ export async function printTicket(id) {
   if (!data) throw new Error("No se encontró la orden.");
 
   const { trabajo: t, cliente: c = {} } = data;
-  const ticketUrl = new URL(`panel.html?orden=${encodeURIComponent(t.numeroOrden || "")}`, window.location.href);
+  await publishPublicOrder(id, t).catch((error) => {
+    console.warn("No se pudo publicar la vista pública de la orden:", error);
+  });
+
+  const ticketUrl = new URL(`estado.html?id=${encodeURIComponent(id)}`, window.location.href);
   const logoUrl = new URL("cosmica-logo.png", window.location.href).href;
   const qrData = encodeURIComponent(ticketUrl.href);
   const v = window.open("", "_blank");

@@ -1,7 +1,7 @@
 import { APP_ROUTES } from "./config.js";
 import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
 import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
-import { printTicket } from "./ticket.js?v=20260503-ticket-thanks";
+import { printTicket } from "./ticket.js?v=20260503-public-order";
 import {
   findClienteByDni,
   findTrabajosByClienteId,

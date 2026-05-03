@@ -95,6 +95,27 @@ export async function getTrabajoWithCliente(id) {
   return { trabajo, cliente };
 }
 
+export async function getPublicOrder(id) {
+  const snap = await getDoc(doc(db, COLLECTIONS.ordenesPublicas, id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function publishPublicOrder(id, trabajo) {
+  await setDoc(doc(db, COLLECTIONS.ordenesPublicas, id), {
+    numeroOrden: trabajo.numeroOrden || "",
+    estado: trabajo.estado || "",
+    tipo: trabajo.tipo || "",
+    equipo: trabajo.equipo || "",
+    marca: trabajo.marca || "",
+    modelo: trabajo.modelo || "",
+    fechaIngreso: trabajo.fechaIngreso || "",
+    fechaReparado: trabajo.fechaReparado || "",
+    fechaEntregado: trabajo.fechaEntregado || "",
+    garantiaDias: Number(trabajo.garantiaDias || 90),
+    actualizadoEn: new Date().toISOString()
+  }, { merge: true });
+}
+
 export async function updateTrabajo(id, data) {
   await updateDoc(doc(db, COLLECTIONS.trabajos, id), data);
 }
@@ -106,6 +127,10 @@ export async function addTrabajo(data) {
 
 export async function deleteTrabajo(id) {
   await deleteDoc(doc(db, COLLECTIONS.trabajos, id));
+}
+
+export async function deletePublicOrder(id) {
+  await deleteDoc(doc(db, COLLECTIONS.ordenesPublicas, id));
 }
 
 export async function getNextOrderNumber(tipo) {

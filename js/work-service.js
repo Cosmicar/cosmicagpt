@@ -2,9 +2,11 @@ import { canChangeStatus, canDeleteWork, canReenterWork, normalizeServiceType, W
 import { nowIso } from "./utils.js";
 import {
   addTrabajo,
+  deletePublicOrder,
   deleteTrabajo,
   getNextOrderNumber,
   getTrabajo,
+  publishPublicOrder,
   updateCliente,
   updateTrabajo,
   upsertClienteByDni
@@ -43,15 +45,18 @@ export async function saveWorkForm(values, editState = {}) {
   };
 
   if (editState.trabajoId) {
-    await updateTrabajo(editState.trabajoId, {
+    const trabajoActual = await getTrabajo(editState.trabajoId);
+    const update = {
       tipo: normalizeServiceType(values.tipo),
       equipo: values.equipo,
       marca: values.marca || "",
       modelo: values.modelo || "",
       problema: values.problema,
       precio: values.precio
-    });
+    };
+    await updateTrabajo(editState.trabajoId, update);
     await updateCliente(editState.clienteId, cliente);
+    await publishPublicOrder(editState.trabajoId, { ...trabajoActual, ...update });
     return { mode: "updated" };
   }
 
@@ -59,7 +64,7 @@ export async function saveWorkForm(values, editState = {}) {
   const tipo = normalizeServiceType(values.tipo);
   const numeroOrden = await getNextOrderNumber(tipo);
 
-  await addTrabajo({
+  const nuevoTrabajo = {
     numeroOrden,
     clienteId,
     tipo,
@@ -71,7 +76,10 @@ export async function saveWorkForm(values, editState = {}) {
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
     garantiaDias: 90
-  });
+  };
+
+  const trabajoId = await addTrabajo(nuevoTrabajo);
+  await publishPublicOrder(trabajoId, nuevoTrabajo);
 
   return { mode: "created", numeroOrden };
 }
@@ -88,6 +96,7 @@ export async function changeWorkStatus(id, nextStatus) {
   if (nextStatus === WORK_STATUS.entregado) update.fechaEntregado = nowIso();
 
   await updateTrabajo(id, update);
+  await publishPublicOrder(id, { ...trabajo, ...update });
 }
 
 export async function reenterWork(id, newPrice) {
@@ -105,12 +114,14 @@ export async function reenterWork(id, newPrice) {
   const tipo = normalizeServiceType(trabajo.tipo);
   const numeroOrden = await getNextOrderNumber(tipo);
 
-  await updateTrabajo(id, {
+  const originalUpdate = {
     estado: WORK_STATUS.reingresada,
     fechaReingreso: nowIso()
-  });
+  };
+  await updateTrabajo(id, originalUpdate);
+  await publishPublicOrder(id, { ...trabajo, ...originalUpdate });
 
-  await addTrabajo({
+  const nuevoTrabajo = {
     numeroOrden,
     clienteId: trabajo.clienteId,
     tipo,
@@ -124,7 +135,10 @@ export async function reenterWork(id, newPrice) {
     garantiaDias: 90,
     reingreso: true,
     ordenOriginal: trabajo.numeroOrden || ""
-  });
+  };
+
+  const nuevoTrabajoId = await addTrabajo(nuevoTrabajo);
+  await publishPublicOrder(nuevoTrabajoId, nuevoTrabajo);
 
   return numeroOrden;
 }
@@ -134,4 +148,5 @@ export async function removeWork(id, profile) {
     throw new Error("Solo un administrador puede borrar órdenes.");
   }
   await deleteTrabajo(id);
+  await deletePublicOrder(id).catch(() => {});
 }

@@ -2,6 +2,7 @@ export const COLLECTIONS = Object.freeze({
   usuarios: "usuarios",
   clientes: "clientes",
   trabajos: "trabajos",
+  ordenesPublicas: "ordenesPublicas",
   config: "config"
 });
 

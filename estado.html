@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado de orden | Cosmica.ar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080f;
+      --surface: #0e0f1a;
+      --card: #111220;
+      --border: #1e2035;
+      --accent: #00ffcc;
+      --accent2: #4f8ef7;
+      --text: #dde2f0;
+      --muted: #7c82a8;
+      --success: #00cc88;
+      --warning: #ffaa00;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,255,204,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,204,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .card {
+      position: relative; z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 34px 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+    .brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .brand img {
+      width: 68px; height: 68px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 12px;
+    }
+    .brand-title {
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+    }
+    .brand-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+    .status-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+    }
+    .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .9px;
+    }
+    .order {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      margin-top: 16px;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      background: rgba(79,142,247,.12);
+      color: var(--accent2);
+      border: 1px solid rgba(79,142,247,.3);
+    }
+    .badge.listo { background: rgba(0,204,136,.12); color: var(--success); border-color: rgba(0,204,136,.3); }
+    .badge.entregado { background: rgba(255,170,0,.12); color: var(--warning); border-color: rgba(255,170,0,.3); }
+    .info {
+      margin-top: 20px;
+      display: grid;
+      gap: 10px;
+      text-align: left;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding-bottom: 9px;
+    }
+    .row:last-child { border-bottom: none; padding-bottom: 0; }
+    .row b { color: var(--text); font-weight: 500; text-align: right; }
+    .message {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .error {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+      padding: 30px 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <main class="card">
+    <div class="brand">
+      <img src="cosmica-logo.png" alt="Cosmica.ar">
+      <div class="brand-title">Cosmica.ar</div>
+      <div class="brand-sub">Muchas gracias por confiar en nosotros</div>
+    </div>
+
+    <section id="content" class="status-box">
+      <div class="error">Consultando estado de la orden...</div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/estado.js?v=20260503-public-order"></script>
+</body>
+</html>
