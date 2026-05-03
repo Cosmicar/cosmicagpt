@@ -457,7 +457,7 @@ window.reingresarTrabajo = async function(id){
       marca: t.marca,
       modelo: t.modelo,
       problema: t.problema,          // ← podés editarlo antes si querés
-      precio: t.precio,
+      precio: t.precio ?? 0,
       estado: "Ingresado",
       fechaIngreso: new Date().toISOString(),
       garantiaDias: 90,
