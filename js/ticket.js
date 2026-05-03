@@ -37,7 +37,7 @@ export async function printTicket(id) {
     </head>
     <body>
       <div class="header-ticket">
-        <img class="logo-img" src="${logoUrl}" alt="Cosmica.ar">
+        <img class="logo-img" src="${logoUrl}" id="ticketLogo" alt="Cosmica.ar">
         <div class="logo-t">Cosmica.ar</div>
         <div class="sub-t">Servicio técnico integral · Jujuy, Argentina</div>
       </div>
@@ -74,7 +74,19 @@ export async function printTicket(id) {
         www.cosmica.ar
       </div>
 
-      <script>document.getElementById("qr").onload = () => window.print();<\/script>
+      <script>
+        const logo = document.getElementById("ticketLogo");
+        const qr = document.getElementById("qr");
+        let loaded = 0;
+        const ready = () => {
+          loaded += 1;
+          if (loaded >= 2) setTimeout(() => window.print(), 150);
+        };
+        logo.onload = ready;
+        logo.onerror = ready;
+        qr.onload = ready;
+        qr.onerror = ready;
+      <\/script>
     </body></html>
   `);
   v.document.close();
