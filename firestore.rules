@@ -23,7 +23,10 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return hasRole() && userData().rol == 'admin';
+      return isAuth()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == 'admin'
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.activo != false;
     }
 
     function isOperador() {
