@@ -35,7 +35,7 @@ export async function printTicket(id) {
     </head>
     <body>
       <div class="header-ticket">
-        <div class="logo-t">CÓSMICA ONLINE</div>
+        <div class="logo-t">Cosmica.ar</div>
         <div class="sub-t">Servicio técnico integral · Jujuy, Argentina</div>
       </div>
 

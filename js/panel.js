@@ -361,7 +361,7 @@ function renderTrabajoCard(t, c = {}) {
 
   const telClean = onlyDigits(c?.telefono || "");
   const waMsg = encodeURIComponent(
-    `Hola ${c?.nombre || ""}, te contactamos de Cósmica Online. ` +
+    `Hola ${c?.nombre || ""}, te contactamos de Cosmica.ar. ` +
     `Tu equipo *${t.equipo || ""}* (Orden ${t.numeroOrden || ""}) está *${t.estado || ""}*. ¡Cualquier consulta avisanos!`
   );
   const btnWa = telClean
