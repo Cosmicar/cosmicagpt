@@ -190,6 +190,9 @@ function limpiarCampos() {
     });
   $("provincia").value = "";
   $("tipo").value = "taller";
+  
+  // Re-aplicar restricciones de rol al limpiar el formulario
+  renderRoleUi();
 }
 
 function cancelarEdicion() {
