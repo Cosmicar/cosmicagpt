@@ -998,8 +998,14 @@ window.reingresarTrabajo = async (id) => {
 // ── BORRAR ────────────────────────────────────────────────────────────────────
 window.borrarTrabajo = async (id) => {
   if (!confirm("⚠️ ¿Eliminar esta orden? No se puede deshacer.")) return;
-  await deleteDoc(doc(db,"trabajos",id));
-  cargar();
+  try {
+    await deleteDoc(doc(db,"trabajos",id));
+    alert("🗑️ Eliminado correctamente");
+    cargar();
+  } catch(e) {
+    console.error(e);
+    alert("❌ Error al borrar: " + e.message);
+  }
 };
 
 // ── TICKET ────────────────────────────────────────────────────────────────────
