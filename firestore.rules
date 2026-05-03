@@ -145,12 +145,14 @@ service cloud.firestore {
           'fechaReingreso'
         ])
         && validEstadoUpdate()
-        && validEstado(request.resource.data.estado)
-        && validTipo(request.resource.data.tipo)
-        && request.resource.data.precio is number
-        && request.resource.data.precio >= 0
-        && request.resource.data.equipo is string
-        && request.resource.data.problema is string;
+        && (!('estado' in request.resource.data) || validEstado(request.resource.data.estado))
+        && (!('tipo' in request.resource.data) || validTipo(request.resource.data.tipo))
+        && (!('precio' in request.resource.data) || (
+          request.resource.data.precio is number
+          && request.resource.data.precio >= 0
+        ))
+        && (!('equipo' in request.resource.data) || request.resource.data.equipo is string)
+        && (!('problema' in request.resource.data) || request.resource.data.problema is string);
     }
 
     function validUsuarioCreate() {
