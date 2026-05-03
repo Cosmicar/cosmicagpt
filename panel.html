@@ -363,7 +363,7 @@
     <div class="section">
       <div class="section-title">🔍 Buscar trabajos</div>
       <div class="search-bar">
-        <select id="filtroEstado" onchange="cargar()">
+        <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
           <option value="">Todos los estados</option>
           <option value="Ingresado">Ingresado</option>
           <option value="En reparación">En reparación</option>

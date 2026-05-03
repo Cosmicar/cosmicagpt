@@ -4,6 +4,8 @@ import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
 import { printTicket } from "./ticket.js";
 import {
   findClienteByDni,
+  findTrabajosByClienteId,
+  findTrabajosByNumeroOrden,
   getCliente,
   getTrabajo,
   listClientesMap,
@@ -91,7 +93,12 @@ async function loadInitialWorkList() {
     await cargar(orden);
     return;
   }
-  await cargar();
+
+  $("listaTrabajos").innerHTML = `
+    <div class="empty-state">
+      Buscá un DNI, número de orden o presioná "Ver todos".
+    </div>
+  `;
 }
 
 function renderRoleUi() {
@@ -219,10 +226,10 @@ function buscar() {
 function limpiarBusqueda() {
   $("busquedaDni").value = "";
   $("filtroEstado").value = "";
-  cargar();
+  cargar("", { cargarTodos: true });
 }
 
-async function cargar(filtro = "") {
+async function cargar(filtro = "", options = {}) {
   const cont = $("listaTrabajos");
   cont.innerHTML = "<div class='empty-state'>Cargando...</div>";
 
@@ -231,22 +238,46 @@ async function cargar(filtro = "") {
     const mesActual = new Date().toISOString().slice(0, 7);
     const estadoFiltro = $("filtroEstado").value;
     const filtroLimpio = String(filtro || "").trim();
+    const cargarTodos = options.cargarTodos === true || (!filtroLimpio && options.fromFilter === true);
 
-    const trabajos = await listTrabajos();
-    let clientes = {};
-    let filtroClienteId = null;
-    let clientesWarning = "";
-
-    try {
-      clientes = await listClientesMap();
-    } catch (error) {
-      clientesWarning = error?.code || error?.message || "No se pudo leer clientes";
-      console.warn("No se pudo cargar clientes:", error);
+    if (!filtroLimpio && !cargarTodos) {
+      cont.innerHTML = `
+        <div class="empty-state">
+          Buscá un DNI, número de orden o presioná "Ver todos".
+        </div>
+      `;
+      return;
     }
 
-    if (filtroLimpio && !clientesWarning) {
-      const clienteEncontrado = await findClienteByDni(filtroLimpio).catch(() => null);
-      filtroClienteId = clienteEncontrado?.id || null;
+    let trabajos = [];
+    let clientes = {};
+    let clientesWarning = "";
+
+    if (cargarTodos) {
+      trabajos = await listTrabajos();
+      try {
+        clientes = await listClientesMap();
+      } catch (error) {
+        clientesWarning = error?.code || error?.message || "No se pudo leer clientes";
+        console.warn("No se pudo cargar clientes:", error);
+      }
+    } else {
+      const porOrden = await findTrabajosByNumeroOrden(filtroLimpio);
+      let clienteEncontrado = null;
+
+      try {
+        clienteEncontrado = await findClienteByDni(filtroLimpio);
+      } catch (error) {
+        clientesWarning = error?.code || error?.message || "No se pudo leer clientes";
+        console.warn("No se pudo buscar cliente por DNI:", error);
+      }
+
+      const porCliente = clienteEncontrado
+        ? await findTrabajosByClienteId(clienteEncontrado.id).catch(() => [])
+        : [];
+
+      trabajos = mergeTrabajosById([...porOrden, ...porCliente]);
+      if (clienteEncontrado) clientes[clienteEncontrado.id] = clienteEncontrado;
     }
 
     let totalDia = 0;
@@ -261,12 +292,6 @@ async function cargar(filtro = "") {
         if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += Number(trabajo.precio || 0);
       }
 
-      if (
-        filtroLimpio
-        && cliente?.dni !== filtroLimpio
-        && trabajo.clienteId !== filtroClienteId
-        && trabajo.numeroOrden !== filtroLimpio
-      ) return;
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
 
       resultados.push({ trabajo, cliente });
@@ -306,6 +331,14 @@ async function cargar(filtro = "") {
     const detalle = error?.code || error?.message || "Error desconocido";
     cont.innerHTML = `<div class='empty-state'>No se pudieron cargar los trabajos.<br><small>${escapeHtml(detalle)}</small></div>`;
   }
+}
+
+function mergeTrabajosById(trabajos) {
+  const map = new Map();
+  trabajos.forEach((trabajo) => {
+    if (trabajo?.id) map.set(trabajo.id, trabajo);
+  });
+  return [...map.values()];
 }
 
 function renderTrabajoCard(t, c = {}) {

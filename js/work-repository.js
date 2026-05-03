@@ -71,6 +71,18 @@ export async function listTrabajos() {
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
+export async function findTrabajosByClienteId(clienteId) {
+  const q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId));
+  const snap = await getDocs(q);
+  return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
+export async function findTrabajosByNumeroOrden(numeroOrden) {
+  const q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden));
+  const snap = await getDocs(q);
+  return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
 export async function getTrabajo(id) {
   const snap = await getDoc(doc(db, COLLECTIONS.trabajos, id));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
