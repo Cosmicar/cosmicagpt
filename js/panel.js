@@ -107,6 +107,9 @@ async function loadInitialWorkList() {
       Buscá un DNI, número de orden o presioná "Ver todos".
     </div>
   `;
+  
+  // Cargar contabilidad del día por defecto
+  await cargarIngresos();
 }
 
 function renderRoleUi() {
