@@ -2,68 +2,115 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Función de utilidad para leer el documento del perfil
-    function getUserProfile() {
-      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+
+    // ─────────────────────────────────────────────
+    // FUNCIONES DE UTILIDAD
+    // exists() actúa como guardia antes de get() para
+    // evitar el bucle circular que causa "permission denied"
+    // ─────────────────────────────────────────────
+
+    function userDocRef() {
+      return /databases/$(database)/documents/usuarios/$(request.auth.uid);
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userProfileExists() {
+      return isAuthenticated() && exists(userDocRef());
+    }
+
+    function getUserRole() {
+      return get(userDocRef()).data.rol;
     }
 
     function isAdmin() {
-      return getUserProfile().rol == 'admin';
+      return userProfileExists() && getUserRole() == 'admin';
     }
 
     function isOperador() {
-      return getUserProfile().rol == 'operador';
+      return userProfileExists() && getUserRole() == 'operador';
     }
-    
+
     function isStaff() {
-      return isAdmin() || isOperador();
+      return userProfileExists() && getUserRole() in ['admin', 'operador'];
     }
 
-    // 0. USUARIOS:
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: usuarios
+    // Un usuario siempre puede leer su propio perfil
+    // (sin llamar a isAdmin para evitar el ciclo).
+    // Solo admin puede leer perfiles ajenos o escribir.
+    // ─────────────────────────────────────────────
     match /usuarios/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth != null && isAdmin();
+      // Lectura propia: no requiere isAdmin() para evitar ciclo
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      // Lectura de otros perfiles: solo admin
+      allow read: if isAdmin();
+      // Escritura: solo admin, y el rol debe ser válido
+      allow create, update: if isAdmin()
+        && request.resource.data.rol in ['admin', 'operador'];
+      allow delete: if isAdmin() && request.auth.uid != userId;
     }
 
-    // 1. TRABAJOS: Admin lee/escribe todo. Operador solo 'taller'.
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: trabajos
+    // Admin: acceso total.
+    // Operador: solo documentos donde tipo == 'taller'.
+    // ─────────────────────────────────────────────
     match /trabajos/{trabajoId} {
-      // LECTURA: Admin lee todo. Operador solo lee los de 'taller'.
-      allow read: if request.auth != null && (
-        isAdmin() || 
-        (isOperador() && resource.data.tipo == 'taller')
-      );
-      
-      // CREACIÓN: Admin crea todo. Operador solo crea 'taller'.
-      allow create: if request.auth != null && (
-        isAdmin() || 
-        (isOperador() && request.resource.data.tipo == 'taller')
-      );
+      // Lectura
+      allow read: if isAdmin();
+      allow read: if isOperador() && resource.data.tipo == 'taller';
 
-      // ACTUALIZACIÓN: Admin actualiza todo. Operador solo actualiza si el doc original y el nuevo son 'taller'.
-      allow update: if request.auth != null && (
-        isAdmin() || 
-        (isOperador() && resource.data.tipo == 'taller' && request.resource.data.tipo == 'taller')
-      );
-      
-      // BORRADO: Solo Admin.
-      allow delete: if request.auth != null && isAdmin();
+      // Creación
+      allow create: if isAdmin();
+      allow create: if isOperador() && request.resource.data.tipo == 'taller';
+
+      // Actualización: el campo tipo debe ser 'taller' antes y después
+      allow update: if isAdmin();
+      allow update: if isOperador()
+        && resource.data.tipo == 'taller'
+        && request.resource.data.tipo == 'taller';
+
+      // Borrado: solo admin
+      allow delete: if isAdmin();
     }
 
-    // 2. CLIENTES: Todo el staff (Admin y Operador) necesita crear/editar clientes al registrar una orden.
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: clientes
+    // Todo el staff puede leer y escribir.
+    // Necesario para crear/buscar clientes al registrar órdenes.
+    // ─────────────────────────────────────────────
     match /clientes/{clienteId} {
-      allow read, write: if request.auth != null && isStaff();
+      allow read, write: if isStaff();
     }
 
-    // 3. ÓRDENES PÚBLICAS: Para la página de seguimiento.
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: ordenesPublicas
+    // Lectura pública (para la página de seguimiento).
+    // Escritura solo para staff.
+    // ─────────────────────────────────────────────
     match /ordenesPublicas/{ordenId} {
-      allow read: if true; 
-      allow write: if request.auth != null && isStaff();
+      allow read: if true;
+      allow write: if isStaff();
     }
 
-    // 4. CONFIGURACIÓN (Ej. Contadores de orden):
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: config
+    // Contiene contadores de número de orden.
+    // Staff puede leer y escribir.
+    // ─────────────────────────────────────────────
     match /config/{configId} {
-      allow read, write: if request.auth != null && isStaff();
+      allow read, write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // REGLA DE CIERRE: bloquear todo lo demás
+    // ─────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

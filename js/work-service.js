@@ -34,7 +34,7 @@ export function validateWorkForm(values) {
   }
 }
 
-export async function saveWorkForm(values, editState = {}) {
+export async function saveWorkForm(values, editState = {}, profile = null) {
   validateWorkForm(values);
 
   if (!window.confirm("⚠️ ¿Estás seguro de que deseas guardar esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
@@ -52,7 +52,7 @@ export async function saveWorkForm(values, editState = {}) {
   if (editState.trabajoId) {
     const trabajoActual = await getTrabajo(editState.trabajoId);
     const update = {
-      tipo: normalizeServiceType(values.tipo || trabajoActual.tipo), // Aseguramos que siempre lleve tipo
+      tipo: normalizeServiceType(values.tipo || trabajoActual.tipo),
       equipo: values.equipo,
       marca: values.marca || "",
       modelo: values.modelo || "",
@@ -67,12 +67,13 @@ export async function saveWorkForm(values, editState = {}) {
 
   const clienteId = await upsertClienteByDni(cliente);
   const tipo = normalizeServiceType(values.tipo);
-  const numeroOrden = await getNextOrderNumber(tipo);
+  // Pasamos el perfil para que la consulta interna respete RBAC
+  const numeroOrden = await getNextOrderNumber(tipo, profile);
 
   const nuevoTrabajo = {
     numeroOrden,
     clienteId,
-    tipo, // Incluido explícitamente
+    tipo,
     equipo: values.equipo,
     marca: values.marca || "",
     modelo: values.modelo || "",
@@ -111,7 +112,7 @@ export async function changeWorkStatus(id, nextStatus) {
   await publishPublicOrder(id, { ...trabajo, ...update });
 }
 
-export async function reenterWork(id, newPrice) {
+export async function reenterWork(id, newPrice, profile = null) {
   const trabajo = await getTrabajo(id);
   if (!trabajo) throw new Error("La orden no existe.");
   if (!canReenterWork(trabajo.estado)) {
@@ -124,12 +125,13 @@ export async function reenterWork(id, newPrice) {
   }
 
   const tipo = normalizeServiceType(trabajo.tipo);
-  const numeroOrden = await getNextOrderNumber(tipo);
+  // Pasamos el perfil para que la consulta interna respete RBAC
+  const numeroOrden = await getNextOrderNumber(tipo, profile);
 
   const originalUpdate = {
     estado: WORK_STATUS.reingresada,
     fechaReingreso: nowIso(),
-    tipo // Incluir explícitamente el tipo original
+    tipo
   };
   await updateTrabajo(id, originalUpdate);
   await publishPublicOrder(id, { ...trabajo, ...originalUpdate });

@@ -157,11 +157,11 @@ export async function deletePublicOrder(id) {
   await deleteDoc(doc(db, COLLECTIONS.ordenesPublicas, id));
 }
 
-export async function getNextOrderNumber(tipo) {
+export async function getNextOrderNumber(tipo, profile) {
   const normalizedType = normalizeServiceType(tipo);
   const counterKey = normalizedType === SERVICE_TYPES.remoto ? "remoto" : "taller";
   const prefix = ORDER_PREFIX[normalizedType];
-  const baseline = await getMaxOrderSequence(normalizedType);
+  const baseline = await getMaxOrderSequence(normalizedType, profile);
   const counterRef = doc(db, COLLECTIONS.config, "ordenes");
 
   const next = await runTransaction(db, async (transaction) => {
@@ -175,9 +175,9 @@ export async function getNextOrderNumber(tipo) {
   return `${prefix}-${String(next).padStart(4, "0")}`;
 }
 
-async function getMaxOrderSequence(tipo) {
+async function getMaxOrderSequence(tipo, profile) {
   const prefix = `${ORDER_PREFIX[tipo]}-`;
-  const trabajos = await listTrabajos();
+  const trabajos = await listTrabajos(profile);
   return trabajos.reduce((max, trabajo) => {
     if (trabajo.tipo !== tipo || !String(trabajo.numeroOrden || "").startsWith(prefix)) return max;
     const value = Number(String(trabajo.numeroOrden).replace(prefix, ""));

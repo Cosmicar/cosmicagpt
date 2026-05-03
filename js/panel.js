@@ -267,7 +267,7 @@ function readWorkForm() {
 
 async function guardarCliente() {
   try {
-    const result = await saveWorkForm(readWorkForm(), state.edit);
+    const result = await saveWorkForm(readWorkForm(), state.edit, state.session?.profile);
     cancelarEdicion();
     limpiarCampos();
     alert(result.mode === "created"
@@ -536,7 +536,7 @@ async function reingresarTrabajo(id) {
     const nuevoPrecioStr = prompt("Precio para esta reparación:", trabajo.precio ?? 0);
     if (nuevoPrecioStr === null) return;
 
-    const numeroOrden = await reenterWork(id, Number(nuevoPrecioStr));
+    const numeroOrden = await reenterWork(id, Number(nuevoPrecioStr), state.session?.profile);
     alert(`Reingreso registrado. Nueva orden: ${numeroOrden}`);
     await cargar($("busquedaDni").value.trim());
   } catch (error) {
