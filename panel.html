@@ -594,14 +594,13 @@ onAuthStateChanged(auth, async user => {
     const uDoc = await getDoc(doc(db, "usuarios", user.uid));
     if (uDoc.exists()) {
       rolUsuario = uDoc.data().rol;
-      if (rolUsuario === "admin") {
-        // Mostrar tab y sección de admin
-        document.querySelectorAll(".admin-section").forEach(el => {
-          el.style.display = "";
-        });
-      }
     }
-  } catch(e) { console.warn("No se pudo obtener rol:", e); }
+  } catch(e) {
+    console.warn(e);
+  }
+
+  // 🔥 CLAVE: cargar después de tener rol
+  cargar();
 });
 
 window.logout = async () => {
