@@ -237,6 +237,9 @@
         <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
         <button class="btn btn-sm btn-edit" onclick="limpiarBusqueda()">Ver todos</button>
       </div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic;">
+        Recuerde, usted esta aqui para siempre
+      </div>
       <div id="listaTrabajos" class="empty-state">
         🔍 Buscá un cliente o presioná "Ver todos"
       </div>
@@ -353,7 +356,7 @@
           <div class="kpi-label">Taller</div>
           <div class="kpi-value blue" id="kpiTaller">$0</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card" id="kpiCardRemoto">
           <div class="kpi-label">Remoto</div>
           <div class="kpi-value green" id="kpiRemoto">$0</div>
         </div>

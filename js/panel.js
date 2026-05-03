@@ -114,6 +114,28 @@ function renderRoleUi() {
   document.querySelectorAll(".admin-section").forEach((el) => {
     el.style.display = admin ? "" : "none";
   });
+
+  const kpiRemoto = document.getElementById("kpiCardRemoto");
+  if (kpiRemoto) {
+    kpiRemoto.style.display = admin ? "" : "none";
+  }
+
+  const provinciaSelect = document.getElementById("provincia");
+  const tipoSelect = document.getElementById("tipo");
+  
+  if (!admin) {
+    if (provinciaSelect) {
+      provinciaSelect.value = "Jujuy";
+      provinciaSelect.disabled = true;
+    }
+    if (tipoSelect) {
+      tipoSelect.value = "taller";
+      tipoSelect.disabled = true;
+    }
+  } else {
+    if (provinciaSelect) provinciaSelect.disabled = false;
+    if (tipoSelect) tipoSelect.disabled = false;
+  }
 }
 
 function showTab(id) {
