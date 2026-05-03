@@ -36,7 +36,8 @@ const state = {
     clienteId: null
   },
   ingresosData: [],
-  periodoActual: "hoy"
+  periodoActual: "hoy",
+  searchId: 0
 };
 
 const STATUS_CLASS = {
@@ -222,19 +223,38 @@ async function guardarCliente() {
   }
 }
 
-function buscar() {
+async function buscar() {
   const value = $("busquedaDni").value.trim();
   if (!value) return;
-  cargar(value);
+  
+  const btn = document.querySelector(".search-bar .btn-secondary");
+  const originalText = btn.innerText;
+  btn.innerText = "Buscando...";
+  btn.disabled = true;
+  
+  await cargar(value);
+  
+  btn.innerText = originalText;
+  btn.disabled = false;
 }
 
-function limpiarBusqueda() {
+async function limpiarBusqueda() {
   $("busquedaDni").value = "";
   $("filtroEstado").value = "";
-  cargar("", { cargarTodos: true });
+  
+  const btn = document.querySelector(".search-bar .btn-edit");
+  const originalText = btn.innerText;
+  btn.innerText = "Cargando...";
+  btn.disabled = true;
+  
+  await cargar("", { cargarTodos: true });
+  
+  btn.innerText = originalText;
+  btn.disabled = false;
 }
 
 async function cargar(filtro = "", options = {}) {
+  const currentSearchId = ++state.searchId;
   const cont = $("listaTrabajos");
   cont.innerHTML = "<div class='empty-state'>Cargando...</div>";
 
@@ -285,6 +305,8 @@ async function cargar(filtro = "", options = {}) {
       if (clienteEncontrado) clientes[clienteEncontrado.id] = clienteEncontrado;
     }
 
+    if (currentSearchId !== state.searchId) return;
+
     let totalDia = 0;
     let totalMes = 0;
     const resultados = [];
@@ -315,10 +337,14 @@ async function cargar(filtro = "", options = {}) {
     cont.innerHTML = "";
     if (clientesWarning) {
       const warning = document.createElement("div");
-      warning.className = "empty-state";
-      warning.style.padding = "10px";
-      warning.style.marginBottom = "12px";
-      warning.textContent = `Trabajos cargados, pero no se pudieron leer datos de clientes (${clientesWarning}).`;
+      warning.style.background = "rgba(255,170,0,.1)";
+      warning.style.border = "1px solid rgba(255,170,0,.3)";
+      warning.style.color = "var(--warning)";
+      warning.style.borderRadius = "8px";
+      warning.style.padding = "10px 14px";
+      warning.style.marginBottom = "16px";
+      warning.style.fontSize = "13px";
+      warning.textContent = `⚠️ Trabajos cargados, pero no se pudieron leer datos de clientes (${clientesWarning}).`;
       cont.appendChild(warning);
     }
     resultados.forEach(({ trabajo, cliente }) => cont.appendChild(renderTrabajoCard(trabajo, cliente)));
