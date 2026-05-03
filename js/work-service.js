@@ -37,6 +37,10 @@ export function validateWorkForm(values) {
 export async function saveWorkForm(values, editState = {}) {
   validateWorkForm(values);
 
+  if (!window.confirm("⚠️ ¿Estás seguro de que deseas guardar esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
+    throw new Error("Operación cancelada por el usuario.");
+  }
+
   const cliente = {
     nombre: values.nombre,
     apellido: values.apellido,
@@ -86,6 +90,10 @@ export async function saveWorkForm(values, editState = {}) {
 }
 
 export async function changeWorkStatus(id, nextStatus) {
+  if (!window.confirm(`⚠️ Estás a punto de cambiar el estado a: "${nextStatus}". ¿Deseas continuar?`)) {
+    throw new Error("Cambio de estado cancelado.");
+  }
+
   const trabajo = await getTrabajo(id);
   if (!trabajo) throw new Error("La orden no existe.");
   if (!canChangeStatus(trabajo.estado, nextStatus)) {
