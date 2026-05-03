@@ -2,67 +2,68 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isAuth() {
-      return request.auth != null;
-    }
-
-    function userExists() {
-      return isAuth()
-        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
-    }
-
-    function userData() {
+    
+    // Función de utilidad para leer el documento del perfil
+    function getUserProfile() {
       return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
     }
 
     function isAdmin() {
-      return userExists()
-        && userData().rol == 'admin';
+      return getUserProfile().rol == 'admin';
     }
 
     function isOperador() {
-      return userExists()
-        && userData().rol == 'operador';
+      return getUserProfile().rol == 'operador';
     }
-
-    function hasRole() {
+    
+    function isStaff() {
       return isAdmin() || isOperador();
     }
 
-    match /clientes/{docId} {
-      allow read: if isAuth();
-      allow create, update: if hasRole();
-      allow delete: if isAdmin();
+    // 0. USUARIOS:
+    match /usuarios/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && isAdmin();
     }
 
-    match /trabajos/{docId} {
-      allow read: if isAuth();
-      allow create, update: if hasRole();
-      allow delete: if isAdmin();
+    // 1. TRABAJOS: Admin lee/escribe todo. Operador solo 'taller'.
+    match /trabajos/{trabajoId} {
+      // LECTURA: Admin lee todo. Operador solo lee los de 'taller'.
+      allow read: if request.auth != null && (
+        isAdmin() || 
+        (isOperador() && resource.data.tipo == 'taller')
+      );
+      
+      // CREACIÓN: Admin crea todo. Operador solo crea 'taller'.
+      allow create: if request.auth != null && (
+        isAdmin() || 
+        (isOperador() && request.resource.data.tipo == 'taller')
+      );
+
+      // ACTUALIZACIÓN: Admin actualiza todo. Operador solo actualiza si el doc original y el nuevo son 'taller'.
+      allow update: if request.auth != null && (
+        isAdmin() || 
+        (isOperador() && resource.data.tipo == 'taller' && request.resource.data.tipo == 'taller')
+      );
+      
+      // BORRADO: Solo Admin.
+      allow delete: if request.auth != null && isAdmin();
     }
 
-    match /ordenesPublicas/{docId} {
-      allow read: if true;
-      allow create, update: if hasRole();
-      allow delete: if isAdmin();
+    // 2. CLIENTES: Todo el staff (Admin y Operador) necesita crear/editar clientes al registrar una orden.
+    match /clientes/{clienteId} {
+      allow read, write: if request.auth != null && isStaff();
     }
 
-    match /usuarios/{uid} {
-      allow read: if isAuth() && (request.auth.uid == uid || isAdmin());
-      allow create, update: if isAdmin()
-        && request.resource.data.rol in ['admin', 'operador'];
-      allow delete: if isAdmin() && request.auth.uid != uid;
+    // 3. ÓRDENES PÚBLICAS: Para la página de seguimiento.
+    match /ordenesPublicas/{ordenId} {
+      allow read: if true; 
+      allow write: if request.auth != null && isStaff();
     }
 
-    match /config/ordenes {
-      allow read: if isAuth();
-      allow create, update: if hasRole();
-      allow delete: if false;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
+    // 4. CONFIGURACIÓN (Ej. Contadores de orden):
+    match /config/{configId} {
+      allow read, write: if request.auth != null && isStaff();
     }
   }
 }

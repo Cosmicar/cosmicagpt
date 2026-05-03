@@ -48,7 +48,7 @@ export async function saveWorkForm(values, editState = {}) {
   if (editState.trabajoId) {
     const trabajoActual = await getTrabajo(editState.trabajoId);
     const update = {
-      tipo: normalizeServiceType(values.tipo),
+      tipo: normalizeServiceType(values.tipo || trabajoActual.tipo), // Aseguramos que siempre lleve tipo
       equipo: values.equipo,
       marca: values.marca || "",
       modelo: values.modelo || "",
@@ -68,7 +68,7 @@ export async function saveWorkForm(values, editState = {}) {
   const nuevoTrabajo = {
     numeroOrden,
     clienteId,
-    tipo,
+    tipo, // Incluido explícitamente
     equipo: values.equipo,
     marca: values.marca || "",
     modelo: values.modelo || "",
@@ -92,7 +92,10 @@ export async function changeWorkStatus(id, nextStatus) {
     throw new Error("No se puede cambiar el estado de esta orden.");
   }
 
-  const update = { estado: nextStatus };
+  const update = { 
+    estado: nextStatus,
+    tipo: trabajo.tipo // Incluir explícitamente el tipo original
+  };
   if (nextStatus === WORK_STATUS.listo) update.fechaReparado = nowIso();
   if (nextStatus === WORK_STATUS.entregado) update.fechaEntregado = nowIso();
 
@@ -117,7 +120,8 @@ export async function reenterWork(id, newPrice) {
 
   const originalUpdate = {
     estado: WORK_STATUS.reingresada,
-    fechaReingreso: nowIso()
+    fechaReingreso: nowIso(),
+    tipo // Incluir explícitamente el tipo original
   };
   await updateTrabajo(id, originalUpdate);
   await publishPublicOrder(id, { ...trabajo, ...originalUpdate });
