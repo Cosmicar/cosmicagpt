@@ -39,7 +39,7 @@ export async function printTicket(id) {
       <div class="header-ticket">
         <img class="logo-img" src="${logoUrl}" id="ticketLogo" alt="Cosmica.ar">
         <div class="logo-t">Cosmica.ar</div>
-        <div class="sub-t">Servicio técnico integral · Jujuy, Argentina</div>
+        <div class="sub-t">Muchas gracias por confiar en nosotros</div>
       </div>
 
       <div class="orden-num">${escapeHtml(t.numeroOrden || "—")}</div>
