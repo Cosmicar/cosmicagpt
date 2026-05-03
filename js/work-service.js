@@ -10,7 +10,8 @@ import {
   updateCliente,
   updateTrabajo,
   upsertClienteByDni,
-  resetContabilidadBatch
+  resetContabilidadBatch,
+  listTrabajos
 } from "./work-repository.js";
 
 export function validateWorkForm(values) {
@@ -159,11 +160,36 @@ export async function reenterWork(id, newPrice, profile = null) {
 }
 
 export async function removeWork(id, profile) {
-  if (!canDeleteWork(profile)) {
-    throw new Error("Solo un administrador puede borrar órdenes.");
+  const trabajo = await getTrabajo(id);
+  if (!trabajo) throw new Error("La orden no existe.");
+
+  if (profile?.rol === "operador" && trabajo.estado === "Entregado") {
+    throw new Error("Los operadores no pueden borrar órdenes entregadas.");
   }
+
+  if (!canDeleteWork(profile) && profile?.rol !== "operador") {
+    throw new Error("Solo un administrador o un operador pueden borrar órdenes.");
+  }
+  
   await deleteTrabajo(id);
   await deletePublicOrder(id).catch(() => {});
+}
+
+export async function deleteAllWorks(profile) {
+  if (!isAdmin(profile)) {
+    throw new Error("Solo un administrador puede borrar todas las órdenes.");
+  }
+  
+  // Usamos listTrabajos con perfil de admin para traer todo
+  const trabajos = await listTrabajos(profile);
+  
+  // Para optimizar se podrían borrar en batch, o uno por uno
+  for (const trabajo of trabajos) {
+    if (trabajo.id) {
+      await deleteTrabajo(trabajo.id);
+      await deletePublicOrder(trabajo.id).catch(() => {});
+    }
+  }
 }
 
 export async function resetAccountancy(profile) {

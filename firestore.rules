@@ -74,8 +74,11 @@ service cloud.firestore {
         && resource.data.tipo == 'taller'
         && request.resource.data.tipo == 'taller';
 
-      // Borrado: solo admin
-      allow delete: if isAdmin();
+      // Borrado: Admin borra todo. Operador borra 'taller' excepto si está Entregado
+      allow delete: if request.auth != null && (
+        isAdmin() || 
+        (isOperador() && resource.data.get('tipo', '') == 'taller' && resource.data.get('estado', '') != 'Entregado')
+      );
     }
 
     // ─────────────────────────────────────────────

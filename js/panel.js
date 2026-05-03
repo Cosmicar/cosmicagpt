@@ -93,6 +93,7 @@ function bindGlobalActions() {
   window.exportarExcel = exportarExcel;
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
+  window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 }
 
 async function loadInitialWorkList() {
@@ -462,6 +463,7 @@ function renderTrabajoCard(t, c = {}) {
   const admin = isAdmin(state.session?.profile);
   const operatorCanEdit = state.session?.profile?.rol === "operador" && t.tipo === "taller";
   const canEdit = admin || operatorCanEdit;
+  const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado");
   let botonesHtml = "";
 
   if (!bloqueado) {
@@ -470,7 +472,7 @@ function renderTrabajoCard(t, c = {}) {
       <button class="btn btn-sm btn-listo" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">Listo</button>
       <button class="btn btn-sm btn-entregado" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">Entregado</button>
       ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
-      ${admin ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
+      ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
       <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
       ${btnWa}
     `;
@@ -553,6 +555,25 @@ async function borrarTrabajo(id) {
     await cargar($("busquedaDni").value.trim());
   } catch (error) {
     showAlertError(error, "No se pudo borrar la orden.");
+  }
+}
+
+async function borrarTodasLasOrdenes() {
+  if (!confirm("⚠️ ¿Estás absolutamente seguro? Esta acción borrará TODO el historial de trabajos y no se puede deshacer.")) return;
+  if (!confirm("⚠️ RECONFIRMACIÓN: ¿Confirmas que deseas eliminar toda la base de datos de órdenes?")) return;
+
+  const btn = document.querySelector(".btn-danger[onclick='borrarTodasLasOrdenes()']");
+  if (btn) btn.disabled = true;
+
+  try {
+    const { deleteAllWorks } = await import("./work-service.js");
+    await deleteAllWorks(state.session?.profile);
+    alert("✅ Todas las órdenes han sido eliminadas correctamente. El sistema empieza de cero.");
+    await limpiarBusqueda();
+  } catch (error) {
+    showAlertError(error, "No se pudieron borrar todas las órdenes.");
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
