@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -7,332 +8,56 @@
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:      #07080f;
-      --surface: #0e0f1a;
-      --card:    #111220;
-      --border:  #1e2035;
-      --accent:  #00ffcc;
-      --accent2: #4f8ef7;
-      --danger:  #ff4d6d;
-      --warning: #ffaa00;
-      --success: #00cc88;
-      --purple:  #cc88ff;
-      --text:    #dde2f0;
-      --muted:   #6b7094;
+      --bg:      #050B14;
+      --surface: rgba(15, 23, 42, 0.6);
+      --card:    rgba(255, 255, 255, 0.02);
+      --border:  rgba(255, 255, 255, 0.08);
+      --accent:  #FF5E00; /* Vibrant Orange */
+      --accent2: #00E5FF; /* Electric Blue */
+      --danger:  #FF007F; /* Magenta */
+      --warning: #F59E0B;
+      --success: #10B981;
+      --purple:  #8B5CF6;
+      --text:    #F8FAFC;
+      --muted:   #94A3B8;
+      --radius-pill: 50px;
+      --radius-card: 20px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 20% -10%, rgba(0,229,255,0.15), transparent 40%),
+        radial-gradient(circle at 80% 40%, rgba(255,0,127,0.10), transparent 40%),
+        var(--bg);
+      background-attachment: fixed;
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', 'DM Sans', sans-serif;
       font-size: 14px;
       min-height: 100vh;
     }
 
     /* ── HEADER ── */
     .header {
-      background: var(--surface);
+      background: rgba(5,11,20,0.8);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 56px;
+      height: 60px;
       position: sticky; top: 0; z-index: 200;
     }
     .logo {
-      font-family: 'Rajdhani', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 20px; font-weight: 700;
-      letter-spacing: 2px; color: var(--accent);
+      letter-spacing: -0.5px; color: var(--accent2);
       display: flex; align-items: center; gap: 10px;
     }
     .logo img {
       width: 30px; height: 30px;
       object-fit: contain;
       display: block;
-    }
-    .logo span { color: var(--text); }
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .user-tag {
-      font-size: 12px; color: var(--muted);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px; padding: 4px 12px;
-    }
-    .user-tag b { color: var(--accent); }
-    .btn-logout {
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); padding: 6px 14px; border-radius: 8px;
-      cursor: pointer; font-size: 12px; transition: all .2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-
-    /* ── TABS ── */
-    .tabs {
-      display: flex; gap: 4px;
-      padding: 12px 20px 0;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    .tab {
-      padding: 10px 20px; border-radius: 10px 10px 0 0;
-      font-size: 13px; font-weight: 500; cursor: pointer;
-      color: var(--muted); background: transparent;
-      border: 1px solid transparent; border-bottom: none;
-      transition: all .2s; white-space: nowrap;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.active {
-      background: var(--bg); color: var(--accent);
-      border-color: var(--border);
-    }
-
-    /* ── LAYOUT ── */
-    .container { max-width: 1060px; margin: 0 auto; padding: 24px 16px; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* ── SECTION ── */
-    .section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px; padding: 22px;
-      margin-bottom: 20px;
-    }
-    .section-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 17px; font-weight: 700;
-      color: var(--accent); letter-spacing: 1px;
-      margin-bottom: 18px; padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px;
-    }
-
-    /* ── FORM ── */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group.full { grid-column: 1/-1; }
-    label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-    label .req { color: var(--accent); margin-left: 2px; }
-    input, select, textarea {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 9px; color: var(--text);
-      padding: 11px 14px; font-size: 14px;
-      font-family: 'DM Sans', sans-serif;
-      transition: border-color .2s; outline: none; width: 100%;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 80px; }
-    select option { background: var(--card); }
-    input[type="date"] { color-scheme: dark; }
-
-    /* ── BOTONES ── */
-    .btn {
-      padding: 10px 18px; border-radius: 9px; border: none;
-      cursor: pointer; font-size: 13px; font-weight: 500;
-      transition: all .2s; font-family: 'DM Sans', sans-serif;
-      display: inline-flex; align-items: center; gap: 5px;
-    }
-    .btn-primary  { background: var(--accent); color: #000; font-weight: 600; }
-    .btn-primary:hover { background: #00e8b8; transform: translateY(-1px); }
-    .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 7px; }
-    .btn-reparacion { background: #101828; color: var(--accent2); border: 1px solid #1e3050; }
-    .btn-reparacion:hover { background: var(--accent2); color: #fff; }
-    .btn-listo     { background: #0a2018; color: var(--success); border: 1px solid #0f3a25; }
-    .btn-listo:hover { background: var(--success); color: #000; }
-    .btn-entregado { background: #201800; color: var(--warning); border: 1px solid #3a2800; }
-    .btn-entregado:hover { background: var(--warning); color: #000; }
-    .btn-edit  { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
-    .btn-edit:hover { border-color: var(--text); color: var(--text); }
-    .btn-danger { background: #200a10; color: var(--danger); border: 1px solid #400a1a; }
-    .btn-danger:hover { background: var(--danger); color: #fff; }
-    .btn-ticket { background: #0a1020; color: var(--accent2); border: 1px solid #1a2040; }
-    .btn-ticket:hover { background: var(--accent2); color: #fff; }
-    .btn-reingreso { background: #0a2020; color: var(--accent); border: 1px solid #1a4040; }
-    .btn-reingreso:hover { background: var(--accent); color: #000; }
-    .btn-wa { background: #0f2010; color: #25d366; border: 1px solid #1a4025; }
-    .btn-wa:hover { background: #25d366; color: #fff; }
-    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    /* ── MODO EDICIÓN ── */
-    .modo-edicion {
-      background: #0a2018; border: 1px solid var(--success);
-      color: var(--success); padding: 10px 16px;
-      border-radius: 9px; font-size: 13px; margin-bottom: 16px; display: none;
-    }
-
-    /* ── CARDS TRABAJOS ── */
-    .card-trabajo {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px; margin-bottom: 14px;
-      transition: border-color .2s;
-    }
-    .card-trabajo:hover { border-color: #2e3050; }
-    .card-trabajo.alerta-demora { border-color: rgba(255,170,0,.4); }
-    .card-header {
-      display: flex; justify-content: space-between;
-      align-items: flex-start; margin-bottom: 12px;
-      gap: 10px;
-    }
-    .card-nombre {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 20px; font-weight: 700;
-    }
-    .card-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-    .badge {
-      padding: 4px 12px; border-radius: 20px;
-      font-size: 11px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
-    }
-    .badge-ingresado  { background: #0a1828; color: var(--accent2); border: 1px solid #1a3050; }
-    .badge-reparacion { background: #1e1400; color: var(--warning); border: 1px solid #3a2800; }
-    .badge-listo      { background: #061a10; color: var(--success); border: 1px solid #0f3020; }
-    .badge-entregado  { background: #141420; color: #888; border: 1px solid #2a2a40; }
-    .badge-reingresada{ background: #1a0a1a; color: var(--purple); border: 1px solid #3a1a3a; }
-
-    .demora-tag {
-      font-size: 11px; color: var(--warning);
-      background: rgba(255,170,0,.1);
-      border: 1px solid rgba(255,170,0,.2);
-      border-radius: 20px; padding: 3px 10px;
-      display: inline-block; margin-bottom: 8px;
-    }
-
-    .card-info {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 6px; margin-bottom: 10px; font-size: 13px;
-    }
-    .card-info-item { color: var(--muted); }
-    .card-info-item b { color: var(--text); }
-    .card-problema {
-      background: var(--surface);
-      border-left: 3px solid var(--border);
-      padding: 9px 13px; border-radius: 0 8px 8px 0;
-      font-size: 13px; color: var(--muted); margin-bottom: 10px;
-    }
-    .card-precio {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px; font-weight: 700;
-      color: var(--accent); margin-bottom: 8px;
-    }
-    .card-fechas { font-size: 11px; color: var(--muted); margin-bottom: 12px; line-height: 1.8; }
-    .card-garantia { font-size: 12px; color: var(--success); margin-bottom: 8px; }
-    .card-garantia.vencida { color: var(--danger); }
-    .card-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
-    .reingresada-label { font-size: 12px; color: var(--purple); font-style: italic; }
-
-    /* ── MÓDULO INGRESOS ── */
-    .ingresos-filtros {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      margin-bottom: 20px; align-items: center;
-    }
-    .period-btn {
-      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border);
-      background: transparent; color: var(--muted); cursor: pointer;
-      font-size: 12px; font-family: 'DM Sans', sans-serif;
-      transition: all .2s;
-    }
-    .period-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .period-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
-    .fecha-custom {
-      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-    }
-    .fecha-custom input { width: 150px; padding: 7px 12px; font-size: 13px; }
-
-    .kpi-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 12px; margin-bottom: 20px;
-    }
-    .kpi-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; text-align: center;
-    }
-    .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
-    .kpi-value {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 26px; font-weight: 700;
-      color: var(--accent); margin-top: 6px;
-    }
-    .kpi-value.blue  { color: var(--accent2); }
-    .kpi-value.green { color: var(--success); }
-    .kpi-value.white { color: var(--text); }
-
-    .ingresos-tabla {
-      width: 100%; border-collapse: collapse;
-    }
-    .ingresos-tabla th {
-      text-align: left; font-size: 11px; text-transform: uppercase;
-      letter-spacing: .6px; color: var(--muted);
-      padding: 10px 12px; border-bottom: 1px solid var(--border);
-    }
-    .ingresos-tabla td {
-      padding: 11px 12px; border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-    .ingresos-tabla tr:last-child td { border-bottom: none; }
-    .ingresos-tabla tr:hover td { background: rgba(255,255,255,.02); }
-    .ingresos-tabla .monto {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px; font-weight: 700; color: var(--accent);
-    }
-    .tipo-badge {
-      font-size: 10px; padding: 3px 8px; border-radius: 10px;
-      text-transform: uppercase; font-weight: 600; letter-spacing: .5px;
-    }
-    .tipo-taller { background: #0a1828; color: var(--accent2); }
-    .tipo-remoto { background: #0a2018; color: var(--success); }
-
-    .btn-csv {
-      background: var(--card); border: 1px solid var(--border);
-      color: var(--text); padding: 8px 16px; border-radius: 8px;
-      cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif;
-      transition: all .2s;
-    }
-    .btn-csv:hover { border-color: var(--success); color: var(--success); }
-
-    /* ── BÚSQUEDA ── */
-    .search-bar {
-      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
-    }
-    .search-bar input  { flex: 1; min-width: 160px; }
-    .search-bar select { min-width: 160px; }
-
-    /* ── TOTALES RÁPIDOS ── */
-    .totales {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 12px; margin-bottom: 20px;
-    }
-    .total-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; text-align: center;
-    }
-    .total-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-    .total-card .value {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 28px; font-weight: 700; color: var(--accent); margin-top: 6px;
-    }
-
-    /* ── ADMIN ── */
-    .admin-section { display: none; }
-
-    /* ── EMPTY ── */
-    .empty-state { text-align: center; padding: 48px; color: var(--muted); }
-
-    @media(max-width:640px){
-      .form-grid { grid-template-columns: 1fr; }
-      .card-info  { grid-template-columns: 1fr; }
-      .kpi-grid   { grid-template-columns: 1fr 1fr; }
-      .totales    { grid-template-columns: 1fr; }
-      .tabs       { gap: 2px; }
-      .tab        { padding: 8px 12px; font-size: 12px; }
-    }
-  </style>
-</head>
-<body>
 
 <!-- HEADER -->
 <div class="header">
