@@ -230,11 +230,24 @@ async function cargar(filtro = "") {
     const hoy = new Date().toISOString().split("T")[0];
     const mesActual = new Date().toISOString().slice(0, 7);
     const estadoFiltro = $("filtroEstado").value;
+    const filtroLimpio = String(filtro || "").trim();
 
-    const [trabajos, clientes] = await Promise.all([
-      listTrabajos(),
-      listClientesMap()
-    ]);
+    const trabajos = await listTrabajos();
+    let clientes = {};
+    let filtroClienteId = null;
+    let clientesWarning = "";
+
+    try {
+      clientes = await listClientesMap();
+    } catch (error) {
+      clientesWarning = error?.code || error?.message || "No se pudo leer clientes";
+      console.warn("No se pudo cargar clientes:", error);
+    }
+
+    if (filtroLimpio && !clientesWarning) {
+      const clienteEncontrado = await findClienteByDni(filtroLimpio).catch(() => null);
+      filtroClienteId = clienteEncontrado?.id || null;
+    }
 
     let totalDia = 0;
     let totalMes = 0;
@@ -248,7 +261,12 @@ async function cargar(filtro = "") {
         if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += Number(trabajo.precio || 0);
       }
 
-      if (filtro && cliente?.dni !== filtro && trabajo.numeroOrden !== filtro) return;
+      if (
+        filtroLimpio
+        && cliente?.dni !== filtroLimpio
+        && trabajo.clienteId !== filtroClienteId
+        && trabajo.numeroOrden !== filtroLimpio
+      ) return;
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
 
       resultados.push({ trabajo, cliente });
@@ -265,6 +283,14 @@ async function cargar(filtro = "") {
     }
 
     cont.innerHTML = "";
+    if (clientesWarning) {
+      const warning = document.createElement("div");
+      warning.className = "empty-state";
+      warning.style.padding = "10px";
+      warning.style.marginBottom = "12px";
+      warning.textContent = `Trabajos cargados, pero no se pudieron leer datos de clientes (${clientesWarning}).`;
+      cont.appendChild(warning);
+    }
     resultados.forEach(({ trabajo, cliente }) => cont.appendChild(renderTrabajoCard(trabajo, cliente)));
 
     if (resultados.length === 1) {
@@ -277,7 +303,8 @@ async function cargar(filtro = "") {
     }
   } catch (error) {
     console.error(error);
-    cont.innerHTML = "<div class='empty-state'>No se pudieron cargar los trabajos.</div>";
+    const detalle = error?.code || error?.message || "Error desconocido";
+    cont.innerHTML = `<div class='empty-state'>No se pudieron cargar los trabajos.<br><small>${escapeHtml(detalle)}</small></div>`;
   }
 }
 
