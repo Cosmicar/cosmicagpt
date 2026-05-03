@@ -203,7 +203,7 @@
   <div class="tab active"     onclick="showTab('trabajos')">🛠️ Trabajos</div>
   <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
-  <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')">⚙️ Admin</div>
+  <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
 </div>
 
 <div class="container">
@@ -356,7 +356,7 @@
           <div class="kpi-label">Taller</div>
           <div class="kpi-value blue" id="kpiTaller">$0</div>
         </div>
-        <div class="kpi-card" id="kpiCardRemoto">
+        <div class="kpi-card" id="kpiCardRemoto" style="display: none;">
           <div class="kpi-label">Remoto</div>
           <div class="kpi-value green" id="kpiRemoto">$0</div>
         </div>
@@ -394,7 +394,7 @@
   </div>
 
   <!-- ══════════════════════════════════════════ TAB: ADMIN -->
-  <div class="tab-content admin-section" id="tab-admin">
+  <div class="tab-content admin-section" id="tab-admin" style="display: none;">
     <div class="section">
       <div class="section-title">⚙️ Crear usuario operador</div>
       <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">
