@@ -103,7 +103,7 @@ async function loadInitialWorkList() {
   }
 
   // Cargar todos los trabajos por defecto (sin necesidad de "Ver todos")
-  await cargar();
+  await cargar("", { cargarTodos: true });
   
   // Cargar contabilidad del día por defecto
   await cargarIngresos();
