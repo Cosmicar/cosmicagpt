@@ -44,6 +44,12 @@
       font-family: 'Rajdhani', sans-serif;
       font-size: 20px; font-weight: 700;
       letter-spacing: 2px; color: var(--accent);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo img {
+      width: 30px; height: 30px;
+      object-fit: contain;
+      display: block;
     }
     .logo span { color: var(--text); }
     .header-right { display: flex; align-items: center; gap: 12px; }
@@ -330,7 +336,10 @@
 
 <!-- HEADER -->
 <div class="header">
-  <div class="logo">Cosmica<span>.ar</span></div>
+  <div class="logo">
+    <img src="cosmica-logo.png" alt="Cosmica.ar">
+    <span>Cosmica.ar</span>
+  </div>
   <div class="header-right">
     <div class="user-tag">👤 <b id="usuarioLogueado">…</b></div>
     <button class="btn-logout" onclick="logout()">Salir</button>

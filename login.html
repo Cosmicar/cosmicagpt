@@ -73,13 +73,20 @@
       margin-bottom: 36px;
     }
     .logo-icon {
-      width: 56px; height: 56px;
+      width: 64px; height: 64px;
       background: var(--accent-dim);
       border: 1px solid rgba(0,255,204,.2);
       border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
       margin: 0 auto 14px;
+      padding: 10px;
+      overflow: hidden;
+    }
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
     }
     .logo-title {
       font-family: 'Rajdhani', sans-serif;
@@ -191,7 +198,9 @@
 
 <div class="card">
   <div class="logo">
-    <div class="logo-icon">🛰️</div>
+    <div class="logo-icon">
+      <img src="cosmica-logo.png" alt="Cosmica.ar">
+    </div>
     <div class="logo-title">Cosmica<span>.ar</span></div>
     <div class="logo-sub">Sistema de gestión</div>
   </div>

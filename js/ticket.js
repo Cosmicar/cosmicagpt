@@ -7,6 +7,7 @@ export async function printTicket(id) {
 
   const { trabajo: t, cliente: c = {} } = data;
   const ticketUrl = new URL(`panel.html?orden=${encodeURIComponent(t.numeroOrden || "")}`, window.location.href);
+  const logoUrl = new URL("cosmica-logo.png", window.location.href).href;
   const qrData = encodeURIComponent(ticketUrl.href);
   const v = window.open("", "_blank");
 
@@ -21,6 +22,7 @@ export async function printTicket(id) {
       * { box-sizing:border-box; margin:0; padding:0; }
       body { font-family:'DM Sans',sans-serif; font-size:13px; max-width:380px; margin:0 auto; padding:20px; color:#111; }
       .header-ticket { text-align:center; margin-bottom:16px; }
+      .logo-img { width:58px; height:58px; object-fit:contain; display:block; margin:0 auto 6px; }
       .logo-t { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:2px; }
       .sub-t  { font-size:11px; color:#888; margin-top:2px; }
       .orden-num { font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; text-align:center; margin:10px 0; }
@@ -35,6 +37,7 @@ export async function printTicket(id) {
     </head>
     <body>
       <div class="header-ticket">
+        <img class="logo-img" src="${logoUrl}" alt="Cosmica.ar">
         <div class="logo-t">Cosmica.ar</div>
         <div class="sub-t">Servicio técnico integral · Jujuy, Argentina</div>
       </div>
