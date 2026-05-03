@@ -1,7 +1,7 @@
 import { APP_ROUTES } from "./config.js";
 import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
 import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
-import { printTicket } from "./ticket.js?v=20260503-public-order";
+import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
   findClienteByDni,
   findTrabajosByClienteId,
@@ -57,6 +57,11 @@ function boot() {
       await loadInitialWorkList();
     },
     onUnauthorized: () => {
+      const orden = new URLSearchParams(window.location.search).get("orden");
+      if (orden) {
+        window.location.href = `estado.html?orden=${encodeURIComponent(orden)}`;
+        return;
+      }
       window.location.href = APP_ROUTES.login;
     },
     onError: (error) => {

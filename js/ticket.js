@@ -31,6 +31,7 @@ export async function printTicket(id) {
       .sub-t  { font-size:11px; color:#888; margin-top:2px; }
       .orden-num { font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; text-align:center; margin:10px 0; }
       .qr-wrap { text-align:center; margin-bottom:12px; }
+      .public-url { font-size:9px; color:#777; text-align:center; word-break:break-all; margin-top:-6px; margin-bottom:10px; }
       hr { border:none; border-top:1px dashed #ccc; margin:12px 0; }
       .row { margin:5px 0; display:flex; justify-content:space-between; gap:12px; }
       .row b { min-width:90px; color:#555; font-weight:500; }
@@ -51,6 +52,7 @@ export async function printTicket(id) {
       <div class="qr-wrap">
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrData}" id="qr">
       </div>
+      <div class="public-url">${escapeHtml(ticketUrl.href)}</div>
 
       <hr>
       <div class="row"><b>Cliente</b> <span>${escapeHtml(c?.nombre || "")} ${escapeHtml(c?.apellido || "")}</span></div>

@@ -1,4 +1,4 @@
-import { getPublicOrder } from "./work-repository.js";
+import { findPublicOrderByNumeroOrden, getPublicOrder } from "./work-repository.js";
 import { $, escapeHtml, formatDateTime } from "./utils.js";
 
 const STATUS_CLASS = {
@@ -8,6 +8,10 @@ const STATUS_CLASS = {
 
 function getOrderId() {
   return new URLSearchParams(window.location.search).get("id") || "";
+}
+
+function getOrderNumber() {
+  return new URLSearchParams(window.location.search).get("orden") || "";
 }
 
 function renderError(message) {
@@ -42,13 +46,16 @@ function renderOrder(order) {
 
 async function boot() {
   const id = getOrderId();
-  if (!id) {
+  const orden = getOrderNumber();
+  if (!id && !orden) {
     renderError("No se indicó una orden para consultar.");
     return;
   }
 
   try {
-    const order = await getPublicOrder(id);
+    const order = id
+      ? await getPublicOrder(id)
+      : await findPublicOrderByNumeroOrden(orden);
     if (!order) {
       renderError("Todavía no hay información pública para esta orden.");
       return;

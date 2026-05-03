@@ -100,6 +100,13 @@ export async function getPublicOrder(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export async function findPublicOrderByNumeroOrden(numeroOrden) {
+  const q = query(collection(db, COLLECTIONS.ordenesPublicas), where("numeroOrden", "==", numeroOrden));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() };
+}
+
 export async function publishPublicOrder(id, trabajo) {
   await setDoc(doc(db, COLLECTIONS.ordenesPublicas, id), {
     numeroOrden: trabajo.numeroOrden || "",
