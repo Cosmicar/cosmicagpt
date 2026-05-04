@@ -1,6 +1,6 @@
 import { APP_ROUTES } from "./config.js";
-import { createOperatorUser, getSession, isTesterMode, logout, requirePanelSession } from "./auth-service.js";
-import { canReenterWork, isAdmin, isTester, WORK_STATUS } from "./domain.js";
+import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
+import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
 import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
   findClienteByDni,
@@ -10,9 +10,7 @@ import {
   getTrabajo,
   listClientesMap,
   listTrabajos
-} from isTesterMode()
-  ? "./sandbox-repository.js"
-  : "./work-repository.js";
+} from "./work-repository.js";
 import {
   changeWorkStatus,
   reenterWork,
@@ -205,16 +203,16 @@ function renderRoleUi() {
 
   // ── Botón Sandbox: solo visible para tester ───────────────
   const sandboxBtnId = "btnSandboxInyectar";
+  const isTesterSession = state.session?.profile?.rol === 'tester';
   let sandboxBtn = document.getElementById(sandboxBtnId);
-  if (isTesterMode()) {
+  if (isTesterSession) {
     if (!sandboxBtn) {
       sandboxBtn = document.createElement("button");
       sandboxBtn.id = sandboxBtnId;
       sandboxBtn.className = "btn btn-secondary";
       sandboxBtn.style.cssText = "background:rgba(255,170,0,0.15);border:1px solid var(--warning);color:var(--warning);margin-bottom:16px;";
-      sandboxBtn.innerHTML = "\uD83C\uDFB2 Generar órdenes de prueba";
+      sandboxBtn.innerHTML = "🎲 Generar órdenes de prueba";
       sandboxBtn.onclick = () => window.inyectarDatosDePrueba();
-      // Insertar antes del buscador
       const listaDiv = document.getElementById("listaTrabajos");
       if (listaDiv) listaDiv.parentElement.insertBefore(sandboxBtn, listaDiv);
     }
