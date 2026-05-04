@@ -366,6 +366,16 @@
             <label>Precio ($) <span class="req">*</span></label>
             <input id="precio" type="number" min="0" placeholder="0">
           </div>
+          <div class="form-group" id="containerPlanServicio" style="display: none;">
+            <label>Plan de Servicio Premium</label>
+            <select id="planServicio">
+              <option value="">Ninguno / Estándar</option>
+              <option value="bronce">Bronce</option>
+              <option value="oro">Oro</option>
+              <option value="platinum">Platinum</option>
+              <option value="reset">Reset Impresoras</option>
+            </select>
+          </div>
           <div class="form-group full">
             <label>Problema <span class="req">*</span></label>
             <textarea id="problema" placeholder="Describí el problema del equipo…"></textarea>
@@ -377,15 +387,6 @@
           <div class="form-group full">
             <label>Servicio Realizado</label>
             <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
-          </div>
-          <div class="form-group full" id="containerPlanServicio" style="display: none;">
-            <label>Plan de Servicio Premium</label>
-            <select id="planServicio">
-              <option value="">Ninguno / Estándar</option>
-              <option value="bronce">Bronce</option>
-              <option value="oro">Oro</option>
-              <option value="platinum">Platinum</option>
-            </select>
           </div>
         </div>
       </div>
@@ -503,6 +504,10 @@
         <div class="form-group">
           <label>Precio Platinum ($)</label>
           <input type="number" id="precioPlatinum" placeholder="Ej: 15000">
+        </div>
+        <div class="form-group">
+          <label>Precio Reset Impresoras ($)</label>
+          <input type="number" id="precioReset" placeholder="Ej: 3000">
         </div>
       </div>
       <div class="form-actions">

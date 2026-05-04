@@ -104,9 +104,10 @@ function bindGlobalActions() {
   window.cargarPreciosPlanes = async function () {
     try {
       const data = await getPreciosPlanes();
-      if ($("precioBronce"))  $("precioBronce").value  = data.bronce   || "";
-      if ($("precioOro"))     $("precioOro").value     = data.oro      || "";
+      if ($("precioBronce"))   $("precioBronce").value   = data.bronce   || "";
+      if ($("precioOro"))      $("precioOro").value      = data.oro      || "";
       if ($("precioPlatinum")) $("precioPlatinum").value = data.platinum || "";
+      if ($("precioReset"))    $("precioReset").value    = data.reset    || "";
     } catch (error) {
       console.error("Error al cargar precios:", error);
     }
@@ -117,7 +118,8 @@ function bindGlobalActions() {
       await setPreciosPlanes({
         bronce:   $("precioBronce")?.value,
         oro:      $("precioOro")?.value,
-        platinum: $("precioPlatinum")?.value
+        platinum: $("precioPlatinum")?.value,
+        reset:    $("precioReset")?.value
       });
       alert("Precios de planes actualizados correctamente.");
     } catch (error) {
@@ -157,6 +159,22 @@ function bindGlobalActions() {
       if (e.target.value !== "remoto" && document.getElementById("planServicio")) {
         document.getElementById("planServicio").value = "";
       }
+    }
+  });
+
+  // ── Plan de servicio: autocompletar precio ──────────────────────
+  // Cargamos los precios al iniciar para tenerlos en memoria
+  getPreciosPlanes().then((data) => { state._preciosPlanes = data; }).catch(() => {});
+
+  document.getElementById("planServicio")?.addEventListener("change", (e) => {
+    const plan = e.target.value;
+    const precios = state._preciosPlanes || {};
+    const precioInput = document.getElementById("precio");
+    if (!precioInput) return;
+    if (plan && precios[plan] != null) {
+      precioInput.value = precios[plan];
+    } else {
+      precioInput.value = "";
     }
   });
 }

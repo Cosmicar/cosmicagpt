@@ -217,10 +217,11 @@ export async function getPreciosPlanes() {
   return snap.exists() ? snap.data() : {};
 }
 
-export async function setPreciosPlanes({ bronce, oro, platinum }) {
+export async function setPreciosPlanes({ bronce, oro, platinum, reset }) {
   await setDoc(doc(db, COLLECTIONS.config, "planes"), {
     bronce:   Number(bronce   || 0),
     oro:      Number(oro      || 0),
-    platinum: Number(platinum || 0)
+    platinum: Number(platinum || 0),
+    reset:    Number(reset    || 0)
   }, { merge: true });
 }
