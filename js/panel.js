@@ -289,8 +289,8 @@ function readWorkForm() {
     modelo: $("modelo").value.trim(),
     precio: Number($("precio").value),
     problema: $("problema").value.trim(),
-    diagnostico: $("diagnostico").value.trim(),
-    servicioRealizado: $("servicioRealizado").value.trim()
+    diagnostico: document.getElementById("diagnostico") ? document.getElementById("diagnostico").value.trim() : "",
+    servicioRealizado: document.getElementById("servicioRealizado") ? document.getElementById("servicioRealizado").value.trim() : ""
   };
 }
 

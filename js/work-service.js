@@ -67,7 +67,12 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     };
     await updateTrabajo(editState.trabajoId, update);
     await updateCliente(editState.clienteId, cliente);
-    await publishPublicOrder(editState.trabajoId, { ...trabajoActual, ...update });
+    await publishPublicOrder(editState.trabajoId, {
+      ...trabajoActual,
+      ...update,
+      diagnostico: values.diagnostico || "",
+      servicioRealizado: values.servicioRealizado || ""
+    });
     return { mode: "updated" };
   }
 
