@@ -171,7 +171,7 @@ async function actualizarTotalesDashboard() {
 }
 
 function renderRoleUi() {
-  const admin = isAdmin(state.session?.profile);
+  const admin = isAdmin(state.session?.profile) || state.session?.profile?.rol === 'tester';
   document.querySelectorAll(".admin-section").forEach((el) => {
     el.style.display = admin ? "" : "none";
   });
@@ -530,11 +530,10 @@ function renderTrabajoCard(t, c = {}) {
     : "";
 
   const bloqueado = t.estado === WORK_STATUS.entregado || t.estado === WORK_STATUS.reingresada;
-  const admin  = isAdmin(state.session?.profile);
-  const tester = isTester(state.session?.profile);
+  const admin  = isAdmin(state.session?.profile) || state.session?.profile?.rol === 'tester';
   const operatorCanEdit = state.session?.profile?.rol === "operador" && t.tipo === "taller";
-  const canEdit   = admin || operatorCanEdit || tester;
-  const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado") || tester;
+  const canEdit   = admin || operatorCanEdit;
+  const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado");
   let botonesHtml = "";
 
   if (!bloqueado) {
