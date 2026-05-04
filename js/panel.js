@@ -248,7 +248,14 @@ function renderRoleUi() {
     }
   } else {
     if (provinciaSelect) provinciaSelect.disabled = false;
-    if (tipoSelect) tipoSelect.disabled = false;
+    if (tipoSelect) {
+      tipoSelect.disabled = false;
+      // Solo asignar "remoto" si el formulario no está en modo edición
+      if (!state.edit?.trabajoId) {
+        tipoSelect.value = "remoto";
+        tipoSelect.dispatchEvent(new Event('change'));
+      }
+    }
   }
 
   const reqDni = document.getElementById("reqDni");
