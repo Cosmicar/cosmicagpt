@@ -66,6 +66,12 @@ export async function printTicket(id) {
       <hr>
       <div style="margin:5px 0;color:#555;font-size:12px;font-weight:500;">Problema reportado:</div>
       <div class="problema-box">${escapeHtml(t.problema || "—")}</div>
+      ${t.diagnostico ? `
+      <div style="margin:5px 0;color:#555;font-size:12px;font-weight:500;">Diagnóstico técnico:</div>
+      <div class="problema-box">${escapeHtml(t.diagnostico)}</div>` : ""}
+      ${t.servicioRealizado ? `
+      <div style="margin:5px 0;color:#555;font-size:12px;font-weight:500;">Servicio realizado:</div>
+      <div class="problema-box">${escapeHtml(t.servicioRealizado)}</div>` : ""}
       <hr>
       <div class="row"><b>Precio</b> <b>$${formatMoney(t.precio)}</b></div>
       <div class="row"><b>Estado</b> <span>${escapeHtml(t.estado || "—")}</span></div>

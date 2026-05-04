@@ -94,6 +94,18 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+
+  const servicioInput = $("servicioRealizado");
+  if (servicioInput) {
+    servicioInput.addEventListener("input", () => {
+      const diagContainer = $("diagnostico").parentElement;
+      if (servicioInput.value.trim() !== "") {
+        diagContainer.style.display = "none";
+      } else {
+        diagContainer.style.display = "block";
+      }
+    });
+  }
 }
 
 async function loadInitialWorkList() {
@@ -240,6 +252,13 @@ async function editarTrabajo(trabajoId, clienteId) {
     $("diagnostico").value = trabajo.diagnostico || "";
     $("servicioRealizado").value = trabajo.servicioRealizado || "";
     $("precio").value = trabajo.precio ?? 0;
+
+    const diagContainer = $("diagnostico").parentElement;
+    if ($("servicioRealizado").value.trim() !== "") {
+      diagContainer.style.display = "none";
+    } else {
+      diagContainer.style.display = "block";
+    }
 
     state.edit = { trabajoId, clienteId };
     $("modoEdicionBanner").style.display = "block";
@@ -511,8 +530,8 @@ function renderTrabajoCard(t, c = {}) {
       <div class="card-info-item"><b>Modelo:</b> ${escapeHtml(t.modelo || "—")}</div>
     </div>
     <div class="card-problema">${escapeHtml(t.problema || "—")}</div>
-    ${t.diagnostico ? `<div class="card-problema" style="margin-top: 8px;"><b>Diagnóstico:</b> ${escapeHtml(t.diagnostico)}</div>` : ""}
-    ${t.servicioRealizado ? `<div class="card-problema" style="margin-top: 8px;"><b>Servicio realizado:</b> ${escapeHtml(t.servicioRealizado)}</div>` : ""}
+    ${t.diagnostico ? `<div class="card-problema" style="background: rgba(0,229,255,0.1); color: var(--accent2);"><b>Diagnóstico:</b> ${escapeHtml(t.diagnostico)}</div>` : ""}
+    ${t.servicioRealizado ? `<div class="card-problema" style="background: rgba(16,185,129,0.1); color: var(--success);"><b>Servicio Realizado:</b> ${escapeHtml(t.servicioRealizado)}</div>` : ""}
     <div class="card-precio">$${formatMoney(t.precio)}</div>
     ${garantiaHtml}
     <div class="card-fechas">

@@ -33,8 +33,8 @@ function renderOrder(order) {
     <div class="info">
       <div class="row"><span>Equipo</span><b>${escapeHtml(equipo || "—")}</b></div>
       <div class="row"><span>Ingreso</span><b>${formatDateTime(order.fechaIngreso)}</b></div>
-      ${order.diagnostico ? `<div class="row"><span>Diagnóstico</span><b>${escapeHtml(order.diagnostico)}</b></div>` : ""}
-      ${order.servicioRealizado ? `<div class="row"><span>Servicio</span><b>${escapeHtml(order.servicioRealizado)}</b></div>` : ""}
+      ${order.diagnostico ? `<div class="row"><span>Diagnóstico técnico:</span><b>${escapeHtml(order.diagnostico)}</b></div>` : ""}
+      ${order.servicioRealizado ? `<div class="row"><span>Servicio realizado:</span><b>${escapeHtml(order.servicioRealizado)}</b></div>` : ""}
       <div class="row"><span>Reparado</span><b>${formatDateTime(order.fechaReparado)}</b></div>
       <div class="row"><span>Entregado</span><b>${formatDateTime(order.fechaEntregado)}</b></div>
     </div>
