@@ -54,7 +54,10 @@ function boot() {
   requirePanelSession({
     onReady: async (session) => {
       state.session = session;
-      $("usuarioLogueado").innerText = session.user.email || "Usuario";
+      const email = session.user.email || "";
+      const nombreCorto = email.split('@')[0];
+      const nombreMostrar = session.profile?.nombre || nombreCorto || "Usuario";
+      $("usuarioLogueado").innerText = nombreMostrar;
       renderRoleUi();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
