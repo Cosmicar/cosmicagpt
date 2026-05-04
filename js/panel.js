@@ -477,9 +477,13 @@ function renderTrabajoCard(t, c = {}) {
   }
 
   const telClean = onlyDigits(c?.telefono || "");
+  const linkEstado = `https://cosmica.ar/estado.html?orden=${t.numeroOrden || ""}`;
   const waMsg = encodeURIComponent(
-    `Hola ${c?.nombre || ""}, te contactamos de Cosmica.ar. ` +
-    `Tu equipo *${t.equipo || ""}* (Orden ${t.numeroOrden || ""}) está *${t.estado || ""}*. ¡Cualquier consulta avisanos!`
+    `Hola ${c?.nombre || ""}, te contactamos de Cosmica.ar.\n\n` +
+    `Tu equipo *${t.equipo || ""}* (Orden ${t.numeroOrden || ""}) está *${t.estado || ""}*.\n\n` +
+    `Podés revisar el estado de tu equipo y tu garantía en el siguiente enlace:\n` +
+    `${linkEstado}\n\n` +
+    `¡Cualquier consulta avisanos!`
   );
   const btnWa = telClean
     ? `<a href="https://wa.me/549${telClean}?text=${waMsg}" target="_blank" rel="noopener">
