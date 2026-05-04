@@ -298,9 +298,14 @@ function limpiarCampos() {
       if (el) el.value = "";
     });
   $("provincia").value = "";
-  $("tipo").value = "taller";
-  if ($("planServicio")) $("planServicio").value = "";
-  if ($("containerPlanServicio")) $("containerPlanServicio").style.display = "none";
+
+  // Valor por defecto de "tipo" basado en el rol: admin → remoto, resto → taller
+  const inputTipo = $("tipo");
+  if (inputTipo) {
+    const esAdmin = state.session?.profile?.rol === 'admin';
+    inputTipo.value = esAdmin ? "remoto" : "taller";
+    inputTipo.dispatchEvent(new Event('change'));
+  }
 
   // Re-aplicar restricciones de rol al limpiar el formulario
   renderRoleUi();
