@@ -302,7 +302,7 @@
             <input id="apellido" placeholder="Pérez">
           </div>
           <div class="form-group">
-            <label>DNI <span class="req">*</span></label>
+            <label>DNI <span class="req" id="reqDni">*</span></label>
             <input id="dni" placeholder="12345678"
               onblur="buscarClienteAutofill()"
               oninput="this.value=this.value.replace(/[^0-9]/g,'')">

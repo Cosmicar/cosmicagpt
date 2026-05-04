@@ -179,6 +179,11 @@ function renderRoleUi() {
     if (provinciaSelect) provinciaSelect.disabled = false;
     if (tipoSelect) tipoSelect.disabled = false;
   }
+
+  const reqDni = document.getElementById("reqDni");
+  if (reqDni) {
+    reqDni.style.display = admin ? "none" : "inline";
+  }
 }
 
 function showTab(id) {

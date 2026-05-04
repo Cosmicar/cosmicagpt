@@ -14,15 +14,18 @@ import {
   listTrabajos
 } from "./work-repository.js";
 
-export function validateWorkForm(values) {
+export function validateWorkForm(values, profile) {
   const required = [
     ["nombre", "Nombre"],
-    ["dni", "DNI"],
     ["telefono", "Teléfono"],
     ["provincia", "Provincia"],
     ["equipo", "Equipo"],
     ["problema", "Problema"]
   ];
+
+  if (!isAdmin(profile)) {
+    required.push(["dni", "DNI"]);
+  }
 
   for (const [field, label] of required) {
     if (!String(values[field] ?? "").trim()) {
@@ -36,7 +39,7 @@ export function validateWorkForm(values) {
 }
 
 export async function saveWorkForm(values, editState = {}, profile = null) {
-  validateWorkForm(values);
+  validateWorkForm(values, profile);
 
   if (!window.confirm("⚠️ ¿Estás seguro de que deseas guardar esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
     throw new Error("Operación cancelada por el usuario.");
