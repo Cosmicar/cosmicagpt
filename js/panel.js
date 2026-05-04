@@ -184,7 +184,7 @@ function badgeEstado(estado) {
 }
 
 function limpiarCampos() {
-  ["nombre", "apellido", "dni", "telefono", "equipo", "marca", "modelo", "problema", "precio"]
+  ["nombre", "apellido", "dni", "telefono", "equipo", "marca", "modelo", "problema", "precio", "diagnostico", "servicioRealizado"]
     .forEach((id) => {
       const el = $(id);
       if (el) el.value = "";
@@ -237,6 +237,8 @@ async function editarTrabajo(trabajoId, clienteId) {
     $("marca").value = trabajo.marca || "";
     $("modelo").value = trabajo.modelo || "";
     $("problema").value = trabajo.problema || "";
+    $("diagnostico").value = trabajo.diagnostico || "";
+    $("servicioRealizado").value = trabajo.servicioRealizado || "";
     $("precio").value = trabajo.precio ?? 0;
 
     state.edit = { trabajoId, clienteId };
@@ -262,7 +264,9 @@ function readWorkForm() {
     marca: $("marca").value.trim(),
     modelo: $("modelo").value.trim(),
     precio: Number($("precio").value),
-    problema: $("problema").value.trim()
+    problema: $("problema").value.trim(),
+    diagnostico: $("diagnostico").value.trim(),
+    servicioRealizado: $("servicioRealizado").value.trim()
   };
 }
 
@@ -507,6 +511,8 @@ function renderTrabajoCard(t, c = {}) {
       <div class="card-info-item"><b>Modelo:</b> ${escapeHtml(t.modelo || "—")}</div>
     </div>
     <div class="card-problema">${escapeHtml(t.problema || "—")}</div>
+    ${t.diagnostico ? `<div class="card-problema" style="margin-top: 8px;"><b>Diagnóstico:</b> ${escapeHtml(t.diagnostico)}</div>` : ""}
+    ${t.servicioRealizado ? `<div class="card-problema" style="margin-top: 8px;"><b>Servicio realizado:</b> ${escapeHtml(t.servicioRealizado)}</div>` : ""}
     <div class="card-precio">$${formatMoney(t.precio)}</div>
     ${garantiaHtml}
     <div class="card-fechas">

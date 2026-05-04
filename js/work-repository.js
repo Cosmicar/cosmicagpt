@@ -132,6 +132,8 @@ export async function publishPublicOrder(id, trabajo) {
     equipo: trabajo.equipo || "",
     marca: trabajo.marca || "",
     modelo: trabajo.modelo || "",
+    diagnostico: trabajo.diagnostico || "",
+    servicioRealizado: trabajo.servicioRealizado || "",
     fechaIngreso: trabajo.fechaIngreso || "",
     fechaReparado: trabajo.fechaReparado || "",
     fechaEntregado: trabajo.fechaEntregado || "",

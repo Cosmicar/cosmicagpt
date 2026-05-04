@@ -58,6 +58,8 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
       marca: values.marca || "",
       modelo: values.modelo || "",
       problema: values.problema,
+      diagnostico: values.diagnostico || "",
+      servicioRealizado: values.servicioRealizado || "",
       precio: values.precio
     };
     await updateTrabajo(editState.trabajoId, update);
@@ -79,6 +81,8 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     marca: values.marca || "",
     modelo: values.modelo || "",
     problema: values.problema,
+    diagnostico: values.diagnostico || "",
+    servicioRealizado: values.servicioRealizado || "",
     precio: values.precio,
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
