@@ -491,22 +491,42 @@ function renderTrabajoCard(t, c = {}) {
 
   if (!bloqueado) {
     botonesHtml = `
-      <button class="btn btn-sm btn-reparacion" onclick="cambiarEstado('${t.id}','${WORK_STATUS.enReparacion}')">En reparación</button>
-      <button class="btn btn-sm btn-listo" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">Listo</button>
-      <button class="btn btn-sm btn-entregado" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">Entregado</button>
-      ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
-      ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
-      <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
-      ${btnWa}
+      <div class="card-actions-wrapper">
+        <div class="btn-group">
+          <div class="btn-group-title">Cambiar Estado</div>
+          <button class="btn btn-sm btn-reparacion" onclick="cambiarEstado('${t.id}','${WORK_STATUS.enReparacion}')">En reparaci\u00f3n</button>
+          <button class="btn btn-sm btn-listo" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">Listo</button>
+          <button class="btn btn-sm btn-entregado" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">Entregado</button>
+        </div>
+        <div class="btn-group">
+          <div class="btn-group-title">Acciones</div>
+          ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
+          ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
+          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
+          ${btnWa}
+        </div>
+      </div>
     `;
   } else if (canReenterWork(t.estado)) {
     botonesHtml = `
-      <button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${t.id}')">Reingresar</button>
-      <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
-      ${btnWa}
+      <div class="card-actions-wrapper">
+        <div class="btn-group">
+          <div class="btn-group-title">Acciones</div>
+          <button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${t.id}')">Reingresar</button>
+          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
+          ${btnWa}
+        </div>
+      </div>
     `;
   } else {
-    botonesHtml = `<span class="reingresada-label">Orden reingresada</span> ${btnWa}`;
+    botonesHtml = `
+      <div class="card-actions-wrapper">
+        <div class="btn-group">
+          <span class="reingresada-label">Orden reingresada</span>
+          ${btnWa}
+        </div>
+      </div>
+    `;
   }
 
   card.innerHTML = `

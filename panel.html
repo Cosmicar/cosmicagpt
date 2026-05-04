@@ -122,7 +122,38 @@
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-reingreso { background: var(--danger); color: #fff; }
     .btn-ticket { background: #fff; color: #000; }
+
+    .card-actions-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn-group-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      width: 100%;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
     .btn-wa { background: #25D366; color: #fff; }
+
+    .form-section { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .form-section-title { font-size: 14px; color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .form-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    @media (max-width: 768px) { .form-actions { position: sticky; bottom: 0; background: var(--bg); padding: 15px 0; z-index: 100; border-top: 1px solid var(--border); } }
     
     .empty-state { padding: 40px; text-align: center; color: var(--muted); }
     
@@ -258,79 +289,97 @@
         ✏️ Modo edición activo — Modificá los datos y guardá
       </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nombre <span class="req">*</span></label>
-          <input id="nombre" placeholder="Juan">
-        </div>
-        <div class="form-group">
-          <label>Apellido</label>
-          <input id="apellido" placeholder="Pérez">
-        </div>
-        <div class="form-group">
-          <label>DNI <span class="req">*</span></label>
-          <input id="dni" placeholder="12345678"
-            onblur="buscarClienteAutofill()"
-            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        </div>
-        <div class="form-group">
-          <label>Teléfono <span class="req">*</span></label>
-          <input id="telefono" placeholder="3883000000"
-            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        </div>
-        <div class="form-group">
-          <label>Provincia <span class="req">*</span></label>
-          <select id="provincia">
-            <option value="">Seleccionar…</option>
-            <option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
-            <option>Córdoba</option><option>Salta</option><option>Tucumán</option>
-            <option>Mendoza</option><option>Santa Fe</option><option>Entre Ríos</option>
-            <option>Misiones</option><option>Chaco</option><option>Formosa</option>
-            <option>Santiago del Estero</option><option>Catamarca</option>
-            <option>La Rioja</option><option>San Juan</option><option>San Luis</option>
-            <option>Neuquén</option><option>Río Negro</option><option>Chubut</option>
-            <option>Santa Cruz</option><option>Tierra del Fuego</option>
-            <option>La Pampa</option><option>Corrientes</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Tipo de servicio <span class="req">*</span></label>
-          <select id="tipo">
-            <option value="taller">Taller</option>
-            <option value="remoto">Remoto</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Equipo <span class="req">*</span></label>
-          <input id="equipo" placeholder="Notebook, PC, Impresora…">
-        </div>
-        <div class="form-group">
-          <label>Marca</label>
-          <input id="marca" placeholder="HP, Epson, Lenovo…">
-        </div>
-        <div class="form-group">
-          <label>Modelo</label>
-          <input id="modelo" placeholder="14-ep2013wm…">
-        </div>
-        <div class="form-group">
-          <label>Precio ($) <span class="req">*</span></label>
-          <input id="precio" type="number" min="0" placeholder="0">
-        </div>
-        <div class="form-group full">
-          <label>Problema <span class="req">*</span></label>
-          <textarea id="problema" placeholder="Describí el problema del equipo…"></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Diagnóstico Técnico</label>
-          <textarea id="diagnostico" placeholder="Detalle del diagnóstico..."></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Servicio Realizado</label>
-          <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
+      <!-- SECCIÓN 1: DATOS DEL CLIENTE -->
+      <div class="form-section">
+        <div class="form-section-title">👤 Datos del Cliente</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombre <span class="req">*</span></label>
+            <input id="nombre" placeholder="Juan">
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <input id="apellido" placeholder="Pérez">
+          </div>
+          <div class="form-group">
+            <label>DNI <span class="req">*</span></label>
+            <input id="dni" placeholder="12345678"
+              onblur="buscarClienteAutofill()"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="form-group">
+            <label>Teléfono <span class="req">*</span></label>
+            <input id="telefono" placeholder="3883000000"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="form-group">
+            <label>Provincia <span class="req">*</span></label>
+            <select id="provincia">
+              <option value="">Seleccionar…</option>
+              <option>Buenos Aires</option><option>CABA</option><option>Jujuy</option>
+              <option>Córdoba</option><option>Salta</option><option>Tucumán</option>
+              <option>Mendoza</option><option>Santa Fe</option><option>Entre Ríos</option>
+              <option>Misiones</option><option>Chaco</option><option>Formosa</option>
+              <option>Santiago del Estero</option><option>Catamarca</option>
+              <option>La Rioja</option><option>San Juan</option><option>San Luis</option>
+              <option>Neuquén</option><option>Río Negro</option><option>Chubut</option>
+              <option>Santa Cruz</option><option>Tierra del Fuego</option>
+              <option>La Pampa</option><option>Corrientes</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <!-- SECCIÓN 2: DATOS DEL EQUIPO -->
+      <div class="form-section">
+        <div class="form-section-title">💻 Datos del Equipo</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de servicio <span class="req">*</span></label>
+            <select id="tipo">
+              <option value="taller">Taller</option>
+              <option value="remoto">Remoto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Equipo <span class="req">*</span></label>
+            <input id="equipo" placeholder="Notebook, PC, Impresora…">
+          </div>
+          <div class="form-group">
+            <label>Marca</label>
+            <input id="marca" placeholder="HP, Epson, Lenovo…">
+          </div>
+          <div class="form-group">
+            <label>Modelo</label>
+            <input id="modelo" placeholder="14-ep2013wm…">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: DETALLES DEL SERVICIO -->
+      <div class="form-section">
+        <div class="form-section-title">🛠️ Detalles del Servicio</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Precio ($) <span class="req">*</span></label>
+            <input id="precio" type="number" min="0" placeholder="0">
+          </div>
+          <div class="form-group full">
+            <label>Problema <span class="req">*</span></label>
+            <textarea id="problema" placeholder="Describí el problema del equipo…"></textarea>
+          </div>
+          <div class="form-group full">
+            <label>Diagnóstico Técnico</label>
+            <textarea id="diagnostico" placeholder="Detalle del diagnóstico..."></textarea>
+          </div>
+          <div class="form-group full">
+            <label>Servicio Realizado</label>
+            <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
         <button class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
         <button class="btn btn-edit" id="btnCancelar"
           style="display:none" onclick="cancelarEdicion()">✕ Cancelar edición</button>
