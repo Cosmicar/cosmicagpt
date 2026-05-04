@@ -210,3 +210,17 @@ export async function resetContabilidadBatch() {
   });
   await batch.commit();
 }
+
+// ── Planes de servicio (colección config, siempre producción) ───
+export async function getPreciosPlanes() {
+  const snap = await getDoc(doc(db, COLLECTIONS.config, "planes"));
+  return snap.exists() ? snap.data() : {};
+}
+
+export async function setPreciosPlanes({ bronce, oro, platinum }) {
+  await setDoc(doc(db, COLLECTIONS.config, "planes"), {
+    bronce:   Number(bronce   || 0),
+    oro:      Number(oro      || 0),
+    platinum: Number(platinum || 0)
+  }, { merge: true });
+}

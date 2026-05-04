@@ -9,7 +9,9 @@ import {
   getCliente,
   getTrabajo,
   listClientesMap,
-  listTrabajos
+  listTrabajos,
+  getPreciosPlanes,
+  setPreciosPlanes
 } from "./work-repository.js";
 import {
   changeWorkStatus,
@@ -98,7 +100,31 @@ function bindGlobalActions() {
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 
-  // ── Sandbox: botón de inyección de datos demo ─────────────
+  // ── Planes de servicio: admin ───────────────────────────────
+  window.cargarPreciosPlanes = async function () {
+    try {
+      const data = await getPreciosPlanes();
+      if ($("precioBronce"))  $("precioBronce").value  = data.bronce   || "";
+      if ($("precioOro"))     $("precioOro").value     = data.oro      || "";
+      if ($("precioPlatinum")) $("precioPlatinum").value = data.platinum || "";
+    } catch (error) {
+      console.error("Error al cargar precios:", error);
+    }
+  };
+
+  window.guardarPreciosPlanes = async function () {
+    try {
+      await setPreciosPlanes({
+        bronce:   $("precioBronce")?.value,
+        oro:      $("precioOro")?.value,
+        platinum: $("precioPlatinum")?.value
+      });
+      alert("Precios de planes actualizados correctamente.");
+    } catch (error) {
+      console.error("Error al guardar precios:", error);
+      alert("Hubo un error al guardar los precios.");
+    }
+  };
   window.inyectarDatosDePrueba = async () => {
     try {
       const { inyectarDatosDePrueba } = await import("./sandbox-repository.js");
@@ -122,6 +148,17 @@ function bindGlobalActions() {
       }
     });
   }
+
+  // ── Plan de servicio: mostrar/ocultar según tipo ────────────────
+  document.getElementById("tipo")?.addEventListener("change", (e) => {
+    const container = document.getElementById("containerPlanServicio");
+    if (container) {
+      container.style.display = e.target.value === "remoto" ? "block" : "none";
+      if (e.target.value !== "remoto" && document.getElementById("planServicio")) {
+        document.getElementById("planServicio").value = "";
+      }
+    }
+  });
 }
 
 async function loadInitialWorkList() {
@@ -244,7 +281,9 @@ function limpiarCampos() {
     });
   $("provincia").value = "";
   $("tipo").value = "taller";
-  
+  if ($("planServicio")) $("planServicio").value = "";
+  if ($("containerPlanServicio")) $("containerPlanServicio").style.display = "none";
+
   // Re-aplicar restricciones de rol al limpiar el formulario
   renderRoleUi();
 }
@@ -294,6 +333,12 @@ async function editarTrabajo(trabajoId, clienteId) {
     $("servicioRealizado").value = trabajo.servicioRealizado || "";
     $("precio").value = trabajo.precio ?? 0;
 
+    // Plan de servicio (solo remoto)
+    if ($("containerPlanServicio")) {
+      $("containerPlanServicio").style.display = trabajo.tipo === "remoto" ? "block" : "none";
+    }
+    if ($("planServicio")) $("planServicio").value = trabajo.planServicio || "";
+
     const diagContainer = $("diagnostico").parentElement;
     if ($("servicioRealizado").value.trim() !== "") {
       diagContainer.style.display = "none";
@@ -326,7 +371,8 @@ function readWorkForm() {
     precio: Number($("precio").value),
     problema: $("problema").value.trim(),
     diagnostico: document.getElementById("diagnostico") ? document.getElementById("diagnostico").value.trim() : "",
-    servicioRealizado: document.getElementById("servicioRealizado") ? document.getElementById("servicioRealizado").value.trim() : ""
+    servicioRealizado: document.getElementById("servicioRealizado") ? document.getElementById("servicioRealizado").value.trim() : "",
+    planServicio: document.getElementById("planServicio") ? document.getElementById("planServicio").value : ""
   };
 }
 

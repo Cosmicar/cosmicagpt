@@ -378,6 +378,15 @@
             <label>Servicio Realizado</label>
             <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
           </div>
+          <div class="form-group full" id="containerPlanServicio" style="display: none;">
+            <label>Plan de Servicio Premium</label>
+            <select id="planServicio">
+              <option value="">Ninguno / Estándar</option>
+              <option value="bronce">Bronce</option>
+              <option value="oro">Oro</option>
+              <option value="platinum">Platinum</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -476,6 +485,28 @@
       </div>
       <div style="margin-top:16px;">
         <button class="btn btn-primary" onclick="crearUsuario()">✅ Crear usuario</button>
+      </div>
+    </div>
+
+    <!-- PRECIOS DE PLANES REMOTOS -->
+    <div class="form-section admin-section">
+      <div class="form-section-title">💎 Precios de Planes Remotos</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Precio Bronce ($)</label>
+          <input type="number" id="precioBronce" placeholder="Ej: 5000">
+        </div>
+        <div class="form-group">
+          <label>Precio Oro ($)</label>
+          <input type="number" id="precioOro" placeholder="Ej: 10000">
+        </div>
+        <div class="form-group">
+          <label>Precio Platinum ($)</label>
+          <input type="number" id="precioPlatinum" placeholder="Ej: 15000">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="guardarPreciosPlanes()">Guardar Precios</button>
       </div>
     </div>
 
