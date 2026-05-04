@@ -14,23 +14,31 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "./firebase.js";
 import { COLLECTIONS, ORDER_PREFIX, SERVICE_TYPES, normalizeServiceType, ROLES } from "./domain.js";
+import { getSession } from "./auth-service.js";
+
+// ── Getters de colección dinámicos (evalúados en tiempo de ejecución) ──
+// El tester apunta a colecciones _demo para no contaminar producción.
+const isTesterSession = () => getSession()?.profile?.rol === 'tester';
+const getTrabajosCol  = () => isTesterSession() ? "trabajos_demo"        : COLLECTIONS.trabajos;
+const getClientesCol  = () => isTesterSession() ? "clientes_demo"        : COLLECTIONS.clientes;
+const getPublicasCol  = () => isTesterSession() ? "ordenesPublicas_demo" : COLLECTIONS.ordenesPublicas;
 
 export async function findClienteByDni(dni) {
-  const q = query(collection(db, COLLECTIONS.clientes), where("dni", "==", dni));
+  const q = query(collection(db, getClientesCol()), where("dni", "==", dni));
   const snap = await getDocs(q);
   if (snap.empty) return null;
   return { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 
 export async function getCliente(id) {
-  const snap = await getDoc(doc(db, COLLECTIONS.clientes, id));
+  const snap = await getDoc(doc(db, getClientesCol(), id));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
 export async function upsertClienteByDni(cliente) {
   const existing = await findClienteByDni(cliente.dni);
   if (existing) {
-    await updateDoc(doc(db, COLLECTIONS.clientes, existing.id), {
+    await updateDoc(doc(db, getClientesCol(), existing.id), {
       nombre: cliente.nombre,
       apellido: cliente.apellido || "",
       telefono: cliente.telefono,
@@ -39,7 +47,7 @@ export async function upsertClienteByDni(cliente) {
     return existing.id;
   }
 
-  const ref = await addDoc(collection(db, COLLECTIONS.clientes), {
+  const ref = await addDoc(collection(db, getClientesCol()), {
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",
     dni: cliente.dni,
@@ -50,7 +58,7 @@ export async function upsertClienteByDni(cliente) {
 }
 
 export async function updateCliente(id, cliente) {
-  await updateDoc(doc(db, COLLECTIONS.clientes, id), {
+  await updateDoc(doc(db, getClientesCol(), id), {
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",
     telefono: cliente.telefono,
@@ -59,7 +67,7 @@ export async function updateCliente(id, cliente) {
 }
 
 export async function listClientesMap() {
-  const snap = await getDocs(collection(db, COLLECTIONS.clientes));
+  const snap = await getDocs(collection(db, getClientesCol()));
   const clientes = {};
   snap.forEach((docSnap) => {
     clientes[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
@@ -70,9 +78,9 @@ export async function listClientesMap() {
 export async function listTrabajos(profile) {
   let q;
   if (profile?.rol === ROLES.operador) {
-    q = query(collection(db, COLLECTIONS.trabajos), where("tipo", "==", SERVICE_TYPES.taller));
+    q = query(collection(db, getTrabajosCol()), where("tipo", "==", SERVICE_TYPES.taller));
   } else {
-    q = collection(db, COLLECTIONS.trabajos);
+    q = collection(db, getTrabajosCol());
   }
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
@@ -81,9 +89,9 @@ export async function listTrabajos(profile) {
 export async function findTrabajosByClienteId(clienteId, profile) {
   let q;
   if (profile?.rol === ROLES.operador) {
-    q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId), where("tipo", "==", SERVICE_TYPES.taller));
+    q = query(collection(db, getTrabajosCol()), where("clienteId", "==", clienteId), where("tipo", "==", SERVICE_TYPES.taller));
   } else {
-    q = query(collection(db, COLLECTIONS.trabajos), where("clienteId", "==", clienteId));
+    q = query(collection(db, getTrabajosCol()), where("clienteId", "==", clienteId));
   }
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
@@ -92,16 +100,16 @@ export async function findTrabajosByClienteId(clienteId, profile) {
 export async function findTrabajosByNumeroOrden(numeroOrden, profile) {
   let q;
   if (profile?.rol === ROLES.operador) {
-    q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden), where("tipo", "==", SERVICE_TYPES.taller));
+    q = query(collection(db, getTrabajosCol()), where("numeroOrden", "==", numeroOrden), where("tipo", "==", SERVICE_TYPES.taller));
   } else {
-    q = query(collection(db, COLLECTIONS.trabajos), where("numeroOrden", "==", numeroOrden));
+    q = query(collection(db, getTrabajosCol()), where("numeroOrden", "==", numeroOrden));
   }
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
 export async function getTrabajo(id) {
-  const snap = await getDoc(doc(db, COLLECTIONS.trabajos, id));
+  const snap = await getDoc(doc(db, getTrabajosCol(), id));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
@@ -113,19 +121,19 @@ export async function getTrabajoWithCliente(id) {
 }
 
 export async function getPublicOrder(id) {
-  const snap = await getDoc(doc(db, COLLECTIONS.ordenesPublicas, id));
+  const snap = await getDoc(doc(db, getPublicasCol(), id));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
 export async function findPublicOrderByNumeroOrden(numeroOrden) {
-  const q = query(collection(db, COLLECTIONS.ordenesPublicas), where("numeroOrden", "==", numeroOrden));
+  const q = query(collection(db, getPublicasCol()), where("numeroOrden", "==", numeroOrden));
   const snap = await getDocs(q);
   if (snap.empty) return null;
   return { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
 
 export async function publishPublicOrder(id, trabajo) {
-  await setDoc(doc(db, COLLECTIONS.ordenesPublicas, id), {
+  await setDoc(doc(db, getPublicasCol(), id), {
     numeroOrden: trabajo.numeroOrden || "",
     estado: trabajo.estado || "",
     tipo: trabajo.tipo || "",
@@ -143,20 +151,20 @@ export async function publishPublicOrder(id, trabajo) {
 }
 
 export async function updateTrabajo(id, data) {
-  await updateDoc(doc(db, COLLECTIONS.trabajos, id), data);
+  await updateDoc(doc(db, getTrabajosCol(), id), data);
 }
 
 export async function addTrabajo(data) {
-  const ref = await addDoc(collection(db, COLLECTIONS.trabajos), data);
+  const ref = await addDoc(collection(db, getTrabajosCol()), data);
   return ref.id;
 }
 
 export async function deleteTrabajo(id) {
-  await deleteDoc(doc(db, COLLECTIONS.trabajos, id));
+  await deleteDoc(doc(db, getTrabajosCol(), id));
 }
 
 export async function deletePublicOrder(id) {
-  await deleteDoc(doc(db, COLLECTIONS.ordenesPublicas, id));
+  await deleteDoc(doc(db, getPublicasCol(), id));
 }
 
 export async function getNextOrderNumber(tipo, profile) {
@@ -196,9 +204,8 @@ export async function setOrderCounterBaseline({ taller, remoto }) {
 
 export async function resetContabilidadBatch() {
   const batch = writeBatch(db);
-  const snap = await getDocs(collection(db, COLLECTIONS.trabajos));
+  const snap = await getDocs(collection(db, getTrabajosCol()));
   snap.docs.forEach((docSnap) => {
-    // Set price to 0 for all existing works to reset accounting without losing work history
     batch.update(docSnap.ref, { precio: 0 });
   });
   await batch.commit();
