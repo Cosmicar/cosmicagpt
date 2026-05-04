@@ -19,29 +19,54 @@ function renderError(message) {
 }
 
 function renderOrder(order) {
-  const equipo = [order.equipo, order.marca, order.modelo]
-    .filter(Boolean)
-    .join(" · ");
+  const equipoParts = [order.equipo, order.marca, order.modelo].filter(Boolean);
+  const equipoStr = equipoParts.join(" \u00b7 ");
 
   $("content").innerHTML = `
-    <div class="label">Orden</div>
-    <div class="order">${escapeHtml(order.numeroOrden || "—")}</div>
+    <div class="label">ORDEN</div>
+    <div class="order">${escapeHtml(order.numeroOrden || order.id || "\u2014")}</div>
     <div class="badge ${STATUS_CLASS[order.estado] || ""}">
-      ${escapeHtml(order.estado || "Sin estado")}
+      ${escapeHtml(order.estado || "Ingresado")}
     </div>
 
     <div class="info">
-      <div class="row"><span>Equipo</span><b>${escapeHtml(equipo || "—")}</b></div>
-      <div class="row"><span>Ingreso</span><b>${formatDateTime(order.fechaIngreso)}</b></div>
-      ${order.diagnostico ? `<div class="row"><span>Diagnóstico técnico:</span><b>${escapeHtml(order.diagnostico)}</b></div>` : ""}
-      ${order.servicioRealizado ? `<div class="row"><span>Servicio realizado:</span><b>${escapeHtml(order.servicioRealizado)}</b></div>` : ""}
-      <div class="row"><span>Reparado</span><b>${formatDateTime(order.fechaReparado)}</b></div>
-      <div class="row"><span>Entregado</span><b>${formatDateTime(order.fechaEntregado)}</b></div>
+      <div class="row">
+        <span>Equipo</span>
+        <b>${escapeHtml(equipoStr || "\u2014")}</b>
+      </div>
+      <div class="row">
+        <span>Ingreso</span>
+        <b>${formatDateTime(order.fechaIngreso)}</b>
+      </div>
+
+      ${order.diagnostico ? `
+      <div class="row">
+        <span>Diagn\u00f3stico t\u00e9cnico:</span>
+        <b>${escapeHtml(order.diagnostico)}</b>
+      </div>` : ""}
+
+      ${order.servicioRealizado ? `
+      <div class="row">
+        <span>Servicio realizado:</span>
+        <b>${escapeHtml(order.servicioRealizado)}</b>
+      </div>` : ""}
+
+      ${order.fechaReparado ? `
+      <div class="row">
+        <span>Reparado</span>
+        <b>${formatDateTime(order.fechaReparado)}</b>
+      </div>` : ""}
+
+      ${order.fechaEntregado ? `
+      <div class="row">
+        <span>Entregado</span>
+        <b>${formatDateTime(order.fechaEntregado)}</b>
+      </div>` : ""}
     </div>
 
     <p class="message">
-      Esta página muestra el estado actual registrado por Cosmica.ar.
-      Ante cualquier duda, comunicate por WhatsApp.
+      Esta p\u00e1gina muestra el estado actual registrado por Cosmica.ar.
+      Ante cualquier duda, comun\u00edcate por WhatsApp.
     </p>
   `;
 }
