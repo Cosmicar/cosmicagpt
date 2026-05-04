@@ -33,8 +33,12 @@ service cloud.firestore {
       return userProfileExists() && getUserRole() == 'operador';
     }
 
+    function isTester() {
+      return userProfileExists() && getUserRole() == 'tester';
+    }
+
     function isStaff() {
-      return userProfileExists() && getUserRole() in ['admin', 'operador'];
+      return userProfileExists() && getUserRole() in ['admin', 'operador', 'tester'];
     }
 
     // ─────────────────────────────────────────────
@@ -107,6 +111,24 @@ service cloud.firestore {
     // ─────────────────────────────────────────────
     match /config/{configId} {
       allow read, write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIONES SANDBOX (modo tester)
+    // Totalmente aisladas de producción.
+    // Admin también tiene acceso para supervisar.
+    // ─────────────────────────────────────────────
+    match /trabajos_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /clientes_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /ordenesPublicas_demo/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && (isTester() || isAdmin());
     }
 
     // ─────────────────────────────────────────────

@@ -57,6 +57,9 @@ export function requirePanelSession({ onReady, onUnauthorized, onError }) {
   });
 }
 
+// ── Sandbox/Tester mode helper ────────────────────────────────
+export const isTesterMode = () => getSession()?.profile?.rol === 'tester';
+
 export function redirectIfLoggedIn() {
   return onAuthStateChanged(auth, async (user) => {
     if (!user) return;

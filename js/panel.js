@@ -1,6 +1,6 @@
 import { APP_ROUTES } from "./config.js";
-import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
-import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
+import { createOperatorUser, getSession, isTesterMode, logout, requirePanelSession } from "./auth-service.js";
+import { canReenterWork, isAdmin, isTester, WORK_STATUS } from "./domain.js";
 import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
   findClienteByDni,
@@ -10,7 +10,9 @@ import {
   getTrabajo,
   listClientesMap,
   listTrabajos
-} from "./work-repository.js";
+} from isTesterMode()
+  ? "./sandbox-repository.js"
+  : "./work-repository.js";
 import {
   changeWorkStatus,
   reenterWork,
@@ -97,6 +99,19 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+
+  // ── Sandbox: botón de inyección de datos demo ─────────────
+  window.inyectarDatosDePrueba = async () => {
+    try {
+      const { inyectarDatosDePrueba } = await import("./sandbox-repository.js");
+      await inyectarDatosDePrueba();
+      alert("\u2705 Órdenes de prueba generadas. Recargando...");
+      await limpiarBusqueda();
+      await cargar("");
+    } catch (err) {
+      showAlertError(err, "No se pudieron generar las órdenes de prueba.");
+    }
+  };
 
   const servicioInput = $("servicioRealizado");
   if (servicioInput) {
@@ -186,6 +201,26 @@ function renderRoleUi() {
   const reqDni = document.getElementById("reqDni");
   if (reqDni) {
     reqDni.style.display = admin ? "none" : "inline";
+  }
+
+  // ── Botón Sandbox: solo visible para tester ───────────────
+  const sandboxBtnId = "btnSandboxInyectar";
+  let sandboxBtn = document.getElementById(sandboxBtnId);
+  if (isTesterMode()) {
+    if (!sandboxBtn) {
+      sandboxBtn = document.createElement("button");
+      sandboxBtn.id = sandboxBtnId;
+      sandboxBtn.className = "btn btn-secondary";
+      sandboxBtn.style.cssText = "background:rgba(255,170,0,0.15);border:1px solid var(--warning);color:var(--warning);margin-bottom:16px;";
+      sandboxBtn.innerHTML = "\uD83C\uDFB2 Generar órdenes de prueba";
+      sandboxBtn.onclick = () => window.inyectarDatosDePrueba();
+      // Insertar antes del buscador
+      const listaDiv = document.getElementById("listaTrabajos");
+      if (listaDiv) listaDiv.parentElement.insertBefore(sandboxBtn, listaDiv);
+    }
+    sandboxBtn.style.display = "";
+  } else if (sandboxBtn) {
+    sandboxBtn.style.display = "none";
   }
 }
 
@@ -495,10 +530,11 @@ function renderTrabajoCard(t, c = {}) {
     : "";
 
   const bloqueado = t.estado === WORK_STATUS.entregado || t.estado === WORK_STATUS.reingresada;
-  const admin = isAdmin(state.session?.profile);
+  const admin  = isAdmin(state.session?.profile);
+  const tester = isTester(state.session?.profile);
   const operatorCanEdit = state.session?.profile?.rol === "operador" && t.tipo === "taller";
-  const canEdit = admin || operatorCanEdit;
-  const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado");
+  const canEdit   = admin || operatorCanEdit || tester;
+  const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado") || tester;
   let botonesHtml = "";
 
   if (!bloqueado) {

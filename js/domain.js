@@ -8,7 +8,8 @@ export const COLLECTIONS = Object.freeze({
 
 export const ROLES = Object.freeze({
   admin: "admin",
-  operador: "operador"
+  operador: "operador",
+  tester: "tester"
 });
 
 export const SERVICE_TYPES = Object.freeze({
@@ -45,8 +46,12 @@ export function isAdmin(profile) {
   return profile?.rol === ROLES.admin && profile?.activo !== false;
 }
 
+export function isTester(profile) {
+  return profile?.rol === ROLES.tester && profile?.activo !== false;
+}
+
 export function isStaff(profile) {
-  return [ROLES.admin, ROLES.operador].includes(profile?.rol) && profile?.activo !== false;
+  return [ROLES.admin, ROLES.operador, ROLES.tester].includes(profile?.rol) && profile?.activo !== false;
 }
 
 export function canDeleteWork(profile) {
