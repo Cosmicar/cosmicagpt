@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   runTransaction,
   setDoc,
@@ -224,4 +225,34 @@ export async function setPreciosPlanes({ bronce, oro, platinum, reset }) {
     platinum: Number(platinum || 0),
     reset:    Number(reset    || 0)
   }, { merge: true });
+}
+
+// ── Notificaciones en tiempo real ──────────────────────────────
+// Devuelve la función `unsubscribe` de Firestore para limpiar el listener.
+// `profile` - perfil de sesión del usuario logueado
+// `onChange` - callback(snapshot) que se invoca en cada cambio real (no en la carga inicial)
+export function suscribirseANuevosTrabajos(profile, onChange) {
+  const colName = getTrabajosCol();
+  let q;
+
+  if (profile?.rol === ROLES.operador) {
+    // Operador: solo trabajos de taller (filtro que ya existe en el dominio)
+    q = query(collection(db, colName), where("tipo", "==", "taller"));
+  } else {
+    // Admin / tester: todos los trabajos
+    q = collection(db, colName);
+  }
+
+  let inicializado = false;
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    if (!inicializado) {
+      // Primera ejecución: carga del estado actual — ignorar para evitar spam
+      inicializado = true;
+      return;
+    }
+    onChange(snapshot);
+  });
+
+  return unsubscribe;
 }

@@ -11,7 +11,8 @@ import {
   listClientesMap,
   listTrabajos,
   getPreciosPlanes,
-  setPreciosPlanes
+  setPreciosPlanes,
+  suscribirseANuevosTrabajos
 } from "./work-repository.js";
 import {
   changeWorkStatus,
@@ -51,6 +52,39 @@ const STATUS_CLASS = {
   [WORK_STATUS.reingresada]: "badge-reingresada"
 };
 
+// ── Sistema de Notificaciones Nativas ──────────────────────────
+
+function solicitarPermisoNotificaciones() {
+  if (!("Notification" in window)) return; // Navegador sin soporte
+  if (Notification.permission === "default") {
+    Notification.requestPermission(); // No bloqueante: solo pide permiso
+  }
+}
+
+let _unsubscribeNotificaciones = null;
+
+function iniciarListenerNotificaciones(profile) {
+  // Limpiar listener anterior si existe (ej. al cambiar de sesión)
+  if (_unsubscribeNotificaciones) {
+    _unsubscribeNotificaciones();
+    _unsubscribeNotificaciones = null;
+  }
+
+  _unsubscribeNotificaciones = suscribirseANuevosTrabajos(profile, (snapshot) => {
+    if (Notification.permission !== "granted") return;
+
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const data = change.doc.data();
+        new Notification("🔔 Nuevo Trabajo Ingresado", {
+          body: `Equipo: ${data.equipo || "—"}  |  Orden: ${data.numeroOrden || "—"}`,
+          icon: "/cosmica-logo.png"
+        });
+      }
+    });
+  });
+}
+
 function boot() {
   bindGlobalActions();
   requirePanelSession({
@@ -63,6 +97,8 @@ function boot() {
       renderRoleUi();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
+      solicitarPermisoNotificaciones();
+      iniciarListenerNotificaciones(session.profile);
     },
     onUnauthorized: () => {
       const orden = new URLSearchParams(window.location.search).get("orden");
