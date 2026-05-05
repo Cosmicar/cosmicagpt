@@ -212,6 +212,27 @@ export async function resetContabilidadBatch() {
   await batch.commit();
 }
 
+// ── Cierre de Caja Taller ──────────────────────────────────────
+// Retorna los trabajos de taller entregados que aún no fueron liquidados.
+export async function getTrabajosNoLiquidados() {
+  const q = query(
+    collection(db, getTrabajosCol()),
+    where("tipo", "==", "taller"),
+    where("estado", "==", "Entregado")
+  );
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => ({ id: d.id, _ref: d.ref, ...d.data() }))
+    .filter((t) => t.liquidado !== true);
+}
+
+// Marca como liquidado=true todos los trabajos del array (recibidos de getTrabajosNoLiquidados).
+export async function liquidarCajaBatch(trabajos) {
+  const batch = writeBatch(db);
+  trabajos.forEach((t) => batch.update(t._ref, { liquidado: true }));
+  await batch.commit();
+}
+
 // ── Planes de servicio (colección config, siempre producción) ───
 export async function getPreciosPlanes() {
   const snap = await getDoc(doc(db, COLLECTIONS.config, "planes"));

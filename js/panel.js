@@ -12,7 +12,9 @@ import {
   listTrabajos,
   getPreciosPlanes,
   setPreciosPlanes,
-  suscribirseANuevosTrabajos
+  suscribirseANuevosTrabajos,
+  getTrabajosNoLiquidados,
+  liquidarCajaBatch
 } from "./work-repository.js";
 import {
   changeWorkStatus,
@@ -170,6 +172,61 @@ function bindGlobalActions() {
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 
+  // ── Cierre de Caja Taller ───────────────────────────────────
+  window.calcularCierreTaller = async function () {
+    try {
+      _trabajosPendientesCierre = await getTrabajosNoLiquidados();
+      const total = _trabajosPendientesCierre.reduce((s, t) => s + Number(t.precio || 0), 0);
+      const operador = total * 0.80;
+      const empresa  = total * 0.20;
+
+      const elTotal = document.getElementById("cierreTotalSinLiquidar");
+      const elOp    = document.getElementById("cierreOperador");
+      const elEmp   = document.getElementById("cierreEmpresa");
+      if (elTotal) elTotal.innerText = formatMoney(total);
+      if (elOp)    elOp.innerText    = formatMoney(operador);
+      if (elEmp)   elEmp.innerText   = formatMoney(empresa);
+
+      const btnConfirmar = document.getElementById("btnConfirmarLiquidacion");
+      if (btnConfirmar) {
+        btnConfirmar.style.display = _trabajosPendientesCierre.length > 0 ? "" : "none";
+      }
+
+      if (_trabajosPendientesCierre.length === 0) {
+        alert("✅ No hay trabajos de taller pendientes de liquidar.");
+      }
+    } catch (error) {
+      showAlertError(error, "No se pudo calcular el cierre de caja.");
+    }
+  };
+
+  window.confirmarLiquidacionCaja = async function () {
+    if (!_trabajosPendientesCierre.length) return;
+    const confirmado = confirm(
+      `¿Confirmar cierre de caja para ${_trabajosPendientesCierre.length} trabajo(s)?\n` +
+      `Esta acción marcará los trabajos como liquidados y no se puede deshacer.`
+    );
+    if (!confirmado) return;
+
+    try {
+      await liquidarCajaBatch(_trabajosPendientesCierre);
+      _trabajosPendientesCierre = [];
+
+      // Resetear UI
+      ["cierreTotalSinLiquidar", "cierreOperador", "cierreEmpresa"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "0";
+      });
+      const btnConfirmar = document.getElementById("btnConfirmarLiquidacion");
+      if (btnConfirmar) btnConfirmar.style.display = "none";
+
+      alert("✅ Caja liquidada correctamente. Los totales globales se han actualizado.");
+      await actualizarTotalesDashboard();
+    } catch (error) {
+      showAlertError(error, "No se pudo confirmar la liquidación.");
+    }
+  };
+
   // ── Planes de servicio: admin ───────────────────────────────
   window.cargarPreciosPlanes = async function () {
     try {
@@ -249,6 +306,20 @@ function bindGlobalActions() {
   });
 }
 
+// ── Regla contable: cuánto aporta un trabajo al total global ────
+// Remoto: 100% del precio
+// Taller liquidado: 20% del precio (el 80% es del operador)
+// Taller no liquidado: $0 (aún no se ha hecho el cierre de caja)
+function calcularContribContable(t) {
+  const precio = Number(t.precio || 0);
+  if (t.tipo !== "taller") return precio;          // remoto → 100%
+  if (t.liquidado === true) return precio * 0.20;  // taller liquidado → 20%
+  return 0;                                        // taller sin liquidar → $0
+}
+
+// ── Cierre de Caja Taller — estado temporal del cálculo ─────────
+let _trabajosPendientesCierre = [];
+
 async function loadInitialWorkList() {
   const orden = new URLSearchParams(window.location.search).get("orden");
   if (orden) {
@@ -277,8 +348,10 @@ async function actualizarTotalesDashboard() {
 
     trabajos.forEach((t) => {
       if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
-        if (String(t.fechaEntregado).startsWith(hoy)) totalDia += Number(t.precio || 0);
-        if (String(t.fechaEntregado).startsWith(mesActual)) totalMes += Number(t.precio || 0);
+        // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
+        const contrib = calcularContribContable(t);
+        if (String(t.fechaEntregado).startsWith(hoy)) totalDia += contrib;
+        if (String(t.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
       }
     });
 
@@ -583,8 +656,10 @@ async function cargar(filtro = "", options = {}) {
       const cliente = clientes[trabajo.clienteId];
 
       if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado) {
-        if (String(trabajo.fechaEntregado).startsWith(hoy)) totalDia += Number(trabajo.precio || 0);
-        if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += Number(trabajo.precio || 0);
+        // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
+        const contrib = calcularContribContable(trabajo);
+        if (String(trabajo.fechaEntregado).startsWith(hoy)) totalDia += contrib;
+        if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
       }
 
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
@@ -894,8 +969,10 @@ async function cargarIngresos() {
       if (desde && hasta && (fe < desde || fe > hasta)) return;
 
       const precio = Number(t.precio || 0);
-      totalGeneral += precio;
-      if (t.tipo === "taller") totalTaller += precio;
+      // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
+      const contribGlobal = calcularContribContable(t);
+      totalGeneral += contribGlobal;
+      if (t.tipo === "taller") totalTaller += contribGlobal;
       else totalRemoto += precio;
 
       filas.push({ t, c: clientes[t.clienteId] || {}, fe, precio });

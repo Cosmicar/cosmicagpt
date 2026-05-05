@@ -515,6 +515,32 @@
       </div>
     </div>
 
+    <!-- CIERRE DE CAJA TALLER -->
+    <div class="form-section admin-section" style="border-color: rgba(0,229,255,0.3);">
+      <div class="form-section-title">🧾 Cierre de Caja Taller</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">
+        Calcula y liquida los trabajos de taller entregados pendientes. El operador recibe el <strong>80%</strong> y Cósmica retiene el <strong>20%</strong>.
+      </p>
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label>Total sin liquidar</label>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--accent2);">$<span id="cierreTotalSinLiquidar">0</span></div>
+        </div>
+        <div class="form-group">
+          <label>A cobrar — Operador (80%)</label>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--warning);">$<span id="cierreOperador">0</span></div>
+        </div>
+        <div class="form-group">
+          <label>A cobrar — Cósmica (20%)</label>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--success);">$<span id="cierreEmpresa">0</span></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="calcularCierreTaller()">🔍 Calcular Cierre de Taller</button>
+        <button id="btnConfirmarLiquidacion" class="btn btn-secondary" style="display:none;border-color:var(--success);color:var(--success);" onclick="confirmarLiquidacionCaja()">✅ Confirmar y Liquidar Caja</button>
+      </div>
+    </div>
+
     <!-- ZONA PELIGROSA -->
     <div class="section" style="border-color: var(--danger); background: rgba(255, 0, 127, 0.05);">
       <div class="section-title" style="color: var(--danger);">⚠️ Zona Peligrosa</div>
