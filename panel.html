@@ -240,6 +240,7 @@
   <div class="tab active"     onclick="showTab('trabajos')">🛠️ Trabajos</div>
   <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
+  <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
   <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
 </div>
 
@@ -550,6 +551,39 @@
       <button class="btn btn-danger" onclick="resetearContabilidad()">⚠️ Resetear Contabilidad (Borrar pruebas)</button>
       <button class="btn btn-danger" onclick="borrarTodasLasOrdenes()" style="margin-top: 10px;">⚠️ Borrar TODAS las órdenes (Empezar de 0)</button>
     </div>
+  </div>
+
+</div><!-- /tab-admin -->
+
+  <!-- ══════════════════════════════════ TAB: MI RENDIMIENTO (operador) -->
+  <div class="tab-content operador-section" id="tab-rendimiento" style="display:none;">
+    <div class="section-title" style="margin-bottom:20px;">📊 Mi Rendimiento</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">
+      Estas métricas reflejan únicamente tus trabajos de taller entregados.
+    </p>
+
+    <!-- KPIs de rendimiento -->
+    <div class="totales" style="margin-bottom:28px;">
+      <div class="total-card">
+        <div class="label">Trabajos Entregados</div>
+        <div class="value"><span id="rendCantidad">0</span></div>
+      </div>
+      <div class="total-card">
+        <div class="label">💰 Ya Cobrado (liquidado 80%)</div>
+        <div class="value" style="color:var(--success);">$<span id="rendLiquidado">0</span></div>
+      </div>
+      <div class="total-card">
+        <div class="label">⏳ Pendiente de Cierre (80%)</div>
+        <div class="value" style="color:var(--warning);">$<span id="rendPendiente">0</span></div>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="calcularRendimientoOperador()" style="margin-bottom:16px;">
+      🔄 Actualizar métricas
+    </button>
+
+    <!-- Tabla detalle -->
+    <div id="rendDetalleTabla" style="overflow-x:auto;"></div>
   </div>
 
 </div><!-- /container -->

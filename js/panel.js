@@ -118,6 +118,11 @@ function iniciarListenerNotificaciones(profile) {
         });
       }
     });
+
+    // Actualizar rendimiento del operador en tiempo real al haber cambios
+    if (profile?.rol === "operador") {
+      calcularRendimientoOperador();
+    }
   });
 }
 
@@ -171,6 +176,27 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+
+  // ── 🥚 Easter Egg: 7 clics rápidos en el logo ──────────────
+  (function () {
+    const logoEl = document.querySelector(".logo");
+    if (!logoEl) return;
+    let clicks = 0;
+    let timer  = null;
+    logoEl.addEventListener("click", () => {
+      clicks++;
+      clearTimeout(timer);
+      timer = setTimeout(() => { clicks = 0; }, 1000);
+      if (clicks === 7) {
+        clicks = 0;
+        clearTimeout(timer);
+        alert("Mira lo que haces hacer, sos un Hxxx de mil pxxx 💀");
+      }
+    });
+  })();
+
+  // ── Mi Rendimiento (operador) ───────────────────────────────
+  window.calcularRendimientoOperador = calcularRendimientoOperador;
 
   // ── Cierre de Caja Taller ───────────────────────────────────
   window.calcularCierreTaller = async function () {
@@ -335,6 +361,76 @@ async function loadInitialWorkList() {
   `;
 }
 
+// ── Rendimiento del operador ────────────────────────────────────
+// Filtra trabajos de taller entregados creados por el operador actual.
+// Separa en liquidados (cobrados) y pendientes. Muestra 80% de cada grupo.
+function calcularRendimientoOperador() {
+  const emailOperador = state.session?.user?.email || "";
+  const todos = (state.ingresosData || []).map(({ t }) => t);
+
+  // Si el tab ingresos no fue cargado aún, obtenemos trabajos del DOM state
+  // (pueden estar vacíos — el operador debe cargar ingresos primero, o usamos listTrabajos)
+  const misTrabajosEntregados = todos.filter((t) =>
+    t.tipo === "taller" &&
+    t.estado === WORK_STATUS.entregado &&
+    (t.creadoPor || "") === emailOperador
+  );
+
+  let totalLiquidado  = 0;
+  let totalPendiente  = 0;
+
+  misTrabajosEntregados.forEach((t) => {
+    const ochentaPct = Number(t.precio || 0) * 0.80;
+    if (t.liquidado === true) {
+      totalLiquidado += ochentaPct;
+    } else {
+      totalPendiente += ochentaPct;
+    }
+  });
+
+  // Inyectar KPIs
+  const elCant = document.getElementById("rendCantidad");
+  const elLiq  = document.getElementById("rendLiquidado");
+  const elPend = document.getElementById("rendPendiente");
+  if (elCant) elCant.innerText = misTrabajosEntregados.length;
+  if (elLiq)  elLiq.innerText  = formatMoney(totalLiquidado);
+  if (elPend) elPend.innerText = formatMoney(totalPendiente);
+
+  // Tabla de detalle
+  const tabla = document.getElementById("rendDetalleTabla");
+  if (tabla) {
+    if (!misTrabajosEntregados.length) {
+      tabla.innerHTML = "<p style='color:var(--muted);font-size:13px;'>No tenés trabajos entregados registrados a tu nombre aún.</p>";
+    } else {
+      const filas = misTrabajosEntregados.map((t) => {
+        const estado = t.liquidado ? "✅ Liquidado" : "⏳ Pendiente";
+        const color  = t.liquidado ? "var(--success)" : "var(--warning)";
+        const cobro  = formatMoney(Number(t.precio || 0) * 0.80);
+        return `<tr>
+          <td>${t.numeroOrden || "—"}</td>
+          <td>${escapeHtml(t.equipo || "—")}</td>
+          <td>$${formatMoney(Number(t.precio || 0))}</td>
+          <td style="color:${color}">$${cobro}</td>
+          <td style="color:${color}">${estado}</td>
+        </tr>`;
+      }).join("");
+      tabla.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="color:var(--muted);text-align:left;border-bottom:1px solid rgba(255,255,255,.1);">
+              <th style="padding:8px 6px;">Orden</th>
+              <th style="padding:8px 6px;">Equipo</th>
+              <th style="padding:8px 6px;">Precio</th>
+              <th style="padding:8px 6px;">Tu cobro (80%)</th>
+              <th style="padding:8px 6px;">Estado cierre</th>
+            </tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>`;
+    }
+  }
+}
+
 async function actualizarTotalesDashboard() {
   try {
     // 1. Consultar a la base de datos respetando RBAC
@@ -425,6 +521,12 @@ function renderRoleUi() {
   } else if (sandboxBtn) {
     sandboxBtn.style.display = "none";
   }
+  // ── Pestaña Mi Rendimiento: solo visible para operador ──────
+  const tabRendimiento = document.getElementById("tabRendimiento");
+  const tabContentRend = document.getElementById("tab-rendimiento");
+  const esOperador = state.session?.profile?.rol === 'operador';
+  if (tabRendimiento) tabRendimiento.style.display = esOperador ? "" : "none";
+  if (tabContentRend) tabContentRend.classList.toggle("operador-section", true);
 }
 
 function showTab(id) {
@@ -433,7 +535,7 @@ function showTab(id) {
   $("tab-" + id)?.classList.add("active");
 
   const tabs = document.querySelectorAll(".tab");
-  const map = { trabajos: 0, nuevo: 1, ingresos: 2, admin: 3 };
+  const map = { trabajos: 0, nuevo: 1, ingresos: 2, rendimiento: 3, admin: 4 };
   if (tabs[map[id]]) tabs[map[id]].classList.add("active");
 }
 

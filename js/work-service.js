@@ -92,9 +92,11 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     diagnostico: values.diagnostico || "",
     servicioRealizado: values.servicioRealizado || "",
     precio: values.precio,
+    planServicio: values.planServicio || "",
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
-    garantiaDias: 90
+    garantiaDias: 90,
+    creadoPor: profile?.email || ""
   };
 
   const trabajoId = await addTrabajo(nuevoTrabajo);
