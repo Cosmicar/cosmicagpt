@@ -498,9 +498,7 @@ function renderRoleUi() {
   }
 
   const reqDni = document.getElementById("reqDni");
-  if (reqDni) {
-    reqDni.style.display = admin ? "none" : "inline";
-  }
+  if (reqDni) reqDni.style.display = "none"; // DNI opcional para todos los roles
 
   // ── Botón Sandbox: solo visible para tester ───────────────
   const sandboxBtnId = "btnSandboxInyectar";
