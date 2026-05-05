@@ -70,15 +70,49 @@ function iniciarListenerNotificaciones(profile) {
     _unsubscribeNotificaciones = null;
   }
 
+  // Helper interno: enruta la notificación por SW (móvil) o API clásica (desktop)
+  function dispararNotificacion(titulo, opciones) {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready
+        .then((registration) => registration.showNotification(titulo, opciones))
+        .catch(() => new Notification(titulo, opciones));
+    } else {
+      new Notification(titulo, opciones);
+    }
+  }
+
   _unsubscribeNotificaciones = suscribirseANuevosTrabajos(profile, (snapshot) => {
     if (Notification.permission !== "granted") return;
 
     snapshot.docChanges().forEach((change) => {
+      const data = change.doc.data();
+
+      // ── Evento 1: Nuevo trabajo ingresado ────────────────────
       if (change.type === "added") {
-        const data = change.doc.data();
-        new Notification("🔔 Nuevo Trabajo Ingresado", {
+        dispararNotificacion("🔔 Nuevo Trabajo Ingresado", {
           body: `Equipo: ${data.equipo || "—"}  |  Orden: ${data.numeroOrden || "—"}`,
-          icon: "/cosmica-logo.png"
+          icon: "/cosmica-logo.png",
+          badge: "/cosmica-logo.png"
+        });
+        return;
+      }
+
+      // ── Evento 2: Trabajo marcado como Entregado ─────────────
+      if (change.type === "modified" && data.estado === WORK_STATUS.entregado) {
+        const rol = profile?.rol;
+
+        // Admin: notifica siempre (taller + remoto)
+        // Operador: notifica solo trabajos de taller
+        const debeNotificar =
+          rol === "admin" ||
+          (rol === "operador" && data.tipo === "taller");
+
+        if (!debeNotificar) return;
+
+        dispararNotificacion("✅ Servicio Entregado", {
+          body: `Equipo: ${data.equipo || "—"}  |  Orden: ${data.numeroOrden || "—"}`,
+          icon: "/cosmica-logo.png",
+          badge: "/cosmica-logo.png"
         });
       }
     });
