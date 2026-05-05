@@ -22,10 +22,7 @@ export function validateWorkForm(values, profile) {
     ["equipo", "Equipo"],
     ["problema", "Problema"]
   ];
-
-  if (!isAdmin(profile)) {
-    required.push(["dni", "DNI"]);
-  }
+  // DNI ya no es obligatorio: permite registrar clientes sin documento
 
   for (const [field, label] of required) {
     if (!String(values[field] ?? "").trim()) {

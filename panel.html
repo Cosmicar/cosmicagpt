@@ -270,7 +270,7 @@
           <option value="Entregado">Entregado</option>
           <option value="Reingresada">Reingresada</option>
         </select>
-        <input id="busquedaDni" placeholder="DNI o Nº de orden…"
+        <input id="busquedaDni" placeholder="DNI, Nº de orden, Nombre o Apellido..."
           onkeydown="if(event.key==='Enter') buscar()">
         <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
         <button class="btn btn-sm btn-edit" onclick="limpiarBusqueda()">Ver todos</button>
@@ -305,7 +305,7 @@
             <input id="apellido" placeholder="Pérez">
           </div>
           <div class="form-group">
-            <label>DNI <span class="req" id="reqDni">*</span></label>
+            <label>DNI <span class="req" id="reqDni" style="display:none">*</span></label>
             <input id="dni" placeholder="12345678"
               onblur="buscarClienteAutofill()"
               oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -556,7 +556,7 @@
 </div><!-- /tab-admin -->
 
   <!-- ══════════════════════════════════ TAB: MI RENDIMIENTO (operador) -->
-  <div class="tab-content operador-section" id="tab-rendimiento" style="display:none;">
+  <div class="tab-content" id="tab-rendimiento">
     <div class="section-title" style="margin-bottom:20px;">📊 Mi Rendimiento</div>
     <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">
       Estas métricas reflejan únicamente tus trabajos de taller entregados.

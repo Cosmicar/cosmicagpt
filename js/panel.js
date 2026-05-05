@@ -523,20 +523,28 @@ function renderRoleUi() {
   }
   // ── Pestaña Mi Rendimiento: solo visible para operador ──────
   const tabRendimiento = document.getElementById("tabRendimiento");
-  const tabContentRend = document.getElementById("tab-rendimiento");
-  const esOperador = state.session?.profile?.rol === 'operador';
+  const esOperador     = state.session?.profile?.rol === 'operador';
   if (tabRendimiento) tabRendimiento.style.display = esOperador ? "" : "none";
-  if (tabContentRend) tabContentRend.classList.toggle("operador-section", true);
 }
 
 function showTab(id) {
-  document.querySelectorAll(".tab-content").forEach((t) => t.classList.remove("active"));
+  // Ocultar todos los paneles de contenido y desactivar todos los tabs
+  document.querySelectorAll(".tab-content").forEach((t) => {
+    t.classList.remove("active");
+    t.style.display = "none";
+  });
   document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-  $("tab-" + id)?.classList.add("active");
 
-  const tabs = document.querySelectorAll(".tab");
-  const map = { trabajos: 0, nuevo: 1, ingresos: 2, rendimiento: 3, admin: 4 };
-  if (tabs[map[id]]) tabs[map[id]].classList.add("active");
+  // Activar el panel destino por ID (no por posición, evita bugs con tabs ocultos)
+  const panel = document.getElementById("tab-" + id);
+  if (panel) {
+    panel.style.display = "";
+    panel.classList.add("active");
+  }
+
+  // Activar la pestaña del menú que llamó a este tab
+  const tabBtn = document.querySelector(".tab[onclick*=\"'" + id + "'\"]");
+  if (tabBtn) tabBtn.classList.add("active");
 }
 
 function badgeEstado(estado) {
@@ -711,7 +719,7 @@ async function cargar(filtro = "", options = {}) {
     if (!filtroLimpio && !cargarTodos) {
       cont.innerHTML = `
         <div class="empty-state">
-          Buscá un DNI, número de orden o presioná "Ver todos".
+          Buscá por DNI, número de orden, nombre o apellido — o presioná "Ver todos".
         </div>
       `;
       return;
@@ -746,6 +754,31 @@ async function cargar(filtro = "", options = {}) {
 
       trabajos = mergeTrabajosById([...porOrden, ...porCliente]);
       if (clienteEncontrado) clientes[clienteEncontrado.id] = clienteEncontrado;
+
+      // ── Búsqueda por Nombre / Apellido ─────────────────────────────
+      // Si no se encontraron resultados por DNI u orden, intentamos una
+      // búsqueda de texto completo en nombre y apellido del cliente.
+      if (!trabajos.length) {
+        let todosTrabajos = [];
+        let todosClientes = {};
+        try {
+          [todosTrabajos, todosClientes] = await Promise.all([
+            listTrabajos(state.session?.profile),
+            listClientesMap()
+          ]);
+        } catch (err) {
+          clientesWarning = err?.code || err?.message || "No se pudo leer clientes";
+        }
+        const term = filtroLimpio.toLowerCase();
+        const clientesFiltrados = Object.values(todosClientes).filter((c) =>
+          c?.nombre?.toLowerCase().includes(term) ||
+          c?.apellido?.toLowerCase().includes(term)
+        );
+        const idsMatch = new Set(clientesFiltrados.map((c) => c.id));
+        trabajos = todosTrabajos.filter((t) => idsMatch.has(t.clienteId));
+        // Merge clientes encontrados para que las cards puedan mostrar datos
+        clientesFiltrados.forEach((c) => { clientes[c.id] = c; });
+      }
     }
 
     if (currentSearchId !== state.searchId) return;
