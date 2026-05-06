@@ -715,7 +715,7 @@
       <div class="form-section-title" style="color:var(--success);">🧾 Facturación Electrónica AFIP</div>
       <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
         Emitir Factura C electrónica oficial mediante el web service de <strong style="color:var(--accent2);">ARCA/AFIP</strong>.
-        Modo activo: <strong style="color:var(--warning);">Homologación (pruebas)</strong>.
+        Modo activo: <strong style="color:var(--success);">Producción</strong>.
       </p>
       <button class="btn btn-primary" id="btnAbrirFacturador" onclick="abrirModalFactura()"
         style="background: linear-gradient(135deg, var(--accent2), #00b4d8); color: #050B14;">
@@ -1084,8 +1084,9 @@ async function generarFactura() {
 
   const payload = {
     documento: tipoDoc !== 'sin_doc' ? nroDoc : null,
-    monto:     monto,
-    concepto:  'servicios'
+    monto:      monto,
+    concepto:  'servicios',
+    razonSocial: document.getElementById('factRazon').value.trim() || null
   };
 
   try {
@@ -1132,7 +1133,7 @@ async function generarFactura() {
           </div>
           <div class="modal-result-row">
             <span class="modal-result-label">Ambiente</span>
-            <span class="modal-result-value" style="color:var(--warning);font-size:11px;">${data.ambiente || 'HOMOLOGACION'}</span>
+            <span class="modal-result-value" style="color:${data.ambiente === 'PRODUCCION' ? 'var(--success)' : 'var(--warning)'};font-size:11px;">${data.ambiente || 'PRODUCCION'}</span>
           </div>
         </div>
       `;
