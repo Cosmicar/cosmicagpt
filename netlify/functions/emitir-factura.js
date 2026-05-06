@@ -62,6 +62,9 @@ function getAfipInstance() {
     );
   }
 
+  console.log("=== LECTURA DE CERTIFICADO ===");
+  console.log(process.env.AFIP_CERT);
+
   afipInstance = new Afip({
     CUIT: parseInt(cuit),
     cert,
