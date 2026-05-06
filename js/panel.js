@@ -402,14 +402,13 @@ let _chartTipos      = null;
 async function calcularEstadisticasAdmin() {
   if (state.session?.profile?.rol !== "admin") return;
 
-  // 1. Obtener datos: necesitamos todos los trabajos + mapa de clientes
+  // 1. Obtener datos usando las funciones ya importadas en el top-level
   let trabajos = [];
   let clientesMap = {};
   try {
-    const { listTrabajos: lt, listClientesMap: lcm } = await import("./work-repository.js");
     [trabajos, clientesMap] = await Promise.all([
-      lt(state.session.profile),
-      lcm()
+      listTrabajos(state.session.profile),
+      listClientesMap()
     ]);
   } catch (err) {
     console.error("calcularEstadisticasAdmin:", err);
@@ -1132,14 +1131,13 @@ async function buscar() {
   if (!value) return;
   
   const btn = document.querySelector(".search-bar .btn-secondary");
-  const originalText = btn.innerText;
-  btn.innerText = "Buscando...";
-  btn.disabled = true;
+  if (btn) { btn.innerText = "Buscando..."; btn.disabled = true; }
   
-  await cargar(value);
-  
-  btn.innerText = originalText;
-  btn.disabled = false;
+  try {
+    await cargar(value);
+  } finally {
+    if (btn) { btn.innerText = "Buscar"; btn.disabled = false; }
+  }
 }
 
 async function limpiarBusqueda() {
@@ -1147,14 +1145,13 @@ async function limpiarBusqueda() {
   $("filtroEstado").value = "";
   
   const btn = document.querySelector(".search-bar .btn-edit");
-  const originalText = btn.innerText;
-  btn.innerText = "Cargando...";
-  btn.disabled = true;
+  if (btn) { btn.innerText = "Cargando..."; btn.disabled = true; }
   
-  await cargar("", { cargarTodos: true });
-  
-  btn.innerText = originalText;
-  btn.disabled = false;
+  try {
+    await cargar("", { cargarTodos: true });
+  } finally {
+    if (btn) { btn.innerText = "Ver todos"; btn.disabled = false; }
+  }
 }
 
 async function cargar(filtro = "", options = {}) {
