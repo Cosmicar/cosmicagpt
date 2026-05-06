@@ -709,15 +709,52 @@
     &#128260; Actualizar estadísticas
   </button>
 
-  <!-- Contenedor de gráficos -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+  <!-- Contenedor de gráficos e Insights -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-bottom:32px;">
+    <!-- Gráfico Provincias -->
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
       <div class="form-section-title" style="margin-bottom:16px;">&#127760; Servicios por Provincia</div>
       <canvas id="graficoProvincias" height="260"></canvas>
     </div>
+
+    <!-- Módulo de Expansión Geográfica -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <div class="form-section-title" style="margin-bottom:12px;">&#127942; Ranking Top 5 Provincias</div>
+        <div id="rankingProvinciasList" style="font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:8px;">
+          <!-- Llenado por JS -->
+          <div class="empty-state" style="font-size:13px;padding:10px;">Calculando ranking...</div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div class="form-section-title" style="margin-bottom:12px;">&#128161; Recomendaciones de Marketing</div>
+        <div id="recomendacionesMarketing" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;font-size:13px;color:#cdd6f4;line-height:1.5;">
+          Analizando datos...
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico Tipos -->
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
       <div class="form-section-title" style="margin-bottom:16px;">&#128295; Servicios por Tipo</div>
       <canvas id="graficoTiposServicio" height="260"></canvas>
+    </div>
+  </div>
+
+  <!-- Contenedor KPIs Avanzados (Preparación Estructural) -->
+  <div class="section-title" style="margin-bottom:24px;">&#128300; KPIs Avanzados (Próximamente)</div>
+  <div class="totales" style="margin-bottom:32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div class="total-card" style="opacity: 0.7;">
+      <div class="label">Tasa de Retención de Clientes</div>
+      <div class="value"><span id="statRetencion">--%</span></div>
+    </div>
+    <div class="total-card" style="opacity: 0.7;">
+      <div class="label">Tiempo Promedio Resolución</div>
+      <div class="value"><span id="statTiempoResolucion">-- hs</span></div>
+    </div>
+    <div class="total-card" style="opacity: 0.7;">
+      <div class="label">Top Problema Frecuente</div>
+      <div class="value" style="font-size:1.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span id="statTopProblema">--</span></div>
     </div>
   </div>
 

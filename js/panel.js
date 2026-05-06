@@ -524,6 +524,73 @@ async function calcularEstadisticasAdmin() {
       }
     });
   }
+
+  // 7. Módulo de Expansión Geográfica (Ranking y Recomendaciones)
+  // Convertir a array y ordenar
+  const ranking = Object.entries(porProvincia)
+    .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+    .sort((a, b) => b.cantidad - a.cantidad);
+    
+  // Renderizar Top 5
+  const rankingListEl = document.getElementById("rankingProvinciasList");
+  if (rankingListEl) {
+    if (ranking.length === 0) {
+      rankingListEl.innerHTML = '<div class="empty-state" style="font-size:13px;padding:10px;">No hay datos geográficos.</div>';
+    } else {
+      rankingListEl.innerHTML = ranking.slice(0, 5).map((r, i) => {
+        const pct = totalServicios > 0 ? ((r.cantidad / totalServicios) * 100).toFixed(1) : 0;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);">
+          <span><strong style="color:var(--accent2);">${i+1}.</strong> ${escapeHtml(r.nombre)}</span>
+          <span style="font-weight:600;">${r.cantidad} <span style="font-size:11px;font-weight:normal;color:var(--muted);">(${pct}%)</span></span>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  // Motor de Recomendaciones (If/Else Lógico)
+  const recomendacionesEl = document.getElementById("recomendacionesMarketing");
+  if (recomendacionesEl) {
+    let sugerencia = "No hay suficientes datos para generar una recomendación.";
+    if (ranking.length > 0 && totalServicios > 0) {
+      const topProv = ranking[0];
+      const topPct = (topProv.cantidad / totalServicios) * 100;
+      
+      const remoteTop = ranking.find(r => r.nombre.toLowerCase() !== "jujuy" && r.nombre.toLowerCase() !== "desconocida");
+      const remotePct = remoteTop ? (remoteTop.cantidad / totalServicios) * 100 : 0;
+
+      if (topPct > 80) {
+        // Regla 2: Dependencia
+        sugerencia = `&#9888;&#65039; <strong>Dependencia detectada:</strong> El ${topPct.toFixed(1)}% de los ingresos provienen de <strong>${escapeHtml(topProv.nombre)}</strong>. Se recomienda lanzar campañas de alcance nacional (ej. "Reset Impresoras") para diversificar el mercado.`;
+      } else if (remoteTop && remotePct > 15) {
+        // Regla 1: Crecimiento remoto
+        sugerencia = `&#128640; <strong>Foco de Inversión:</strong> Recomendamos destinar un 30% del presupuesto de Google/Meta Ads a <strong>${escapeHtml(remoteTop.nombre)}</strong> debido a su alta conversión reciente (representa el ${remotePct.toFixed(1)}% de los servicios).`;
+      } else {
+        sugerencia = `&#9989; <strong>Mercado estable:</strong> El flujo de clientes está distribuido. Considera crear promociones preventivas para fidelizar el Top 3 de provincias.`;
+      }
+    }
+    recomendacionesEl.innerHTML = sugerencia;
+  }
+
+  // 8. Preparación KPIs Avanzados (Comentado)
+  /*
+  // Tasa de Retención de Clientes
+  // let clientesRepetidos = 0;
+  // let totalClientesUnicos = Object.keys(clientesMap).length;
+  // (Lógica: Iterar clientes y contar los que tengan más de 1 trabajo en la colección)
+  // const tasaRetencion = totalClientesUnicos > 0 ? (clientesRepetidos / totalClientesUnicos) * 100 : 0;
+  // document.getElementById("statRetencion").innerText = \`\${tasaRetencion.toFixed(1)}%\`;
+
+  // Tiempo Promedio de Resolución
+  // let sumatoriaHoras = 0;
+  // let trabajosValidos = 0;
+  // (Lógica: t.fechaEntregado - t.fechaIngreso, promediar entre trabajosValidos)
+  // document.getElementById("statTiempoResolucion").innerText = \`\${promedioHoras.toFixed(1)} hs\`;
+
+  // Top 3 Problemas Frecuentes
+  // const problemasMap = {};
+  // (Lógica: Agrupar t.problema (normalizado) y ordenar de mayor a menor)
+  // document.getElementById("statTopProblema").innerText = topProblemaNombre;
+  */
 }
 
 // ══════════════════════════════════════════════════════════════
