@@ -484,14 +484,14 @@ async function abrirPerfilCliente(clienteId) {
   document.getElementById("crmProvincia").value = c.provincia || "";
   document.getElementById("crmOrigen").value    = c.origenContacto || "";
 
-  // Control de acceso por rol
-  const esAdmin = state.session?.profile?.rol === "admin";
+  // Admin y operador pueden editar — solo tester queda en modo lectura
+  const esTester = state.session?.profile?.rol === "tester";
   ["crmNombre","crmApellido","crmDni","crmTelefono","crmProvincia"].forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.disabled = !esAdmin;
+    if (el) el.disabled = esTester;
   });
   const btnWrapper = document.getElementById("crmBtnGuardarWrapper");
-  if (btnWrapper) btnWrapper.style.display = esAdmin ? "" : "none";
+  if (btnWrapper) btnWrapper.style.display = esTester ? "none" : "";
 
   // Mostrar perfil
   const perfilEl = document.getElementById("crm-perfil");
@@ -550,7 +550,9 @@ async function cargarHistorialCliente(clienteId) {
 
 async function guardarCambiosCliente() {
   if (!_crmClienteActualId) return;
-  if (state.session?.profile?.rol !== "admin") return;
+  // Admin y operador pueden guardar; tester no (sus campos quedan disabled)
+  const rol = state.session?.profile?.rol;
+  if (rol !== "admin" && rol !== "operador") return;
 
   const datos = {
     nombre:    document.getElementById("crmNombre")?.value.trim()    || "",
