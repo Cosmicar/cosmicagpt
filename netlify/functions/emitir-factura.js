@@ -69,6 +69,9 @@ function getAfipInstance() {
     CUIT: parseInt(cuit),
     cert,
     privateKey,
+    access_token: 'GKOyw8F9KmEgnUHyVOlez4DpGG3TgrHFoqcUiYkqHsqnkT8HXFF9JO87vwebssky',
+    res_folder: '/tmp',
+    ta_folder: '/tmp',
     production: true, // ← MODO PRODUCCIÓN ACTIVO
   });
 
