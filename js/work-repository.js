@@ -72,6 +72,31 @@ export async function deleteCliente(id) {
   await deleteDoc(doc(db, getClientesCol(), id));
 }
 
+// ── Migración: inyecta origenContacto basado en provincia ───────────
+// Regla: Jujuy (o sin provincia) → "taller", cualquier otra → "remoto".
+export async function migrarClientesGeolocalizados() {
+  const snap = await getDocs(collection(db, getClientesCol()));
+  if (snap.empty) return 0;
+
+  const batch = writeBatch(db);
+  let contador = 0;
+
+  snap.docs.forEach((docSnap) => {
+    const data = docSnap.data();
+    const provincia = (data.provincia || "").trim().toLowerCase();
+    const origen = (!provincia || provincia === "jujuy") ? "taller" : "remoto";
+
+    // Solo actualizar si el campo falta o tiene un valor diferente al calculado
+    if (data.origenContacto !== origen) {
+      batch.update(docSnap.ref, { origenContacto: origen });
+      contador++;
+    }
+  });
+
+  await batch.commit();
+  return contador; // devuelve cuántos docs se actualizaron
+}
+
 export async function listClientesMap() {
   const snap = await getDocs(collection(db, getClientesCol()));
   const clientes = {};
