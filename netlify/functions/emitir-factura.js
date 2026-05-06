@@ -66,7 +66,7 @@ function getAfipInstance() {
     CUIT: parseInt(cuit),
     cert,
     privateKey,
-    production: false, // ← MODO HOMOLOGACIÓN. Cambiar a `true` para producción.
+    production: true, // ← MODO PRODUCCIÓN ACTIVO
   });
 
   return afipInstance;
@@ -192,7 +192,7 @@ exports.handler = async function (event) {
         tipo:           'Factura C',
         monto:          importeTotal,
         fechaEmision:   String(fechaAfip),
-        ambiente:       'HOMOLOGACION', // ← Cambiar a 'PRODUCCION' junto con production: true
+        ambiente:       'PRODUCCION', // ← Modo de producción activo
       }),
     };
 
