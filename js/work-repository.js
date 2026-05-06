@@ -68,6 +68,10 @@ export async function updateCliente(id, cliente) {
   });
 }
 
+export async function deleteCliente(id) {
+  await deleteDoc(doc(db, getClientesCol(), id));
+}
+
 export async function listClientesMap() {
   const snap = await getDocs(collection(db, getClientesCol()));
   const clientes = {};

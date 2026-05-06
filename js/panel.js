@@ -17,7 +17,8 @@ import {
   liquidarCajaBatch,
   listClientesCRM,
   listTrabajosByClienteIdCRM,
-  updateCliente
+  updateCliente,
+  deleteCliente
 } from "./work-repository.js";
 import {
   changeWorkStatus,
@@ -207,6 +208,7 @@ function bindGlobalActions() {
   window.abrirPerfilCliente     = abrirPerfilCliente;
   window.cerrarPerfilCliente    = cerrarPerfilCliente;
   window.guardarCambiosCliente  = guardarCambiosCliente;
+  window.eliminarCliente        = eliminarCliente;
 
   // ── Cierre de Caja Taller ───────────────────────────────────
   window.calcularCierreTaller = async function () {
@@ -543,6 +545,36 @@ async function guardarCambiosCliente() {
     alert("✅ Datos del cliente actualizados correctamente.");
   } catch (err) {
     showAlertError(err, "No se pudo guardar los cambios.");
+  }
+}
+
+async function eliminarCliente() {
+  if (!_crmClienteActualId) return;
+  if (state.session?.profile?.rol !== "admin") return;
+
+  const nombre = document.getElementById("crmNombre")?.value.trim() || "este cliente";
+  const apellido = document.getElementById("crmApellido")?.value.trim() || "";
+  const nombreCompleto = [nombre, apellido].filter(Boolean).join(" ");
+
+  // Doble confirmación — acción irreversible
+  const confirmado = confirm(
+    `⚠️ ¿Eliminar al cliente "${nombreCompleto}" del directorio?\n\n` +
+    `Sus órdenes de servicio NO se borrarán, solo el registro del cliente.\n` +
+    `Esta acción es irreversible.`
+  );
+  if (!confirmado) return;
+
+  try {
+    await deleteCliente(_crmClienteActualId);
+
+    // Quitar del cache local y re-renderizar sin recargar Firestore
+    _crmClientesCache = _crmClientesCache.filter((c) => c.id !== _crmClienteActualId);
+    cerrarPerfilCliente();
+    renderDirectorio(_crmClientesCache);
+
+    alert(`✅ Cliente "${nombreCompleto}" eliminado del directorio.`);
+  } catch (err) {
+    showAlertError(err, "No se pudo eliminar el cliente.");
   }
 }
 
