@@ -47,7 +47,8 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     apellido: values.apellido,
     dni: values.dni,
     telefono: values.telefono,
-    provincia: values.provincia
+    provincia: values.provincia,
+    origenContacto: normalizeServiceType(values.tipo) // 'taller' | 'remoto'
   };
 
   if (editState.trabajoId) {

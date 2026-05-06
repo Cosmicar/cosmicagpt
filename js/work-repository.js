@@ -53,7 +53,8 @@ export async function upsertClienteByDni(cliente) {
     apellido: cliente.apellido || "",
     dni: cliente.dni,
     telefono: cliente.telefono,
-    provincia: cliente.provincia
+    provincia: cliente.provincia,
+    origenContacto: cliente.origenContacto || ""
   });
   return ref.id;
 }
@@ -74,6 +75,36 @@ export async function listClientesMap() {
     clientes[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
   });
   return clientes;
+}
+
+// ── CRM: lista de clientes con filtro de rol ─────────────────────
+export async function listClientesCRM(profile) {
+  let q;
+  if (profile?.rol === ROLES.operador) {
+    q = query(collection(db, getClientesCol()), where("origenContacto", "==", "taller"));
+  } else {
+    q = collection(db, getClientesCol());
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// ── CRM: historial de servicios de un cliente ────────────────
+export async function listTrabajosByClienteIdCRM(clienteId, profile) {
+  let q;
+  if (profile?.rol === ROLES.operador) {
+    q = query(
+      collection(db, getTrabajosCol()),
+      where("clienteId", "==", clienteId),
+      where("tipo", "==", SERVICE_TYPES.taller)
+    );
+  } else {
+    q = query(collection(db, getTrabajosCol()), where("clienteId", "==", clienteId));
+  }
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => new Date(b.fechaIngreso) - new Date(a.fechaIngreso));
 }
 
 export async function listTrabajos(profile) {

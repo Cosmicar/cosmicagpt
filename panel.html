@@ -240,6 +240,7 @@
   <div class="tab active"     onclick="showTab('trabajos')">🛠️ Trabajos</div>
   <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
+  <div class="tab"            id="tabCRM"  onclick="showTab('crm'); loadDirectorioClientes()">📖 Directorio</div>
   <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
   <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
 </div>
@@ -587,6 +588,71 @@
   </div>
 
 </div><!-- /container -->
+
+<!-- ── CRM: TAB DIRECTORIO DE CLIENTES ────────────────────────────── -->
+<div class="container" id="tab-crm" style="display:none;padding-top:0;">
+
+  <!-- Barra superior del CRM -->
+  <div style="display:flex;gap:10px;align-items:center;padding:20px 0 16px;flex-wrap:wrap;">
+    <input id="crmBuscador" placeholder="🔍 Buscar por nombre, apellido o DNI..." oninput="filtrarDirectorio(this.value)"
+      style="flex:1;min-width:220px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:#fff;font-size:14px;">
+    <button class="btn btn-secondary" onclick="loadDirectorioClientes()" style="white-space:nowrap;">&#8635; Recargar</button>
+  </div>
+
+  <!-- Grid de tarjetas de clientes -->
+  <div id="lista-clientes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+    <div class="empty-state">Cargando directorio...</div>
+  </div>
+
+  <!-- ── Panel de Perfil del Cliente (se abre al hacer clic en una tarjeta) ── -->
+  <div id="crm-perfil" style="display:none;margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:1.1rem;">&#128100; Perfil del Cliente</h3>
+      <button class="btn btn-sm btn-secondary" onclick="cerrarPerfilCliente()">&#10005; Cerrar</button>
+    </div>
+
+    <!-- Formulario de datos del cliente -->
+    <div class="form-grid" style="margin-bottom:20px;">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input id="crmNombre" placeholder="Nombre">
+      </div>
+      <div class="form-group">
+        <label>Apellido</label>
+        <input id="crmApellido" placeholder="Apellido">
+      </div>
+      <div class="form-group">
+        <label>DNI</label>
+        <input id="crmDni" placeholder="12345678">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input id="crmTelefono" placeholder="3883000000">
+      </div>
+      <div class="form-group">
+        <label>Provincia</label>
+        <input id="crmProvincia" placeholder="Jujuy">
+      </div>
+      <div class="form-group">
+        <label>Origen</label>
+        <input id="crmOrigen" disabled placeholder="taller / remoto" style="color:var(--muted);">
+      </div>
+    </div>
+
+    <div id="crmBtnGuardarWrapper">
+      <button class="btn btn-primary" onclick="guardarCambiosCliente()">&#128190; Guardar Cambios</button>
+    </div>
+
+    <!-- Historial de servicios -->
+    <div style="margin-top:28px;">
+      <div class="form-section-title" style="margin-bottom:12px;">&#128203; Historial de Servicios</div>
+      <div id="historial-servicios-cliente">
+        <div class="empty-state" style="font-size:13px;">Seleccioná un cliente para ver su historial.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-crm -->
 
 <script type="module" src="./js/panel.js?v=2"></script>
 

@@ -14,7 +14,10 @@ import {
   setPreciosPlanes,
   suscribirseANuevosTrabajos,
   getTrabajosNoLiquidados,
-  liquidarCajaBatch
+  liquidarCajaBatch,
+  listClientesCRM,
+  listTrabajosByClienteIdCRM,
+  updateCliente
 } from "./work-repository.js";
 import {
   changeWorkStatus,
@@ -198,6 +201,13 @@ function bindGlobalActions() {
   // ── Mi Rendimiento (operador) ───────────────────────────────
   window.calcularRendimientoOperador = calcularRendimientoOperador;
 
+  // ── CRM / Directorio ────────────────────────────────────────
+  window.loadDirectorioClientes = loadDirectorioClientes;
+  window.filtrarDirectorio      = filtrarDirectorio;
+  window.abrirPerfilCliente     = abrirPerfilCliente;
+  window.cerrarPerfilCliente    = cerrarPerfilCliente;
+  window.guardarCambiosCliente  = guardarCambiosCliente;
+
   // ── Cierre de Caja Taller ───────────────────────────────────
   window.calcularCierreTaller = async function () {
     try {
@@ -359,6 +369,181 @@ async function loadInitialWorkList() {
       🔍 Buscá un DNI, número de orden o presioná "Ver todos".
     </div>
   `;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CRM / DIRECTORIO DE CLIENTES
+// ══════════════════════════════════════════════════════════════
+
+let _crmClientesCache = [];        // cache local para filtrado instantáneo
+let _crmClienteActualId = null;    // ID del cliente cuyo perfil está abierto
+
+async function loadDirectorioClientes() {
+  const listaEl = document.getElementById("lista-clientes");
+  if (!listaEl) return;
+  listaEl.innerHTML = "<div class='empty-state'>Cargando directorio...</div>";
+
+  try {
+    _crmClientesCache = await listClientesCRM(state.session?.profile);
+    _crmClientesCache.sort((a, b) =>
+      (a.apellido || "").localeCompare(b.apellido || "", "es")
+    );
+    renderDirectorio(_crmClientesCache);
+  } catch (error) {
+    listaEl.innerHTML = `<div class='empty-state'>Error al cargar directorio: ${escapeHtml(error?.message || "")}</div>`;
+  }
+}
+
+function renderDirectorio(clientes) {
+  const listaEl = document.getElementById("lista-clientes");
+  if (!listaEl) return;
+  if (!clientes.length) {
+    listaEl.innerHTML = "<div class='empty-state'>No se encontraron clientes.</div>";
+    return;
+  }
+  listaEl.innerHTML = "";
+  clientes.forEach((c) => listaEl.appendChild(renderTarjetaCliente(c)));
+}
+
+function renderTarjetaCliente(c) {
+  const card = document.createElement("div");
+  card.style.cssText = "background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .2s,box-shadow .2s;";
+  card.onmouseenter = () => { card.style.borderColor = "var(--accent2)"; card.style.boxShadow = "0 0 14px rgba(0,229,255,.12)"; };
+  card.onmouseleave = () => { card.style.borderColor = "var(--border)";  card.style.boxShadow = "none"; };
+  card.onclick = () => abrirPerfilCliente(c.id);
+
+  const origen = c.origenContacto === "remoto"
+    ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,94,0,.12);color:var(--accent);">Remoto</span>`
+    : `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,229,255,.1);color:var(--accent2);">Taller</span>`;
+
+  card.innerHTML = `
+    <div style="font-size:16px;font-weight:700;color:var(--accent2);margin-bottom:4px;">
+      ${escapeHtml(c.apellido || "—")}, ${escapeHtml(c.nombre || "—")}
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
+      DNI: ${escapeHtml(c.dni || "—")} &nbsp;|&nbsp; Tel: ${escapeHtml(c.telefono || "—")}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--muted);">${escapeHtml(c.provincia || "—")}</span>
+      ${origen}
+    </div>
+  `;
+  return card;
+}
+
+function filtrarDirectorio(termino) {
+  const t = (termino || "").toLowerCase().trim();
+  if (!t) { renderDirectorio(_crmClientesCache); return; }
+  const filtrados = _crmClientesCache.filter((c) =>
+    c?.nombre?.toLowerCase().includes(t)    ||
+    c?.apellido?.toLowerCase().includes(t)  ||
+    c?.dni?.toLowerCase().includes(t)       ||
+    c?.telefono?.toLowerCase().includes(t)
+  );
+  renderDirectorio(filtrados);
+}
+
+async function abrirPerfilCliente(clienteId) {
+  const c = _crmClientesCache.find((x) => x.id === clienteId);
+  if (!c) return;
+  _crmClienteActualId = clienteId;
+
+  // Poblar formulario
+  document.getElementById("crmNombre").value    = c.nombre    || "";
+  document.getElementById("crmApellido").value  = c.apellido  || "";
+  document.getElementById("crmDni").value       = c.dni       || "";
+  document.getElementById("crmTelefono").value  = c.telefono  || "";
+  document.getElementById("crmProvincia").value = c.provincia || "";
+  document.getElementById("crmOrigen").value    = c.origenContacto || "";
+
+  // Control de acceso por rol
+  const esAdmin = state.session?.profile?.rol === "admin";
+  ["crmNombre","crmApellido","crmDni","crmTelefono","crmProvincia"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !esAdmin;
+  });
+  const btnWrapper = document.getElementById("crmBtnGuardarWrapper");
+  if (btnWrapper) btnWrapper.style.display = esAdmin ? "" : "none";
+
+  // Mostrar perfil
+  const perfilEl = document.getElementById("crm-perfil");
+  if (perfilEl) {
+    perfilEl.style.display = "";
+    perfilEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Cargar historial de servicios
+  await cargarHistorialCliente(clienteId);
+}
+
+function cerrarPerfilCliente() {
+  const perfilEl = document.getElementById("crm-perfil");
+  if (perfilEl) perfilEl.style.display = "none";
+  _crmClienteActualId = null;
+}
+
+async function cargarHistorialCliente(clienteId) {
+  const contenedor = document.getElementById("historial-servicios-cliente");
+  if (!contenedor) return;
+  contenedor.innerHTML = "<div class='empty-state' style='font-size:13px;'>Cargando historial...</div>";
+
+  try {
+    const trabajos = await listTrabajosByClienteIdCRM(clienteId, state.session?.profile);
+    if (!trabajos.length) {
+      contenedor.innerHTML = "<div class='empty-state' style='font-size:13px;'>Este cliente no tiene servicios registrados aún.</div>";
+      return;
+    }
+    const filas = trabajos.map((t) => `
+      <tr>
+        <td style="padding:8px 6px;font-size:12px;color:var(--muted);">${formatDate(t.fechaIngreso) || "—"}</td>
+        <td style="padding:8px 6px;font-size:13px;">${escapeHtml(t.equipo || "—")}</td>
+        <td style="padding:8px 6px;">${badgeEstado(t.estado)}</td>
+        <td style="padding:8px 6px;font-size:13px;color:var(--success);font-weight:600;">$${formatMoney(t.precio || 0)}</td>
+        <td style="padding:8px 6px;font-size:12px;color:var(--muted);">${escapeHtml(t.numeroOrden || "—")}</td>
+      </tr>`).join("");
+
+    contenedor.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="color:var(--muted);font-size:12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);">
+            <th style="padding:6px 6px;">Fecha</th>
+            <th style="padding:6px 6px;">Equipo</th>
+            <th style="padding:6px 6px;">Estado</th>
+            <th style="padding:6px 6px;">Precio</th>
+            <th style="padding:6px 6px;">Orden</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>`;
+  } catch (err) {
+    contenedor.innerHTML = `<div class='empty-state' style='font-size:13px;'>No se pudo cargar el historial: ${escapeHtml(err?.message || "")}</div>`;
+  }
+}
+
+async function guardarCambiosCliente() {
+  if (!_crmClienteActualId) return;
+  if (state.session?.profile?.rol !== "admin") return;
+
+  const datos = {
+    nombre:    document.getElementById("crmNombre")?.value.trim()    || "",
+    apellido:  document.getElementById("crmApellido")?.value.trim()  || "",
+    dni:       document.getElementById("crmDni")?.value.trim()       || "",
+    telefono:  document.getElementById("crmTelefono")?.value.trim()  || "",
+    provincia: document.getElementById("crmProvincia")?.value.trim() || ""
+  };
+
+  if (!datos.nombre) { alert("El nombre del cliente es obligatorio."); return; }
+
+  try {
+    await updateCliente(_crmClienteActualId, datos);
+    // Actualizar cache local
+    const idx = _crmClientesCache.findIndex((c) => c.id === _crmClienteActualId);
+    if (idx !== -1) _crmClientesCache[idx] = { ..._crmClientesCache[idx], ...datos };
+    renderDirectorio(_crmClientesCache);
+    alert("✅ Datos del cliente actualizados correctamente.");
+  } catch (err) {
+    showAlertError(err, "No se pudo guardar los cambios.");
+  }
 }
 
 // ── Rendimiento del operador ────────────────────────────────────
