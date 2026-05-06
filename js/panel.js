@@ -390,6 +390,16 @@ async function loadDirectorioClientes() {
     _crmClientesCache.sort((a, b) =>
       (a.apellido || "").localeCompare(b.apellido || "", "es")
     );
+
+    if (!_crmClientesCache.length) {
+      const esOperador = state.session?.profile?.rol === "operador";
+      const msg = esOperador
+        ? "No hay clientes de taller registrados aún. Los clientes aparecerán aquí cuando ingreses un nuevo servicio de taller."
+        : "El directorio de clientes está vacío. Los clientes se crean automáticamente al registrar un nuevo ingreso.";
+      listaEl.innerHTML = `<div class='empty-state'>${msg}</div>`;
+      return;
+    }
+
     renderDirectorio(_crmClientesCache);
   } catch (error) {
     listaEl.innerHTML = `<div class='empty-state'>Error al cargar directorio: ${escapeHtml(error?.message || "")}</div>`;
@@ -740,6 +750,13 @@ function renderRoleUi() {
   const tabRendimiento = document.getElementById("tabRendimiento");
   const esOperador     = state.session?.profile?.rol === 'operador';
   if (tabRendimiento) tabRendimiento.style.display = esOperador ? "" : "none";
+
+  // ── Pestaña Directorio: visible para admin y operador (no tester) ─
+  const tabCRM = document.getElementById("tabCRM");
+  if (tabCRM) {
+    const verDirectorio = admin || esOperador;
+    tabCRM.style.display = verDirectorio ? "" : "none";
+  }
 }
 
 function showTab(id) {
