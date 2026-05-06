@@ -226,6 +226,9 @@ function bindGlobalActions() {
     }
   };
 
+  // ── Estadísticas Admin ──────────────────────────────────────
+  window.calcularEstadisticasAdmin = calcularEstadisticasAdmin;
+
   // ── Cierre de Caja Taller ───────────────────────────────────
   window.calcularCierreTaller = async function () {
     try {
@@ -387,6 +390,114 @@ async function loadInitialWorkList() {
       🔍 Buscá un DNI, número de orden o presioná "Ver todos".
     </div>
   `;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ESTADÍSTICAS GENERALES (solo admin)
+// ══════════════════════════════════════════════════════════════
+
+let _chartProvincias = null; // instancias Chart.js para destruir antes de recrear
+let _chartTipos      = null;
+
+async function calcularEstadisticasAdmin() {
+  if (state.session?.profile?.rol !== "admin") return;
+
+  // 1. Obtener datos: necesitamos todos los trabajos + mapa de clientes
+  let trabajos = [];
+  let clientesMap = {};
+  try {
+    const { listTrabajos: lt, listClientesMap: lcm } = await import("./work-repository.js");
+    [trabajos, clientesMap] = await Promise.all([
+      lt(state.session.profile),
+      lcm()
+    ]);
+  } catch (err) {
+    console.error("calcularEstadisticasAdmin:", err);
+    return;
+  }
+
+  // 2. KPIs
+  let ingresosBrutos = 0;
+  let ingresosNetos  = 0;
+
+  trabajos.forEach((t) => {
+    ingresosBrutos += Number(t.precio || 0);
+    ingresosNetos  += calcularContribContable(t);
+  });
+
+  const elTotal   = document.getElementById("statTotalServicios");
+  const elBrutos  = document.getElementById("statIngresosBrutos");
+  const elNetos   = document.getElementById("statIngresosNetos");
+  if (elTotal)  elTotal.innerText  = trabajos.length;
+  if (elBrutos) elBrutos.innerText = formatMoney(ingresosBrutos);
+  if (elNetos)  elNetos.innerText  = formatMoney(ingresosNetos);
+
+  // 3. Agrupar por provincia (desde el cliente relacionado)
+  const porProvincia = {};
+  const porTipo      = { taller: 0, remoto: 0 };
+
+  trabajos.forEach((t) => {
+    const cliente  = clientesMap[t.clienteId];
+    const prov     = (cliente?.provincia || "Desconocida").trim() || "Desconocida";
+    porProvincia[prov] = (porProvincia[prov] || 0) + 1;
+    if (t.tipo === "remoto") porTipo.remoto++;
+    else                     porTipo.taller++;
+  });
+
+  // 4. Paleta de colores
+  const PALETTE = [
+    "rgba(0,229,255,.75)","rgba(255,94,0,.75)","rgba(139,92,246,.75)",
+    "rgba(16,185,129,.75)","rgba(245,158,11,.75)","rgba(255,0,127,.75)",
+    "rgba(99,179,237,.75)","rgba(251,191,36,.75)","rgba(167,243,208,.75)"
+  ];
+  const provLabels  = Object.keys(porProvincia);
+  const provData    = provLabels.map((k) => porProvincia[k]);
+  const provColors  = provLabels.map((_, i) => PALETTE[i % PALETTE.length]);
+
+  const chartOpts = {
+    plugins: {
+      legend: { labels: { color: "#cdd6f4", font: { size: 12 } } }
+    }
+  };
+
+  // 5. Gráfico de provincias (doughnut)
+  const ctxProv = document.getElementById("graficoProvincias")?.getContext("2d");
+  if (ctxProv) {
+    if (_chartProvincias) _chartProvincias.destroy();
+    _chartProvincias = new Chart(ctxProv, {
+      type: "doughnut",
+      data: {
+        labels: provLabels,
+        datasets: [{ data: provData, backgroundColor: provColors, borderWidth: 1, borderColor: "rgba(255,255,255,.08)" }]
+      },
+      options: { ...chartOpts, cutout: "55%" }
+    });
+  }
+
+  // 6. Gráfico de tipos (bar)
+  const ctxTipo = document.getElementById("graficoTipos")?.getContext("2d");
+  if (ctxTipo) {
+    if (_chartTipos) _chartTipos.destroy();
+    _chartTipos = new Chart(ctxTipo, {
+      type: "bar",
+      data: {
+        labels: ["Taller", "Remoto"],
+        datasets: [{
+          label: "Servicios",
+          data: [porTipo.taller, porTipo.remoto],
+          backgroundColor: ["rgba(0,229,255,.6)","rgba(255,94,0,.6)"],
+          borderRadius: 8, borderWidth: 0
+        }]
+      },
+      options: {
+        ...chartOpts,
+        scales: {
+          x: { ticks: { color: "#cdd6f4" }, grid: { color: "rgba(255,255,255,.05)" } },
+          y: { ticks: { color: "#cdd6f4" }, grid: { color: "rgba(255,255,255,.05)" }, beginAtZero: true }
+        }
+      }
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -621,15 +732,14 @@ function calcularRendimientoOperador() {
     (t.creadoPor || "") === emailOperador
   );
 
-  let totalLiquidado  = 0;
-  let totalPendiente  = 0;
+  let totalIngresos = 0;
+  let totalAportes  = 0;
 
   misTrabajosEntregados.forEach((t) => {
-    const ochentaPct = Number(t.precio || 0) * 0.80;
+    const precio = Number(t.precio || 0);
     if (t.liquidado === true) {
-      totalLiquidado += ochentaPct;
-    } else {
-      totalPendiente += ochentaPct;
+      totalIngresos += precio * 0.80;
+      totalAportes  += precio * 0.20;
     }
   });
 
@@ -638,8 +748,8 @@ function calcularRendimientoOperador() {
   const elLiq  = document.getElementById("rendLiquidado");
   const elPend = document.getElementById("rendPendiente");
   if (elCant) elCant.innerText = misTrabajosEntregados.length;
-  if (elLiq)  elLiq.innerText  = formatMoney(totalLiquidado);
-  if (elPend) elPend.innerText = formatMoney(totalPendiente);
+  if (elLiq)  elLiq.innerText  = formatMoney(totalIngresos);
+  if (elPend) elPend.innerText = formatMoney(totalAportes);
 
   // Tabla de detalle
   const tabla = document.getElementById("rendDetalleTabla");

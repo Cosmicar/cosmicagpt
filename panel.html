@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#050B14">
   <title>Panel Cosmica.ar</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg:      #050B14;
@@ -242,7 +243,8 @@
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
   <div class="tab"            id="tabCRM"  onclick="showTab('crm'); loadDirectorioClientes()">📖 Directorio</div>
   <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
-  <div class="tab admin-section" id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
+  <div class="tab admin-section"   id="tabEstadisticas" onclick="showTab('estadisticas'); calcularEstadisticasAdmin()" style="display:none;">📈 Estadísticas</div>
+  <div class="tab admin-section"   id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
 </div>
 
 <div class="container">
@@ -583,11 +585,11 @@
         <div class="value"><span id="rendCantidad">0</span></div>
       </div>
       <div class="total-card">
-        <div class="label">💰 Ya Cobrado (liquidado 80%)</div>
+        <div class="label">Mis ingresos (80%)</div>
         <div class="value" style="color:var(--success);">$<span id="rendLiquidado">0</span></div>
       </div>
       <div class="total-card">
-        <div class="label">⏳ Pendiente de Cierre (80%)</div>
+        <div class="label">Aportes a Cósmica (20%)</div>
         <div class="value" style="color:var(--warning);">$<span id="rendPendiente">0</span></div>
       </div>
     </div>
@@ -617,14 +619,23 @@
     <div class="empty-state">Cargando directorio...</div>
   </div>
 
-  <!-- ── Panel de Perfil del Cliente (se abre al hacer clic en una tarjeta) ── -->
+  <!-- ── Panel de Perfil del Cliente ── -->
   <div id="crm-perfil" style="display:none;margin-top:28px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <h3 style="margin:0;font-size:1.1rem;">&#128100; Perfil del Cliente</h3>
       <button class="btn btn-sm btn-secondary" onclick="cerrarPerfilCliente()">&#10005; Cerrar</button>
     </div>
 
-    <!-- Formulario de datos del cliente -->
+    <!-- 1º: Historial de servicios (arriba) -->
+    <div style="margin-bottom:28px;">
+      <div class="form-section-title" style="margin-bottom:12px;">&#128203; Historial de Servicios</div>
+      <div id="historial-servicios-cliente">
+        <div class="empty-state" style="font-size:13px;">Seleccioná un cliente para ver su historial.</div>
+      </div>
+    </div>
+
+    <!-- 2º: Formulario de datos del cliente (abajo) -->
+    <div class="form-section-title" style="margin-bottom:12px;">&#9999;&#65039; Datos del Cliente</div>
     <div class="form-grid" style="margin-bottom:20px;">
       <div class="form-group">
         <label>Nombre</label>
@@ -654,19 +665,51 @@
 
     <div id="crmBtnGuardarWrapper" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
       <button class="btn btn-primary" onclick="guardarCambiosCliente()">&#128190; Guardar Cambios</button>
-      <button class="btn btn-danger"  onclick="eliminarCliente()" style="margin-left:auto;">🗑️ Eliminar Cliente</button>
-    </div>
-
-    <!-- Historial de servicios -->
-    <div style="margin-top:28px;">
-      <div class="form-section-title" style="margin-bottom:12px;">&#128203; Historial de Servicios</div>
-      <div id="historial-servicios-cliente">
-        <div class="empty-state" style="font-size:13px;">Seleccioná un cliente para ver su historial.</div>
-      </div>
+      <button class="btn btn-danger"  onclick="eliminarCliente()" style="margin-left:auto;">&#128465;&#65039; Eliminar Cliente</button>
     </div>
   </div>
 
 </div><!-- /tab-crm -->
+
+<!-- ── TAB: ESTADÍSTICAS ADMIN ───────────────────────────── -->
+<div class="tab-content admin-section" id="tab-estadisticas">
+
+  <div class="section-title" style="margin-bottom:24px;">&#128200; Estadísticas Generales</div>
+
+  <!-- KPIs -->
+  <div class="totales" style="margin-bottom:32px;">
+    <div class="total-card">
+      <div class="label">Total Servicios</div>
+      <div class="value"><span id="statTotalServicios">0</span></div>
+    </div>
+    <div class="total-card">
+      <div class="label">Ingresos Brutos Históricos</div>
+      <div class="value" style="color:var(--success);">$<span id="statIngresosBrutos">0</span></div>
+    </div>
+    <div class="total-card">
+      <div class="label">Ingresos Cósmica (netos)</div>
+      <div class="value" style="color:var(--accent2);">$<span id="statIngresosNetos">0</span></div>
+    </div>
+  </div>
+
+  <!-- Botón actualizar -->
+  <button class="btn btn-secondary" onclick="calcularEstadisticasAdmin()" style="margin-bottom:24px;">
+    &#128260; Actualizar estadísticas
+  </button>
+
+  <!-- Contenedor de gráficos -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div class="form-section-title" style="margin-bottom:16px;">&#127760; Servicios por Provincia</div>
+      <canvas id="graficoProvincias" height="260"></canvas>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div class="form-section-title" style="margin-bottom:16px;">&#128295; Servicios por Tipo</div>
+      <canvas id="graficoTipos" height="260"></canvas>
+    </div>
+  </div>
+
+</div><!-- /tab-estadisticas -->
 
 <script type="module" src="./js/panel.js?v=2"></script>
 
