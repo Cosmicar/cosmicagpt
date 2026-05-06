@@ -211,20 +211,7 @@ function bindGlobalActions() {
   window.guardarCambiosCliente  = guardarCambiosCliente;
   window.eliminarCliente        = eliminarCliente;
 
-  // ── Migración de datos históricos ──────────────────────────────
-  window.migrarClientesGeolocalizados = async function () {
-    const btn = document.getElementById("btnMigrarClientes");
-    if (btn) { btn.disabled = true; btn.textContent = "⏳ Migrando..."; }
 
-    try {
-      const total = await migrarClientesGeolocalizados();
-      alert(`✅ Migración exitosa. Clientes reclasificados por provincia: ${total}.`);
-      if (btn) { btn.textContent = `✅ Migración completada (${total} docs)`; }
-    } catch (err) {
-      if (btn) { btn.disabled = false; btn.textContent = "🛠️ Corregir y Migrar Clientes Antiguos"; }
-      showAlertError(err, "No se pudo completar la migración.");
-    }
-  };
 
   // ── Estadísticas Admin ──────────────────────────────────────
   window.calcularEstadisticasAdmin = calcularEstadisticasAdmin;
