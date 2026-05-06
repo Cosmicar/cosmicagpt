@@ -72,12 +72,28 @@ function getAfipInstance() {
   return afipInstance;
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 // ── Handler principal ──────────────────────────────────────────────────────
 exports.handler = async function (event) {
+  // 0. Manejar preflight de CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: '',
+    };
+  }
+
   // 1. Solo aceptar POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Método no permitido. Usar POST.' }),
     };
   }
@@ -89,6 +105,7 @@ exports.handler = async function (event) {
   } catch {
     return {
       statusCode: 400,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Body inválido. Se esperaba JSON.' }),
     };
   }
@@ -99,6 +116,7 @@ exports.handler = async function (event) {
   if (!monto || isNaN(Number(monto)) || Number(monto) <= 0) {
     return {
       statusCode: 400,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: '"monto" es requerido y debe ser un número positivo.' }),
     };
   }
@@ -164,7 +182,7 @@ exports.handler = async function (event) {
     // 9. Respuesta exitosa
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ok:             true,
         numeroComprobante: nroComprobante,
@@ -193,6 +211,7 @@ exports.handler = async function (event) {
     if (isNetworkError) {
       return {
         statusCode: 503,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ok: false,
           error: 'Los servidores de AFIP/ARCA no están disponibles en este momento. Intentá en unos minutos.',
@@ -205,6 +224,7 @@ exports.handler = async function (event) {
     if (err?.message?.includes('Error en la respuesta de WSFE') || err?.Observaciones) {
       return {
         statusCode: 422,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ok: false,
           error: 'AFIP rechazó el comprobante. Verificá los datos ingresados.',
@@ -217,6 +237,7 @@ exports.handler = async function (event) {
     // Error genérico
     return {
       statusCode: 500,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ok: false,
         error: 'Error interno al emitir la factura.',
