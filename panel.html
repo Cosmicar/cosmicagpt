@@ -677,18 +677,30 @@
   <div class="section-title" style="margin-bottom:24px;">&#128200; Estadísticas Generales</div>
 
   <!-- KPIs -->
-  <div class="totales" style="margin-bottom:32px;">
+  <div class="totales" style="margin-bottom:32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
     <div class="total-card">
       <div class="label">Total Servicios</div>
       <div class="value"><span id="statTotalServicios">0</span></div>
     </div>
     <div class="total-card">
-      <div class="label">Ingresos Brutos Históricos</div>
-      <div class="value" style="color:var(--success);">$<span id="statIngresosBrutos">0</span></div>
+      <div class="label">Facturación Global Bruta</div>
+      <div class="value" style="color:var(--success);">$<span id="statFacturacionBruta">0</span></div>
     </div>
     <div class="total-card">
-      <div class="label">Ingresos Cósmica (netos)</div>
-      <div class="value" style="color:var(--accent2);">$<span id="statIngresosNetos">0</span></div>
+      <div class="label">Caja Cósmica (Neto Real)</div>
+      <div class="value" style="color:var(--accent2);">$<span id="statCajaCosmica">0</span></div>
+    </div>
+    <div class="total-card">
+      <div class="label">Pendiente de Liquidar a Cósmica</div>
+      <div class="value" style="color:var(--warning);">$<span id="statPendienteCosmica">0</span></div>
+    </div>
+    <div class="total-card">
+      <div class="label">Deuda a Operadores</div>
+      <div class="value" style="color:var(--danger);">$<span id="statDeudaOperadores">0</span></div>
+    </div>
+    <div class="total-card">
+      <div class="label">Ticket Promedio</div>
+      <div class="value" style="color:var(--muted);">$<span id="statTicketPromedio">0</span></div>
     </div>
   </div>
 
@@ -705,7 +717,7 @@
     </div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
       <div class="form-section-title" style="margin-bottom:16px;">&#128295; Servicios por Tipo</div>
-      <canvas id="graficoTipos" height="260"></canvas>
+      <canvas id="graficoTiposServicio" height="260"></canvas>
     </div>
   </div>
 

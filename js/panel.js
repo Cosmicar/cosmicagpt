@@ -416,33 +416,59 @@ async function calcularEstadisticasAdmin() {
     return;
   }
 
-  // 2. KPIs
-  let ingresosBrutos = 0;
-  let ingresosNetos  = 0;
+  // 2. KPIs e Inicialización
+  let totalServicios = trabajos.length;
+  let facturacionGlobalBruta = 0;
+  let cajaCosmicaNetoReal = 0;
+  let pendienteLiquidarCosmica = 0;
+  let deudaOperadores = 0;
+  let entregadosCount = 0;
 
-  trabajos.forEach((t) => {
-    ingresosBrutos += Number(t.precio || 0);
-    ingresosNetos  += calcularContribContable(t);
-  });
-
-  const elTotal   = document.getElementById("statTotalServicios");
-  const elBrutos  = document.getElementById("statIngresosBrutos");
-  const elNetos   = document.getElementById("statIngresosNetos");
-  if (elTotal)  elTotal.innerText  = trabajos.length;
-  if (elBrutos) elBrutos.innerText = formatMoney(ingresosBrutos);
-  if (elNetos)  elNetos.innerText  = formatMoney(ingresosNetos);
-
-  // 3. Agrupar por provincia (desde el cliente relacionado)
   const porProvincia = {};
-  const porTipo      = { taller: 0, remoto: 0 };
+  const porTipo = { taller: 0, remoto: 0 };
 
   trabajos.forEach((t) => {
-    const cliente  = clientesMap[t.clienteId];
-    const prov     = (cliente?.provincia || "Desconocida").trim() || "Desconocida";
+    // Agrupar provincias para todos los servicios
+    const cliente = clientesMap[t.clienteId];
+    const prov = (cliente?.provincia || "Desconocida").trim() || "Desconocida";
     porProvincia[prov] = (porProvincia[prov] || 0) + 1;
-    if (t.tipo === "remoto") porTipo.remoto++;
-    else                     porTipo.taller++;
+
+    // Cálculos financieros solo para servicios Entregados
+    if (t.estado === WORK_STATUS.entregado) {
+      const precio = Number(t.precio || 0);
+      facturacionGlobalBruta += precio;
+      entregadosCount++;
+
+      if (t.tipo === "remoto") {
+        cajaCosmicaNetoReal += precio;
+        porTipo.remoto++;
+      } else {
+        porTipo.taller++;
+        if (t.liquidado === true) {
+          cajaCosmicaNetoReal += precio * 0.20;
+        } else {
+          pendienteLiquidarCosmica += precio * 0.20;
+          deudaOperadores += precio * 0.80;
+        }
+      }
+    }
   });
+
+  const ticketPromedio = entregadosCount > 0 ? (facturacionGlobalBruta / entregadosCount) : 0;
+
+  const elTotal = document.getElementById("statTotalServicios");
+  const elFactBruta = document.getElementById("statFacturacionBruta");
+  const elCajaCosmica = document.getElementById("statCajaCosmica");
+  const elPendienteCosmica = document.getElementById("statPendienteCosmica");
+  const elDeudaOperadores = document.getElementById("statDeudaOperadores");
+  const elTicketPromedio = document.getElementById("statTicketPromedio");
+
+  if (elTotal) elTotal.innerText = totalServicios;
+  if (elFactBruta) elFactBruta.innerText = formatMoney(facturacionGlobalBruta);
+  if (elCajaCosmica) elCajaCosmica.innerText = formatMoney(cajaCosmicaNetoReal);
+  if (elPendienteCosmica) elPendienteCosmica.innerText = formatMoney(pendienteLiquidarCosmica);
+  if (elDeudaOperadores) elDeudaOperadores.innerText = formatMoney(deudaOperadores);
+  if (elTicketPromedio) elTicketPromedio.innerText = formatMoney(ticketPromedio);
 
   // 4. Paleta de colores
   const PALETTE = [
@@ -475,7 +501,7 @@ async function calcularEstadisticasAdmin() {
   }
 
   // 6. Gráfico de tipos (bar)
-  const ctxTipo = document.getElementById("graficoTipos")?.getContext("2d");
+  const ctxTipo = document.getElementById("graficoTiposServicio")?.getContext("2d");
   if (ctxTipo) {
     if (_chartTipos) _chartTipos.destroy();
     _chartTipos = new Chart(ctxTipo, {
