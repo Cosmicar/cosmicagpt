@@ -247,6 +247,142 @@
       .card-header div:last-child { align-items: flex-start !important; }
       .kpi-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── MODAL FACTURA C ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(5,11,20,0.85);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1; pointer-events: all;
+    }
+    .modal-box {
+      background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(5,11,20,0.99));
+      border: 1px solid rgba(0,229,255,0.25);
+      border-radius: 20px;
+      padding: 32px 28px;
+      width: 100%; max-width: 540px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 40px rgba(0,229,255,0.06);
+      transform: translateY(20px);
+      transition: transform 0.25s ease;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0,229,255,0.12);
+    }
+    .modal-title {
+      font-size: 18px; font-weight: 700;
+      color: var(--accent2);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .modal-close {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: 0.2s;
+    }
+    .modal-close:hover { color: var(--danger); border-color: var(--danger); background: rgba(255,0,127,0.1); }
+    .modal-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .modal-form-group { display: flex; flex-direction: column; gap: 6px; }
+    .modal-form-group.full { grid-column: 1 / -1; }
+    .modal-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    .modal-input, .modal-select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .modal-input:focus, .modal-select:focus {
+      outline: none;
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.1);
+      background: rgba(255,255,255,0.07);
+    }
+    .modal-input-money {
+      position: relative;
+    }
+    .modal-input-money::before {
+      content: '$';
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--success); font-weight: 700; font-size: 15px;
+      pointer-events: none;
+    }
+    .modal-input-money .modal-input { padding-left: 26px; }
+    .modal-actions {
+      display: flex; gap: 10px; margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-btn-primary {
+      flex: 1; padding: 12px;
+      background: linear-gradient(135deg, var(--accent2), #00b4d8);
+      color: #050B14; border: none; border-radius: 10px;
+      font-weight: 700; font-size: 14px;
+      cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .modal-btn-primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,255,0.35); }
+    .modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .modal-btn-secondary {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted); border: 1px solid var(--border);
+      border-radius: 10px; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: 0.2s;
+    }
+    .modal-btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .modal-feedback {
+      border-radius: 10px; padding: 14px 16px; margin-top: 16px;
+      font-size: 14px; font-weight: 500; display: none;
+      line-height: 1.5;
+    }
+    .modal-feedback.success {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.4);
+      color: var(--success); display: block;
+    }
+    .modal-feedback.error {
+      background: rgba(255,0,127,0.1);
+      border: 1px solid rgba(255,0,127,0.35);
+      color: var(--danger); display: block;
+    }
+    .modal-result-row {
+      display: flex; justify-content: space-between;
+      padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .modal-result-row:last-child { border-bottom: none; }
+    .modal-result-label { color: var(--muted); font-size: 13px; }
+    .modal-result-value { font-weight: 700; color: var(--accent2); font-size: 13px; }
+    @media (max-width: 600px) {
+      .modal-form-grid { grid-template-columns: 1fr; }
+      .modal-box { padding: 20px 16px; }
+    }
   </style>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -574,6 +710,19 @@
     </div>
 
 
+    <!-- FACTURACIÓN ELECTRÓNICA -->
+    <div class="form-section admin-section" style="border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.03);">
+      <div class="form-section-title" style="color:var(--success);">🧾 Facturación Electrónica AFIP</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+        Emitir Factura C electrónica oficial mediante el web service de <strong style="color:var(--accent2);">ARCA/AFIP</strong>.
+        Modo activo: <strong style="color:var(--warning);">Homologación (pruebas)</strong>.
+      </p>
+      <button class="btn btn-primary" id="btnAbrirFacturador" onclick="abrirModalFactura()"
+        style="background: linear-gradient(135deg, var(--accent2), #00b4d8); color: #050B14;">
+        🧾 Emitir Factura C
+      </button>
+    </div>
+
 
     <!-- ZONA PELIGROSA -->
     <div class="section" style="border-color: var(--danger); background: rgba(255, 0, 127, 0.05);">
@@ -778,6 +927,264 @@
 </div><!-- /tab-estadisticas -->
 
 <script type="module" src="./js/panel.js?v=2"></script>
+
+<!-- ── MODAL: EMITIR FACTURA C ─────────────────────────────────────── -->
+<div class="modal-overlay" id="modalFacturaOverlay" role="dialog" aria-modal="true" aria-labelledby="modalFacturaTitulo">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <div class="modal-title" id="modalFacturaTitulo">
+        <span>🧾</span> Emitir Factura C
+      </div>
+      <button class="modal-close" onclick="cerrarModalFactura()" title="Cerrar">✕</button>
+    </div>
+
+    <div class="modal-form-grid">
+      <!-- Condición IVA -->
+      <div class="modal-form-group">
+        <label class="modal-label">Condición IVA</label>
+        <select class="modal-select" id="factCondIva">
+          <option value="consumidor_final">Consumidor Final</option>
+          <option value="responsable_inscripto">Responsable Inscripto</option>
+          <option value="monotributista">Monotributista</option>
+        </select>
+      </div>
+
+      <!-- Tipo documento -->
+      <div class="modal-form-group">
+        <label class="modal-label">Tipo de Documento</label>
+        <select class="modal-select" id="factTipoDoc" onchange="actualizarCampoDoc()">
+          <option value="sin_doc">Sin Documento</option>
+          <option value="dni">DNI</option>
+          <option value="cuit">CUIT</option>
+        </select>
+      </div>
+
+      <!-- Nro documento -->
+      <div class="modal-form-group" id="factGrupoDoc" style="display:none;">
+        <label class="modal-label">Número de Documento</label>
+        <input class="modal-input" id="factNroDoc" type="text" placeholder="Ej: 20123456789"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')" maxlength="11">
+      </div>
+
+      <!-- Razón Social -->
+      <div class="modal-form-group" id="factGrupoRazon">
+        <label class="modal-label">Razón Social / Nombre</label>
+        <input class="modal-input" id="factRazon" type="text" placeholder="Juan Pérez">
+      </div>
+
+      <!-- Descripción -->
+      <div class="modal-form-group full">
+        <label class="modal-label">Descripción del Servicio</label>
+        <input class="modal-input" id="factDescripcion" type="text"
+          placeholder="Ej: Soporte técnico remoto — Plan Oro" value="Servicio de soporte técnico">
+      </div>
+
+      <!-- Monto -->
+      <div class="modal-form-group full">
+        <label class="modal-label">Monto Total</label>
+        <div class="modal-input-money">
+          <input class="modal-input" id="factMonto" type="number" min="1" step="0.01"
+            placeholder="29900">
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="modal-feedback" id="factFeedback"></div>
+
+    <!-- Acciones -->
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="cerrarModalFactura()">Cancelar</button>
+      <button class="modal-btn-primary" id="btnGenerarFactura" onclick="generarFactura()">
+        <span id="btnFacturaIcon">⚡</span>
+        <span id="btnFacturaText">Generar Factura</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Modal Factura C — lógica standalone (sin módulos ES6) ────────────────
+
+function abrirModalFactura() {
+  const overlay = document.getElementById('modalFacturaOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Limpiar estado anterior
+  resetearModalFactura();
+  document.getElementById('factMonto').focus();
+}
+
+function cerrarModalFactura() {
+  document.getElementById('modalFacturaOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function actualizarCampoDoc() {
+  const tipo = document.getElementById('factTipoDoc').value;
+  const grupoDoc = document.getElementById('factGrupoDoc');
+  const grupoRazon = document.getElementById('factGrupoRazon');
+  const inputDoc = document.getElementById('factNroDoc');
+
+  if (tipo === 'sin_doc') {
+    grupoDoc.style.display = 'none';
+    inputDoc.value = '';
+    grupoRazon.style.gridColumn = ''; // ocupa solo 1 col
+  } else {
+    grupoDoc.style.display = 'flex';
+    inputDoc.placeholder = tipo === 'cuit' ? 'Ej: 20123456789' : 'Ej: 12345678';
+    inputDoc.maxLength   = tipo === 'cuit' ? 11 : 8;
+  }
+}
+
+function resetearModalFactura() {
+  document.getElementById('factCondIva').value    = 'consumidor_final';
+  document.getElementById('factTipoDoc').value    = 'sin_doc';
+  document.getElementById('factNroDoc').value     = '';
+  document.getElementById('factRazon').value      = '';
+  document.getElementById('factDescripcion').value = 'Servicio de soporte técnico';
+  document.getElementById('factMonto').value      = '';
+  document.getElementById('factGrupoDoc').style.display = 'none';
+
+  const fb = document.getElementById('factFeedback');
+  fb.className = 'modal-feedback';
+  fb.innerHTML = '';
+
+  const btn = document.getElementById('btnGenerarFactura');
+  btn.disabled = false;
+  document.getElementById('btnFacturaIcon').textContent = '⚡';
+  document.getElementById('btnFacturaText').textContent = 'Generar Factura';
+}
+
+async function generarFactura() {
+  const monto = parseFloat(document.getElementById('factMonto').value);
+  if (!monto || monto <= 0) {
+    mostrarFeedbackFactura('error', '⚠️ Ingresá un monto válido mayor a $0.');
+    document.getElementById('factMonto').focus();
+    return;
+  }
+
+  const tipoDoc  = document.getElementById('factTipoDoc').value;
+  const nroDoc   = document.getElementById('factNroDoc').value.trim();
+
+  if (tipoDoc !== 'sin_doc' && !nroDoc) {
+    mostrarFeedbackFactura('error', '⚠️ Ingresá el número de documento o seleccioná "Sin Documento".');
+    document.getElementById('factNroDoc').focus();
+    return;
+  }
+
+  // Estado cargando
+  const btn = document.getElementById('btnGenerarFactura');
+  btn.disabled = true;
+  document.getElementById('btnFacturaIcon').textContent = '⏳';
+  document.getElementById('btnFacturaText').textContent = 'Consultando AFIP...';
+  document.getElementById('factFeedback').className = 'modal-feedback'; // ocultar feedback anterior
+
+  const payload = {
+    documento: tipoDoc !== 'sin_doc' ? nroDoc : null,
+    monto:     monto,
+    concepto:  'servicios'
+  };
+
+  try {
+    const resp = await fetch('/.netlify/functions/emitir-factura', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+
+    const data = await resp.json();
+
+    if (resp.ok && data.ok) {
+      // ─── ÉXITO ────────────────────────────────────────────────────────
+      const fechaStr = data.fechaEmision
+        ? `${data.fechaEmision.slice(6,8)}/${data.fechaEmision.slice(4,6)}/${data.fechaEmision.slice(0,4)}`
+        : '—';
+
+      const html = `
+        <strong style="font-size:15px;">✅ Factura emitida correctamente</strong>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;">
+          <div class="modal-result-row">
+            <span class="modal-result-label">Tipo</span>
+            <span class="modal-result-value">${data.tipo || 'Factura C'}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">N° Comprobante</span>
+            <span class="modal-result-value">${String(data.numeroComprobante).padStart(8,'0')}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">CAE</span>
+            <span class="modal-result-value" style="font-size:12px;letter-spacing:1px;">${data.cae}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">Vto. CAE</span>
+            <span class="modal-result-value">${data.caeFchVto || '—'}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">Monto</span>
+            <span class="modal-result-value" style="color:var(--success);">$${Number(data.monto).toLocaleString('es-AR',{minimumFractionDigits:2})}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">Fecha</span>
+            <span class="modal-result-value">${fechaStr}</span>
+          </div>
+          <div class="modal-result-row">
+            <span class="modal-result-label">Ambiente</span>
+            <span class="modal-result-value" style="color:var(--warning);font-size:11px;">${data.ambiente || 'HOMOLOGACION'}</span>
+          </div>
+        </div>
+      `;
+      mostrarFeedbackFactura('success', html);
+
+      // Resetear botón pero mantener resultado visible
+      btn.disabled = false;
+      document.getElementById('btnFacturaIcon').textContent = '⚡';
+      document.getElementById('btnFacturaText').textContent = 'Emitir Otra';
+
+    } else {
+      // ─── ERROR DE NEGOCIO DE AFIP ─────────────────────────────────────
+      const msg = data.error || 'AFIP rechazó el comprobante.';
+      const det = data.detalle ? `<br><small style="opacity:.8">${data.detalle}</small>` : '';
+      mostrarFeedbackFactura('error', `❌ ${msg}${det}`);
+      btn.disabled = false;
+      document.getElementById('btnFacturaIcon').textContent = '⚡';
+      document.getElementById('btnFacturaText').textContent = 'Reintentar';
+    }
+
+  } catch (networkErr) {
+    // ─── ERROR DE RED (AFIP caído o sin conexión) ─────────────────────
+    console.error('[Facturador] Error de red:', networkErr);
+    mostrarFeedbackFactura('error',
+      '🔴 No se pudo establecer conexión con los servidores de ARCA/AFIP. ' +
+      'Verificá tu conexión a internet o intentá en unos minutos.'
+    );
+    btn.disabled = false;
+    document.getElementById('btnFacturaIcon').textContent = '⚡';
+    document.getElementById('btnFacturaText').textContent = 'Reintentar';
+  }
+}
+
+function mostrarFeedbackFactura(tipo, html) {
+  const fb = document.getElementById('factFeedback');
+  fb.className = 'modal-feedback ' + tipo;
+  fb.innerHTML = html;
+  fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('modalFacturaOverlay').classList.contains('open')) {
+    cerrarModalFactura();
+  }
+});
+
+// Cerrar al clickear el fondo oscuro
+document.getElementById('modalFacturaOverlay').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalFactura();
+});
+</script>
 
 </body>
 </html>
