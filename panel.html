@@ -1176,14 +1176,24 @@ async function generarFactura() {
       mostrarFeedbackFactura('success', html);
 
       // Guardar en historial local
+      // Determinar tipo de documento receptor para el QR de AFIP
+      const _tipoDocSel = document.getElementById('factTipoDoc').value;
       const facturaData = {
         fecha: fechaStr,
+        // fechaISO en formato YYYY-MM-DD requerido por AFIP QR
+        fechaISO: data.fechaEmision
+          ? `${data.fechaEmision.slice(0,4)}-${data.fechaEmision.slice(4,6)}-${data.fechaEmision.slice(6,8)}`
+          : new Date().toISOString().slice(0,10),
         numero: String(data.numeroComprobante).padStart(8,'0'),
+        nroComprobanteRaw: data.numeroComprobante,
         cae: data.cae,
         vto: data.caeFchVto,
         monto: data.monto,
         cliente: document.getElementById('factRazon').value || 'Consumidor Final',
         doc: document.getElementById('factNroDoc').value || '-',
+        // tipoDocRec: 96=DNI, 80=CUIT, 99=Sin documento
+        tipoDocRec: _tipoDocSel === 'cuit' ? 80 : (_tipoDocSel === 'dni' ? 96 : 99),
+        nroDocRec: document.getElementById('factNroDoc').value || '0',
         descripcion: document.getElementById('factDescripcion').value,
         puntoVenta: data.ptoVta || 1
       };
@@ -1329,21 +1339,43 @@ function generarPdfFactura(f) {
   doc.setFontSize(20);
   text('C', margin + 89, 24);
 
-  // Datos empresa derecha
-  const rightX = margin + 110;
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  text('COSMICA', rightX, 17);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  text(`Pto. Venta: ${String(f.puntoVenta || 1).padStart(5,'0')}`, rightX, 26);
-  text(`Comp. Nro: ${f.numero}`, rightX, 32);
-  text(`Fecha: ${f.fecha}`, rightX, 38);
+  // ── Datos empresa emisora (lado derecho del encabezado) ──────────────
+  const EMISOR_RAZON_SOCIAL   = 'Cristian Aliaga';
+  const EMISOR_CUIT           = '20-32877197-8';
+  const EMISOR_COND_IVA       = 'Responsable Monotributo';
+  const EMISOR_IIBB           = 'A-1-54786';
+  const EMISOR_INICIO_ACT     = '01/05/2025';
+  const EMISOR_DOMICILIO      = 'Patrias Argentinas 670, San Salvador de Jujuy';
+  // ──────────────────────────────────────────────────────────────────────
 
-  line(margin, 44, pageW - margin, 44);
+  const rightX = margin + 103;
+
+  // Nombre / Razón Social
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  text('COSMICA', rightX, 15);
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  text(`Razón Social: ${EMISOR_RAZON_SOCIAL}`, rightX, 20);
+  text(`CUIT: ${EMISOR_CUIT}`, rightX, 24.5);
+  text(`Cond. IVA: ${EMISOR_COND_IVA}`, rightX, 29);
+  text(`Ing. Brutos: ${EMISOR_IIBB}`, rightX, 33.5);
+  text(`Inicio Act.: ${EMISOR_INICIO_ACT}`, rightX, 38);
+  text(`Domicilio: ${EMISOR_DOMICILIO}`, rightX, 42.5);
+
+  // Número de comprobante y fecha (esquina superior derecha)
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  const farRight = pageW - margin;
+  text(`Pto. Venta: ${String(f.puntoVenta || 1).padStart(5,'0')}`, farRight, 15, { align: 'right' });
+  text(`Comp. Nro: ${f.numero}`, farRight, 20, { align: 'right' });
+  text(`Fecha: ${f.fecha}`, farRight, 25, { align: 'right' });
+
+  line(margin, 49, pageW - margin, 49);
 
   // ─── DATOS CLIENTE ───────────────────────────────────────────────────────
-  let y = 50;
+  let y = 55;
   rect(margin, y, contentW, 24, [248, 248, 248]);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
@@ -1399,22 +1431,93 @@ function generarPdfFactura(f) {
   text('TOTAL:', pageW - margin - 68, y + 9);
   text(totalStr, pageW - margin - 3, y + 9, { align: 'right' });
 
-  // ─── PIE: CAE ────────────────────────────────────────────────────────────
+  // ─── PIE: QR AFIP + CAE ──────────────────────────────────────────────
   y += 22;
   line(margin, y, pageW - margin, y);
-  y += 6;
+  y += 5;
+
+  // Texto legal
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(80);
-  text('Comprobante autorizado por AFIP / ARCA. Documento legal emitido electrónicamente.', margin, y);
-  y += 6;
+  text('Comprobante autorizado por AFIP / ARCA. Documento legal emitido electrónicamente (RG 5003/2021).', margin, y);
+  y += 5;
   doc.setTextColor(0);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  text(`CAE: ${f.cae}`, margin, y);
+  doc.setFontSize(8.5);
+  text(`CAE N°: ${f.cae}`, margin, y);
   text(`Vto. CAE: ${f.vto}`, pageW - margin, y, { align: 'right' });
+  y += 5;
 
-  doc.save(`Factura_${f.numero}.pdf`);
+  // ── Construir JSON para el QR AFIP (RG 5003/2021) ────────────────────
+  const qrPayload = {
+    ver:        1,
+    fecha:      f.fechaISO || new Date().toISOString().slice(0,10),
+    cuit:       EMISOR_CUIT.replace(/[^0-9]/g, ''),  // solo dígitos
+    ptoVta:     f.puntoVenta || 1,
+    tipoCmp:    11,           // 11 = Factura C
+    nroCmp:     f.nroComprobanteRaw || parseInt(f.numero, 10),
+    importe:    Number(f.monto),
+    moneda:     'PES',
+    ctz:        1,
+    tipoDocRec: f.tipoDocRec  !== undefined ? f.tipoDocRec : 99,
+    nroDocRec:  f.nroDocRec && f.nroDocRec !== '-' ? parseInt(f.nroDocRec, 10) : 0,
+    tipoCodAut: 'E',          // E = CAE
+    codAut:     parseInt(f.cae, 10)
+  };
+
+  const qrBase64  = btoa(JSON.stringify(qrPayload));
+  const afipUrl   = `https://www.afip.gob.ar/fe/qr/?p=${qrBase64}`;
+  const qrImgUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(afipUrl)}`;
+
+  // ── Insertar QR en el PDF (cargamos la imagen antes de guardar) ───────
+  const imgEl = new Image();
+  imgEl.crossOrigin = 'anonymous';
+
+  imgEl.onload = function() {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width  = imgEl.naturalWidth  || 200;
+      canvas.height = imgEl.naturalHeight || 200;
+      canvas.getContext('2d').drawImage(imgEl, 0, 0);
+      const dataURL = canvas.toDataURL('image/png');
+
+      // QR cuadrado 28x28 mm en el pie
+      const qrX = margin;
+      const qrY = y;
+      doc.addImage(dataURL, 'PNG', qrX, qrY, 28, 28);
+
+      // Etiqueta debajo del QR
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6);
+      doc.setTextColor(100);
+      doc.text('Verificar en AFIP', qrX + 14, qrY + 30, { align: 'center' });
+      doc.setTextColor(0);
+
+      // Texto descriptivo al lado del QR
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(60);
+      const qrTextX = qrX + 32;
+      doc.text('Comprobante Fiscal Electrónico', qrTextX, qrY + 5);
+      doc.setFontSize(7);
+      doc.text('Escaneá el código QR para verificar', qrTextX, qrY + 10);
+      doc.text('la autenticidad de esta factura en', qrTextX, qrY + 14.5);
+      doc.text('el sitio oficial de AFIP.', qrTextX, qrY + 19);
+      doc.setTextColor(0);
+    } catch(e) {
+      console.warn('[QR AFIP] No se pudo incrustar el QR:', e);
+    }
+    doc.save(`Factura_${f.numero}.pdf`);
+  };
+
+  imgEl.onerror = function() {
+    // Sin red: guardar igual sin QR
+    console.warn('[QR AFIP] No se pudo cargar la imagen del QR. Se guarda el PDF sin QR.');
+    doc.save(`Factura_${f.numero}.pdf`);
+  };
+
+  imgEl.src = qrImgUrl;
 }
 
 // Inicializar historial al cargar
