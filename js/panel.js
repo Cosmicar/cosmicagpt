@@ -62,9 +62,45 @@ const STATUS_CLASS = {
 // ── Sistema de Notificaciones Nativas ──────────────────────────
 
 function solicitarPermisoNotificaciones() {
-  if (!("Notification" in window)) return; // Navegador sin soporte
-  if (Notification.permission === "default") {
-    Notification.requestPermission(); // No bloqueante: solo pide permiso
+  if (!("Notification" in window)) {
+    alert("Tu navegador no soporta notificaciones nativas.");
+    return;
+  }
+  
+  if (Notification.permission === "granted") {
+    alert("Las notificaciones ya están activadas.");
+    return;
+  }
+
+  // Solicitud bloqueante atada a interacción del usuario (requerido en Android)
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      alert("¡Notificaciones activadas con éxito!");
+    } else {
+      alert("Permiso denegado para notificaciones.");
+    }
+  });
+}
+
+function probarNotificacionLocal() {
+  if (!("Notification" in window) || Notification.permission !== "granted") {
+    alert("Primero debés activar las notificaciones.");
+    return;
+  }
+
+  const titulo = "Prueba de Notificación";
+  const opciones = {
+    body: "¡Las notificaciones están funcionando correctamente!",
+    icon: "/cosmica-logo.png",
+    badge: "/cosmica-logo.png"
+  };
+
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then(registration => {
+      registration.showNotification(titulo, opciones);
+    });
+  } else {
+    new Notification(titulo, opciones);
   }
 }
 
@@ -143,7 +179,6 @@ function boot() {
       renderRoleUi();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
-      solicitarPermisoNotificaciones();
       iniciarListenerNotificaciones(session.profile);
     },
     onUnauthorized: () => {
@@ -181,6 +216,10 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+  
+  // ── Notificaciones ──────────────────────────────────────────
+  window.solicitarPermisoNotificaciones = solicitarPermisoNotificaciones;
+  window.probarNotificacionLocal = probarNotificacionLocal;
 
   // ── 🥚 Easter Egg: 7 clics rápidos en el logo ──────────────
   (function () {

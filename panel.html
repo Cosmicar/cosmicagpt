@@ -397,6 +397,10 @@
     <span>Cosmica.ar</span>
   </div>
   <div class="header-right">
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm btn-secondary" style="font-size:12px;padding:4px 8px;border-color:var(--accent2);color:var(--accent2);" onclick="solicitarPermisoNotificaciones()" title="Activar Notificaciones">🔔 Activar</button>
+      <button class="btn btn-sm btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="probarNotificacionLocal()" title="Probar Notificación">🧪 Probar</button>
+    </div>
     <div class="user-tag">👤 <b id="usuarioLogueado">…</b></div>
     <button class="btn-logout" onclick="logout()">Salir</button>
   </div>
