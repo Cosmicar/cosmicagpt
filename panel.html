@@ -8,7 +8,7 @@
   <title>Panel Cosmica.ar</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -1294,85 +1294,127 @@ function exportarHistorialExcel() {
 }
 
 function generarPdfFactura(f) {
-  const htmlStr = `
-    <div style="padding: 40px; color: #000; background: #fff; font-family: Arial, sans-serif; line-height: 1.4; width: 700px; box-sizing: border-box;">
-      <div style="border: 2px solid #000; padding: 25px; min-height: 800px; display: flex; flex-direction: column; box-sizing: border-box;">
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 25px;">
-          <div style="width: 45%;">
-            <h1 style="margin:0; font-size: 32px; font-weight: bold;">FACTURA</h1>
-            <div style="display:inline-block; border: 1px solid #000; padding: 5px 15px; font-size: 24px; margin-top: 10px; font-weight: bold;">C</div>
-            <p style="margin:5px 0; font-size: 12px;">Cod. 011</p>
-          </div>
-          <div style="text-align: right; width: 45%;">
-            <h2 style="margin:0; font-size: 20px; color: #333;">COSMICA</h2>
-            <p style="margin:15px 0 5px; font-size: 14px;"><strong>Punto de Venta:</strong> ${String(f.puntoVenta || 1).padStart(5,'0')}</p>
-            <p style="margin:5px 0; font-size: 14px;"><strong>Comp. Nro:</strong> ${f.numero}</p>
-            <p style="margin:5px 0; font-size: 14px;"><strong>Fecha:</strong> ${f.fecha}</p>
-          </div>
-        </div>
-        
-        <div style="margin-bottom: 35px; border: 1px solid #ddd; padding: 15px; background: #fdfdfd;">
-          <p style="margin-bottom:8px;"><strong>Razón Social:</strong> ${f.cliente}</p>
-          <p style="margin-bottom:8px;"><strong>CUIT/DNI:</strong> ${f.doc}</p>
-          <p><strong>Condición IVA:</strong> Consumidor Final</p>
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; flex-grow: 1;">
-          <thead>
-            <tr style="background: #f2f2f2;">
-              <th style="border: 1px solid #000; padding: 12px; text-align: left;">Descripción / Concepto</th>
-              <th style="border: 1px solid #000; padding: 12px; text-align: right; width: 120px;">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="border: 1px solid #000; padding: 15px; vertical-align: top; height: 300px;">
-                ${f.descripcion}
-                <br><br>
-                <small style="color: #666;">Servicio prestado por Cosmica.ar</small>
-              </td>
-              <td style="border: 1px solid #000; padding: 15px; text-align: right; font-weight: bold; vertical-align: top;">
-                $${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 50px;">
-          <div style="border: 2px solid #000; padding: 10px 20px; background: #f9f9f9; min-width: 250px;">
-            <div style="display: flex; justify-content: space-between; font-size: 22px;">
-              <strong>TOTAL:</strong>
-              <strong>$${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}</strong>
-            </div>
-          </div>
-        </div>
-        
-        <div style="border-top: 2px solid #000; padding-top: 15px; display: flex; justify-content: space-between; font-size: 12px; margin-top: auto;">
-          <div>
-            <p style="margin-bottom:4px;">Comprobante autorizado por AFIP / ARCA</p>
-            <p>Esta factura C es un documento legal emitido electrónicamente.</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-size: 14px; margin-bottom: 4px;"><strong>CAE:</strong> <span style="letter-spacing: 1px;">${f.cae}</span></p>
-            <p style="font-size: 14px;"><strong>Vto. CAE:</strong> ${f.vto}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  const opt = {
-    margin:       10,
-    filename:     `Factura_${f.numero}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  
-  html2pdf().set(opt).from(htmlStr).save().catch(err => {
-    console.error('Error generando PDF:', err);
-    alert('Hubo un error al generar el PDF. Intentá de nuevo.');
-  });
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const pageW = 210;
+  const margin = 14;
+  const contentW = pageW - margin * 2;
+
+  // ─── Utilidades ─────────────────────────────────────────────────────────
+  function rect(x, y, w, h, fillColor) {
+    if (fillColor) { doc.setFillColor(...fillColor); doc.rect(x, y, w, h, 'F'); }
+    doc.setDrawColor(0); doc.rect(x, y, w, h, 'S');
+  }
+  function line(x1, y1, x2, y2) {
+    doc.setDrawColor(0); doc.line(x1, y1, x2, y2);
+  }
+  function text(str, x, y, opts) {
+    doc.text(String(str || ''), x, y, opts || {});
+  }
+
+  // ─── ENCABEZADO ─────────────────────────────────────────────────────────
+  // Recuadro título izquierdo
+  rect(margin, 10, 80, 30);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  text('FACTURA', margin + 5, 22);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  text('Cod. 011', margin + 5, 30);
+
+  // Cuadro grande letra "C"
+  rect(margin + 83, 10, 20, 20);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  text('C', margin + 89, 24);
+
+  // Datos empresa derecha
+  const rightX = margin + 110;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  text('COSMICA', rightX, 17);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  text(`Pto. Venta: ${String(f.puntoVenta || 1).padStart(5,'0')}`, rightX, 26);
+  text(`Comp. Nro: ${f.numero}`, rightX, 32);
+  text(`Fecha: ${f.fecha}`, rightX, 38);
+
+  line(margin, 44, pageW - margin, 44);
+
+  // ─── DATOS CLIENTE ───────────────────────────────────────────────────────
+  let y = 50;
+  rect(margin, y, contentW, 24, [248, 248, 248]);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  text('Razón Social:', margin + 4, y + 7);
+  doc.setFont('helvetica', 'normal');
+  text(f.cliente || 'Consumidor Final', margin + 36, y + 7);
+
+  doc.setFont('helvetica', 'bold');
+  text('CUIT / DNI:', margin + 4, y + 14);
+  doc.setFont('helvetica', 'normal');
+  text(f.doc || '-', margin + 36, y + 14);
+
+  doc.setFont('helvetica', 'bold');
+  text('Condición IVA:', margin + 4, y + 21);
+  doc.setFont('helvetica', 'normal');
+  text('Consumidor Final', margin + 40, y + 21);
+
+  // ─── TABLA ITEMS ────────────────────────────────────────────────────────
+  y += 30;
+  // Encabezado tabla
+  rect(margin, y, contentW, 9, [220, 220, 220]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  text('Descripción / Concepto', margin + 3, y + 6);
+  text('Subtotal', pageW - margin - 3, y + 6, { align: 'right' });
+
+  // Fila de descripción
+  y += 9;
+  const rowH = 30;
+  rect(margin, y, contentW, rowH);
+  // línea divisoria vertical
+  line(pageW - margin - 35, y, pageW - margin - 35, y + rowH);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const descLines = doc.splitTextToSize(f.descripcion || 'Servicio de soporte técnico', contentW - 42);
+  doc.text(descLines, margin + 3, y + 7);
+  doc.setFont('helvetica', 'bold');
+  text(`$${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}`, pageW - margin - 3, y + 7, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120);
+  text('Servicio prestado por Cosmica.ar', margin + 3, y + rowH - 5);
+  doc.setTextColor(0);
+
+  // ─── TOTAL ───────────────────────────────────────────────────────────────
+  y += rowH + 8;
+  const totalStr = `$${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}`;
+  rect(pageW - margin - 70, y, 70, 14, [240, 240, 240]);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  text('TOTAL:', pageW - margin - 68, y + 9);
+  text(totalStr, pageW - margin - 3, y + 9, { align: 'right' });
+
+  // ─── PIE: CAE ────────────────────────────────────────────────────────────
+  y += 22;
+  line(margin, y, pageW - margin, y);
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(80);
+  text('Comprobante autorizado por AFIP / ARCA. Documento legal emitido electrónicamente.', margin, y);
+  y += 6;
+  doc.setTextColor(0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  text(`CAE: ${f.cae}`, margin, y);
+  text(`Vto. CAE: ${f.vto}`, pageW - margin, y, { align: 'right' });
+
+  doc.save(`Factura_${f.numero}.pdf`);
 }
 
 // Inicializar historial al cargar
