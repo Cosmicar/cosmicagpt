@@ -210,6 +210,8 @@ function bindGlobalActions() {
   window.cerrarPerfilCliente    = cerrarPerfilCliente;
   window.guardarCambiosCliente  = guardarCambiosCliente;
   window.eliminarCliente        = eliminarCliente;
+  window.nuevoTrabajoDesdeCliente = nuevoTrabajoDesdeCliente;
+  window.facturarDesdeCliente     = facturarDesdeCliente;
 
 
 
@@ -641,9 +643,14 @@ function renderTarjetaCliente(c) {
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
       DNI: ${escapeHtml(c.dni || "—")} &nbsp;|&nbsp; Tel: ${escapeHtml(c.telefono || "—")}
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <span style="font-size:12px;color:var(--muted);">${escapeHtml(c.provincia || "—")}</span>
       ${origen}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:8px;">
+      <button class="btn btn-sm btn-primary" style="width:100%;font-size:11px;padding:6px;" onclick="event.stopPropagation(); window.nuevoTrabajoDesdeCliente('${c.id}')">
+        ➕ Nuevo Trabajo
+      </button>
     </div>
   `;
   return card;
@@ -794,6 +801,69 @@ async function eliminarCliente() {
   } catch (err) {
     showAlertError(err, "No se pudo eliminar el cliente.");
   }
+}
+
+/**
+ * Redirige al tab 'nuevo' y pre-completa los datos del cliente
+ * @param {string} clienteId 
+ */
+function nuevoTrabajoDesdeCliente(clienteId) {
+  const c = _crmClientesCache.find(x => x.id === clienteId);
+  if (!c) return;
+
+  limpiarCampos(); // Resetear el formulario
+  
+  $("nombre").value    = c.nombre    || "";
+  $("apellido").value  = c.apellido  || "";
+  $("dni").value       = c.dni       || "";
+  $("telefono").value  = c.telefono  || "";
+  $("provincia").value = c.provincia || "";
+
+  showTab('nuevo');
+  
+  // Hacer scroll al inicio y enfocar en el siguiente campo lógico (equipo)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => {
+    const inputEquipo = $("equipo");
+    if (inputEquipo) inputEquipo.focus();
+  }, 300);
+}
+
+/**
+ * Abre el modal de facturación AFIP pre-completado
+ * @param {string} clienteId 
+ */
+function facturarDesdeCliente(clienteId) {
+  const c = _crmClientesCache.find(x => x.id === clienteId);
+  if (!c) return;
+
+  const razon = `${c.nombre || ""} ${c.apellido || ""}`.trim();
+  const dni = c.dni || "";
+  
+  abrirModalFactura();
+  
+  // Pre-completar modal
+  const inputRazon = document.getElementById('factRazon');
+  const inputDoc   = document.getElementById('factNroDoc');
+  const selectDoc  = document.getElementById('factTipoDoc');
+  
+  if (inputRazon) inputRazon.value = razon;
+  if (inputDoc)   inputDoc.value   = dni;
+  
+  if (selectDoc) {
+    if (dni.length === 11) {
+      selectDoc.value = 'cuit';
+    } else if (dni.length >= 7) {
+      selectDoc.value = 'dni';
+    } else {
+      selectDoc.value = 'sin_doc';
+    }
+    // Disparar evento para que se muestre el campo de documento
+    if (typeof actualizarCampoDoc === 'function') actualizarCampoDoc();
+  }
+
+  const inputMonto = document.getElementById('factMonto');
+  if (inputMonto) setTimeout(() => inputMonto.focus(), 300);
 }
 
 // ── Rendimiento del operador ────────────────────────────────────
