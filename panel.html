@@ -8,6 +8,8 @@
   <title>Panel Cosmica.ar</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg:      #050B14;
@@ -717,10 +719,40 @@
         Emitir Factura C electrónica oficial mediante el web service de <strong style="color:var(--accent2);">ARCA/AFIP</strong>.
         Modo activo: <strong style="color:var(--success);">Producción</strong>.
       </p>
-      <button class="btn btn-primary" id="btnAbrirFacturador" onclick="abrirModalFactura()"
-        style="background: linear-gradient(135deg, var(--accent2), #00b4d8); color: #050B14;">
-        🧾 Emitir Factura C
-      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btnAbrirFacturador" onclick="abrirModalFactura()"
+          style="background: linear-gradient(135deg, var(--accent2), #00b4d8); color: #050B14; flex:1;">
+          🧾 Emitir Factura C
+        </button>
+      </div>
+    </div>
+
+    <!-- HISTORIAL DE FACTURACIÓN -->
+    <div class="form-section admin-section" style="border-color: var(--border); background: rgba(255,255,255,0.01);">
+      <div style="display:flex; justify-content:between; align-items:center; margin-bottom:16px;">
+        <div class="form-section-title" style="margin-bottom:0;">📊 Historial de Contabilidad (Pruebas)</div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+           <button class="btn btn-secondary" onclick="exportarHistorialExcel()" style="padding:6px 12px; font-size:12px;">📥 Excel</button>
+           <button class="btn btn-danger" onclick="limpiarHistorial()" style="padding:6px 12px; font-size:12px; border-color:rgba(255,0,127,0.3);">🗑️ Reset</button>
+        </div>
+      </div>
+      
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border); color:var(--muted); text-align:left;">
+              <th style="padding:10px 5px;">Fecha</th>
+              <th style="padding:10px 5px;">Nro</th>
+              <th style="padding:10px 5px;">Cliente</th>
+              <th style="padding:10px 5px;">Monto</th>
+              <th style="padding:10px 5px; text-align:right;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="listaHistorialFacturas">
+            <!-- Cargado por JS -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
 
@@ -1136,8 +1168,29 @@ async function generarFactura() {
             <span class="modal-result-value" style="color:${data.ambiente === 'PRODUCCION' ? 'var(--success)' : 'var(--warning)'};font-size:11px;">${data.ambiente || 'PRODUCCION'}</span>
           </div>
         </div>
+
+        <button class="btn btn-secondary" id="btnDescargarPdf" style="margin-top:20px; width:100%; background:rgba(0,229,255,0.1); border-color:var(--accent2); color:var(--accent2);">
+          📄 Descargar Factura PDF
+        </button>
       `;
       mostrarFeedbackFactura('success', html);
+
+      // Guardar en historial local
+      const facturaData = {
+        fecha: fechaStr,
+        numero: String(data.numeroComprobante).padStart(8,'0'),
+        cae: data.cae,
+        vto: data.caeFchVto,
+        monto: data.monto,
+        cliente: document.getElementById('factRazon').value || 'Consumidor Final',
+        doc: document.getElementById('factNroDoc').value || '-',
+        descripcion: document.getElementById('factDescripcion').value,
+        puntoVenta: data.ptoVta || 1
+      };
+      guardarFacturaLocal(facturaData);
+
+      // Asignar evento al botón de PDF
+      document.getElementById('btnDescargarPdf').onclick = () => generarPdfFactura(facturaData);
 
       // Resetear botón pero mantener resultado visible
       btn.disabled = false;
@@ -1173,6 +1226,146 @@ function mostrarFeedbackFactura(tipo, html) {
   fb.innerHTML = html;
   fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+
+// ── Lógica de Historial y PDF ──────────────────────────────────────────
+
+function guardarFacturaLocal(factura) {
+  let historial = JSON.parse(localStorage.getItem('cosmica_facturas') || '[]');
+  historial.unshift(factura); // al principio
+  localStorage.setItem('cosmica_facturas', JSON.stringify(historial));
+  renderizarHistorialFacturas();
+}
+
+function renderizarHistorialFacturas() {
+  const container = document.getElementById('listaHistorialFacturas');
+  if (!container) return;
+  
+  const historial = JSON.parse(localStorage.getItem('cosmica_facturas') || '[]');
+  
+  if (historial.length === 0) {
+    container.innerHTML = `<tr><td colspan="5" style="padding:20px; text-align:center; color:var(--muted);">No hay facturas emitidas.</td></tr>`;
+    return;
+  }
+  
+  container.innerHTML = historial.map((f, idx) => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+      <td style="padding:10px 5px; color:var(--muted);">${f.fecha}</td>
+      <td style="padding:10px 5px; font-weight:600;">${f.numero}</td>
+      <td style="padding:10px 5px;">${f.cliente}</td>
+      <td style="padding:10px 5px; color:var(--success);">$${Number(f.monto).toLocaleString('es-AR')}</td>
+      <td style="padding:10px 5px; text-align:right;">
+        <button onclick='reimprimirFactura(${idx})' style="background:none; border:none; color:var(--accent2); cursor:pointer; font-size:14px;" title="Descargar PDF">📄</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.reimprimirFactura = function(idx) {
+  const historial = JSON.parse(localStorage.getItem('cosmica_facturas') || '[]');
+  if (historial[idx]) generarPdfFactura(historial[idx]);
+};
+
+function limpiarHistorial() {
+  if (confirm('¿Seguro que querés limpiar todo el historial de facturación?')) {
+    localStorage.removeItem('cosmica_facturas');
+    renderizarHistorialFacturas();
+  }
+}
+
+function exportarHistorialExcel() {
+  const historial = JSON.parse(localStorage.getItem('cosmica_facturas') || '[]');
+  if (historial.length === 0) return alert('No hay datos para exportar.');
+  
+  const data = historial.map(f => ({
+    Fecha: f.fecha,
+    Comprobante: f.numero,
+    Cliente: f.cliente,
+    Documento: f.doc,
+    Monto: f.monto,
+    CAE: f.cae,
+    Vencimiento: f.vto,
+    Descripcion: f.descripcion
+  }));
+  
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Facturas");
+  XLSX.writeFile(wb, `Facturacion_Cosmica_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function generarPdfFactura(f) {
+  const element = document.createElement('div');
+  element.style.padding = '40px';
+  element.style.color = '#000';
+  element.style.background = '#fff';
+  element.style.fontFamily = 'Arial, sans-serif';
+  
+  element.innerHTML = `
+    <div style="border: 2px solid #000; padding: 20px;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <div>
+          <h1 style="margin:0; font-size: 24px;">FACTURA C</h1>
+          <p style="margin:5px 0;">Cod. 011</p>
+        </div>
+        <div style="text-align: right;">
+          <h2 style="margin:0;">COSMICA</h2>
+          <p style="margin:5px 0;">Comprobante N°: ${String(f.puntoVenta || 1).padStart(5,'0')}-${f.numero}</p>
+          <p style="margin:5px 0;">Fecha: ${f.fecha}</p>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 30px;">
+        <p><strong>Cliente:</strong> ${f.cliente}</p>
+        <p><strong>Documento:</strong> ${f.doc}</p>
+        <p><strong>Condición:</strong> Consumidor Final</p>
+      </div>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <thead>
+          <tr style="background: #eee;">
+            <th style="border: 1px solid #000; padding: 10px; text-align: left;">Descripción</th>
+            <th style="border: 1px solid #000; padding: 10px; text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid #000; padding: 10px;">${f.descripcion}</td>
+            <td style="border: 1px solid #000; padding: 10px; text-align: right;">$${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="text-align: right; font-size: 20px; margin-bottom: 40px;">
+        <strong>TOTAL: $${Number(f.monto).toLocaleString('es-AR', {minimumFractionDigits:2})}</strong>
+      </div>
+      
+      <div style="border-top: 1px solid #000; padding-top: 20px; display: flex; justify-content: space-between; font-size: 12px;">
+        <div>
+          <p>Comprobante autorizado por AFIP/ARCA</p>
+        </div>
+        <div style="text-align: right;">
+          <p><strong>CAE:</strong> ${f.cae}</p>
+          <p><strong>Vto. CAE:</strong> ${f.vto}</p>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const opt = {
+    margin:       [10, 10],
+    filename:     `Factura_${f.numero}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  html2pdf().set(opt).from(element).save();
+}
+
+// Inicializar historial al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(renderizarHistorialFacturas, 1000);
+});
 
 // Cerrar con Escape
 document.addEventListener('keydown', function(e) {
