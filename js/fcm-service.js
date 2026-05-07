@@ -11,9 +11,9 @@
  * REGLA: Este módulo NO toca ARCA, PDF ni emitir-factura.js.
  */
 
-import { getApp }       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getApp }       from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getMessaging, getToken, deleteToken }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+  from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
 import {
   collection, doc, setDoc, deleteDoc, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";

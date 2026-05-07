@@ -8,9 +8,6 @@ import {
   pushEstaActivo,
   registrarSWFcm
 } from "./fcm-service.js";
-import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
-import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
-import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
   findClienteByDni,
   findTrabajosByClienteId,
