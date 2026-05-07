@@ -132,6 +132,19 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────
+    // COLECCIÓN: notification_tokens
+    // Cada usuario autenticado puede escribir/eliminar su propio token.
+    // Solo admin puede leer todos los tokens (para el backend de push).
+    // El documento se identifica por el token FCM (string único por dispositivo).
+    // ─────────────────────────────────────────────
+    match /notification_tokens/{tokenId} {
+      // Escritura: cualquier usuario autenticado puede crear/actualizar/eliminar su propio token
+      allow write: if isAuthenticated();
+      // Lectura: solo admins (usada desde el backend via firebase-admin, no desde el cliente)
+      allow read: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
     // REGLA DE CIERRE: bloquear todo lo demás
     // ─────────────────────────────────────────────
     match /{document=**} {

@@ -3,6 +3,15 @@ import { createOperatorUser, getSession, logout, requirePanelSession } from "./a
 import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
 import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
+  activarPush,
+  desactivarPush,
+  pushEstaActivo,
+  registrarSWFcm
+} from "./fcm-service.js";
+import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
+import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
+import { printTicket } from "./ticket.js?v=20260503-public-bridge";
+import {
   findClienteByDni,
   findTrabajosByClienteId,
   findTrabajosByNumeroOrden,
@@ -59,48 +68,42 @@ const STATUS_CLASS = {
   [WORK_STATUS.reingresada]: "badge-reingresada"
 };
 
-// ── Sistema de Notificaciones Nativas ──────────────────────────
+// -- Sistema de Notificaciones FCM (Campanita) ----------------------------
 
-function solicitarPermisoNotificaciones() {
-  if (!("Notification" in window)) {
-    alert("Tu navegador no soporta notificaciones nativas.");
-    return;
-  }
-  
-  if (Notification.permission === "granted") {
-    alert("Las notificaciones ya están activadas.");
-    return;
-  }
-
-  // Solicitud bloqueante atada a interacción del usuario (requerido en Android)
-  Notification.requestPermission().then(permission => {
-    if (permission === "granted") {
-      alert("¡Notificaciones activadas con éxito!");
-    } else {
-      alert("Permiso denegado para notificaciones.");
-    }
-  });
+function actualizarUiBell(activo) {
+  const btn = document.getElementById('btnBellToggle');
+  if (!btn) return;
+  btn.title        = activo ? 'Desactivar notificaciones push' : 'Activar notificaciones push';
+  btn.innerHTML    = activo ? '🔔' : '🔕';
+  btn.style.color       = activo ? 'var(--accent2)'     : 'var(--muted)';
+  btn.style.borderColor = activo ? 'var(--accent2)'     : 'rgba(255,255,255,0.1)';
 }
 
-function probarNotificacionLocal() {
-  if (!("Notification" in window) || Notification.permission !== "granted") {
-    alert("Primero debés activar las notificaciones.");
-    return;
+window.togglePushNotifications = async function() {
+  const activo = pushEstaActivo();
+  try {
+    if (activo) {
+      await desactivarPush();
+      actualizarUiBell(false);
+    } else {
+      await activarPush(state.session);
+      actualizarUiBell(true);
+    }
+  } catch (err) {
+    console.error('[FCM] toggle error:', err);
+    alert('Warning: ' + (err.message || 'No se pudo cambiar las notificaciones.'));
   }
+};
 
-  const titulo = "Prueba de Notificación";
-  const opciones = {
-    body: "¡Las notificaciones están funcionando correctamente!",
-    icon: "/cosmica-logo.png",
-    badge: "/cosmica-logo.png"
-  };
-
-  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.showNotification(titulo, opciones);
+async function dispararPushBackend(title, body) {
+  try {
+    await fetch('https://api-cosmica.netlify.app/.netlify/functions/send-push', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ title, body, rol: 'admin' })
     });
-  } else {
-    new Notification(titulo, opciones);
+  } catch (err) {
+    console.warn('[FCM] dispararPushBackend error:', err.message);
   }
 }
 
@@ -179,6 +182,13 @@ function boot() {
       renderRoleUi();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
+
+      // Iniciar FCM SW en background (no bloquea el boot)
+      registrarSWFcm().catch(err => console.warn('[FCM] registrarSWFcm:', err));
+
+      // Sincronizar UI de campanita con el estado guardado
+      actualizarUiBell(pushEstaActivo());
+
       iniciarListenerNotificaciones(session.profile);
     },
     onUnauthorized: () => {
@@ -217,9 +227,8 @@ function bindGlobalActions() {
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
   
-  // ── Notificaciones ──────────────────────────────────────────
-  window.solicitarPermisoNotificaciones = solicitarPermisoNotificaciones;
-  window.probarNotificacionLocal = probarNotificacionLocal;
+  // ── Notificaciones FCM (Campanita) ──────────────────────────────────────────────
+  // togglePushNotifications ya está definida como window.* arriba
 
   // ── 🥚 Easter Egg: 7 clics rápidos en el logo ──────────────
   (function () {
@@ -1210,13 +1219,23 @@ function readWorkForm() {
 async function guardarCliente() {
   try {
     const result = await saveWorkForm(readWorkForm(), state.edit, state.session?.profile);
+    const wasCreated = result.mode === "created";
     cancelarEdicion();
     limpiarCampos();
-    alert(result.mode === "created"
+    alert(wasCreated
       ? `Registrado. Orden: ${result.numeroOrden}`
       : "Orden actualizada correctamente");
     showTab("trabajos");
     await cargar();
+
+    // Push a admins cuando se registra un trabajo nuevo
+    if (wasCreated) {
+      const form = state._lastFormValues || {}; // ya fue limpiado, usamos valores del result
+      dispararPushBackend(
+        '🔔 Nuevo Trabajo Registrado',
+        `Orden: ${result.numeroOrden} | Tipo: ${readWorkForm?.tipo || ''}`.trim()
+      );
+    }
   } catch (error) {
     showAlertError(error, "No se pudo guardar la orden.");
   }

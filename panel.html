@@ -397,9 +397,16 @@
     <span>Cosmica.ar</span>
   </div>
   <div class="header-right">
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-sm btn-secondary" style="font-size:12px;padding:4px 8px;border-color:var(--accent2);color:var(--accent2);" onclick="solicitarPermisoNotificaciones()" title="Activar Notificaciones">🔔 Activar</button>
-      <button class="btn btn-sm btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="probarNotificacionLocal()" title="Probar Notificación">🧪 Probar</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <!-- Campanita FCM: activa/desactiva push notifications en este dispositivo -->
+      <button
+        id="btnBellToggle"
+        onclick="togglePushNotifications()"
+        title="Activar notificaciones push"
+        style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+               padding:4px 10px;cursor:pointer;font-size:18px;color:var(--muted);
+               transition:color .2s, border-color .2s;"
+      >🔕</button>
     </div>
     <div class="user-tag">👤 <b id="usuarioLogueado">…</b></div>
     <button class="btn-logout" onclick="logout()">Salir</button>
