@@ -1234,7 +1234,8 @@ function readWorkForm() {
 
 async function guardarCliente() {
   try {
-    const result = await saveWorkForm(readWorkForm(), state.edit, state.session?.profile);
+    const formData = readWorkForm();
+    const result = await saveWorkForm(formData, state.edit, state.session?.profile);
     const wasCreated = result.mode === "created";
     cancelarEdicion();
     limpiarCampos();
@@ -1246,10 +1247,9 @@ async function guardarCliente() {
 
     // Push a admins cuando se registra un trabajo nuevo
     if (wasCreated) {
-      const form = state._lastFormValues || {}; // ya fue limpiado, usamos valores del result
       dispararPushBackend(
         '🔔 Nuevo Trabajo Registrado',
-        `Orden: ${result.numeroOrden} | Tipo: ${readWorkForm?.tipo || ''}`.trim()
+        `Orden: ${result.numeroOrden} | Tipo: ${formData.tipo || 'General'}`.trim()
       );
     }
   } catch (error) {

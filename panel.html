@@ -260,6 +260,9 @@
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s ease;
     }
+    .modal-overlay[hidden] {
+      display: none;
+    }
     .modal-overlay.open {
       opacity: 1; pointer-events: all;
     }
@@ -386,7 +389,6 @@
       .modal-box { padding: 20px 16px; }
     }
   </style>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -729,7 +731,7 @@
 
     <!-- HISTORIAL DE FACTURACIÓN -->
     <div class="form-section admin-section" style="border-color: var(--border); background: rgba(255,255,255,0.01);">
-      <div style="display:flex; justify-content:between; align-items:center; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div class="form-section-title" style="margin-bottom:0;">📊 Historial de Contabilidad (Pruebas)</div>
         <div style="margin-left:auto; display:flex; gap:8px;">
            <button class="btn btn-secondary" onclick="exportarHistorialExcel()" style="padding:6px 12px; font-size:12px;">📥 Excel</button>
@@ -1009,7 +1011,7 @@
 <script type="module" src="./js/panel.js?v=2"></script>
 
 <!-- ── MODAL: EMITIR FACTURA C ─────────────────────────────────────── -->
-<div class="modal-overlay" id="modalFacturaOverlay" role="dialog" aria-modal="true" aria-labelledby="modalFacturaTitulo">
+<div class="modal-overlay" id="modalFacturaOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalFacturaTitulo" hidden inert>
   <div class="modal-box">
 
     <div class="modal-header">
@@ -1090,6 +1092,9 @@
 
 function abrirModalFactura() {
   const overlay = document.getElementById('modalFacturaOverlay');
+  overlay.hidden = false;
+  overlay.removeAttribute('inert');
+  overlay.setAttribute('aria-hidden', 'false');
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   // Limpiar estado anterior
@@ -1098,7 +1103,13 @@ function abrirModalFactura() {
 }
 
 function cerrarModalFactura() {
-  document.getElementById('modalFacturaOverlay').classList.remove('open');
+  const overlay = document.getElementById('modalFacturaOverlay');
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('inert', '');
+  setTimeout(() => {
+    if (!overlay.classList.contains('open')) overlay.hidden = true;
+  }, 250);
   document.body.style.overflow = '';
 }
 
