@@ -410,6 +410,7 @@
   <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
   <div class="tab"            id="tabCRM"  onclick="showTab('crm'); loadDirectorioClientes()">📖 Directorio</div>
+  <div class="tab"            id="tabMarketing" onclick="showTab('marketing')">📢 Redes</div>
   <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
   <div class="tab admin-section"   id="tabEstadisticas" onclick="showTab('estadisticas'); calcularEstadisticasAdmin()" style="display:none;">📈 Estadísticas</div>
   <div class="tab admin-section"   id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
@@ -918,6 +919,61 @@
   </div>
 
 </div><!-- /tab-crm -->
+
+<!-- ── TAB: MARKETING / REDES ───────────────────────────── -->
+<div class="tab-content" id="tab-marketing">
+  <div class="section-title" style="margin-bottom:20px;">📢 Agente de Redes Sociales</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">
+    Generá contenido para tus redes sociales y publicalo directamente en Instagram, Facebook y X.
+  </p>
+
+  <!-- GENERADOR DE CONTENIDO -->
+  <div class="form-section" style="border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.02); margin-bottom: 24px;">
+    <div class="form-section-title" style="color:var(--accent2);">🤖 Generador de Post con IA</div>
+    
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label for="postTopic" style="color: var(--accent2); font-weight: 600;">¿Sobre qué querés hablar?</label>
+      <input type="text" id="postTopic" placeholder="Ej: Reparación de notebooks, oferta de mantenimiento, etc." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(0,229,255,0.3); color: white;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label style="color: var(--accent2); font-weight: 600;">Plataformas destino:</label>
+      <div style="display: flex; gap: 16px; margin-top: 8px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="shareInsta" checked style="accent-color: var(--accent2);"> 📸 Instagram
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="shareFb" checked style="accent-color: var(--accent2);"> 👥 Facebook
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="shareX" checked style="accent-color: var(--accent2);"> 𝕏 (Twitter)
+        </label>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btnGenerarPost" onclick="generarContenidoIA()" style="width: 100%;">
+      ✨ Generar Contenido
+    </button>
+  </div>
+
+  <!-- PREVIEW DEL POST -->
+  <div id="postPreviewArea" style="display: none; border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,229,255,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div style="color: var(--accent2); font-weight: 600; font-size: 16px;">📝 Vista Previa del Post</div>
+      <div style="font-size: 12px; color: var(--muted);" id="postPlatformBadges"></div>
+    </div>
+    
+    <div id="postContentText" style="color: white; font-size: 14px; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px;">
+      <!-- Aquí va el contenido generado -->
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <button class="btn btn-secondary" onclick="regenerarPost()" style="flex: 1; border-color: rgba(255,255,255,0.2); color: white;">🔄 Regenerar</button>
+      <button class="btn btn-success" id="btnPublicarPost" onclick="publicarPost()" style="flex: 2; background: var(--success); border-color: var(--success);">🚀 Publicar Ahora</button>
+    </div>
+  </div>
+
+</div><!-- /tab-marketing -->
 
 <!-- ── TAB: ESTADÍSTICAS ADMIN ───────────────────────────── -->
 <div class="tab-content admin-section" id="tab-estadisticas">
