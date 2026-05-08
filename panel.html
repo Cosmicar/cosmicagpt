@@ -397,17 +397,6 @@
     <span>Cosmica.ar</span>
   </div>
   <div class="header-right">
-    <div style="display:flex;gap:8px;align-items:center;">
-      <!-- Campanita FCM: activa/desactiva push notifications en este dispositivo -->
-      <button
-        id="btnBellToggle"
-        onclick="togglePushNotifications()"
-        title="Activar notificaciones push"
-        style="background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;
-               padding:4px 10px;cursor:pointer;font-size:18px;color:var(--muted);
-               transition:color .2s, border-color .2s;"
-      >🔕</button>
-    </div>
     <div class="user-tag">👤 <b id="usuarioLogueado">…</b></div>
     <button class="btn-logout" onclick="logout()">Salir</button>
   </div>
@@ -767,6 +756,29 @@
     </div>
 
 
+    <!-- NOTIFICACIONES PUSH -->
+    <div class="form-section admin-section" style="border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.02);">
+      <div class="form-section-title" style="color:var(--accent2);">🔔 Notificaciones Push</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+        Activá o desactivá las notificaciones push en <strong>este dispositivo</strong>.
+        Cuando un operador registre un nuevo servicio, recibirás un aviso instantáneo.
+      </p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button
+          onclick="togglePushNotifications()"
+          class="btn-bell-toggle"
+          style="display:flex;align-items:center;gap:8px;padding:10px 20px;
+                 background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);
+                 border-radius:10px;color:var(--accent2);font-size:14px;font-weight:600;
+                 cursor:pointer;transition:all .2s;"
+        >
+          <span class="bell-icon" style="font-size:20px;">🔕</span>
+          <span class="bell-label">Activar notificaciones en este dispositivo</span>
+        </button>
+        <span class="bell-status" style="font-size:12px;color:var(--muted);">Estado: desactivado</span>
+      </div>
+    </div>
+
     <!-- ZONA PELIGROSA -->
     <div class="section" style="border-color: var(--danger); background: rgba(255, 0, 127, 0.05);">
       <div class="section-title" style="color: var(--danger);">⚠️ Zona Peligrosa</div>
@@ -806,6 +818,29 @@
     <button class="btn btn-secondary" onclick="calcularRendimientoOperador()" style="margin-bottom:16px;">
       🔄 Actualizar métricas
     </button>
+
+    <!-- NOTIFICACIONES PUSH (Panel Personal) -->
+    <div class="form-section" style="border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.02); margin-bottom: 24px;">
+      <div class="form-section-title" style="color:var(--accent2);">🔔 Mis Notificaciones</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+        Activá o desactivá las notificaciones push en <strong>este dispositivo</strong>.
+        Te avisaremos cuando un trabajo tuyo sea entregado u ocurra alguna acción relevante.
+      </p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button
+          onclick="togglePushNotifications()"
+          class="btn-bell-toggle"
+          style="display:flex;align-items:center;gap:8px;padding:10px 20px;
+                 background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);
+                 border-radius:10px;color:var(--accent2);font-size:14px;font-weight:600;
+                 cursor:pointer;transition:all .2s;"
+        >
+          <span class="bell-icon" style="font-size:20px;">🔕</span>
+          <span class="bell-label">Activar notificaciones en este dispositivo</span>
+        </button>
+        <span class="bell-status" style="font-size:12px;color:var(--muted);">Estado: desactivado</span>
+      </div>
+    </div>
 
     <!-- Tabla detalle -->
     <div id="rendDetalleTabla" style="overflow-x:auto;"></div>

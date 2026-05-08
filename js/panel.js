@@ -68,12 +68,31 @@ const STATUS_CLASS = {
 // -- Sistema de Notificaciones FCM (Campanita) ----------------------------
 
 function actualizarUiBell(activo) {
-  const btn = document.getElementById('btnBellToggle');
-  if (!btn) return;
-  btn.title        = activo ? 'Desactivar notificaciones push' : 'Activar notificaciones push';
-  btn.innerHTML    = activo ? '🔔' : '🔕';
-  btn.style.color       = activo ? 'var(--accent2)'     : 'var(--muted)';
-  btn.style.borderColor = activo ? 'var(--accent2)'     : 'rgba(255,255,255,0.1)';
+  // En lugar de IDs, actualizamos todos los elementos por clase
+  const btnBells   = document.querySelectorAll('.btn-bell-toggle');
+  const bellIcons  = document.querySelectorAll('.bell-icon');
+  const bellLabels = document.querySelectorAll('.bell-label');
+  const bellStatusList = document.querySelectorAll('.bell-status');
+
+  bellIcons.forEach(icon => {
+    icon.textContent = activo ? '🔔' : '🔕';
+  });
+
+  bellLabels.forEach(label => {
+    label.textContent = activo
+      ? 'Desactivar notificaciones en este dispositivo'
+      : 'Activar notificaciones en este dispositivo';
+  });
+
+  bellStatusList.forEach(status => {
+    status.textContent = activo ? 'Estado: ✅ activo en este dispositivo' : 'Estado: desactivado';
+    status.style.color = activo ? 'var(--success)' : 'var(--muted)';
+  });
+
+  btnBells.forEach(btn => {
+    btn.style.borderColor = activo ? 'var(--accent2)' : 'rgba(0,229,255,0.3)';
+    btn.style.background  = activo ? 'rgba(0,229,255,0.2)' : 'rgba(0,229,255,0.1)';
+  });
 }
 
 window.togglePushNotifications = async function() {
