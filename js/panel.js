@@ -34,7 +34,6 @@ import {
   saveWorkForm,
   resetAccountancy
 } from "./work-service.js";
-import { generarPost, publicarEnRedes } from "./marketing-service.js";
 import {
   $,
   daysRemaining,
@@ -122,61 +121,6 @@ async function dispararPushBackend(title, body) {
   } catch (err) {
     console.warn('[FCM] dispararPushBackend error:', err.message);
   }
-}
-
-async function generarContenidoIA() {
-  const topic = document.getElementById('postTopic').value;
-  const btn = document.getElementById('btnGenerarPost');
-  
-  btn.disabled = true;
-  btn.textContent = '⏳ Generando...';
-  
-  // Simular delay de IA
-  setTimeout(() => {
-    const post = generarPost(topic);
-    
-    document.getElementById('postContentText').textContent = post;
-    document.getElementById('postPreviewArea').style.display = 'block';
-    
-    // Actualizar badges de plataformas
-    const badges = [];
-    if (document.getElementById('shareInsta').checked) badges.push('📸 Insta');
-    if (document.getElementById('shareFb').checked) badges.push('👥 FB');
-    if (document.getElementById('shareX').checked) badges.push('𝕏');
-    
-    document.getElementById('postPlatformBadges').textContent = badges.join(' | ');
-    
-    btn.disabled = false;
-    btn.textContent = '✨ Generar Contenido';
-  }, 1500);
-}
-
-function regenerarPost() {
-  generarContenidoIA();
-}
-
-async function publicarPost() {
-  const content = document.getElementById('postContentText').textContent;
-  const plataformas = [];
-  if (document.getElementById('shareInsta').checked) plataformas.push('Instagram');
-  if (document.getElementById('shareFb').checked) plataformas.push('Facebook');
-  if (document.getElementById('shareX').checked) plataformas.push('X');
-  
-  if (!plataformas.length) {
-    alert('Seleccioná al menos una plataforma.');
-    return;
-  }
-  
-  const btn = document.getElementById('btnPublicarPost');
-  btn.disabled = true;
-  btn.textContent = '⏳ Publicando...';
-  
-  const result = await publicarEnRedes(content, plataformas);
-  
-  alert(result.msg);
-  
-  btn.disabled = false;
-  btn.textContent = '🚀 Publicar Ahora';
 }
 
 let _unsubscribeNotificaciones = null;
@@ -298,11 +242,6 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
-  
-  // ── Marketing / Redes
-  window.generarContenidoIA = generarContenidoIA;
-  window.regenerarPost = regenerarPost;
-  window.publicarPost = publicarPost;
   
   // ── Notificaciones FCM (Campanita) ──────────────────────────────────────────────
   // togglePushNotifications ya está definida como window.* arriba
