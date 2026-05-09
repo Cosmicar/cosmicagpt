@@ -418,13 +418,13 @@ function bindGlobalActions() {
 
 // ── Regla contable: cuánto aporta un trabajo al total global ────
 // Remoto: 100% del precio
-// Taller liquidado: 20% del precio (el 80% es del operador)
-// Taller no liquidado: $0 (aún no se ha hecho el cierre de caja)
-function calcularContribContable(t) {
+// Taller: para el operador 80% (su ganancia), para la empresa 20% (solo si está liquidado)
+function calcularContribContable(t, profile) {
   const precio = Number(t.precio || 0);
   if (t.tipo !== "taller") return precio;          // remoto → 100%
-  if (t.liquidado === true) return precio * 0.20;  // taller liquidado → 20%
-  return 0;                                        // taller sin liquidar → $0
+  if (profile?.rol === "operador") return precio * 0.80; // operador ve su 80%
+  if (t.liquidado === true) return precio * 0.20;  // taller liquidado → 20% para Cósmica
+  return 0;                                        // taller sin liquidar → $0 para Cósmica
 }
 
 // ── Cierre de Caja Taller — estado temporal del cálculo ─────────
@@ -931,57 +931,70 @@ function facturarDesdeCliente(clienteId) {
 }
 
 // ── Rendimiento del operador ────────────────────────────────────
-// Filtra trabajos de taller entregados creados por el operador actual.
-// Separa en liquidados (cobrados) y pendientes. Muestra 80% de cada grupo.
-function calcularRendimientoOperador() {
+// Filtra trabajos de taller creados por el operador actual.
+async function calcularRendimientoOperador() {
+  const profile = state.session?.profile;
   const emailOperador = state.session?.user?.email || "";
-  const todos = (state.ingresosData || []).map(({ t }) => t);
 
-  // Si el tab ingresos no fue cargado aún, obtenemos trabajos del DOM state
-  // (pueden estar vacíos — el operador debe cargar ingresos primero, o usamos listTrabajos)
-  const misTrabajosEntregados = todos.filter((t) =>
+  let todos = [];
+  try {
+    // Intentar obtener lista fresca para que el rendimiento sea real-time
+    todos = await listTrabajos(profile);
+  } catch (err) {
+    console.warn("Error al cargar rendimiento real-time:", err);
+    todos = (state.ingresosData || []).map(({ t }) => t);
+  }
+
+  const misTrabajosTaller = todos.filter((t) =>
     t.tipo === "taller" &&
-    t.estado === WORK_STATUS.entregado &&
     (t.creadoPor || "") === emailOperador
   );
 
-  let totalIngresos = 0;
-  let totalAportes  = 0;
+  const misEntregados = misTrabajosTaller.filter(t => t.estado === WORK_STATUS.entregado);
+  const misEnProceso  = misTrabajosTaller.filter(t => t.estado !== WORK_STATUS.entregado && t.estado !== WORK_STATUS.reingresada);
 
-  misTrabajosEntregados.forEach((t) => {
+  let totalIngresos = 0; // Lo que el operador generó (80% de sus entregados)
+  let totalAportes  = 0; // Lo que aportó a la empresa (20% de sus entregados)
+
+  misEntregados.forEach((t) => {
     const precio = Number(t.precio || 0);
-    if (t.liquidado === true) {
-      totalIngresos += precio * 0.80;
-      totalAportes  += precio * 0.20;
-    }
+    totalIngresos += precio * 0.80;
+    totalAportes  += precio * 0.20;
   });
 
   // Inyectar KPIs
-  const elCant = document.getElementById("rendCantidad");
-  const elLiq  = document.getElementById("rendLiquidado");
-  const elPend = document.getElementById("rendPendiente");
-  if (elCant) elCant.innerText = misTrabajosEntregados.length;
-  if (elLiq)  elLiq.innerText  = formatMoney(totalIngresos);
-  if (elPend) elPend.innerText = formatMoney(totalAportes);
+  const elCant    = document.getElementById("rendCantidad");
+  const elProceso = document.getElementById("rendProceso");
+  const elLiq     = document.getElementById("rendLiquidado");
+  const elPend    = document.getElementById("rendPendiente");
+
+  if (elCant)    elCant.innerText    = misEntregados.length;
+  if (elProceso) elProceso.innerText = misEnProceso.length;
+  if (elLiq)     elLiq.innerText     = formatMoney(totalIngresos);
+  if (elPend)    elPend.innerText    = formatMoney(totalAportes);
 
   // Tabla de detalle
   const tabla = document.getElementById("rendDetalleTabla");
   if (tabla) {
-    if (!misTrabajosEntregados.length) {
-      tabla.innerHTML = "<p style='color:var(--muted);font-size:13px;'>No tenés trabajos entregados registrados a tu nombre aún.</p>";
+    if (!misTrabajosTaller.length) {
+      tabla.innerHTML = "<p style='color:var(--muted);font-size:13px;'>No tenés trabajos de taller registrados a tu nombre aún.</p>";
     } else {
-      const filas = misTrabajosEntregados.map((t) => {
-        const estado = t.liquidado ? "✅ Liquidado" : "⏳ Pendiente";
-        const color  = t.liquidado ? "var(--success)" : "var(--warning)";
-        const cobro  = formatMoney(Number(t.precio || 0) * 0.80);
-        return `<tr>
-          <td>${t.numeroOrden || "—"}</td>
-          <td>${escapeHtml(t.equipo || "—")}</td>
-          <td>$${formatMoney(Number(t.precio || 0))}</td>
-          <td style="color:${color}">$${cobro}</td>
-          <td style="color:${color}">${estado}</td>
-        </tr>`;
-      }).join("");
+      const filas = misTrabajosTaller
+        .sort((a,b) => new Date(b.fechaIngreso) - new Date(a.fechaIngreso))
+        .map((t) => {
+          const esEntregado = t.estado === WORK_STATUS.entregado;
+          const estadoLiq = t.liquidado ? "✅ Liquidado" : (esEntregado ? "⏳ Pendiente" : "🛠️ En curso");
+          const colorLiq  = t.liquidado ? "var(--success)" : (esEntregado ? "var(--warning)" : "var(--muted)");
+          const cobro  = formatMoney(Number(t.precio || 0) * 0.80);
+          return `<tr>
+            <td>${t.numeroOrden || "—"}</td>
+            <td>${escapeHtml(t.equipo || "—")}</td>
+            <td>$${formatMoney(Number(t.precio || 0))}</td>
+            <td style="color:${esEntregado ? 'var(--success)' : 'var(--muted)'}">$${cobro}</td>
+            <td style="color:${colorLiq}">${estadoLiq}</td>
+          </tr>`;
+        }).join("");
+
       tabla.innerHTML = `
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead>
@@ -990,7 +1003,7 @@ function calcularRendimientoOperador() {
               <th style="padding:8px 6px;">Equipo</th>
               <th style="padding:8px 6px;">Precio</th>
               <th style="padding:8px 6px;">Tu cobro (80%)</th>
-              <th style="padding:8px 6px;">Estado cierre</th>
+              <th style="padding:8px 6px;">Estado</th>
             </tr>
           </thead>
           <tbody>${filas}</tbody>
@@ -1013,7 +1026,7 @@ async function actualizarTotalesDashboard() {
     trabajos.forEach((t) => {
       if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
         // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
-        const contrib = calcularContribContable(t);
+        const contrib = calcularContribContable(t, state.session?.profile);
         if (String(t.fechaEntregado).startsWith(hoy)) totalDia += contrib;
         if (String(t.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
       }
@@ -1373,7 +1386,7 @@ async function cargar(filtro = "", options = {}) {
 
       if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado) {
         // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
-        const contrib = calcularContribContable(trabajo);
+        const contrib = calcularContribContable(trabajo, state.session?.profile);
         if (String(trabajo.fechaEntregado).startsWith(hoy)) totalDia += contrib;
         if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
       }
@@ -1686,7 +1699,7 @@ async function cargarIngresos() {
 
       const precio = Number(t.precio || 0);
       // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
-      const contribGlobal = calcularContribContable(t);
+      const contribGlobal = calcularContribContable(t, state.session?.profile);
       totalGeneral += contribGlobal;
       if (t.tipo === "taller") totalTaller += contribGlobal;
       else totalRemoto += precio;
