@@ -59,6 +59,7 @@ CREATE TABLE scheduled_posts (
   status TEXT DEFAULT 'scheduled' NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   published_at TIMESTAMP WITH TIME ZONE,
+  error_message TEXT,
   notes TEXT
 );
 
