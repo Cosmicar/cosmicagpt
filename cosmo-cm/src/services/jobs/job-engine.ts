@@ -1,7 +1,5 @@
-// In a real production environment, you would use 'bullmq' and 'ioredis'
-// For this SaaS foundation, we are setting up the architecture and interfaces
-// using a resilient mock that simulates the BullMQ API structure.
-
+import { Queue, JobsOptions } from "bullmq";
+import { getRedisConnection } from "@/lib/redis/redis-client";
 import { workspaceEngine } from "@/services/workspaces/workspace-engine";
 import { loggerEngine } from "@/services/logging/logger-engine";
 
@@ -12,17 +10,6 @@ export type QueueName =
   | "analytics-queue"
   | "scheduler-queue";
 
-export interface JobOptions {
-  priority?: number;
-  attempts?: number;
-  backoff?: {
-    type: "fixed" | "exponential";
-    delay: number;
-  };
-  delay?: number;
-  timeout?: number;
-}
-
 export interface JobData {
   workspace_id: string;
   payload: any;
@@ -30,56 +17,78 @@ export interface JobData {
 }
 
 export class JobEngine {
-  // Simulate BullMQ Queues
-  private queues: Map<QueueName, any[]> = new Map();
+  private queues: Map<QueueName, Queue> = new Map();
+  private connection = getRedisConnection();
 
   constructor() {
-    console.log("[JobEngine] Initializing Async Queues Architecture...");
-    this.queues.set("ai-generation-queue", []);
-    this.queues.set("visual-generation-queue", []);
-    this.queues.set("reporting-queue", []);
-    this.queues.set("analytics-queue", []);
-    this.queues.set("scheduler-queue", []);
+    loggerEngine.info("[JobEngine] Initializing Real BullMQ Queues...");
+    const queueNames: QueueName[] = [
+      "ai-generation-queue",
+      "visual-generation-queue",
+      "reporting-queue",
+      "analytics-queue",
+      "scheduler-queue"
+    ];
+
+    queueNames.forEach(name => {
+      this.queues.set(name, new Queue(name, { 
+        connection: this.connection,
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: { type: "exponential", delay: 2000 },
+          removeOnComplete: { age: 24 * 3600 }, // Keep completed jobs for 24 hours
+          removeOnFail: { age: 7 * 24 * 3600 }, // Keep failed jobs for 7 days
+        }
+      }));
+    });
   }
 
-  async enqueue(queueName: QueueName, jobName: string, data: any, options?: JobOptions): Promise<string> {
+  async enqueue(queueName: QueueName, jobName: string, data: any, options?: JobsOptions): Promise<string> {
     const workspace = workspaceEngine.getActiveWorkspace();
     if (!workspace) throw new Error("Aislamiento Multi-tenant: No hay workspace activo para encolar el job.");
 
-    const jobId = `job_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    
+    const queue = this.queues.get(queueName);
+    if (!queue) throw new Error(`Queue ${queueName} not found.`);
+
     const jobData: JobData = {
       workspace_id: workspace.id,
       payload: data,
       metadata: {
-        enqueued_at: new Date().toISOString(),
-        options
+        enqueued_at: new Date().toISOString()
       }
     };
 
-    // Simulate adding to Redis/BullMQ
-    this.queues.get(queueName)?.push({ id: jobId, name: jobName, data: jobData, status: "waiting" });
-
-    loggerEngine.info(`Job enqueued in ${queueName}`, { jobId, jobName, workspace_id: workspace.id });
-
-    // In a real implementation, we return the job instance/id provided by BullMQ
-    return jobId;
+    try {
+      const job = await queue.add(jobName, jobData, options);
+      loggerEngine.info(`Job enqueued in ${queueName}`, { jobId: job.id, jobName, workspace_id: workspace.id });
+      return job.id as string;
+    } catch (error: any) {
+      loggerEngine.error(`Failed to enqueue job in ${queueName}`, { error: error.message, jobName });
+      throw error;
+    }
   }
 
   async getJobStatus(queueName: QueueName, jobId: string): Promise<string> {
-    // Simulate fetching job status from Redis
     const queue = this.queues.get(queueName);
-    const job = queue?.find(j => j.id === jobId);
-    return job ? job.status : "unknown";
+    if (!queue) return "unknown";
+
+    const job = await queue.getJob(jobId);
+    if (!job) return "not_found";
+
+    const state = await job.getState();
+    return state;
   }
 
   async getQueueMetrics(queueName: QueueName) {
-    const queue = this.queues.get(queueName) || [];
+    const queue = this.queues.get(queueName);
+    if (!queue) return { waiting: 0, active: 0, completed: 0, failed: 0 };
+
+    const jobCounts = await queue.getJobCounts('waiting', 'active', 'completed', 'failed');
     return {
-      waiting: queue.filter(j => j.status === "waiting").length,
-      active: queue.filter(j => j.status === "active").length,
-      completed: queue.filter(j => j.status === "completed").length,
-      failed: queue.filter(j => j.status === "failed").length,
+      waiting: jobCounts.waiting,
+      active: jobCounts.active,
+      completed: jobCounts.completed,
+      failed: jobCounts.failed,
     };
   }
 }
