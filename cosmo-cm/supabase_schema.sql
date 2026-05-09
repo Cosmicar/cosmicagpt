@@ -27,6 +27,22 @@ CREATE TABLE campaigns (
   status TEXT DEFAULT 'draft' NOT NULL,
   user_id UUID -- Opcional para auth futuro
 );
+-- Tabla: scheduled_posts
+CREATE TABLE scheduled_posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  format TEXT NOT NULL,
+  scheduled_for TIMESTAMP WITH TIME ZONE NOT NULL,
+  status TEXT DEFAULT 'scheduled' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  published_at TIMESTAMP WITH TIME ZONE,
+  notes TEXT
+);
+
+-- Políticas RLS para scheduled_posts
+-- ALTER TABLE scheduled_posts ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Acceso público scheduler" ON scheduled_posts FOR ALL USING (true) WITH CHECK (true);
 
 -- Políticas RLS (Row Level Security) - Ejemplo básico para acceso público durante desarrollo
 -- ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
