@@ -1,11 +1,37 @@
--- Estructura SQL sugerida para Supabase Core
--- Tabla: campaigns
+-- ESTABILIZACIÓN & ARCHITECTURE HARDENING - SUPABASE SCHEMA
+-- Todas las tablas son multi-tenant y requieren workspace_id
 
+-- 1. Organizations & Workspaces
+CREATE TABLE organizations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  logo_url TEXT,
+  primary_color TEXT DEFAULT '#3b82f6',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE workspaces (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE workspace_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL, 
+  role TEXT NOT NULL DEFAULT 'viewer', 
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Content Engine
 CREATE TABLE campaigns (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  
-  -- Input Fields
   servicio TEXT NOT NULL,
   objetivo TEXT NOT NULL,
   plataforma TEXT NOT NULL,
@@ -13,23 +39,19 @@ CREATE TABLE campaigns (
   tono TEXT NOT NULL,
   promocion TEXT,
   contexto TEXT,
-  
-  -- Output Fields
   title TEXT NOT NULL,
   copy TEXT NOT NULL,
   hashtags TEXT NOT NULL,
   cta TEXT NOT NULL,
   storyboard TEXT,
-  visual_prompt JSONB, -- Estructura: {description, style, aspectRatio, rawPrompt}
-  whatsapp_version JSONB, -- Estructura: {message, callToAction}
-  
-  -- Metadata
-  status TEXT DEFAULT 'draft' NOT NULL,
-  user_id UUID -- Opcional para auth futuro
+  visual_prompt JSONB,
+  whatsapp_version JSONB,
+  status TEXT DEFAULT 'draft' NOT NULL
 );
--- Tabla: scheduled_posts
+
 CREATE TABLE scheduled_posts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   platform TEXT NOT NULL,
   format TEXT NOT NULL,
@@ -40,12 +62,10 @@ CREATE TABLE scheduled_posts (
   notes TEXT
 );
 
--- Políticas RLS para scheduled_posts
--- ALTER TABLE scheduled_posts ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Acceso público scheduler" ON scheduled_posts FOR ALL USING (true) WITH CHECK (true);
--- Tabla: automation_logs
+-- 3. Automation & Logs
 CREATE TABLE automation_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   status TEXT NOT NULL,
   message TEXT NOT NULL,
@@ -53,17 +73,10 @@ CREATE TABLE automation_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Políticas RLS para automation_logs
--- ALTER TABLE automation_logs ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Acceso público logs" ON automation_logs FOR ALL USING (true) WITH CHECK (true);
-
--- Políticas RLS (Row Level Security) - Ejemplo básico para acceso público durante desarrollo
--- ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Acceso público" ON campaigns FOR ALL USING (true) WITH CHECK (true);
-
--- TABLA: campaign_memories
+-- 4. AI Memory & Knowledge
 CREATE TABLE campaign_memories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   performance_score INTEGER DEFAULT 0,
   engagement_score INTEGER DEFAULT 0,
@@ -73,9 +86,9 @@ CREATE TABLE campaign_memories (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: prompt_patterns
 CREATE TABLE prompt_patterns (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   prompt_type TEXT NOT NULL,
   structure TEXT NOT NULL,
   success_score FLOAT DEFAULT 0,
@@ -83,9 +96,9 @@ CREATE TABLE prompt_patterns (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: viral_structures
 CREATE TABLE viral_structures (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   hook TEXT NOT NULL,
   pattern_type TEXT NOT NULL,
   emotion TEXT NOT NULL,
@@ -94,18 +107,10 @@ CREATE TABLE viral_structures (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: knowledge_embeddings (Preparada para extensiones vectoriales)
-CREATE TABLE knowledge_embeddings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  content TEXT NOT NULL,
-  metadata JSONB,
-  -- vector_data vector(1536), -- Descomentar si se habilita pgvector
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- TABLA: campaign_analytics
+-- 5. Analytics & Predictions
 CREATE TABLE campaign_analytics (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   platform TEXT NOT NULL,
   views INTEGER DEFAULT 0,
@@ -118,9 +123,9 @@ CREATE TABLE campaign_analytics (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: performance_predictions
 CREATE TABLE performance_predictions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   predicted_engagement FLOAT DEFAULT 0,
   predicted_viral_score FLOAT DEFAULT 0,
@@ -130,66 +135,51 @@ CREATE TABLE performance_predictions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: engagement_insights
 CREATE TABLE engagement_insights (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  type TEXT NOT NULL, -- trend, alert, suggestion
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, 
   message TEXT NOT NULL,
-  impact TEXT NOT NULL, -- high, medium, low
+  impact TEXT NOT NULL, 
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: executive_reports
+-- 6. Reporting
 CREATE TABLE executive_reports (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   report_type TEXT NOT NULL,
   period_start TIMESTAMP WITH TIME ZONE NOT NULL,
   period_end TIMESTAMP WITH TIME ZONE NOT NULL,
   summary TEXT NOT NULL,
-  insights JSONB NOT NULL, -- Array de strings
-  recommendations JSONB NOT NULL, -- Array de strings
+  insights JSONB NOT NULL, 
+  recommendations JSONB NOT NULL, 
   performance_score INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- MULTI-TENANT CORE
--- TABLA: organizations
-CREATE TABLE organizations (
+-- 7. Visual Assets (Nuevo)
+CREATE TABLE generated_visual_assets (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  logo_url TEXT,
-  primary_color TEXT DEFAULT '#3b82f6',
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  asset_url TEXT NOT NULL,
+  asset_type TEXT NOT NULL, -- image, video, storyboard
+  metadata JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- TABLA: workspaces
-CREATE TABLE workspaces (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+-- ROW LEVEL SECURITY (RLS) - POLÍTICA BASE
+-- IMPORTANTE: Ejecutar estos comandos para activar el aislamiento real en producción
+/*
+ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Aislamiento Multi-Tenant" ON campaigns
+  USING (workspace_id IN (
+    SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
+  ));
+-- (Repetir para todas las tablas)
+*/
 
--- TABLA: workspace_members
-CREATE TABLE workspace_members (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL, -- Relación con auth.users
-  role TEXT NOT NULL DEFAULT 'viewer', -- owner, admin, editor, viewer
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- TABLA: workspace_settings
-CREATE TABLE workspace_settings (
-  workspace_id UUID PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
-  settings JSONB DEFAULT '{}'::jsonb,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- NOTA: Todas las tablas existentes (campaigns, scheduled_posts, automation_logs, etc.)
--- deben incluir una columna workspace_id UUID REFERENCES workspaces(id) para aislamiento de datos.
 
 
 

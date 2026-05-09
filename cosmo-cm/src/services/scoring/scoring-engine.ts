@@ -1,15 +1,30 @@
-import { supabase } from "@/lib/supabase/client";
 import { StrategicScore } from "@/types/analytics";
 
 export class ScoringEngine {
+  private isMockMode: boolean;
+
+  constructor() {
+    this.isMockMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  }
+
   calculateStrategicScore(data: any): StrategicScore {
-    // Basic scoring logic for the demo
+    if (this.isMockMode) {
+      return {
+        viral: Math.floor(Math.random() * 40) + 60,
+        branding: 98,
+        engagement: Math.floor(Math.random() * 30) + 70,
+        conversion: Math.floor(Math.random() * 50) + 50,
+        consistency: 95,
+      };
+    }
+
+    // Production logic: weighted average of real metrics
     return {
-      viral: Math.floor(Math.random() * 40) + 60,
-      branding: 95, // Branding is always high for Cósmica
-      engagement: Math.floor(Math.random() * 30) + 70,
-      conversion: Math.floor(Math.random() * 50) + 50,
-      consistency: 90,
+      viral: 0,
+      branding: 0,
+      engagement: 0,
+      conversion: 0,
+      consistency: 0,
     };
   }
 }

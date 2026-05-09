@@ -43,10 +43,20 @@ export default function Library() {
     }
   };
 
-  const filteredItems = campaigns.filter(c => 
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.servicio.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Real Filtering Logic
+  const filteredItems = campaigns.filter(c => {
+    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        c.servicio.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "campaigns") return matchesSearch; // Basic campaigns always show in 'campaigns'
+    if (activeTab === "reels") return matchesSearch && c.formato?.toLowerCase().includes("reel");
+    if (activeTab === "flyers") return matchesSearch && (c.formato?.toLowerCase().includes("flyer") || c.formato?.toLowerCase().includes("imagen"));
+    if (activeTab === "whatsapp") return matchesSearch && c.whatsapp_version;
+    if (activeTab === "storyboards") return matchesSearch && c.storyboard;
+    
+    return matchesSearch;
+  });
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6">
@@ -96,37 +106,44 @@ export default function Library() {
           {filteredItems.length === 0 ? (
             <div className="col-span-full h-[300px] flex flex-col items-center justify-center border border-dashed border-white/10 rounded-xl bg-black/20">
               <FileText className="h-12 w-12 text-zinc-700 mb-4" />
-              <p className="text-zinc-500">No hay activos en esta categoría.</p>
+              <p className="text-zinc-500 text-sm">No se encontraron activos en esta categoría.</p>
+              <Button variant="ghost" className="mt-2 text-primary" onClick={() => {setSearchTerm(""); setActiveTab("all")}}>
+                Limpiar filtros
+              </Button>
             </div>
           ) : (
             filteredItems.map((item) => (
               <Card key={item.id} className="glass-panel border-white/10 bg-black/40 overflow-hidden group hover:border-primary/50 transition-all duration-300">
                 <CardContent className="p-0">
-                  <div className="p-4 border-b border-white/5 space-y-3">
+                  <div className="p-4 border-b border-white/5 space-y-3 min-h-[140px]">
                     <div className="flex justify-between items-start">
-                      <Badge className="bg-primary/20 text-primary border-primary/20 uppercase text-[10px]">
-                        {item.platform}
+                      <Badge className="bg-primary/20 text-primary border-primary/20 uppercase text-[9px]">
+                        {item.plataforma}
                       </Badge>
-                      <span className="text-[10px] text-zinc-500 font-mono">
+                      <span className="text-[9px] text-zinc-500 font-mono">
                         {new Date(item.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <h3 className="text-white font-bold line-clamp-1">{item.title}</h3>
-                    <p className="text-xs text-zinc-400 line-clamp-2">{item.copy}</p>
+                    <h3 className="text-white font-bold text-sm line-clamp-1">{item.title}</h3>
+                    <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed">{item.copy}</p>
                   </div>
                   <div className="p-3 bg-black/20 flex justify-between items-center">
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-white">
-                        <Zap className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-white">
-                        <Video className="h-4 w-4" />
-                      </Button>
+                      {item.storyboard && (
+                        <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
+                          <Zap className="h-3 w-3 text-secondary" />
+                        </Badge>
+                      )}
+                      {item.whatsapp_version && (
+                        <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
+                          <MessageSquare className="h-3 w-3 text-emerald-500" />
+                        </Badge>
+                      )}
                     </div>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 text-zinc-500 hover:text-destructive"
+                      className="h-8 w-8 text-zinc-500 hover:text-destructive transition-colors"
                       onClick={() => handleDelete(item.id)}
                     >
                       <Trash2 className="h-4 w-4" />

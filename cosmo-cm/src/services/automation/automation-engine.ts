@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
-import { eventBus } from "@/services/events/event-bus";
+import { eventBus, EventPayloads } from "@/services/events/event-bus";
 import { AutomationEventType } from "@/types/automation";
+import { workspaceEngine } from "@/services/workspaces/workspace-engine";
 
 export class AutomationEngine {
   constructor() {
@@ -18,15 +19,19 @@ export class AutomationEngine {
     ];
 
     events.forEach(event => {
-      eventBus.subscribe(event, (data) => this.logEvent(event, data));
+      eventBus.subscribe(event as any, (data: any) => this.logEvent(event, data));
     });
   }
 
-  async logEvent(type: AutomationEventType, data: any) {
+  async logEvent<T extends AutomationEventType>(type: T, data: EventPayloads[T]) {
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) return;
+
     const message = this.getEventMessage(type, data);
     
     await supabase.from("automation_logs").insert([
       {
+        workspace_id: workspace.id,
         event_type: type,
         status: type === "GENERATION_FAILED" ? "error" : "success",
         message,
@@ -46,9 +51,13 @@ export class AutomationEngine {
   }
 
   async getLogs(limit = 50) {
-    const { data, error } = await supabase
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) return [];
+
+    const { data } = await supabase
       .from("automation_logs")
       .select("*")
+      .eq("workspace_id", workspace.id)
       .order("created_at", { ascending: false })
       .limit(limit);
     
