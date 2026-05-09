@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity, Zap, Cpu, Brain, BarChart3, FileText } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity, Zap, Cpu, Brain, BarChart3, FileText, Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -15,7 +15,7 @@ const navigation = [
   { name: "Reportes Ejecutivos", href: "/executive-reports", icon: FileText },
   { name: "Biblioteca", href: "/library", icon: FolderOpen },
   { name: "Calendario", href: "/calendar", icon: Calendar },
-  { name: "Configuración", href: "/settings", icon: Settings },
+  { name: "Ajustes Workspace", href: "/workspace-settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -31,7 +31,24 @@ export function Sidebar() {
           <span className="text-xl font-bold tracking-wider text-white glow-text-primary">COSMO CM</span>
         </div>
       </div>
-      <div className="flex flex-1 flex-col overflow-y-auto pt-6 px-4 pb-4">
+
+      {/* Workspace Switcher */}
+      <div className="px-4 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer group">
+          <div className="flex items-center gap-3">
+             <div className="h-8 w-8 rounded bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center border border-white/10">
+                <Building2 className="h-4 w-4 text-white" />
+             </div>
+             <div className="flex flex-col">
+                <span className="text-xs font-bold text-white">Cósmica Agency</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-tighter">Enterprise Plan</span>
+             </div>
+          </div>
+          <ChevronDown className="h-3 w-3 text-zinc-500 group-hover:text-white" />
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col overflow-y-auto pt-4 px-4 pb-4">
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">Módulos</div>
         <nav className="flex-1 space-y-2">
           {navigation.map((item) => {
