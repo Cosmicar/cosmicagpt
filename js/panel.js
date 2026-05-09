@@ -953,10 +953,7 @@ async function calcularRendimientoOperador() {
     console.log("No hay trabajos cargados para calcular rendimiento.");
   }
 
-  const misTrabajosTaller = todos.filter((t) =>
-    t.tipo === "taller" &&
-    (t.creadoPor || "").toLowerCase().trim() === emailOperador
-  );
+  const misTrabajosTaller = todos.filter((t) => t.tipo === "taller");
 
   const misEntregados = misTrabajosTaller.filter(t => t.estado === WORK_STATUS.entregado);
   const misEnProceso  = misTrabajosTaller.filter(t => t.estado !== WORK_STATUS.entregado && t.estado !== WORK_STATUS.reingresada);
@@ -986,7 +983,7 @@ async function calcularRendimientoOperador() {
   if (tabla) {
     if (!misTrabajosTaller.length) {
       tabla.innerHTML = `<div class="empty-state" style="font-size:13px;">
-        No tenés trabajos de taller registrados a tu nombre aún (${emailOperador}).
+        Aún no hay trabajos de taller registrados.
       </div>`;
     } else {
       const filas = misTrabajosTaller
