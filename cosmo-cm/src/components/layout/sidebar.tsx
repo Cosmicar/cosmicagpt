@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity, Zap, Cpu, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Generador IA", href: "/generator", icon: Sparkles },
   { name: "Motor Visual", href: "/visual-engine", icon: Zap },
+  { name: "Automatización", href: "/automation-center", icon: Cpu },
+  { name: "Memoria IA", href: "/ai-memory", icon: Brain },
   { name: "Biblioteca", href: "/library", icon: FolderOpen },
   { name: "Calendario", href: "/calendar", icon: Calendar },
   { name: "Analytics", href: "/analytics", icon: Activity },

@@ -1,31 +1,26 @@
-import { openAI } from "@/services/ai/openai-service";
-import { getCampaignSystemPrompt, buildCampaignUserPrompt } from "@/prompts/campaign-prompt";
+import { openAIService } from "@/services/ai/openai-service";
 import { CampaignInput, CampaignOutput } from "@/types/campaign";
+import { buildCampaignPrompt } from "@/prompts/campaign-prompt";
+import { contextEngine } from "@/services/context/context-engine";
 
 export class CampaignGenerator {
   async generate(input: CampaignInput): Promise<CampaignOutput> {
+    // 1. Recover AI Memory & Context
+    const aiContext = await contextEngine.buildGenerationContext(input.plataforma);
+
+    // 2. Build Rich Prompt with Context
+    const prompt = buildCampaignPrompt(input) + "\n\n" + aiContext;
+
+    // 3. Generate with OpenAI
+    const response = await openAIService.generateChatCompletion(prompt);
+
+    // 4. Parse and return
     try {
-      const systemPrompt = getCampaignSystemPrompt();
-      const userPrompt = buildCampaignUserPrompt(input);
-
-      const responseString = await openAI.generateChatCompletion(
-        systemPrompt,
-        userPrompt,
-        true // Use JSON format
-      );
-
-      // Parse the JSON response
-      const output: CampaignOutput = JSON.parse(responseString);
-      
-      // Tag it if it was mocked (handled inside OpenAIService based on env)
-      return {
-        ...output,
-        mocked: !process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes("placeholder")
-      };
-
-    } catch (error) {
-      console.error("CampaignGenerator Error:", error);
-      throw new Error("No se pudo generar la campaña. Por favor, intenta de nuevo.");
+      const parsed = JSON.parse(response);
+      return parsed as CampaignOutput;
+    } catch (e) {
+      console.error("Error parsing campaign JSON:", e);
+      throw new Error("La IA devolvió un formato inválido. Intenta de nuevo.");
     }
   }
 }

@@ -43,7 +43,63 @@ CREATE TABLE scheduled_posts (
 -- Políticas RLS para scheduled_posts
 -- ALTER TABLE scheduled_posts ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Acceso público scheduler" ON scheduled_posts FOR ALL USING (true) WITH CHECK (true);
+-- Tabla: automation_logs
+CREATE TABLE automation_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  message TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Políticas RLS para automation_logs
+-- ALTER TABLE automation_logs ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Acceso público logs" ON automation_logs FOR ALL USING (true) WITH CHECK (true);
 
 -- Políticas RLS (Row Level Security) - Ejemplo básico para acceso público durante desarrollo
 -- ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Acceso público" ON campaigns FOR ALL USING (true) WITH CHECK (true);
+
+-- TABLA: campaign_memories
+CREATE TABLE campaign_memories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  performance_score INTEGER DEFAULT 0,
+  engagement_score INTEGER DEFAULT 0,
+  conversion_score INTEGER DEFAULT 0,
+  viral_score INTEGER DEFAULT 0,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: prompt_patterns
+CREATE TABLE prompt_patterns (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  prompt_type TEXT NOT NULL,
+  structure TEXT NOT NULL,
+  success_score FLOAT DEFAULT 0,
+  usage_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: viral_structures
+CREATE TABLE viral_structures (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  hook TEXT NOT NULL,
+  pattern_type TEXT NOT NULL,
+  emotion TEXT NOT NULL,
+  platform TEXT NOT NULL,
+  success_rate FLOAT DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: knowledge_embeddings (Preparada para extensiones vectoriales)
+CREATE TABLE knowledge_embeddings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  content TEXT NOT NULL,
+  metadata JSONB,
+  -- vector_data vector(1536), -- Descomentar si se habilita pgvector
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
