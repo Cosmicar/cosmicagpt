@@ -103,3 +103,94 @@ CREATE TABLE knowledge_embeddings (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- TABLA: campaign_analytics
+CREATE TABLE campaign_analytics (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  views INTEGER DEFAULT 0,
+  likes INTEGER DEFAULT 0,
+  shares INTEGER DEFAULT 0,
+  comments INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  engagement_rate FLOAT DEFAULT 0,
+  conversion_rate FLOAT DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: performance_predictions
+CREATE TABLE performance_predictions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  predicted_engagement FLOAT DEFAULT 0,
+  predicted_viral_score FLOAT DEFAULT 0,
+  best_platform TEXT NOT NULL,
+  best_posting_time TIMESTAMP WITH TIME ZONE,
+  confidence_score FLOAT DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: engagement_insights
+CREATE TABLE engagement_insights (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  type TEXT NOT NULL, -- trend, alert, suggestion
+  message TEXT NOT NULL,
+  impact TEXT NOT NULL, -- high, medium, low
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: executive_reports
+CREATE TABLE executive_reports (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  report_type TEXT NOT NULL,
+  period_start TIMESTAMP WITH TIME ZONE NOT NULL,
+  period_end TIMESTAMP WITH TIME ZONE NOT NULL,
+  summary TEXT NOT NULL,
+  insights JSONB NOT NULL, -- Array de strings
+  recommendations JSONB NOT NULL, -- Array de strings
+  performance_score INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- MULTI-TENANT CORE
+-- TABLA: organizations
+CREATE TABLE organizations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  logo_url TEXT,
+  primary_color TEXT DEFAULT '#3b82f6',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: workspaces
+CREATE TABLE workspaces (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: workspace_members
+CREATE TABLE workspace_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL, -- Relación con auth.users
+  role TEXT NOT NULL DEFAULT 'viewer', -- owner, admin, editor, viewer
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- TABLA: workspace_settings
+CREATE TABLE workspace_settings (
+  workspace_id UUID PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+  settings JSONB DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- NOTA: Todas las tablas existentes (campaigns, scheduled_posts, automation_logs, etc.)
+-- deben incluir una columna workspace_id UUID REFERENCES workspaces(id) para aislamiento de datos.
+
+
+
+

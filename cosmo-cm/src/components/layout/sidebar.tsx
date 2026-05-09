@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity, Zap, Cpu, Brain } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Calendar, Settings, Activity, Zap, Cpu, Brain, BarChart3, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -11,9 +11,10 @@ const navigation = [
   { name: "Motor Visual", href: "/visual-engine", icon: Zap },
   { name: "Automatización", href: "/automation-center", icon: Cpu },
   { name: "Memoria IA", href: "/ai-memory", icon: Brain },
+  { name: "Inteligencia Analítica", href: "/analytics-intelligence", icon: BarChart3 },
+  { name: "Reportes Ejecutivos", href: "/executive-reports", icon: FileText },
   { name: "Biblioteca", href: "/library", icon: FolderOpen },
   { name: "Calendario", href: "/calendar", icon: Calendar },
-  { name: "Analytics", href: "/analytics", icon: Activity },
   { name: "Configuración", href: "/settings", icon: Settings },
 ];
 
