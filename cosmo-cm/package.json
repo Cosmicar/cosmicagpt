@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker:test": "TEST_MODE=true npx ts-node src/scripts/test-scheduler.ts",
+    "post:test": "npx ts-node src/scripts/create-test-post.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

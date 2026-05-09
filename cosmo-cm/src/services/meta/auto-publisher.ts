@@ -16,9 +16,17 @@ export class AutoPublisher {
       .eq("id", id);
 
     try {
+      const isTestMode = process.env.TEST_MODE === "true";
+      
+      if (isTestMode) {
+        loggerEngine.info(`[AutoPublisher] [MODO TEST] Simulando publicación para post ${id}`);
+      }
+
       // 2. Obtener token de Meta
       const token = await tokenService.getActiveToken(workspace_id);
-      if (!token) {
+      
+      // Validación Tarea 3
+      if (!token && !isTestMode) {
         throw new Error("No hay token de Meta válido o activo para este workspace.");
       }
 
@@ -37,9 +45,26 @@ export class AutoPublisher {
 
       // 4. Publicar según la plataforma
       if (platform.toLowerCase() === "facebook") {
-        result = await this.publishFacebookPost(campaign);
+        if (isTestMode) {
+          loggerEngine.info(`[AutoPublisher] [MODO TEST] Simulado: Publicando en Facebook`, { copy: campaign.copy });
+          result = { id: `test_fb_${Date.now()}` };
+        } else {
+          result = await this.publishFacebookPost(campaign);
+        }
       } else if (platform.toLowerCase() === "instagram") {
-        result = await this.publishInstagramPost(campaign);
+        let imageUrl = campaign.visual_prompt?.imageUrl || campaign.visual_prompt?.url;
+        
+        // Validación Tarea 3
+        if (!imageUrl && !isTestMode) {
+            throw new Error("Instagram requiere una imagen para publicar.");
+        }
+
+        if (isTestMode) {
+          loggerEngine.info(`[AutoPublisher] [MODO TEST] Simulado: Publicando en Instagram`, { caption: campaign.copy, imageUrl });
+          result = { id: `test_ig_${Date.now()}` };
+        } else {
+          result = await this.publishInstagramPost(campaign);
+        }
       } else {
         throw new Error(`Plataforma ${platform} no soportada para publicación automática.`);
       }
