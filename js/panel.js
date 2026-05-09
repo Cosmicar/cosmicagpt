@@ -601,29 +601,7 @@ async function calcularEstadisticasAdmin() {
     }
   }
 
-  // Motor de Recomendaciones (If/Else Lógico)
-  const recomendacionesEl = document.getElementById("recomendacionesMarketing");
-  if (recomendacionesEl) {
-    let sugerencia = "No hay suficientes datos para generar una recomendación.";
-    if (ranking.length > 0 && totalServicios > 0) {
-      const topProv = ranking[0];
-      const topPct = (topProv.cantidad / totalServicios) * 100;
-      
-      const remoteTop = ranking.find(r => r.nombre.toLowerCase() !== "jujuy" && r.nombre.toLowerCase() !== "desconocida");
-      const remotePct = remoteTop ? (remoteTop.cantidad / totalServicios) * 100 : 0;
 
-      if (topPct > 80) {
-        // Regla 2: Dependencia
-        sugerencia = `&#9888;&#65039; <strong>Dependencia detectada:</strong> El ${topPct.toFixed(1)}% de los ingresos provienen de <strong>${escapeHtml(topProv.nombre)}</strong>. Se recomienda lanzar campañas de alcance nacional (ej. "Reset Impresoras") para diversificar el mercado.`;
-      } else if (remoteTop && remotePct > 15) {
-        // Regla 1: Crecimiento remoto
-        sugerencia = `&#128640; <strong>Foco de Inversión:</strong> Recomendamos destinar un 30% del presupuesto de Google/Meta Ads a <strong>${escapeHtml(remoteTop.nombre)}</strong> debido a su alta conversión reciente (representa el ${remotePct.toFixed(1)}% de los servicios).`;
-      } else {
-        sugerencia = `&#9989; <strong>Mercado estable:</strong> El flujo de clientes está distribuido. Considera crear promociones preventivas para fidelizar el Top 3 de provincias.`;
-      }
-    }
-    recomendacionesEl.innerHTML = sugerencia;
-  }
 
   // 8. Preparación KPIs Avanzados (Comentado)
   /*

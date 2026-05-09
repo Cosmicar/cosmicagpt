@@ -410,7 +410,7 @@
   <div class="tab"            onclick="showTab('nuevo')">➕ Nuevo ingreso</div>
   <div class="tab"            onclick="showTab('ingresos'); cargarIngresos()">💰 Ingresos</div>
   <div class="tab"            id="tabCRM"  onclick="showTab('crm'); loadDirectorioClientes()">📖 Directorio</div>
-  <div class="tab"            id="tabMarketing" onclick="showTab('marketing')">📢 Redes</div>
+
   <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
   <div class="tab admin-section"   id="tabEstadisticas" onclick="showTab('estadisticas'); calcularEstadisticasAdmin()" style="display:none;">📈 Estadísticas</div>
   <div class="tab admin-section"   id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
@@ -924,68 +924,6 @@
 
 </div><!-- /tab-crm -->
 
-<!-- ── TAB: MARKETING / REDES ───────────────────────────── -->
-<div class="tab-content" id="tab-marketing">
-  <div class="section-title" style="margin-bottom:20px;">📢 Agente de Redes Sociales</div>
-  <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">
-    Generá contenido para tus redes sociales usando IA basado en datos reales.
-  </p>
-
-  <!-- GENERADOR DE CONTENIDO -->
-  <div class="form-section" style="border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.02); margin-bottom: 24px;">
-    <div class="form-section-title" style="color:var(--accent2);">🤖 Generador de Post con IA</div>
-    
-    <div class="form-group" style="margin-bottom: 16px;">
-      <label for="postTipo" style="color: var(--accent2); font-weight: 600;">Tipo de publicación</label>
-      <select id="postTipo" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(0,229,255,0.3); color: white;">
-        <option value="reparacion">Reparación</option>
-        <option value="optimizacion">Optimización</option>
-        <option value="instalacion_remota">Instalación Remota</option>
-        <option value="impresoras_epson">Impresoras Epson</option>
-        <option value="promociones">Promoción</option>
-        <option value="mantenimiento_pc">Mantenimiento PC</option>
-      </select>
-    </div>
-
-    <div class="form-group" style="margin-bottom: 16px;">
-      <label for="postEquipo" style="color: var(--accent2); font-weight: 600;">Equipo</label>
-      <input type="text" id="postEquipo" placeholder="Ej: Notebook Lenovo" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(0,229,255,0.3); color: white;">
-    </div>
-
-    <div class="form-group" style="margin-bottom: 16px;">
-      <label for="postProblema" style="color: var(--accent2); font-weight: 600;">Problema</label>
-      <input type="text" id="postProblema" placeholder="Ej: Lentitud extrema" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(0,229,255,0.3); color: white;">
-    </div>
-
-    <div class="form-group" style="margin-bottom: 16px;">
-      <label for="postSolucion" style="color: var(--accent2); font-weight: 600;">Solución</label>
-      <input type="text" id="postSolucion" placeholder="Ej: Optimización y SSD" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(0,229,255,0.3); color: white;">
-    </div>
-
-    <button class="btn btn-primary" id="btnGenerarRedes" onclick="generarContenidoRedes()" style="width: 100%;">
-      ✨ Generar contenido
-    </button>
-  </div>
-
-  <!-- PREVIEW DEL POST -->
-  <div id="previewAreaRedes" style="display: none; border-color: rgba(0,229,255,0.25); background: rgba(0,229,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,229,255,0.2);">
-    <div style="color: var(--accent2); font-weight: 600; font-size: 16px; margin-bottom: 12px;">📝 Vista Previa del Post</div>
-    
-    <div id="previewCaption" style="color: white; font-size: 14px; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; white-space: pre-wrap;"></div>
-    
-    <div id="previewCTA" style="color: var(--accent2); font-size: 14px; font-weight: 600; margin-bottom: 8px;"></div>
-    
-    <div id="previewHashtags" style="color: var(--muted); font-size: 13px; margin-bottom: 16px;"></div>
-
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <button class="btn btn-secondary" onclick="copiarContenido()" style="flex: 1;">📋 Copiar</button>
-      <button class="btn btn-secondary" onclick="guardarBorrador()" style="flex: 1; border-color: var(--accent2); color: var(--accent2);">💾 Guardar borrador</button>
-      <button class="btn btn-secondary" onclick="publicarFacebook()" style="flex: 1; border-color: #1877F2; color: #1877F2;">📘 Facebook</button>
-      <button class="btn btn-secondary" onclick="prepararInstagram()" style="flex: 1; border-color: #E4405F; color: #E4405F;">📸 Instagram</button>
-    </div>
-  </div>
-
-</div><!-- /tab-marketing -->
 
 <!-- ── TAB: ESTADÍSTICAS ADMIN ───────────────────────────── -->
 <div class="tab-content admin-section" id="tab-estadisticas">
@@ -1042,12 +980,7 @@
           <div class="empty-state" style="font-size:13px;padding:10px;">Calculando ranking...</div>
         </div>
       </div>
-      <div style="flex:1;">
-        <div class="form-section-title" style="margin-bottom:12px;">&#128161; Recomendaciones de Marketing</div>
-        <div id="recomendacionesMarketing" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;font-size:13px;color:#cdd6f4;line-height:1.5;">
-          Analizando datos...
-        </div>
-      </div>
+
     </div>
 
     <!-- Gráfico Tipos -->
@@ -1077,7 +1010,7 @@
 </div><!-- /tab-estadisticas -->
 
 <script type="module" src="./js/panel.js?v=2"></script>
-<script type="module" src="./js/redes.js"></script>
+
 
 <!-- ── MODAL: EMITIR FACTURA C ─────────────────────────────────────── -->
 <div class="modal-overlay" id="modalFacturaOverlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modalFacturaTitulo" hidden inert>
