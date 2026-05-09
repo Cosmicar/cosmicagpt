@@ -603,26 +603,62 @@ async function calcularEstadisticasAdmin() {
 
 
 
-  // 8. Preparación KPIs Avanzados (Comentado)
-  /*
+  // 8. KPIs Avanzados Activos
+  
   // Tasa de Retención de Clientes
-  // let clientesRepetidos = 0;
-  // let totalClientesUnicos = Object.keys(clientesMap).length;
-  // (Lógica: Iterar clientes y contar los que tengan más de 1 trabajo en la colección)
-  // const tasaRetencion = totalClientesUnicos > 0 ? (clientesRepetidos / totalClientesUnicos) * 100 : 0;
-  // document.getElementById("statRetencion").innerText = \`\${tasaRetencion.toFixed(1)}%\`;
+  const jobsPerClient = {};
+  trabajos.forEach(t => {
+    if (t.clienteId) {
+      jobsPerClient[t.clienteId] = (jobsPerClient[t.clienteId] || 0) + 1;
+    }
+  });
+  
+  let clientesRepetidos = 0;
+  let totalClientesConTrabajos = 0;
+  for (const cid in jobsPerClient) {
+    totalClientesConTrabajos++;
+    if (jobsPerClient[cid] > 1) {
+      clientesRepetidos++;
+    }
+  }
+  const tasaRetencion = totalClientesConTrabajos > 0 ? (clientesRepetidos / totalClientesConTrabajos) * 100 : 0;
+  document.getElementById("statRetencion").innerText = `${tasaRetencion.toFixed(1)}%`;
 
   // Tiempo Promedio de Resolución
-  // let sumatoriaHoras = 0;
-  // let trabajosValidos = 0;
-  // (Lógica: t.fechaEntregado - t.fechaIngreso, promediar entre trabajosValidos)
-  // document.getElementById("statTiempoResolucion").innerText = \`\${promedioHoras.toFixed(1)} hs\`;
+  let sumatoriaHoras = 0;
+  let trabajosValidos = 0;
+  trabajos.forEach(t => {
+    if (t.estado === WORK_STATUS.entregado && t.fechaIngreso && t.fechaEntregado) {
+      const ms = new Date(t.fechaEntregado) - new Date(t.fechaIngreso);
+      if (ms > 0) {
+        sumatoriaHoras += ms / (1000 * 60 * 60);
+        trabajosValidos++;
+      }
+    }
+  });
+  const promedioHoras = trabajosValidos > 0 ? (sumatoriaHoras / trabajosValidos) : 0;
+  document.getElementById("statTiempoResolucion").innerText = `${promedioHoras.toFixed(1)} hs`;
 
-  // Top 3 Problemas Frecuentes
-  // const problemasMap = {};
-  // (Lógica: Agrupar t.problema (normalizado) y ordenar de mayor a menor)
-  // document.getElementById("statTopProblema").innerText = topProblemaNombre;
-  */
+  // Top Problema Frecuente
+  const problemasMap = {};
+  trabajos.forEach(t => {
+    if (t.problema) {
+      const prob = t.problema.toLowerCase().trim();
+      if (prob.length > 3 && prob !== "ninguno" && prob !== "no enciende" && prob !== "lento") { 
+         // Optional: add some basic stopwords filter if needed, but let's keep it simple
+         problemasMap[prob] = (problemasMap[prob] || 0) + 1;
+      }
+    }
+  });
+  let maxCount = 0;
+  let topProblemaNombre = "--";
+  for (const prob in problemasMap) {
+    if (problemasMap[prob] > maxCount) {
+      maxCount = problemasMap[prob];
+      topProblemaNombre = prob.charAt(0).toUpperCase() + prob.slice(1);
+    }
+  }
+  document.getElementById("statTopProblema").innerText = topProblemaNombre;
 }
 
 // ══════════════════════════════════════════════════════════════
