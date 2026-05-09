@@ -1,26 +1,43 @@
-// Meta Graph API Client
 import { loggerEngine } from "@/services/logging/logger-engine";
+import { tokenService } from "./auth/token-service";
+import { workspaceEngine } from "@/services/workspaces/workspace-engine";
+import { supabase } from "@/lib/supabase/client";
 
 export class MetaClient {
   private baseUrl = "https://graph.facebook.com/v19.0";
-  private accessToken: string;
-  private pageId: string;
-  private instagramId: string;
 
-  constructor() {
-    this.accessToken = process.env.META_ACCESS_TOKEN || "";
-    this.pageId = process.env.META_PAGE_ID || "";
-    this.instagramId = process.env.META_INSTAGRAM_ID || "";
+  private async getActiveConnection() {
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) throw new Error("Aislamiento Multi-tenant: No hay workspace activo.");
+
+    const { data, error } = await supabase
+      .from('social_connections')
+      .select('*')
+      .eq('workspace_id', workspace.id)
+      .eq('platform', 'meta')
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      accessToken: await tokenService.getActiveToken(workspace.id),
+      pageId: data.page_id,
+      instagramId: data.instagram_business_id
+    };
   }
 
   async post(endpoint: string, data: any) {
-    if (!this.accessToken) {
-      loggerEngine.warn("META_ACCESS_TOKEN is missing. Running in mock mode for Meta API.");
+    const connection = await this.getActiveConnection();
+    
+    if (!connection || !connection.accessToken) {
+      loggerEngine.warn("Meta token missing or expired. Running in mock mode.");
       return { id: `mock_post_${Date.now()}` };
     }
 
     try {
-      const url = `${this.baseUrl}/${endpoint}?access_token=${this.accessToken}`;
+      const url = `${this.baseUrl}/${endpoint}?access_token=${connection.accessToken}`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -42,14 +59,15 @@ export class MetaClient {
     }
   }
 
-  async get(endpoint: string) {
-    if (!this.accessToken) return null;
-    
-    // ... basic GET implementation ...
+  async getPageId() { 
+    const conn = await this.getActiveConnection();
+    return conn?.pageId;
   }
-
-  getPageId() { return this.pageId; }
-  getInstagramId() { return this.instagramId; }
+  
+  async getInstagramId() { 
+    const conn = await this.getActiveConnection();
+    return conn?.instagramId;
+  }
 }
 
 export const metaClient = new MetaClient();

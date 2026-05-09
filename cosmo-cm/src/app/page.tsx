@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, CheckCircle2, Clock, MessageSquare, Play, Plus, Share2, Sparkles, TrendingUp, Users, Loader2, Database, Zap, Video, ImageIcon, Calendar as CalendarIcon, ArrowUpRight } from "lucide-react";
+import { Activity, CheckCircle2, Clock, MessageSquare, Play, Plus, Share2, Sparkles, TrendingUp, Users, Loader2, Database, Zap, Video, ImageIcon, Calendar as CalendarIcon, ArrowUpRight, Facebook, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { campaignStorage } from "@/services/storage/campaign-storage";
 import { scheduleService } from "@/services/scheduler/schedule-service";
@@ -86,8 +87,14 @@ export default function Dashboard() {
             <Database className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">READY</div>
-            <p className="text-xs text-accent mt-1">API de Publicación OK</p>
+             <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div className="text-2xl font-bold text-white">READY</div>
+             </div>
+             <p className="text-xs text-accent mt-1 flex justify-between items-center">
+                API de Publicación OK
+                <Link href="/social-connections" className="text-[10px] underline hover:text-white transition-colors">Ajustes</Link>
+             </p>
           </CardContent>
         </Card>
       </div>
@@ -142,31 +149,57 @@ export default function Dashboard() {
         </Card>
 
         {/* Campaign Widget */}
-        <Card className="col-span-3 glass-panel border-white/10 bg-black/40">
-          <CardHeader>
-            <CardTitle className="text-white">Campañas Recientes</CardTitle>
-            <CardDescription className="text-zinc-400">Actividad de generación IA</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-            ) : (
-              <div className="space-y-6">
-                {campaigns.slice(0, 4).map((item) => (
-                  <div key={item.id} className="flex items-center">
-                    <div className="mr-4 p-2 rounded-full bg-primary/10 border border-primary/20">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium text-white line-clamp-1">{item.title}</p>
-                      <p className="text-[10px] text-zinc-500">{new Date(item.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))}
+        <div className="col-span-3 space-y-4">
+          <Card className="glass-panel border-white/10 bg-black/40">
+            <CardHeader>
+              <CardTitle className="text-white">Cuentas Vinculadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 rounded bg-blue-500/5 border border-blue-500/10">
+                   <div className="flex items-center gap-2">
+                      <Facebook className="h-4 w-4 text-blue-500" />
+                      <span className="text-xs text-white">Cósmica Digital</span>
+                   </div>
+                   <Badge className="bg-emerald-500/20 text-emerald-500 text-[10px]">ACTIVE</Badge>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded bg-pink-500/5 border border-pink-500/10">
+                   <div className="flex items-center gap-2">
+                      <Instagram className="h-4 w-4 text-pink-500" />
+                      <span className="text-xs text-white">@cosmica.ia</span>
+                   </div>
+                   <Badge className="bg-emerald-500/20 text-emerald-500 text-[10px]">ACTIVE</Badge>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-panel border-white/10 bg-black/40">
+            <CardHeader>
+              <CardTitle className="text-white">Campañas Recientes</CardTitle>
+              <CardDescription className="text-zinc-400">Actividad de generación IA</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+              ) : (
+                <div className="space-y-6">
+                  {campaigns.slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex items-center">
+                      <div className="mr-4 p-2 rounded-full bg-primary/10 border border-primary/20">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium text-white line-clamp-1">{item.title}</p>
+                        <p className="text-[10px] text-zinc-500">{new Date(item.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

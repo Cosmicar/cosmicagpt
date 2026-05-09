@@ -14,8 +14,9 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - META_APP_ID=${META_APP_ID}
+      - NEXT_PUBLIC_META_APP_ID=${NEXT_PUBLIC_META_APP_ID}
       - META_APP_SECRET=${META_APP_SECRET}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
     depends_on:
       - redis
     restart: unless-stopped
@@ -31,8 +32,9 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - REDIS_URL=redis://redis:6379
-      - META_APP_ID=${META_APP_ID}
+      - NEXT_PUBLIC_META_APP_ID=${NEXT_PUBLIC_META_APP_ID}
       - META_APP_SECRET=${META_APP_SECRET}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
     depends_on:
       - redis
     restart: unless-stopped

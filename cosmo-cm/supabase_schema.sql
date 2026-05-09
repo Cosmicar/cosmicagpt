@@ -169,6 +169,21 @@ CREATE TABLE generated_visual_assets (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 8. Social Connections (Meta OAuth)
+CREATE TABLE social_connections (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  platform_user_id TEXT NOT NULL,
+  page_id TEXT,
+  instagram_business_id TEXT,
+  access_token TEXT NOT NULL,
+  token_expires_at TIMESTAMP WITH TIME ZONE,
+  page_name TEXT,
+  username TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- ROW LEVEL SECURITY (RLS) - POLÍTICA BASE
 -- IMPORTANTE: Ejecutar estos comandos para activar el aislamiento real en producción
 /*
@@ -178,9 +193,5 @@ CREATE POLICY "Aislamiento Multi-Tenant" ON campaigns
     SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
   ));
 -- (Repetir para todas las tablas)
-*/
-
-
-
 
 
