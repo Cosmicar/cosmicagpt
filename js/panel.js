@@ -422,7 +422,9 @@ function bindGlobalActions() {
 function calcularContribContable(t, profile) {
   const precio = Number(t.precio || 0);
   if (t.tipo !== "taller") return precio;          // remoto → 100%
-  if (profile?.rol === "operador") return precio * 0.80; // operador ve su 80%
+  
+  const rol = (profile?.rol || "").toLowerCase();
+  if (rol === "operador") return precio * 0.80;    // operador ve su 80%
   if (t.liquidado === true) return precio * 0.20;  // taller liquidado → 20% para Cósmica
   return 0;                                        // taller sin liquidar → $0 para Cósmica
 }
@@ -934,7 +936,7 @@ function facturarDesdeCliente(clienteId) {
 // Filtra trabajos de taller creados por el operador actual.
 async function calcularRendimientoOperador() {
   const profile = state.session?.profile;
-  const emailOperador = state.session?.user?.email || "";
+  const emailOperador = (profile?.email || state.session?.user?.email || "").toLowerCase().trim();
 
   let todos = [];
   try {
@@ -942,12 +944,18 @@ async function calcularRendimientoOperador() {
     todos = await listTrabajos(profile);
   } catch (err) {
     console.warn("Error al cargar rendimiento real-time:", err);
+    // Fallback al cache de ingresos si existe
     todos = (state.ingresosData || []).map(({ t }) => t);
+  }
+
+  // Si aún no hay trabajos, no podemos calcular nada
+  if (!todos.length) {
+    console.log("No hay trabajos cargados para calcular rendimiento.");
   }
 
   const misTrabajosTaller = todos.filter((t) =>
     t.tipo === "taller" &&
-    (t.creadoPor || "") === emailOperador
+    (t.creadoPor || "").toLowerCase().trim() === emailOperador
   );
 
   const misEntregados = misTrabajosTaller.filter(t => t.estado === WORK_STATUS.entregado);
@@ -977,7 +985,9 @@ async function calcularRendimientoOperador() {
   const tabla = document.getElementById("rendDetalleTabla");
   if (tabla) {
     if (!misTrabajosTaller.length) {
-      tabla.innerHTML = "<p style='color:var(--muted);font-size:13px;'>No tenés trabajos de taller registrados a tu nombre aún.</p>";
+      tabla.innerHTML = `<div class="empty-state" style="font-size:13px;">
+        No tenés trabajos de taller registrados a tu nombre aún (${emailOperador}).
+      </div>`;
     } else {
       const filas = misTrabajosTaller
         .sort((a,b) => new Date(b.fechaIngreso) - new Date(a.fechaIngreso))
@@ -987,16 +997,16 @@ async function calcularRendimientoOperador() {
           const colorLiq  = t.liquidado ? "var(--success)" : (esEntregado ? "var(--warning)" : "var(--muted)");
           const cobro  = formatMoney(Number(t.precio || 0) * 0.80);
           return `<tr>
-            <td>${t.numeroOrden || "—"}</td>
-            <td>${escapeHtml(t.equipo || "—")}</td>
-            <td>$${formatMoney(Number(t.precio || 0))}</td>
-            <td style="color:${esEntregado ? 'var(--success)' : 'var(--muted)'}">$${cobro}</td>
-            <td style="color:${colorLiq}">${estadoLiq}</td>
+            <td style="padding:10px 6px;"><b>${t.numeroOrden || "—"}</b></td>
+            <td style="padding:10px 6px;">${escapeHtml(t.equipo || "—")}</td>
+            <td style="padding:10px 6px;">$${formatMoney(Number(t.precio || 0))}</td>
+            <td style="padding:10px 6px;color:${esEntregado ? 'var(--success)' : 'var(--muted)'};font-weight:600;">$${cobro}</td>
+            <td style="padding:10px 6px;color:${colorLiq}">${estadoLiq}</td>
           </tr>`;
         }).join("");
 
       tabla.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;">
           <thead>
             <tr style="color:var(--muted);text-align:left;border-bottom:1px solid rgba(255,255,255,.1);">
               <th style="padding:8px 6px;">Orden</th>
