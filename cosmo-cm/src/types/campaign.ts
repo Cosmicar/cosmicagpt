@@ -26,6 +26,8 @@ export interface VisualPrompt {
   style: string;
   aspectRatio: string;
   rawPrompt: string;
+  imageUrl?: string;
+  url?: string;
 }
 
 export interface WhatsAppVersion {

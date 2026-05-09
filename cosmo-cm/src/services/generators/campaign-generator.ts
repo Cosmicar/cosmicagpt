@@ -51,15 +51,15 @@ export class CampaignGenerator {
       hashtags: data.hashtags || "#Cosmica #MarketingIA",
       cta: data.cta || "Contáctanos ahora.",
       storyboard: data.storyboard || "No detallado.",
-      visual_prompt: {
+      visualPrompt: {
         description: data.visualPrompt?.description || "Imagen tecnológica abstracta",
         style: data.visualPrompt?.style || "modern",
         aspectRatio: data.visualPrompt?.aspectRatio || "--ar 16:9",
-        rawPrompt: data.visualPrompt?.rawPrompt || "abstract technology background --ar 16:9"
+        rawPrompt: data.visualPrompt?.rawPrompt || ""
       },
-      whatsapp_version: {
-        message: data.whatsapp?.message || data.copy || "",
-        callToAction: data.whatsapp?.callToAction || "Escríbenos."
+      whatsapp: {
+        message: data.whatsapp?.message || "¡Hola! Vi esto en redes y me interesa.",
+        callToAction: data.whatsapp?.callToAction || "Escríbenos"
       }
     };
   }

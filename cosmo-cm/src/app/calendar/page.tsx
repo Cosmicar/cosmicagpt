@@ -15,6 +15,7 @@ export default function CalendarPage() {
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchedules();
@@ -34,9 +35,11 @@ export default function CalendarPage() {
     }
   };
 
-  const dayPosts = scheduledPosts.filter(post => 
-    new Date(post.scheduled_for).toDateString() === date?.toDateString()
-  );
+  const dayPosts = scheduledPosts.filter(post => {
+    const matchesDate = new Date(post.scheduled_for).toDateString() === date?.toDateString();
+    const matchesPlatform = selectedPlatform ? post.platform.toLowerCase() === selectedPlatform.toLowerCase() : true;
+    return matchesDate && matchesPlatform;
+  });
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 h-full flex flex-col">
@@ -78,8 +81,8 @@ export default function CalendarPage() {
               onSelect={setDate}
               className="rounded-md border border-white/10 bg-black/50 text-white"
               classNames={{
-                day_selected: "bg-primary text-primary-foreground hover:bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]",
-                day_today: "bg-white/10 text-white",
+                selected: "bg-primary text-primary-foreground hover:bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]",
+                today: "bg-white/10 text-white",
               }}
             />
           </CardContent>
@@ -87,7 +90,14 @@ export default function CalendarPage() {
              <p className="text-[10px] font-bold text-zinc-500 uppercase px-2 mb-2">Filtros</p>
              <div className="space-y-1">
                 {["Instagram", "Facebook", "WhatsApp", "LinkedIn"].map(p => (
-                  <div key={p} className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/5 rounded transition-colors cursor-pointer group">
+                  <div 
+                    key={p} 
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 hover:bg-white/5 rounded transition-colors cursor-pointer group",
+                      selectedPlatform === p.toLowerCase() ? "bg-white/10" : ""
+                    )}
+                    onClick={() => setSelectedPlatform(selectedPlatform === p.toLowerCase() ? null : p.toLowerCase())}
+                  >
                     <div className={cn("h-2 w-2 rounded-full", 
                       p === "Instagram" ? "bg-pink-500" : 
                       p === "Facebook" ? "bg-blue-500" : 

@@ -30,10 +30,15 @@ export class MetaClient {
 
   async post(endpoint: string, data: any) {
     const connection = await this.getActiveConnection();
+    const isTestMode = process.env.TEST_MODE === "true";
     
     if (!connection || !connection.accessToken) {
-      loggerEngine.warn("Meta token missing or expired. Running in mock mode.");
-      return { id: `mock_post_${Date.now()}` };
+      if (isTestMode) {
+        loggerEngine.warn("Meta token missing or expired. Running in MOCK MODE because TEST_MODE=true.");
+        return { id: `mock_post_${Date.now()}` };
+      } else {
+        throw new Error("No hay token de Meta válido o activo para este workspace. Configura la conexión primero.");
+      }
     }
 
     try {

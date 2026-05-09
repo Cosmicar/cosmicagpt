@@ -127,7 +127,9 @@ export default function WorkspaceSettings() {
                                   <p className="text-[10px] text-zinc-500">{m.email}</p>
                                </div>
                             </div>
-                            <Badge variant="ghost" className="text-[10px] uppercase text-zinc-400 border-zinc-700">{m.role}</Badge>
+                            <Badge variant="outline" className="text-[10px] uppercase text-zinc-500">
+                               {m.role}
+                            </Badge>
                          </div>
                        ))}
                     </div>

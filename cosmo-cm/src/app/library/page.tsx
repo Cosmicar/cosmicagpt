@@ -54,7 +54,7 @@ export default function Library() {
     if (activeTab === "campaigns") return matchesSearch; // Basic campaigns always show in 'campaigns'
     if (activeTab === "reels") return matchesSearch && c.formato?.toLowerCase().includes("reel");
     if (activeTab === "flyers") return matchesSearch && (c.formato?.toLowerCase().includes("flyer") || c.formato?.toLowerCase().includes("imagen"));
-    if (activeTab === "whatsapp") return matchesSearch && c.whatsapp_version;
+    if (activeTab === "whatsapp") return matchesSearch && c.whatsapp;
     if (activeTab === "storyboards") return matchesSearch && c.storyboard;
     
     return matchesSearch;
@@ -137,7 +137,7 @@ export default function Library() {
                             <Zap className="h-3 w-3 text-secondary" />
                           </Badge>
                         )}
-                        {item.whatsapp_version && (
+                        {item.whatsapp && (
                           <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
                             <MessageSquare className="h-3 w-3 text-emerald-500" />
                           </Badge>

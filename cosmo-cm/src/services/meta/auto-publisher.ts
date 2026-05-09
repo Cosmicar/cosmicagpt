@@ -2,9 +2,11 @@ import { supabase } from "@/lib/supabase/client";
 import { publishingService } from "./publishing-service";
 import { loggerEngine } from "@/services/logging/logger-engine";
 import { tokenService } from "./auth/token-service";
+import { ScheduledPost } from "@/types/schedule";
+import { CampaignRecord } from "@/types/campaign";
 
 export class AutoPublisher {
-  async publishScheduledPost(post: any) {
+  async publishScheduledPost(post: ScheduledPost) {
     const { id, workspace_id, campaign_id, platform } = post;
     
     loggerEngine.info(`[AutoPublisher] Iniciando publicación para post ${id} en ${platform}`);
@@ -49,7 +51,7 @@ export class AutoPublisher {
           loggerEngine.info(`[AutoPublisher] [MODO TEST] Simulado: Publicando en Facebook`, { copy: campaign.copy });
           result = { id: `test_fb_${Date.now()}` };
         } else {
-          result = await this.publishFacebookPost(campaign);
+          result = await this.publishFacebookPost(campaign as CampaignRecord);
         }
       } else if (platform.toLowerCase() === "instagram") {
         let imageUrl = campaign.visual_prompt?.imageUrl || campaign.visual_prompt?.url;
@@ -63,7 +65,7 @@ export class AutoPublisher {
           loggerEngine.info(`[AutoPublisher] [MODO TEST] Simulado: Publicando en Instagram`, { caption: campaign.copy, imageUrl });
           result = { id: `test_ig_${Date.now()}` };
         } else {
-          result = await this.publishInstagramPost(campaign);
+          result = await this.publishInstagramPost(campaign as CampaignRecord);
         }
       } else {
         throw new Error(`Plataforma ${platform} no soportada para publicación automática.`);
@@ -88,30 +90,29 @@ export class AutoPublisher {
         .update({ 
           status: "failed", 
           error_message: error.message || "Error desconocido",
-          failed_at: new Date().toISOString() // El usuario mencionó failed_at, lo agregamos en metadata o si existe el campo
+          failed_at: new Date().toISOString()
         })
         .eq("id", id);
     }
   }
 
-  async publishFacebookPost(campaign: any) {
+  async publishFacebookPost(campaign: CampaignRecord) {
     const message = campaign.copy;
-    let imageUrl = null;
+    let imageUrl: string | undefined = undefined;
 
-    // Intentar extraer imagen de visual_prompt si existe
-    if (campaign.visual_prompt && typeof campaign.visual_prompt === 'object') {
-        imageUrl = campaign.visual_prompt.imageUrl || campaign.visual_prompt.url;
+    if (campaign.visualPrompt && typeof campaign.visualPrompt === 'object') {
+        imageUrl = campaign.visualPrompt.imageUrl || campaign.visualPrompt.url || undefined;
     }
 
     return await publishingService.publishToFacebook(message, undefined, imageUrl);
   }
 
-  async publishInstagramPost(campaign: any) {
+  async publishInstagramPost(campaign: CampaignRecord) {
     const caption = `${campaign.copy}\n\n${campaign.hashtags}`;
-    let imageUrl = null;
+    let imageUrl: string | undefined = undefined;
 
-    if (campaign.visual_prompt && typeof campaign.visual_prompt === 'object') {
-        imageUrl = campaign.visual_prompt.imageUrl || campaign.visual_prompt.url;
+    if (campaign.visualPrompt && typeof campaign.visualPrompt === 'object') {
+        imageUrl = campaign.visualPrompt.imageUrl || campaign.visualPrompt.url || undefined;
     }
 
     if (!imageUrl) {

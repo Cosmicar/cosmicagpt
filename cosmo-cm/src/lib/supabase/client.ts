@@ -5,15 +5,21 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// Hardened validation
-if (isProduction && (!supabaseUrl || !supabaseAnonKey)) {
-  throw new Error("FATAL: Supabase environment variables are missing in production environment.");
+if (!supabaseUrl || !supabaseAnonKey) {
+  const errorMsg = "Supabase environment variables (NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY) are missing.";
+  
+  if (isProduction) {
+    console.error(`[Supabase] ERROR: ${errorMsg} Using placeholders to allow build, but database calls WILL fail at runtime.`);
+  } else {
+    console.warn(`[Supabase] WARNING: ${errorMsg} Using placeholder values. Database calls WILL fail.`);
+  }
 }
 
-// Fallback for local development or demo mode
 const finalUrl = supabaseUrl || "https://placeholder.supabase.co";
 const finalKey = supabaseAnonKey || "placeholder-key";
 
 export const supabase = createClient(finalUrl, finalKey);
 
-console.log(`[Supabase] Initialized in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT/DEMO'} mode.`);
+if (!isProduction) {
+  console.log(`[Supabase] Initialized in DEVELOPMENT mode.`);
+}

@@ -3,6 +3,7 @@ export type ScheduleStatus = "draft" | "scheduled" | "processing" | "published" 
 export interface ScheduledPost {
   id: string;
   campaign_id: string;
+  workspace_id: string;
   platform: string;
   format: string;
   scheduled_for: string; // ISO string

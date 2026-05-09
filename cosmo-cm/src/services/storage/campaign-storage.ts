@@ -11,8 +11,20 @@ export class CampaignStorage {
       .from("campaigns")
       .insert([
         {
-          ...input,
-          ...output,
+          servicio: input.servicio,
+          objetivo: input.objetivo,
+          plataforma: input.plataforma,
+          formato: input.formato,
+          tono: input.tono,
+          promocion: input.promocion,
+          contexto: input.contexto,
+          title: output.title,
+          copy: output.copy,
+          hashtags: output.hashtags,
+          cta: output.cta,
+          storyboard: output.storyboard,
+          visual_prompt: output.visualPrompt,
+          whatsapp_version: output.whatsapp,
           workspace_id: workspace.id,
           status: "draft" as CampaignStatus,
         },
@@ -47,32 +59,40 @@ export class CampaignStorage {
     }
 
     const { data, error } = await query;
-
+ 
     if (error) {
       console.error("Error fetching campaigns:", error);
       return [];
     }
-
-    return data as CampaignRecord[];
+ 
+    return (data as any[]).map(item => ({
+      ...item,
+      visualPrompt: item.visual_prompt,
+      whatsapp: item.whatsapp_version
+    })) as CampaignRecord[];
   }
-
+ 
   async getCampaignById(id: string): Promise<CampaignRecord | null> {
     const workspace = workspaceEngine.getActiveWorkspace();
     if (!workspace) return null;
-
+ 
     const { data, error } = await supabase
       .from("campaigns")
       .select("*")
       .eq("id", id)
       .eq("workspace_id", workspace.id)
       .single();
-
+ 
     if (error) {
       console.error("Error fetching campaign by id:", error);
       return null;
     }
-
-    return data as CampaignRecord;
+ 
+    return {
+      ...data,
+      visualPrompt: data.visual_prompt,
+      whatsapp: data.whatsapp_version
+    } as unknown as CampaignRecord;
   }
 
   async updateCampaign(id: string, updates: Partial<CampaignRecord>): Promise<boolean> {

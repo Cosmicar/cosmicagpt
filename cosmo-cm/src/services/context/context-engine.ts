@@ -1,6 +1,4 @@
-import { memoryEngine } from "@/services/memory/memory-engine";
 import { knowledgeEngine } from "@/services/knowledge/knowledge-engine";
-import { KnowledgeContext } from "@/types/memory";
 
 export class ContextEngine {
   async buildGenerationContext(platform: string): Promise<string> {

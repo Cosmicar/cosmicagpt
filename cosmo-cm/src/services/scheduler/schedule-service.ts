@@ -1,8 +1,12 @@
 import { supabase } from "@/lib/supabase/client";
 import { ScheduledPost, ScheduleInput, CalendarEvent } from "@/types/schedule";
+import { workspaceEngine } from "@/services/workspaces/workspace-engine";
 
 export class ScheduleService {
   async createSchedule(input: ScheduleInput): Promise<ScheduledPost | null> {
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) throw new Error("Aislamiento Multi-tenant: No hay workspace activo.");
+
     const { data, error } = await supabase
       .from("scheduled_posts")
       .insert([
@@ -13,6 +17,7 @@ export class ScheduleService {
           scheduled_for: input.scheduled_for.toISOString(),
           status: "scheduled",
           notes: input.notes,
+          workspace_id: workspace.id,
         },
       ])
       .select()
@@ -27,10 +32,13 @@ export class ScheduleService {
   }
 
   async getScheduledPosts(): Promise<ScheduledPost[]> {
-    // In a real app we'd join with campaigns to get the title
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) return [];
+
     const { data, error } = await supabase
       .from("scheduled_posts")
       .select("*, campaigns(title)")
+      .eq("workspace_id", workspace.id)
       .order("scheduled_for", { ascending: true });
 
     if (error) {
@@ -38,17 +46,21 @@ export class ScheduleService {
       return [];
     }
 
-    return data.map(post => ({
+    return data.map((post: any) => ({
       ...post,
       campaign_title: post.campaigns?.title || "Campaña Desconocida"
     })) as ScheduledPost[];
   }
 
   async deleteSchedule(id: string): Promise<boolean> {
+    const workspace = workspaceEngine.getActiveWorkspace();
+    if (!workspace) return false;
+
     const { error } = await supabase
       .from("scheduled_posts")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .eq("workspace_id", workspace.id);
 
     return !error;
   }
