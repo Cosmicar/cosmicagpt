@@ -33,15 +33,25 @@ export function generarPost(topic = "") {
 }
 
 export async function publicarEnRedes(content, plataformas) {
-  // Simulación de publicación
-  console.log(`[Marketing] Publicando en ${plataformas.join(", ")}:`, content);
-  
-  // Aquí se llamaría a una Netlify Function que conecte con las APIs de Meta y X
-  // return await fetch('/.netlify/functions/publicar-redes', { ... });
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ ok: true, msg: "Publicado con éxito en todas las redes seleccionadas." });
-    }, 2000);
-  });
+  try {
+    const response = await fetch('https://hook.us2.make.com/mpydkgg5horh21adhk9qfej2324v5rd9', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ content, plataformas })
+    });
+
+    if (response.ok) {
+      alert("✅ Éxito: Se envió correctamente a la cola de publicación.");
+      return { ok: true };
+    } else {
+      alert(`❌ Error: El Webhook respondió con estado ${response.status}`);
+      return { ok: false };
+    }
+  } catch (error) {
+    console.error("[Marketing] Error al publicar:", error);
+    alert("❌ Error: No se pudo conectar con el Webhook de publicación.");
+    return { ok: false };
+  }
 }
