@@ -14,8 +14,8 @@ Construir una plataforma escalable que unifique la creación de contenido (OpenA
 * **Componentes UI:** shadcn/ui
 * **Lenguaje:** TypeScript
 * **Iconos:** Lucide React
-* **Backend / Auth / DB (Proyectado):** Supabase
-* **Integraciones Previstas:** OpenAI API, Meta Graph API, WhatsApp API
+* **Backend / Auth / DB:** Supabase (Core Integration)
+* **Integraciones:** OpenAI API (Real/Mock), Meta Graph API (Placeholder), WhatsApp API (Placeholder)
 
 ## 📂 Estructura del Proyecto
 

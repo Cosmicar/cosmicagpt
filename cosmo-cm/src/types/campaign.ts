@@ -2,6 +2,7 @@ export type Platform = "instagram" | "facebook" | "linkedin" | "omnichannel";
 export type Format = "reel" | "carrusel" | "post" | "historia";
 export type Tone = "tecnologico" | "profesional" | "cercano" | "energetico";
 export type Objective = "ventas" | "leads" | "branding" | "educacion";
+export type CampaignStatus = "draft" | "active" | "archived" | "scheduled";
 
 export interface CampaignInput {
   servicio: string;
@@ -43,3 +44,13 @@ export interface CampaignOutput {
   whatsapp: WhatsAppVersion;
   mocked?: boolean;
 }
+
+// Database specific types
+export interface CampaignRecord extends CampaignInput, CampaignOutput {
+  id: string;
+  created_at: string;
+  status: CampaignStatus;
+  user_id?: string;
+}
+
+export type CampaignDBResponse = CampaignRecord;
