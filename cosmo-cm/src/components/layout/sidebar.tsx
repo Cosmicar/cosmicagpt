@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Generador IA", href: "/generator", icon: Sparkles },
+  { name: "Motor Visual", href: "/visual-engine", icon: Zap },
   { name: "Biblioteca", href: "/library", icon: FolderOpen },
   { name: "Calendario", href: "/calendar", icon: Calendar },
   { name: "Analytics", href: "/analytics", icon: Activity },
