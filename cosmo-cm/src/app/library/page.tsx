@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { campaignStorage } from "@/services/storage/campaign-storage";
 import { CampaignRecord } from "@/types/campaign";
 import { Badge } from "@/components/ui/badge";
+import { QuickShare } from "@/components/whatsapp/quick-share";
 
 const tabs = [
   { id: "all", label: "Todo", icon: Star },
@@ -24,6 +25,7 @@ export default function Library() {
   const [campaigns, setCampaigns] = useState<CampaignRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sharingCampaign, setSharingCampaign] = useState<CampaignRecord | null>(null);
 
   useEffect(() => {
     fetchCampaigns();
@@ -128,31 +130,55 @@ export default function Library() {
                     <p className="text-[11px] text-zinc-400 line-clamp-3 leading-relaxed">{item.copy}</p>
                   </div>
                   <div className="p-3 bg-black/20 flex justify-between items-center">
-                    <div className="flex gap-1">
-                      {item.storyboard && (
-                        <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
-                          <Zap className="h-3 w-3 text-secondary" />
-                        </Badge>
-                      )}
-                      {item.whatsapp_version && (
-                        <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
-                          <MessageSquare className="h-3 w-3 text-emerald-500" />
-                        </Badge>
-                      )}
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex gap-1">
+                        {item.storyboard && (
+                          <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
+                            <Zap className="h-3 w-3 text-secondary" />
+                          </Badge>
+                        )}
+                        {item.whatsapp_version && (
+                          <Badge variant="outline" className="h-6 px-1.5 border-white/5 bg-white/5">
+                            <MessageSquare className="h-3 w-3 text-emerald-500" />
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                          onClick={() => setSharingCampaign(item)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-zinc-500 hover:text-destructive transition-colors"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-zinc-500 hover:text-destructive transition-colors"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))
           )}
+        </div>
+      )}
+
+      {/* Quick Share Panel overlay */}
+      {sharingCampaign && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full space-y-4">
+            <QuickShare campaign={sharingCampaign} />
+            <Button variant="outline" className="w-full border-white/10 text-white hover:bg-white/5" onClick={() => setSharingCampaign(null)}>
+              Cerrar
+            </Button>
+          </div>
         </div>
       )}
     </div>
