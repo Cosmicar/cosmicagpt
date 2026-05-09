@@ -1,5 +1,5 @@
-import { supabase } from "../lib/supabase/client.js";
-import { loggerEngine } from "../services/logging/logger-engine.js";
+import { supabase } from "../lib/supabase/client";
+import { loggerEngine } from "../services/logging/logger-engine";
 
 async function createTestPost() {
   loggerEngine.info("Iniciando creación de post de prueba...");
