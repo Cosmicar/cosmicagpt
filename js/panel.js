@@ -1279,6 +1279,8 @@ function readWorkForm() {
 
 
 async function guardarCliente() {
+  const btn = $("btnGuardarCliente");
+  if (btn) btn.disabled = true;
   try {
     const formData = readWorkForm();
     const result = await saveWorkForm(formData, state.edit, state.session?.profile);
@@ -1299,10 +1301,14 @@ async function guardarCliente() {
       );
     }
   } catch (error) {
-    await logSystem("error_guardar_orden", { message: error.message }).catch(() => {});
+    await logSystem("error_guardar_orden", { message: error.message }, "error").catch(() => {});
+
     showAlertError(error, "No se pudo guardar la orden.");
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
+
 
 async function buscar() {
   const value = $("busquedaDni").value.trim();

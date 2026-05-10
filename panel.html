@@ -596,7 +596,8 @@
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+        <button id="btnGuardarCliente" class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+
         <button class="btn btn-edit" id="btnCancelar"
           style="display:none" onclick="cancelarEdicion()">✕ Cancelar edición</button>
       </div>
@@ -1371,7 +1372,8 @@
 
     <div class="modal-actions">
       <button class="modal-btn-secondary" onclick="cerrarModalVenta()">Cancelar</button>
-      <button class="modal-btn-primary" onclick="confirmarVenta()">Confirmar Venta</button>
+      <button id="btnConfirmarVenta" class="modal-btn-primary" onclick="confirmarVenta()">Confirmar Venta</button>
+
     </div>
   </div>
 </div>

@@ -12,6 +12,8 @@ import {
 import { db } from "./firebase.js";
 import { COLLECTIONS, TIPO_MOVIMIENTO } from "./domain.js";
 import { getSession } from "./auth-service.js";
+import { logSystem } from "./system-service.js";
+
 
 // ── Getters de colección dinámicos (evalúados en tiempo de ejecución) ──
 const isTesterSession = () => getSession()?.profile?.rol === 'tester';
@@ -64,44 +66,50 @@ export async function registrarMovimiento(movimiento) {
   const session = getSession();
   const { productoId, tipo, motivo, cantidad } = movimiento;
   
-  await runTransaction(db, async (transaction) => {
-    const prodRef = doc(db, getProductosCol(), productoId);
-    const prodSnap = await transaction.get(prodRef);
-    
-    if (!prodSnap.exists()) {
-      throw new Error("El producto no existe.");
-    }
-    
-    const prodData = prodSnap.data();
-    let nuevoStock = Number(prodData.stock || 0);
-    const cant = Number(cantidad);
-    
-    if (tipo === TIPO_MOVIMIENTO.ingreso || (tipo === TIPO_MOVIMIENTO.ajuste && cant > 0)) {
-      nuevoStock += cant;
-    } else if (tipo === TIPO_MOVIMIENTO.salida || tipo === TIPO_MOVIMIENTO.venta || tipo === TIPO_MOVIMIENTO.reparacion || (tipo === TIPO_MOVIMIENTO.ajuste && cant < 0)) {
-      nuevoStock -= Math.abs(cant);
-    } else if (tipo === TIPO_MOVIMIENTO.reserva && nuevoStock < Math.abs(cant)) {
-      throw new Error("No hay suficiente stock para reservar.");
-    }
-    
-    if (nuevoStock < 0) {
-      throw new Error("No hay suficiente stock para realizar esta operación.");
-    }
-    
-    // Actualizar stock del producto
-    transaction.update(prodRef, { stock: nuevoStock });
-    
-    // Registrar movimiento
-    const movRef = doc(collection(db, getMovimientosCol()));
-    transaction.set(movRef, {
-      productoId,
-      tipo,
-      motivo,
-      cantidad: cant,
-      usuario: session?.user?.email || "sistema",
-      fecha: new Date().toISOString()
+  try {
+    await runTransaction(db, async (transaction) => {
+      const prodRef = doc(db, getProductosCol(), productoId);
+      const prodSnap = await transaction.get(prodRef);
+      
+      if (!prodSnap.exists()) {
+        throw new Error("El producto no existe.");
+      }
+      
+      const prodData = prodSnap.data();
+      let nuevoStock = Number(prodData.stock || 0);
+      const cant = Number(cantidad);
+      
+      if (tipo === TIPO_MOVIMIENTO.ingreso || (tipo === TIPO_MOVIMIENTO.ajuste && cant > 0)) {
+        nuevoStock += cant;
+      } else if (tipo === TIPO_MOVIMIENTO.salida || tipo === TIPO_MOVIMIENTO.venta || tipo === TIPO_MOVIMIENTO.reparacion || (tipo === TIPO_MOVIMIENTO.ajuste && cant < 0)) {
+        nuevoStock -= Math.abs(cant);
+      } else if (tipo === TIPO_MOVIMIENTO.reserva && nuevoStock < Math.abs(cant)) {
+        throw new Error("No hay suficiente stock para reservar.");
+      }
+      
+      if (nuevoStock < 0) {
+        throw new Error("No hay suficiente stock para realizar esta operación.");
+      }
+      
+      // Actualizar stock del producto
+      transaction.update(prodRef, { stock: nuevoStock });
+      
+      // Registrar movimiento
+      const movRef = doc(collection(db, getMovimientosCol()));
+      transaction.set(movRef, {
+        productoId,
+        tipo,
+        motivo,
+        cantidad: cant,
+        usuario: session?.user?.email || "sistema",
+        fecha: new Date().toISOString()
+      });
     });
-  });
+  } catch (error) {
+    await logSystem("error_registrar_movimiento", { message: error.message, movimiento }, "error").catch(() => {});
+    throw error;
+  }
+
 }
 
 export async function reservarStock(productoId, cantidad, motivo = "Reserva para orden") {

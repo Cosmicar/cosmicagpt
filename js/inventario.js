@@ -261,18 +261,27 @@ window.guardarProducto = async function() {
     return;
   }
   
+  const precioVentaNum = Number(precioVenta);
+  const stockNum = Number(stock);
+  
+  if (isNaN(precioVentaNum) || isNaN(stockNum)) {
+    alert("Por favor ingresa valores numéricos válidos para Precio de Venta y Stock.");
+    return;
+  }
+  
   const data = {
     nombre,
     sku: document.getElementById("prodSku").value.trim(),
     tipo: document.getElementById("prodTipo").value,
     categoria: document.getElementById("prodCategoria").value.trim(),
     precioCompra: Number(document.getElementById("prodPrecioCompra").value) || 0,
-    precioVenta: Number(precioVenta),
-    stock: Number(stock),
+    precioVenta: precioVentaNum,
+    stock: stockNum,
     stockMinimo: Number(document.getElementById("prodStockMinimo").value) || 0,
     proveedor: document.getElementById("prodProveedor").value.trim(),
     descripcion: document.getElementById("prodDescripcion").value.trim()
   };
+
   
   try {
     await addProducto(data);
@@ -469,6 +478,9 @@ function renderCarrito() {
 }
 
 window.confirmarVenta = async function() {
+  const btn = document.getElementById("btnConfirmarVenta");
+  if (btn) btn.disabled = true;
+
   const config = await getSystemConfig();
   if (!config.inventarioActivo || !config.ventasActivas) {
     alert("Ventas está desactivado temporalmente.");
@@ -510,7 +522,11 @@ window.confirmarVenta = async function() {
       alert("La venta se registró pero no se pudo abrir la ventana del ticket.");
     }
   } catch (error) {
-    await logSystem("error_venta_registrar", { message: error.message, total }).catch(() => {});
+    await logSystem("error_venta_registrar", { message: error.message, total }, "error").catch(() => {});
+
     alert("Error al registrar la venta: " + error.message);
+  } finally {
+    if (btn) btn.disabled = false;
   }
+
 };

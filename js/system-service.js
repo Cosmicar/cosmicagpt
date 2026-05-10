@@ -46,12 +46,13 @@ export function getCachedSystemConfig() {
   return _systemConfigCache || DEFAULT_SYSTEM_CONFIG;
 }
 
-export async function logSystem(tipo, payload = {}) {
+export async function logSystem(tipo, payload = {}, level = "info") {
   try {
     const session = getSession();
     const colName = session?.profile?.rol === "tester" ? "system_logs_demo" : "system_logs";
     await addDoc(collection(db, colName), {
       tipo,
+      level,
       payload,
       usuario: session?.user?.email || "sistema",
       rol: session?.profile?.rol || "",
@@ -62,3 +63,4 @@ export async function logSystem(tipo, payload = {}) {
     console.warn("[system-log]", tipo, payload, error);
   }
 }
+
