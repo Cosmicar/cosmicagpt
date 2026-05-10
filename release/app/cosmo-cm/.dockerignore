@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+build
+.git
+.env
+.env.local
+README.md
+Dockerfile
+docker-compose.yml
+nginx

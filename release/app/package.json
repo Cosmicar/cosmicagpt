@@ -1,0 +1,12 @@
+{
+  "name": "cosmicagpt",
+  "version": "1.0.0",
+  "description": "Cósmica — Sistema de gestión de soporte técnico",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@afipsdk/afip.js": "^1.2.3"
+  }
+}

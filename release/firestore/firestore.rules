@@ -1,0 +1,189 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────
+    // FUNCIONES DE UTILIDAD
+    // exists() actúa como guardia antes de get() para
+    // evitar el bucle circular que causa "permission denied"
+    // ─────────────────────────────────────────────
+
+    function userDocRef() {
+      return /databases/$(database)/documents/usuarios/$(request.auth.uid);
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userProfileExists() {
+      return isAuthenticated() && exists(userDocRef());
+    }
+
+    function getUserRole() {
+      return get(userDocRef()).data.rol;
+    }
+
+    function isAdmin() {
+      return userProfileExists() && getUserRole() == 'admin';
+    }
+
+    function isOperador() {
+      return userProfileExists() && getUserRole() == 'operador';
+    }
+
+    function isTester() {
+      return userProfileExists() && getUserRole() == 'tester';
+    }
+
+    function isStaff() {
+      return userProfileExists() && getUserRole() in ['admin', 'operador', 'tester'];
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: usuarios
+    // Un usuario siempre puede leer su propio perfil
+    // (sin llamar a isAdmin para evitar el ciclo).
+    // Solo admin puede leer perfiles ajenos o escribir.
+    // ─────────────────────────────────────────────
+    match /usuarios/{userId} {
+      // Lectura propia: no requiere isAdmin() para evitar ciclo
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      // Lectura de otros perfiles: solo admin
+      allow read: if isAdmin();
+      // Escritura: solo admin, y el rol debe ser válido
+      allow create, update: if isAdmin()
+        && request.resource.data.rol in ['admin', 'operador', 'tester'];
+      allow delete: if isAdmin() && request.auth.uid != userId;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: trabajos
+    // Admin: acceso total.
+    // Operador: solo documentos donde tipo == 'taller'.
+    // ─────────────────────────────────────────────
+    match /trabajos/{trabajoId} {
+      // Lectura
+      allow read: if isAdmin();
+      allow read: if isOperador() && resource.data.tipo == 'taller';
+
+      // Creación
+      allow create: if isAdmin();
+      allow create: if isOperador() && request.resource.data.tipo == 'taller';
+
+      // Actualización: el campo tipo debe ser 'taller' antes y después
+      allow update: if isAdmin();
+      allow update: if isOperador()
+        && resource.data.tipo == 'taller'
+        && request.resource.data.tipo == 'taller';
+
+      // Borrado: Admin borra todo. Operador borra 'taller' excepto si está Entregado
+      allow delete: if request.auth != null && (
+        isAdmin() || 
+        (isOperador() && resource.data.get('tipo', '') == 'taller' && resource.data.get('estado', '') != 'Entregado')
+      );
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: clientes
+    // Todo el staff puede leer y escribir.
+    // Necesario para crear/buscar clientes al registrar órdenes.
+    // ─────────────────────────────────────────────
+    match /clientes/{clienteId} {
+      allow read, write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: ordenesPublicas
+    // Lectura pública (para la página de seguimiento).
+    // Escritura solo para staff.
+    // ─────────────────────────────────────────────
+    match /ordenesPublicas/{ordenId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: config
+    // Contiene contadores de número de orden.
+    // Staff puede leer y escribir.
+    // ─────────────────────────────────────────────
+    match /config/{configId} {
+      allow read, write: if isStaff();
+    }
+
+    match /productos/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    match /ventas/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    match /movimientos_stock/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    match /system_logs/{docId} {
+      allow create: if isStaff();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIONES SANDBOX (modo tester)
+    // Totalmente aisladas de producción.
+    // Admin también tiene acceso para supervisar.
+    // ─────────────────────────────────────────────
+    match /trabajos_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /clientes_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /ordenesPublicas_demo/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /productos_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /ventas_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /movimientos_stock_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /system_logs_demo/{docId} {
+      allow create, read: if request.auth != null && (isTester() || isAdmin());
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: notification_tokens
+    // Cada usuario autenticado puede escribir/eliminar su propio token.
+    // Solo admin puede leer todos los tokens (para el backend de push).
+    // El documento se identifica por el token FCM (string único por dispositivo).
+    // ─────────────────────────────────────────────
+    match /notification_tokens/{tokenId} {
+      // Escritura: cualquier usuario autenticado puede crear/actualizar/eliminar su propio token
+      allow write: if isAuthenticated();
+      // Lectura: solo admins (usada desde el backend via firebase-admin, no desde el cliente)
+      allow read: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    // REGLA DE CIERRE: bloquear todo lo demás
+    // ─────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+/* TEAM */
+Empresa: Cósmica Online
+Web: https://cosmica.ar
+Soporte: asistencia@cosmica.ar
+
+/* MISSION */
+Optimizar PCs en toda Argentina con soporte remoto rápido y confiable.
+
+/* TECH */
+HTML5, CSS3, JavaScript

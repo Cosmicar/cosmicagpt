@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistencia Remota | Cósmica</title>
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="/favicon.ico">
+<meta name="description" content="Página oficial de descarga de Cósmica. Conectate con un técnico y solucioná los problemas de tu PC al instante.">
+<meta property="og:title" content="Cósmica | Asistencia Remota Segura">
+<meta property="og:description" content="Descargá la herramienta oficial para que podamos brindarte soporte técnico en minutos.">
+<meta property="og:image" content="https://cosmica.ar/preview.jpg">
+<meta property="og:url" content="https://cosmica.ar/asistencia.html">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ========================================= */
+/* 1. ESTILOS BASE Y VARIABLES               */
+/* ========================================= */
+:root {
+  --bg: #050B14;
+  --surface: rgba(15, 23, 42, 0.6);
+  --card: rgba(255, 255, 255, 0.02);
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #FF5E00; /* Vibrant Orange */
+  --accent2: #00E5FF; /* Electric Blue */
+  --danger: #FF007F; /* Magenta */
+  --warning: #F59E0B;
+  --success: #10B981;
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+  --radius-pill: 50px;
+  --radius-card: 20px;
+}
+
+* { box-sizing: border-box; transition: background .3s, box-shadow .3s, transform .3s; }
+body {
+  margin: 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% -10%, rgba(0,229,255,0.15), transparent 40%),
+    radial-gradient(circle at 80% 40%, rgba(255,0,127,0.10), transparent 40%),
+    var(--bg);
+  background-attachment: fixed;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { color: var(--accent2); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--accent); }
+
+/* ========================================= */
+/* 2. NAVEGACIÓN (NAV)                       */
+/* ========================================= */
+.nav {
+  position: fixed; top: 0; left: 0; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 25px; background: rgba(5,11,20,0.8);
+  backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
+  z-index: 2000;
+}
+.nav-left { display: flex; align-items: center; gap: 10px; }
+.nav-logo { width: 35px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+.nav-brand { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: var(--accent2); }
+
+.nav-center { display: flex; gap: 25px; }
+.nav-center a { color: var(--text); font-size: 14px; font-weight: 500; }
+.nav-center a:hover { color: var(--accent2); }
+
+.menu-toggle { display: none; font-size: 30px; cursor: pointer; color: var(--text); }
+
+/* ========================================= */
+/* 3. CONTENIDO PRINCIPAL                    */
+/* ========================================= */
+.container { max-width: 800px; margin: 120px auto 60px; padding: 0 20px; text-align: center; }
+
+h1 { font-size: 36px; margin-bottom: 10px; color: var(--text); font-weight: 800; letter-spacing: -1px; text-shadow: 0 0 15px rgba(0,229,255,0.2); }
+p.intro { color: var(--muted); margin-bottom: 40px; font-size: 18px; }
+
+/* Pasos del proceso */
+.steps { text-align: left; margin-bottom: 50px; }
+.step {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 30px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.step:hover { border-color: rgba(0,229,255,0.3); transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+.step-num {
+  background: rgba(0,229,255,0.1);
+  color: var(--accent2);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,229,255,0.3);
+  box-shadow: 0 0 15px rgba(0,229,255,0.2);
+}
+.step-content { width: 100%; }
+.step-content h3 { margin: 0 0 10px 0; font-size: 22px; color: var(--text); font-weight: 700; letter-spacing: -0.5px; }
+.step-content p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* Imágenes ilustrativas */
+.img-tutorial {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-top: 15px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+.img-logo-app {
+  width: 150px;
+  margin-bottom: 15px;
+  display: block;
+  border-radius: 12px;
+}
+
+/* Tips y Alertas */
+.tip-box {
+  margin-top: 15px;
+  font-size: 14px;
+  color: var(--accent2);
+  font-style: italic;
+  display: block;
+  line-height: 1.5;
+  background: rgba(0,229,255,0.05);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-left: 3px solid var(--accent2);
+}
+.tip-box b { color: var(--text); }
+.alert-box {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  padding: 12px 16px;
+  background: rgba(245,158,11,0.1);
+  border-left: 3px solid var(--warning);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--warning);
+}
+.alert-box b { color: var(--text); }
+.important-note {
+  margin-top: 15px;
+  background: rgba(255,0,127,0.1);
+  border-left: 3px solid var(--danger);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--danger);
+}
+.important-note b { color: var(--text); }
+
+/* Botones */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 30px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 15px;
+  box-shadow: 0 4px 15px rgba(255,94,0,0.3);
+  border: none;
+  cursor: pointer;
+}
+.btn-download:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(255,94,0,0.5); color: #fff; }
+
+.btn-whatsapp-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(37,211,102,0.1);
+  color: #25d366;
+  border: 1px solid rgba(37,211,102,0.3);
+  padding: 14px 24px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  margin-top: 15px;
+  text-decoration: none;
+  font-size: 15px;
+}
+.btn-whatsapp-step:hover { background: #25d366; color: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
+
+/* PLAN B: ALTERNATIVA RUSTDESK */
+.alt-download {
+  margin-top: 25px;
+  border-top: 1px dashed var(--border);
+  padding-top: 20px;
+}
+.alt-download summary {
+  font-size: 15px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.alt-download summary:hover { color: var(--accent2); }
+.alt-content {
+  margin-top: 15px;
+  background: rgba(0,0,0,0.3);
+  padding: 20px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+}
+.alt-content p { font-size: 14px !important; margin-bottom: 15px !important; color: var(--muted); }
+.btn-alt {
+  display: inline-block;
+  padding: 10px 24px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+.btn-alt:hover { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.3); color: var(--accent2); transform: translateY(-2px); }
+
+/* SECCIÓN DE SEGURIDAD */
+.security-shield {
+  background: rgba(0,229,255,0.05);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: var(--radius-card);
+  padding: 30px;
+  margin-top: 40px;
+  text-align: left;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  backdrop-filter: blur(16px);
+}
+.shield-icon { font-size: 50px; filter: drop-shadow(0 0 10px rgba(0,229,255,0.5)); }
+.security-text h4 { margin: 0 0 5px 0; color: var(--text); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.security-text p { margin: 0; font-size: 15px; color: var(--muted); }
+
+/* Botón flotante WhatsApp */
+.whatsapp-float {
+  position: fixed; bottom: 30px; right: 30px;
+  background: #FF5E00; color: #fff;
+  padding: 16px 20px; border-radius: 50%; font-size: 24px;
+  box-shadow: 0 10px 25px rgba(255,94,0,0.4); z-index: 1000;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.whatsapp-float:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 35px rgba(255,94,0,0.6); color: #fff; }
+
+/* ========================================= */
+/* 4. RESPONSIVE (CELULARES)                  */
+/* ========================================= */
+@media (max-width: 768px) {
+  .menu-toggle { display: block; }
+  .nav-center {
+    display: flex; flex-direction: column; position: fixed;
+    top: 65px; left: 0; width: 100%; max-height: 0; overflow: hidden;
+    background: rgba(5, 11, 20, 0.98); backdrop-filter: blur(15px);
+    transition: max-height 0.4s ease-in-out; padding: 0;
+  }
+  .nav-center.active { max-height: 500px; padding: 20px 0; border-bottom: 1px solid var(--border); }
+  .nav-center a { width: 100%; text-align: center; padding: 15px; font-size: 18px; }
+  .step { flex-direction: column; align-items: center; text-align: center; padding: 20px; }
+  .security-shield { flex-direction: column; text-align: center; }
+  .whatsapp-float { bottom: 20px; right: 20px; }
+}
+
+footer { padding: 50px 20px; text-align: center; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <a href="/index.html">
+        <img src="cosmica-logo.png" alt="logo cosmica" class="nav-logo" onerror="this.src='cosmica-logo.webp'">
+    </a>
+    <span class="nav-brand">CÓSMICA</span>
+  </div>
+  
+  <div class="nav-center" id="menu">
+    <a href="/index.html#inicio">Inicio</a>
+    <a href="/index.html#servicios">Servicios</a>
+    <a href="/index.html#planes">Planes</a>
+    <a href="https://wa.me/5493883298736">Contacto</a>
+  </div>
+
+  <div class="menu-toggle" id="menuBtn" onclick="toggleMenu()">☰</div>
+</nav>
+
+<main class="container">
+  <h1>Asistencia Remota</h1>
+  <p class="intro">Seguí estos 3 simples pasos para que podamos conectarnos a tu PC en minutos.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <img src="anydesk-logo.png" alt="Logo AnyDesk" class="img-logo-app">
+        <h3>Descargá AnyDesk</h3>
+        <p>Es la herramienta principal que usamos para realizar el soporte técnico de forma segura.</p>
+        <a href="https://anydesk.com/es/downloads/windows" target="_blank" class="btn-download">⬇ Descargar AnyDesk</a>
+        <div class="tip-box">
+          💡 Tip: Si no ves la descarga, presioná <b>Ctrl + J</b> para ver tus archivos recientes.
+        </div>
+
+        <details class="alt-download">
+          <summary>¿AnyDesk te da error o no podés abrirlo?</summary>
+          <div class="alt-content">
+            <p>Usá nuestra herramienta alternativa (RustDesk). Es ideal para PCs antiguas o cuando AnyDesk falla.</p>
+            <a href="https://rustdesk.com/es/" target="_blank" class="btn-alt">⬇ Descargar RustDesk</a>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Ejecutá el programa</h3>
+        <p>Hacé doble clic en el archivo que acabás de descargar. No hace falta instalar nada, el programa se abre directamente.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Enviános tu ID</h3>
+        <p>Hacé clic en el botón de abajo para enviarnos tu ID por WhatsApp <b>(y la contraseña si la aplicación te muestra una)</b>.</p>
+        
+        <a href="https://wa.me/5493883298736?text=Hola,%20ya%20abr%C3%AD%20el%20programa.%20Mi%20ID%20es:%20" target="_blank" class="btn-whatsapp-step">
+          💬 Enviar mi ID por WhatsApp
+        </a>
+
+        <div class="important-note">
+          🛑 <b>IMPORTANTE:</b> Dejá el programa abierto hasta que el técnico se conecte. Si lo cerrás, la conexión se perderá.
+        </div>
+
+        <div class="alert-box">
+          ⚠️ <b>ATENCIÓN:</b> La imagen de abajo es solo ilustrativa. Por favor, <b>no le saques captura a esta página</b>.
+        </div>
+
+        <img src="anydesk-id-ejemplo.png" alt="Ejemplo de ID" class="img-tutorial">
+      </div>
+    </div>
+  </div>
+
+  <div class="security-shield">
+    <div class="shield-icon">🛡️</div>
+    <div class="security-text">
+      <h4>Conexión 100% Segura</h4>
+      <p>Usamos cifrado de nivel bancario. Vos tenés el control total: ves todo lo que hace el técnico en tiempo real y podés cerrar la sesión cuando quieras con un solo clic.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© <span id="year"></span> Cósmica | Soporte Técnico Remoto Profesional</p>
+</footer>
+
+<a class="whatsapp-float" href="https://wa.me/5493883298736">👨‍🚀</a>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+function toggleMenu() {
+  const menu = document.getElementById("menu");
+  const btn = document.getElementById("menuBtn");
+  menu.classList.toggle("active");
+  btn.textContent = menu.classList.contains("active") ? "✕" : "☰";
+}
+
+document.querySelectorAll('#menu a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById("menu").classList.remove("active");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+</script>
+
+</body>
+</html>

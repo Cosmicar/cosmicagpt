@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Perdido en el espacio | Cósmica</title>
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="/favicon.ico">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ========================================= */
+/* 1. BASE Y VARIABLES                       */
+/* ========================================= */
+:root {
+  --bg: #050B14;
+  --surface: rgba(15, 23, 42, 0.6);
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #FF5E00; /* Vibrant Orange */
+  --accent2: #00E5FF; /* Electric Blue */
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+  --radius-pill: 50px;
+}
+
+* { box-sizing: border-box; transition: all .3s ease; }
+body {
+  margin: 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% -10%, rgba(0,229,255,0.15), transparent 40%),
+    radial-gradient(circle at 80% 40%, rgba(255,0,127,0.10), transparent 40%),
+    var(--bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+/* ========================================= */
+/* 2. CONTENIDO 404                          */
+/* ========================================= */
+.error-container {
+  max-width: 600px;
+  padding: 30px;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.6), 0 0 40px rgba(0,229,255,.04);
+}
+
+.astronaut-icon {
+  font-size: 80px;
+  margin-bottom: 15px;
+  display: inline-block;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(0,229,255,0.4));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-30px) rotate(10deg); }
+}
+
+h1 {
+  font-size: 80px;
+  margin: 0;
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: -2px;
+  text-shadow: 0 0 20px rgba(255,94,0,0.3);
+}
+
+h2 {
+  font-size: 26px;
+  margin: 10px 0 20px;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+p {
+  color: var(--muted);
+  font-size: 16px;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+/* ========================================= */
+/* 3. BOTONES                                */
+/* ========================================= */
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 14px 28px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255,94,0,0.3);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255,94,0,0.5);
+  filter: brightness(1.1);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0,229,255,0.3);
+  color: var(--accent2);
+  background: rgba(0,229,255,0.05);
+}
+
+/* ========================================= */
+/* 4. RESPONSIVE                             */
+/* ========================================= */
+@media (max-width: 480px) {
+  .error-container { padding: 20px; border: none; background: transparent; box-shadow: none; }
+  h1 { font-size: 60px; }
+  h2 { font-size: 20px; }
+  .astronaut-icon { font-size: 70px; }
+}
+</style>
+</head>
+<body>
+
+  <div class="error-container">
+    <div class="astronaut-icon">👨‍🚀</div>
+    <h1>404</h1>
+    <h2>¡Ups! Te perdiste en el espacio</h2>
+    <p>La página que buscás no existe o fue movida a otra órbita. Pero no te preocupes, nuestros técnicos pueden ayudarte a volver.</p>
+    
+    <div class="button-group">
+      <a href="/index.html" class="btn btn-primary">🚀 Volver al Inicio</a>
+      <a href="https://wa.me/5493883298736" class="btn btn-secondary">💬 Contactar Soporte</a>
+    </div>
+  </div>
+
+  <script>
+    // Un pequeño detalle: si no hay nada en el historial, el botón de inicio es lo mejor.
+    // Pero si queremos ser más pro, podrías agregar un mensaje dinámico.
+    console.log("Error 404: Misión Cósmica fuera de curso.");
+  </script>
+
+</body>
+</html>
