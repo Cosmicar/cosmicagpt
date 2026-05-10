@@ -2046,7 +2046,17 @@ function renderItemsInventario() {
   `).join("");
 }
 
+let versionClicks = 0;
+window.easterEgg = function() {
+  versionClicks++;
+  if (versionClicks === 5) {
+    alert("Astra esta aqui para siempre ❤️");
+    versionClicks = 0;
+  }
+};
+
 boot();
+
 
 // ── PWA: Registro del Service Worker ──────────────────────────
 if ('serviceWorker' in navigator) {
