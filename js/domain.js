@@ -19,8 +19,17 @@ export const TIPO_MOVIMIENTO = Object.freeze({
   salida: "salida",
   ajuste: "ajuste",
   venta: "venta",
-  reparacion: "reparacion"
+  reparacion: "reparacion",
+  reserva: "reserva",
+  devolucion: "devolucion"
 });
+
+export const ESTADO_RESERVA = Object.freeze({
+  reservado: "reservado",
+  confirmado: "confirmado",
+  devuelto: "devuelto"
+});
+
 
 export const ROLES = Object.freeze({
   admin: "admin",

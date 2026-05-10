@@ -1,5 +1,8 @@
 import { canChangeStatus, canDeleteWork, canReenterWork, normalizeServiceType, WORK_STATUS, isAdmin } from "./domain.js";
 import { nowIso } from "./utils.js";
+import { confirmarItemsOrden, devolverItemsOrden } from "./inventario-repository.js";
+
+
 import {
   addTrabajo,
   deletePublicOrder,
@@ -61,8 +64,10 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
       problema: values.problema,
       diagnostico: values.diagnostico || "",
       servicioRealizado: values.servicioRealizado || "",
-      precio: values.precio
+      precio: values.precio,
+      itemsInventario: values.itemsInventario || []
     };
+
     await updateTrabajo(editState.trabajoId, update);
     await updateCliente(editState.clienteId, cliente);
     await publishPublicOrder(editState.trabajoId, {
@@ -91,8 +96,10 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     servicioRealizado: values.servicioRealizado || "",
     precio: values.precio,
     planServicio: values.planServicio || "",
+    itemsInventario: values.itemsInventario || [],
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
+
     garantiaDias: 90,
     creadoPor: profile?.email || ""
   };
@@ -119,9 +126,13 @@ export async function changeWorkStatus(id, nextStatus) {
     tipo: trabajo.tipo // Incluir explícitamente el tipo original
   };
   if (nextStatus === WORK_STATUS.listo) update.fechaReparado = nowIso();
-  if (nextStatus === WORK_STATUS.entregado) update.fechaEntregado = nowIso();
+  if (nextStatus === WORK_STATUS.entregado) {
+    update.fechaEntregado = nowIso();
+    await confirmarItemsOrden(id);
+  }
 
   await updateTrabajo(id, update);
+
   await publishPublicOrder(id, { ...trabajo, ...update });
 }
 
@@ -183,7 +194,9 @@ export async function removeWork(id, profile) {
     throw new Error("Solo un administrador o un operador pueden borrar órdenes.");
   }
   
+  await devolverItemsOrden(id);
   await deleteTrabajo(id);
+
   await deletePublicOrder(id).catch(() => {});
 }
 

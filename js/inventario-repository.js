@@ -102,6 +102,135 @@ export async function registrarMovimiento(movimiento) {
   });
 }
 
+export async function reservarStock(productoId, cantidad, motivo = "Reserva para orden") {
+  await registrarMovimiento({
+    productoId,
+    tipo: TIPO_MOVIMIENTO.reserva,
+    motivo,
+    cantidad
+  });
+}
+
+export async function confirmarReserva(productoId, cantidad, motivo = "Consumo en reparación") {
+  await registrarMovimiento({
+    productoId,
+    tipo: TIPO_MOVIMIENTO.reparacion,
+    motivo,
+    cantidad
+  });
+}
+
+export async function devolverReserva(productoId, cantidad, motivo = "Devolución de reserva") {
+  await registrarMovimiento({
+    productoId,
+    tipo: TIPO_MOVIMIENTO.devolucion,
+    motivo,
+    cantidad
+  });
+}
+
+export async function confirmarItemsOrden(trabajoId) {
+  const session = getSession();
+  const trabajosCol = isTesterSession() ? "trabajos_demo" : COLLECTIONS.trabajos;
+  
+  await runTransaction(db, async (transaction) => {
+    const trabajoRef = doc(db, trabajosCol, trabajoId);
+    const trabajoSnap = await transaction.get(trabajoRef);
+    
+    if (!trabajoSnap.exists()) {
+      throw new Error("La orden no existe.");
+    }
+    
+    const trabajoData = trabajoSnap.data();
+    const itemsInventario = trabajoData.itemsInventario || [];
+    let modificado = false;
+    
+    for (const item of itemsInventario) {
+      if (item.estado !== "reservado") continue;
+      
+      const prodRef = doc(db, getProductosCol(), item.productoId);
+      const prodSnap = await transaction.get(prodRef);
+      
+      if (!prodSnap.exists()) {
+        throw new Error(`El producto ${item.nombre} no existe.`);
+      }
+      
+      const prodData = prodSnap.data();
+      let nuevoStock = Number(prodData.stock || 0) - Number(item.cantidad);
+      
+      if (nuevoStock < 0) {
+        throw new Error(`No hay suficiente stock para ${item.nombre}.`);
+      }
+      
+      // Actualizar stock del producto
+      transaction.update(prodRef, { stock: nuevoStock });
+      
+      // Registrar movimiento
+      const movRef = doc(collection(db, getMovimientosCol()));
+      transaction.set(movRef, {
+        productoId: item.productoId,
+        tipo: TIPO_MOVIMIENTO.reparacion,
+        motivo: `Consumo en reparación (Orden ${trabajoData.numeroOrden || trabajoId})`,
+        cantidad: item.cantidad,
+        usuario: session?.user?.email || "sistema",
+        fecha: new Date().toISOString()
+      });
+      
+      // Mark item as confirmed
+      item.estado = "confirmado";
+      modificado = true;
+    }
+    
+    // Actualizar la orden si hubo cambios
+    if (modificado) {
+      transaction.update(trabajoRef, { itemsInventario });
+    }
+  });
+}
+
+export async function devolverItemsOrden(trabajoId, productoId = null) {
+  const session = getSession();
+  const trabajosCol = isTesterSession() ? "trabajos_demo" : COLLECTIONS.trabajos;
+  
+  await runTransaction(db, async (transaction) => {
+    const trabajoRef = doc(db, trabajosCol, trabajoId);
+    const trabajoSnap = await transaction.get(trabajoRef);
+    
+    if (!trabajoSnap.exists()) {
+      throw new Error("La orden no existe.");
+    }
+    
+    const trabajoData = trabajoSnap.data();
+    const itemsInventario = trabajoData.itemsInventario || [];
+    let modificado = false;
+    
+    for (const item of itemsInventario) {
+      if (productoId && item.productoId !== productoId) continue;
+      if (item.estado !== "reservado") continue;
+      
+      // Registrar movimiento de devolución (sin cambiar stock)
+      const movRef = doc(collection(db, getMovimientosCol()));
+      transaction.set(movRef, {
+        productoId: item.productoId,
+        tipo: TIPO_MOVIMIENTO.devolucion,
+        motivo: `Devolución de reserva (Orden ${trabajoData.numeroOrden || trabajoId})`,
+        cantidad: item.cantidad,
+        usuario: session?.user?.email || "sistema",
+        fecha: new Date().toISOString()
+      });
+      
+      // Mark item as devuelto
+      item.estado = "devuelto";
+      modificado = true;
+    }
+    
+    // Actualizar la orden si hubo cambios
+    if (modificado) {
+      transaction.update(trabajoRef, { itemsInventario });
+    }
+  });
+}
+
 export async function getMovimientos(productoId = null) {
   let q = collection(db, getMovimientosCol());
   if (productoId) {

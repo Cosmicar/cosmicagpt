@@ -565,6 +565,36 @@
         </div>
       </div>
 
+      <!-- SECCIÓN 4: REPUESTOS UTILIZADOS -->
+      <div class="form-section">
+        <div class="form-section-title">🧩 Repuestos utilizados</div>
+        <div class="form-grid" style="margin-bottom: 15px;">
+          <div class="form-group full" style="position: relative;">
+            <label>Buscar Repuesto</label>
+            <input id="buscarRepuestoInput" placeholder="🔍 Buscar repuesto por nombre o SKU..." oninput="buscarRepuestosParaOrden(this.value)">
+            <div id="resultadosBusquedaRepuesto" style="display:none; position:absolute; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; z-index:10; box-shadow:0 4px 12px rgba(0,0,0,0.5);"></div>
+          </div>
+        </div>
+        
+        <div style="overflow-x:auto;">
+          <table class="ingresos-tabla">
+            <thead>
+              <tr>
+                <th>Repuesto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="repuestosOrdenTablaBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px;">No hay repuestos agregados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="form-actions">
         <button class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
         <button class="btn btn-edit" id="btnCancelar"

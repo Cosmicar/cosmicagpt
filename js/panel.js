@@ -1176,7 +1176,11 @@ function limpiarCampos() {
 
   // Re-aplicar restricciones de rol al limpiar el formulario
   renderRoleUi();
+  
+  state.currentItemsInventario = [];
+  renderItemsInventario();
 }
+
 
 function cancelarEdicion() {
   state.edit = { trabajoId: null, clienteId: null };
@@ -1237,7 +1241,11 @@ async function editarTrabajo(trabajoId, clienteId) {
     }
 
     state.edit = { trabajoId, clienteId };
+    state.currentItemsInventario = trabajo.itemsInventario || [];
+    renderItemsInventario();
+
     $("modoEdicionBanner").style.display = "block";
+
     $("btnCancelar").style.display = "inline-flex";
 
     showTab("nuevo");
@@ -1262,9 +1270,11 @@ function readWorkForm() {
     problema: $("problema").value.trim(),
     diagnostico: document.getElementById("diagnostico") ? document.getElementById("diagnostico").value.trim() : "",
     servicioRealizado: document.getElementById("servicioRealizado") ? document.getElementById("servicioRealizado").value.trim() : "",
-    planServicio: document.getElementById("planServicio") ? document.getElementById("planServicio").value : ""
+    planServicio: document.getElementById("planServicio") ? document.getElementById("planServicio").value : "",
+    itemsInventario: state.currentItemsInventario
   };
 }
+
 
 async function guardarCliente() {
   try {
@@ -1822,6 +1832,208 @@ async function crearUsuario() {
   } catch (error) {
     showAlertError(error, "No se pudo crear el usuario.");
   }
+}
+
+// ── MÓDULO DE INTEGRACIÓN INVENTARIO-TICKET ───────────────────────
+
+state.currentItemsInventario = [];
+
+window.buscarRepuestosParaOrden = function(termino) {
+  const t = termino.toLowerCase().trim();
+  const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
+  
+  if (!t) {
+    resultadosDiv.style.display = "none";
+    return;
+  }
+  
+  import("./inventario-repository.js").then(async (repo) => {
+    const productos = await repo.getProductos();
+    const filtrados = productos.filter(p => 
+      p.activo && p.tipo === "repuesto" && (
+        p.nombre?.toLowerCase().includes(t) || 
+        p.sku?.toLowerCase().includes(t)
+      )
+    );
+    
+    if (!filtrados.length) {
+      resultadosDiv.innerHTML = `<div style="padding:10px; color:var(--muted); text-align:center;">No se encontraron repuestos</div>`;
+      resultadosDiv.style.display = "block";
+      return;
+    }
+    
+    resultadosDiv.innerHTML = filtrados.map(p => `
+      <div style="padding:10px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="agregarRepuestoAOrden('${p.id}')">
+        <div>
+          <div style="font-weight:bold;">${escapeHtml(p.nombre)}</div>
+          <div style="font-size:12px; color:var(--muted);">${escapeHtml(p.sku || "Sin SKU")} | Stock: ${p.stock || 0}</div>
+        </div>
+        <div style="font-weight:bold; color:var(--success);">$${formatMoney(p.precioVenta)}</div>
+      </div>
+    `).join("");
+    
+    resultadosDiv.style.display = "block";
+  });
+};
+
+window.agregarRepuestoAOrden = function(productoId) {
+  import("./inventario-repository.js").then(async (repo) => {
+    const producto = await repo.getProducto(productoId);
+    if (!producto) return;
+    
+    if (producto.stock <= 0) {
+      alert("No hay stock disponible de este repuesto.");
+      return;
+    }
+    
+    const itemExistente = state.currentItemsInventario.find(item => item.productoId === productoId);
+    
+    if (itemExistente) {
+      if (itemExistente.cantidad >= producto.stock) {
+        alert("No puedes agregar más de este repuesto. Supera el stock disponible.");
+        return;
+      }
+      itemExistente.cantidad += 1;
+      itemExistente.subtotal = itemExistente.cantidad * itemExistente.precioUnitario;
+    } else {
+      state.currentItemsInventario.push({
+        productoId: producto.id,
+        sku: producto.sku || "",
+        nombre: producto.nombre,
+        cantidad: 1,
+        precioUnitario: producto.precioVenta,
+        subtotal: producto.precioVenta,
+        estado: "reservado"
+      });
+      
+      // Registrar movimiento de reserva
+      await repo.reservarStock(producto.id, 1);
+    }
+    
+    // Calcular costos automáticamente (sumar al precio)
+    const inputPrecio = document.getElementById("precio");
+    if (inputPrecio) {
+      const currentPrecio = Number(inputPrecio.value) || 0;
+      inputPrecio.value = currentPrecio + producto.precioVenta;
+    }
+    
+    // Ocultar resultados de búsqueda
+    document.getElementById("resultadosBusquedaRepuesto").style.display = "none";
+    document.getElementById("buscarRepuestoInput").value = "";
+    
+    renderItemsInventario();
+  });
+}
+
+};
+
+window.actualizarCantidadRepuesto = function(productoId, cambio) {
+  const item = state.currentItemsInventario.find(item => item.productoId === productoId);
+  if (!item) return;
+  
+  if (item.estado !== "reservado") {
+    alert("Solo se pueden modificar items en estado reservado.");
+    return;
+  }
+  
+  import("./inventario-repository.js").then(async (repo) => {
+    const producto = await repo.getProducto(productoId);
+    const nuevaCantidad = item.cantidad + cambio;
+    
+    if (nuevaCantidad <= 0) {
+      window.eliminarRepuestoDeOrden(productoId);
+      return;
+    }
+    
+    if (producto && nuevaCantidad > producto.stock) {
+      alert("No hay suficiente stock.");
+      return;
+    }
+    
+    // Ajustar reserva
+    if (cambio > 0) {
+      await repo.reservarStock(productoId, cambio);
+    } else {
+      await repo.devolverReserva(productoId, Math.abs(cambio));
+    }
+    
+    // Calcular costos automáticamente
+    const inputPrecio = document.getElementById("precio");
+    if (inputPrecio) {
+      const currentPrecio = Number(inputPrecio.value) || 0;
+      inputPrecio.value = currentPrecio + (producto.precioVenta * cambio);
+    }
+
+    
+    item.cantidad = nuevaCantidad;
+    item.subtotal = item.cantidad * item.precioUnitario;
+    
+    renderItemsInventario();
+  });
+}
+
+};
+
+window.eliminarRepuestoDeOrden = function(productoId) {
+  const item = state.currentItemsInventario.find(item => item.productoId === productoId);
+  if (!item) return;
+  
+  if (!confirm(`¿Eliminar ${item.nombre} de la orden?`)) return;
+  
+  import("./inventario-repository.js").then(async (repo) => {
+    if (item.estado === "reservado") {
+      await repo.devolverReserva(productoId, item.cantidad);
+      
+      // Calcular costos automáticamente (restar del precio si estaba reservado)
+      const inputPrecio = document.getElementById("precio");
+      if (inputPrecio) {
+        const currentPrecio = Number(inputPrecio.value) || 0;
+        inputPrecio.value = Math.max(0, currentPrecio - item.subtotal);
+      }
+    }
+    
+    item.estado = "devuelto";
+    
+    renderItemsInventario();
+  });
+}
+
+};
+
+function renderItemsInventario() {
+  const tbody = document.getElementById("repuestosOrdenTablaBody");
+  if (!tbody) return;
+  
+  if (!state.currentItemsInventario.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px;">No hay repuestos agregados</td></tr>`;
+    return;
+  }
+  
+  tbody.innerHTML = state.currentItemsInventario.map(item => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px;">
+        <div style="font-weight:bold;">${escapeHtml(item.nombre)}</div>
+        <div style="font-size:11px; color:var(--muted);">${escapeHtml(item.sku)}</div>
+      </td>
+      <td style="padding:8px;">
+        <div style="display:flex; align-items:center; gap:5px;">
+          ${item.estado === 'reservado' ? `
+            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" onclick="actualizarCantidadRepuesto('${item.productoId}', -1)">-</button>
+            <span>${item.cantidad}</span>
+            <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" onclick="actualizarCantidadRepuesto('${item.productoId}', 1)">+</button>
+          ` : `<span>${item.cantidad}</span>`}
+        </div>
+      </td>
+      <td style="padding:8px;">$${formatMoney(item.precioUnitario)}</td>
+      <td style="padding:8px; font-weight:bold;">$${formatMoney(item.subtotal)}</td>
+      <td style="padding:8px;"><span class="badge badge-${item.estado}">${item.estado}</span></td>
+      <td style="padding:8px; text-align:right;">
+        ${item.estado === 'reservado' ? `
+          <button class="btn btn-sm btn-danger" style="padding:2px 6px;" onclick="eliminarRepuestoDeOrden('${item.productoId}')">✕</button>
+        ` : ''}
+      </td>
+    </tr>
+  `).join("");
 }
 
 boot();
