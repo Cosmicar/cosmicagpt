@@ -1,6 +1,7 @@
 import { canChangeStatus, canDeleteWork, canReenterWork, normalizeServiceType, WORK_STATUS, isAdmin } from "./domain.js";
 import { nowIso } from "./utils.js";
 import { confirmarItemsOrden, devolverItemsOrden } from "./inventario-repository.js";
+import { getSystemConfig, logSystem } from "./system-service.js";
 
 
 import {
@@ -125,13 +126,21 @@ export async function changeWorkStatus(id, nextStatus) {
     estado: nextStatus,
     tipo: trabajo.tipo // Incluir explícitamente el tipo original
   };
+  let inventoryLogType = null;
   if (nextStatus === WORK_STATUS.listo) update.fechaReparado = nowIso();
   if (nextStatus === WORK_STATUS.entregado) {
     update.fechaEntregado = nowIso();
-    await confirmarItemsOrden(id);
+    const systemConfig = await getSystemConfig();
+    if (systemConfig.inventarioActivo) {
+      await confirmarItemsOrden(id);
+      inventoryLogType = "orden_entregada_inventario_confirmado";
+    } else {
+      inventoryLogType = "orden_entregada_inventario_desactivado";
+    }
   }
 
   await updateTrabajo(id, update);
+  if (inventoryLogType) await logSystem(inventoryLogType, { trabajoId: id });
 
   await publishPublicOrder(id, { ...trabajo, ...update });
 }
@@ -194,7 +203,12 @@ export async function removeWork(id, profile) {
     throw new Error("Solo un administrador o un operador pueden borrar órdenes.");
   }
   
-  await devolverItemsOrden(id);
+  const systemConfig = await getSystemConfig();
+  if (systemConfig.inventarioActivo) {
+    await devolverItemsOrden(id);
+  } else {
+    await logSystem("orden_eliminada_inventario_desactivado", { trabajoId: id });
+  }
   await deleteTrabajo(id);
 
   await deletePublicOrder(id).catch(() => {});

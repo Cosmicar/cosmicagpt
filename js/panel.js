@@ -45,6 +45,7 @@ import {
   onlyDigits,
   showAlertError
 } from "./utils.js";
+import { getCachedSystemConfig, getSystemConfig, logSystem } from "./system-service.js";
 
 const state = {
   session: null,
@@ -195,6 +196,7 @@ function boot() {
       const nombreCorto = email.split('@')[0];
       const nombreMostrar = session.profile?.nombre || nombreCorto || "Usuario";
       $("usuarioLogueado").innerText = nombreMostrar;
+      await getSystemConfig();
       renderRoleUi();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
@@ -1297,6 +1299,7 @@ async function guardarCliente() {
       );
     }
   } catch (error) {
+    await logSystem("error_guardar_orden", { message: error.message }).catch(() => {});
     showAlertError(error, "No se pudo guardar la orden.");
   }
 }
@@ -1596,6 +1599,7 @@ async function cambiarEstado(id, estado) {
     await changeWorkStatus(id, estado);
     await cargar($("busquedaDni").value.trim());
   } catch (error) {
+    await logSystem("error_cambiar_estado", { trabajoId: id, estado, message: error.message }).catch(() => {});
     showAlertError(error, "No se pudo cambiar el estado.");
   }
 }
@@ -1625,6 +1629,7 @@ async function borrarTrabajo(id) {
     alert("Eliminado correctamente");
     await cargar($("busquedaDni").value.trim());
   } catch (error) {
+    await logSystem("error_borrar_orden", { trabajoId: id, message: error.message }).catch(() => {});
     showAlertError(error, "No se pudo borrar la orden.");
   }
 }
@@ -1839,6 +1844,15 @@ async function crearUsuario() {
 state.currentItemsInventario = [];
 
 window.buscarRepuestosParaOrden = function(termino) {
+  if (getCachedSystemConfig().inventarioActivo === false) {
+    const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
+    if (resultadosDiv) {
+      resultadosDiv.innerHTML = `<div style="padding:10px; color:var(--warning); text-align:center;">Inventario desactivado temporalmente</div>`;
+      resultadosDiv.style.display = "block";
+    }
+    return;
+  }
+
   const t = termino.toLowerCase().trim();
   const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
   if (!resultadosDiv) return;
@@ -1878,6 +1892,11 @@ window.buscarRepuestosParaOrden = function(termino) {
 };
 
 window.agregarRepuestoAOrden = function(productoId) {
+  if (getCachedSystemConfig().inventarioActivo === false) {
+    alert("Inventario está desactivado temporalmente.");
+    return;
+  }
+
   import("./inventario-repository.js").then(async (repo) => {
     const producto = await repo.getProducto(productoId);
     if (!producto) return;
@@ -1920,10 +1939,16 @@ window.agregarRepuestoAOrden = function(productoId) {
     if (buscador) buscador.value = "";
     
     renderItemsInventario();
+    logSystem("repuesto_agregado_orden", { productoId, cantidad: 1 }).catch(() => {});
   }).catch((error) => showAlertError(error, "No se pudo agregar el repuesto."));
 };
 
 window.actualizarCantidadRepuesto = function(productoId, cambio) {
+  if (getCachedSystemConfig().inventarioActivo === false) {
+    alert("Inventario está desactivado temporalmente.");
+    return;
+  }
+
   const item = state.currentItemsInventario.find(item => item.productoId === productoId);
   if (!item) return;
   
@@ -1956,6 +1981,7 @@ window.actualizarCantidadRepuesto = function(productoId, cambio) {
     item.subtotal = item.cantidad * item.precioUnitario;
     
     renderItemsInventario();
+    logSystem("repuesto_cantidad_actualizada", { productoId, cambio, cantidad: nuevaCantidad }).catch(() => {});
   }).catch((error) => showAlertError(error, "No se pudo actualizar el repuesto."));
 };
 
@@ -1975,6 +2001,7 @@ window.eliminarRepuestoDeOrden = function(productoId) {
   
   item.estado = "devuelto";
   renderItemsInventario();
+  logSystem("repuesto_devuelto_orden", { productoId, cantidad: item.cantidad }).catch(() => {});
 };
 
 function renderItemsInventario() {

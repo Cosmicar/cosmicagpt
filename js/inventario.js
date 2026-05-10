@@ -7,18 +7,53 @@ import {
 
 import { escapeHtml, formatMoney, formatDate } from "./utils.js";
 import { printTicketVenta } from "./ticket.js";
+import { getCachedSystemConfig, getSystemConfig, logSystem } from "./system-service.js";
 
 let _productosCache = [];
 let _ventasCache = [];
 let _subSeccionActual = "productos";
 let _carrito = [];
 
+function getCachedInventarioActivo() {
+  return getCachedSystemConfig().inventarioActivo !== false;
+}
+
+function getCachedVentasActivas() {
+  const config = getCachedSystemConfig();
+  return config.inventarioActivo !== false && config.ventasActivas !== false;
+}
+
 // Inicialización
 window.cargarModuloInventario = async function() {
-  await cargarProductos();
-  await cargarVentas();
-  renderActual();
+  try {
+    const config = await getSystemConfig();
+    if (!config.inventarioActivo) {
+      renderModuloDesactivado("Inventario desactivado temporalmente.");
+      return;
+    }
+
+    await cargarProductos();
+    if (config.ventasActivas) {
+      await cargarVentas();
+    } else {
+      _ventasCache = [];
+    }
+    renderActual();
+  } catch (error) {
+    console.error("Error al cargar módulo inventario:", error);
+    await logSystem("error_inventario_carga", { message: error.message });
+    renderModuloDesactivado("No se pudo cargar inventario. El panel principal sigue activo.");
+  }
 };
+
+function renderModuloDesactivado(mensaje) {
+  ["productosTablaBody", "ventasTablaBody", "stockTablaBody", "bajoStockTablaBody"].forEach((id) => {
+    const tbody = document.getElementById(id);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--warning);padding:20px;">${escapeHtml(mensaje)}</td></tr>`;
+    }
+  });
+}
 
 async function cargarProductos() {
   try {
@@ -175,6 +210,10 @@ function renderReportes(productos, ventas) {
 
 // Modals Producto
 window.abrirModalProducto = function() {
+  if (!getCachedInventarioActivo()) {
+    alert("Inventario está desactivado temporalmente.");
+    return;
+  }
   const overlay = document.getElementById("modalProductoOverlay");
   if (!overlay) return;
   overlay.hidden = false;
@@ -207,6 +246,12 @@ function limpiarFormularioProducto() {
 }
 
 window.guardarProducto = async function() {
+  const config = await getSystemConfig();
+  if (!config.inventarioActivo) {
+    alert("Inventario está desactivado temporalmente.");
+    return;
+  }
+
   const nombre = document.getElementById("prodNombre").value.trim();
   const precioVenta = document.getElementById("prodPrecioVenta").value;
   const stock = document.getElementById("prodStock").value;
@@ -231,10 +276,12 @@ window.guardarProducto = async function() {
   
   try {
     await addProducto(data);
+    await logSystem("producto_creado", { nombre: data.nombre, sku: data.sku, stock: data.stock });
     alert("✅ Producto guardado correctamente.");
     cerrarModalProducto();
     await window.cargarModuloInventario(); // Recargar
   } catch (error) {
+    await logSystem("error_producto_guardar", { message: error.message, nombre }).catch(() => {});
     alert("Error al guardar el producto: " + error.message);
   }
 };
@@ -255,6 +302,15 @@ window.filtrarProductos = function(termino) {
 // ── MÓDULO DE VENTAS (POS) ───────────────────────────────────────
 
 window.abrirModalVenta = function() {
+  const config = getCachedInventarioActivo();
+  if (!config) {
+    alert("Inventario está desactivado temporalmente.");
+    return;
+  }
+  if (!getCachedVentasActivas()) {
+    alert("Ventas está desactivado temporalmente.");
+    return;
+  }
   const overlay = document.getElementById("modalVentaOverlay");
   if (!overlay) return;
   overlay.hidden = false;
@@ -413,6 +469,12 @@ function renderCarrito() {
 }
 
 window.confirmarVenta = async function() {
+  const config = await getSystemConfig();
+  if (!config.inventarioActivo || !config.ventasActivas) {
+    alert("Ventas está desactivado temporalmente.");
+    return;
+  }
+
   if (!_carrito.length) {
     alert("El carrito está vacío.");
     return;
@@ -432,6 +494,10 @@ window.confirmarVenta = async function() {
   
   try {
     await registrarVenta(venta);
+    await logSystem("venta_registrada", {
+      total: venta.total,
+      items: venta.items.map(item => ({ productoId: item.productoId, cantidad: item.cantidad }))
+    });
     alert("✅ Venta registrada correctamente.");
     cerrarModalVenta();
     await window.cargarModuloInventario(); // Recargar datos
@@ -444,6 +510,7 @@ window.confirmarVenta = async function() {
       alert("La venta se registró pero no se pudo abrir la ventana del ticket.");
     }
   } catch (error) {
+    await logSystem("error_venta_registrar", { message: error.message, total }).catch(() => {});
     alert("Error al registrar la venta: " + error.message);
   }
 };

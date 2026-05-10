@@ -80,6 +80,8 @@ export async function registrarMovimiento(movimiento) {
       nuevoStock += cant;
     } else if (tipo === TIPO_MOVIMIENTO.salida || tipo === TIPO_MOVIMIENTO.venta || tipo === TIPO_MOVIMIENTO.reparacion || (tipo === TIPO_MOVIMIENTO.ajuste && cant < 0)) {
       nuevoStock -= Math.abs(cant);
+    } else if (tipo === TIPO_MOVIMIENTO.reserva && nuevoStock < Math.abs(cant)) {
+      throw new Error("No hay suficiente stock para reservar.");
     }
     
     if (nuevoStock < 0) {
@@ -249,31 +251,40 @@ export async function registrarVenta(venta) {
   };
   
   await runTransaction(db, async (transaction) => {
+    const productosPorId = new Map();
+    const cantidadesPorProducto = new Map();
+
+    venta.items.forEach((item) => {
+      cantidadesPorProducto.set(
+        item.productoId,
+        (cantidadesPorProducto.get(item.productoId) || 0) + Number(item.cantidad || 0)
+      );
+    });
+
     // 1. Validar stock de todos los items
-    for (const item of venta.items) {
-      const prodRef = doc(db, getProductosCol(), item.productoId);
+    for (const [productoId, cantidadTotal] of cantidadesPorProducto) {
+      const prodRef = doc(db, getProductosCol(), productoId);
       const prodSnap = await transaction.get(prodRef);
-      if (!prodSnap.exists()) throw new Error(`Producto ${item.productoId} no existe.`);
+      if (!prodSnap.exists()) throw new Error(`Producto ${productoId} no existe.`);
       const prodData = prodSnap.data();
-      if (prodData.stock < item.cantidad) {
+      if (prodData.stock < cantidadTotal) {
         throw new Error(`Stock insuficiente para ${prodData.nombre}. Disponible: ${prodData.stock}`);
       }
+      productosPorId.set(productoId, { ref: prodRef, data: prodData, cantidadTotal });
     }
     
     // 2. Descontar stock y registrar movimientos
-    for (const item of venta.items) {
-      const prodRef = doc(db, getProductosCol(), item.productoId);
-      const prodSnap = await transaction.get(prodRef);
-      const prodData = prodSnap.data();
+    for (const [productoId, producto] of productosPorId) {
+      const { ref: prodRef, data: prodData, cantidadTotal } = producto;
       
-      transaction.update(prodRef, { stock: prodData.stock - item.cantidad });
-      
+      transaction.update(prodRef, { stock: prodData.stock - cantidadTotal });
+
       const movRef = doc(collection(db, getMovimientosCol()));
       transaction.set(movRef, {
-        productoId: item.productoId,
+        productoId,
         tipo: TIPO_MOVIMIENTO.venta,
         motivo: `Venta a ${venta.cliente || "Consumidor Final"}`,
-        cantidad: item.cantidad,
+        cantidad: cantidadTotal,
         usuario: session?.user?.email || "sistema",
         fecha: new Date().toISOString()
       });

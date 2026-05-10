@@ -54,7 +54,7 @@ service cloud.firestore {
       allow read: if isAdmin();
       // Escritura: solo admin, y el rol debe ser válido
       allow create, update: if isAdmin()
-        && request.resource.data.rol in ['admin', 'operador'];
+        && request.resource.data.rol in ['admin', 'operador', 'tester'];
       allow delete: if isAdmin() && request.auth.uid != userId;
     }
 
@@ -125,6 +125,12 @@ service cloud.firestore {
       allow read, write: if isStaff();
     }
 
+    match /system_logs/{docId} {
+      allow create: if isStaff();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
     // ─────────────────────────────────────────────
     // COLECCIONES SANDBOX (modo tester)
     // Totalmente aisladas de producción.
@@ -153,6 +159,11 @@ service cloud.firestore {
 
     match /movimientos_stock_demo/{docId} {
       allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /system_logs_demo/{docId} {
+      allow create, read: if request.auth != null && (isTester() || isAdmin());
+      allow update, delete: if false;
     }
 
     // ─────────────────────────────────────────────
