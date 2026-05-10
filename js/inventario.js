@@ -85,7 +85,7 @@ function renderProductos(productos) {
       <td>${p.stock || 0}</td>
       <td>$${formatMoney(p.precioVenta || 0)}</td>
       <td>
-        <button class="btn btn-sm btn-edit" onclick="editarProducto('${p.id}')">Editar</button>
+        <span style="color:var(--muted);">—</span>
       </td>
     </tr>
   `).join("");
@@ -108,7 +108,7 @@ function renderVentas(ventas) {
       <td>$${formatMoney(v.total || 0)}</td>
       <td>${escapeHtml(v.metodoPago || "—")}</td>
       <td>
-        <button class="btn btn-sm btn-secondary" onclick="verDetalleVenta('${v.id}')">Ver</button>
+        <span style="color:var(--muted);">—</span>
       </td>
     </tr>
   `).join("");
@@ -119,7 +119,7 @@ function renderStock(productos) {
   if (!tbody) return;
   
   if (!productos.length) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No hay productos registrados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No hay productos registrados</td></tr>`;
     return;
   }
   
@@ -128,6 +128,7 @@ function renderStock(productos) {
       <td>${escapeHtml(p.nombre || "—")}</td>
       <td>${escapeHtml(p.sku || "—")}</td>
       <td>${p.stock || 0}</td>
+      <td><span style="color:var(--muted);">—</span></td>
     </tr>
   `).join("");
 }
@@ -174,13 +175,21 @@ function renderReportes(productos, ventas) {
 
 // Modals Producto
 window.abrirModalProducto = function() {
-  document.getElementById("modalProductoOverlay").hidden = false;
-  document.getElementById("modalProductoOverlay").removeAttribute("inert");
+  const overlay = document.getElementById("modalProductoOverlay");
+  if (!overlay) return;
+  overlay.hidden = false;
+  overlay.removeAttribute("inert");
+  overlay.setAttribute("aria-hidden", "false");
+  overlay.classList.add("open");
 };
 
 window.cerrarModalProducto = function() {
-  document.getElementById("modalProductoOverlay").hidden = true;
-  document.getElementById("modalProductoOverlay").setAttribute("inert", "");
+  const overlay = document.getElementById("modalProductoOverlay");
+  if (!overlay) return;
+  overlay.classList.remove("open");
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.setAttribute("inert", "");
+  overlay.hidden = true;
   limpiarFormularioProducto();
 };
 
@@ -246,8 +255,12 @@ window.filtrarProductos = function(termino) {
 // ── MÓDULO DE VENTAS (POS) ───────────────────────────────────────
 
 window.abrirModalVenta = function() {
-  document.getElementById("modalVentaOverlay").hidden = false;
-  document.getElementById("modalVentaOverlay").removeAttribute("inert");
+  const overlay = document.getElementById("modalVentaOverlay");
+  if (!overlay) return;
+  overlay.hidden = false;
+  overlay.removeAttribute("inert");
+  overlay.setAttribute("aria-hidden", "false");
+  overlay.classList.add("open");
   _carrito = [];
   renderCarrito();
   document.getElementById("busquedaVentaProducto").value = "";
@@ -255,8 +268,12 @@ window.abrirModalVenta = function() {
 };
 
 window.cerrarModalVenta = function() {
-  document.getElementById("modalVentaOverlay").hidden = true;
-  document.getElementById("modalVentaOverlay").setAttribute("inert", "");
+  const overlay = document.getElementById("modalVentaOverlay");
+  if (!overlay) return;
+  overlay.classList.remove("open");
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.setAttribute("inert", "");
+  overlay.hidden = true;
 };
 
 window.buscarProductosVenta = function(termino) {

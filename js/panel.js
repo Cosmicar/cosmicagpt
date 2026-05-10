@@ -1841,6 +1841,7 @@ state.currentItemsInventario = [];
 window.buscarRepuestosParaOrden = function(termino) {
   const t = termino.toLowerCase().trim();
   const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
+  if (!resultadosDiv) return;
   
   if (!t) {
     resultadosDiv.style.display = "none";
@@ -1873,7 +1874,7 @@ window.buscarRepuestosParaOrden = function(termino) {
     `).join("");
     
     resultadosDiv.style.display = "block";
-  });
+  }).catch((error) => showAlertError(error, "No se pudieron cargar los repuestos."));
 };
 
 window.agregarRepuestoAOrden = function(productoId) {
@@ -1905,26 +1906,21 @@ window.agregarRepuestoAOrden = function(productoId) {
         subtotal: producto.precioVenta,
         estado: "reservado"
       });
-      
-      // Registrar movimiento de reserva
-      await repo.reservarStock(producto.id, 1);
     }
     
-    // Calcular costos automáticamente (sumar al precio)
     const inputPrecio = document.getElementById("precio");
     if (inputPrecio) {
       const currentPrecio = Number(inputPrecio.value) || 0;
-      inputPrecio.value = currentPrecio + producto.precioVenta;
+      inputPrecio.value = currentPrecio + Number(producto.precioVenta || 0);
     }
     
-    // Ocultar resultados de búsqueda
-    document.getElementById("resultadosBusquedaRepuesto").style.display = "none";
-    document.getElementById("buscarRepuestoInput").value = "";
+    const resultados = document.getElementById("resultadosBusquedaRepuesto");
+    const buscador = document.getElementById("buscarRepuestoInput");
+    if (resultados) resultados.style.display = "none";
+    if (buscador) buscador.value = "";
     
     renderItemsInventario();
-  });
-}
-
+  }).catch((error) => showAlertError(error, "No se pudo agregar el repuesto."));
 };
 
 window.actualizarCantidadRepuesto = function(productoId, cambio) {
@@ -1950,28 +1946,17 @@ window.actualizarCantidadRepuesto = function(productoId, cambio) {
       return;
     }
     
-    // Ajustar reserva
-    if (cambio > 0) {
-      await repo.reservarStock(productoId, cambio);
-    } else {
-      await repo.devolverReserva(productoId, Math.abs(cambio));
-    }
-    
-    // Calcular costos automáticamente
     const inputPrecio = document.getElementById("precio");
     if (inputPrecio) {
       const currentPrecio = Number(inputPrecio.value) || 0;
-      inputPrecio.value = currentPrecio + (producto.precioVenta * cambio);
+      inputPrecio.value = Math.max(0, currentPrecio + (Number(producto?.precioVenta || 0) * cambio));
     }
-
     
     item.cantidad = nuevaCantidad;
     item.subtotal = item.cantidad * item.precioUnitario;
     
     renderItemsInventario();
-  });
-}
-
+  }).catch((error) => showAlertError(error, "No se pudo actualizar el repuesto."));
 };
 
 window.eliminarRepuestoDeOrden = function(productoId) {
@@ -1980,24 +1965,16 @@ window.eliminarRepuestoDeOrden = function(productoId) {
   
   if (!confirm(`¿Eliminar ${item.nombre} de la orden?`)) return;
   
-  import("./inventario-repository.js").then(async (repo) => {
-    if (item.estado === "reservado") {
-      await repo.devolverReserva(productoId, item.cantidad);
-      
-      // Calcular costos automáticamente (restar del precio si estaba reservado)
-      const inputPrecio = document.getElementById("precio");
-      if (inputPrecio) {
-        const currentPrecio = Number(inputPrecio.value) || 0;
-        inputPrecio.value = Math.max(0, currentPrecio - item.subtotal);
-      }
+  if (item.estado === "reservado") {
+    const inputPrecio = document.getElementById("precio");
+    if (inputPrecio) {
+      const currentPrecio = Number(inputPrecio.value) || 0;
+      inputPrecio.value = Math.max(0, currentPrecio - item.subtotal);
     }
-    
-    item.estado = "devuelto";
-    
-    renderItemsInventario();
-  });
-}
-
+  }
+  
+  item.estado = "devuelto";
+  renderItemsInventario();
 };
 
 function renderItemsInventario() {

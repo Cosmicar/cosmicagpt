@@ -113,6 +113,18 @@ service cloud.firestore {
       allow read, write: if isStaff();
     }
 
+    match /productos/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    match /ventas/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    match /movimientos_stock/{docId} {
+      allow read, write: if isStaff();
+    }
+
     // ─────────────────────────────────────────────
     // COLECCIONES SANDBOX (modo tester)
     // Totalmente aisladas de producción.
@@ -129,6 +141,18 @@ service cloud.firestore {
     match /ordenesPublicas_demo/{docId} {
       allow read: if true;
       allow write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /productos_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /ventas_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
+    }
+
+    match /movimientos_stock_demo/{docId} {
+      allow read, write: if request.auth != null && (isTester() || isAdmin());
     }
 
     // ─────────────────────────────────────────────
