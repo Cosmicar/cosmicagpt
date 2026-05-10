@@ -3,7 +3,23 @@ export const COLLECTIONS = Object.freeze({
   clientes: "clientes",
   trabajos: "trabajos",
   ordenesPublicas: "ordenesPublicas",
-  config: "config"
+  config: "config",
+  productos: "productos",
+  ventas: "ventas",
+  movimientos_stock: "movimientos_stock"
+});
+
+export const TIPO_ITEM = Object.freeze({
+  producto: "producto",
+  repuesto: "repuesto"
+});
+
+export const TIPO_MOVIMIENTO = Object.freeze({
+  ingreso: "ingreso",
+  salida: "salida",
+  ajuste: "ajuste",
+  venta: "venta",
+  reparacion: "reparacion"
 });
 
 export const ROLES = Object.freeze({

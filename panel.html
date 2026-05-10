@@ -413,6 +413,7 @@
 
   <div class="tab operador-section" id="tabRendimiento" onclick="showTab('rendimiento'); calcularRendimientoOperador()" style="display:none;">📊 Mi Rendimiento</div>
   <div class="tab admin-section"   id="tabEstadisticas" onclick="showTab('estadisticas'); calcularEstadisticasAdmin()" style="display:none;">📈 Estadísticas</div>
+  <div class="tab" id="tabInventario" onclick="showTab('inventario'); cargarModuloInventario()">📦 Inventario</div>
   <div class="tab admin-section"   id="tabAdmin" onclick="showTab('admin')" style="display: none;">⚙️ Admin</div>
 </div>
 
@@ -793,7 +794,130 @@
     </div>
   </div>
 
-</div><!-- /tab-admin -->
+  </div><!-- /tab-admin -->
+
+  <!-- ══════════════════════════════════════════ TAB: INVENTARIO -->
+  <div class="tab-content" id="tab-inventario" style="display: none;">
+    <div class="section">
+      <div class="section-title">📦 Gestión de Inventario</div>
+      
+      <!-- Subsecciones / Pestañas internas -->
+      <div class="ingresos-filtros" style="margin-bottom: 20px;">
+        <button class="period-btn active" onclick="setSubSeccionInventario('productos', this)">Productos</button>
+        <button class="period-btn" onclick="setSubSeccionInventario('ventas', this)">Ventas</button>
+        <button class="period-btn" onclick="setSubSeccionInventario('stock', this)">Stock</button>
+        <button class="period-btn" onclick="setSubSeccionInventario('bajo_stock', this)">Bajo stock</button>
+        <button class="period-btn" onclick="setSubSeccionInventario('reportes', this)">Reportes</button>
+      </div>
+
+      <!-- Contenido Subsección: Productos -->
+      <div id="sub-inv-productos" class="sub-inv-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <button class="btn btn-primary" onclick="abrirModalProducto()">➕ Nuevo Producto/Repuesto</button>
+          <input id="busquedaProducto" placeholder="🔍 Buscar por nombre o SKU..." oninput="filtrarProductos(this.value)" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:#fff;">
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="ingresos-tabla">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Categoría</th>
+                <th>Stock</th>
+                <th>Precio Venta</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productosTablaBody">
+              <!-- Cargado por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contenido Subsección: Ventas -->
+      <div id="sub-inv-ventas" class="sub-inv-content" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <button class="btn btn-success" onclick="abrirModalVenta()">🛒 Registrar Venta</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="ingresos-tabla">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Método Pago</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ventasTablaBody">
+              <!-- Cargado por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contenido Subsección: Stock -->
+      <div id="sub-inv-stock" class="sub-inv-content" style="display:none;">
+        <div style="overflow-x:auto;">
+          <table class="ingresos-tabla">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Stock Actual</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="stockTablaBody">
+              <!-- Cargado por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contenido Subsección: Bajo stock -->
+      <div id="sub-inv-bajo_stock" class="sub-inv-content" style="display:none;">
+        <div style="overflow-x:auto;">
+          <table class="ingresos-tabla">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Stock Actual</th>
+                <th>Stock Mínimo</th>
+              </tr>
+            </thead>
+            <tbody id="bajoStockTablaBody">
+              <!-- Cargado por JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contenido Subsección: Reportes -->
+      <div id="sub-inv-reportes" class="sub-inv-content" style="display:none;">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Valorización Inventario</div>
+            <div class="kpi-value" id="repValorizacion">$0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Ventas del Mes</div>
+            <div class="kpi-value green" id="repVentasMes">$0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Productos Activos</div>
+            <div class="kpi-value white" id="repProdActivos">0</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ══════════════════════════════════ TAB: MI RENDIMIENTO (operador) -->
   <div class="tab-content" id="tab-rendimiento">
@@ -1010,6 +1134,7 @@
 </div><!-- /tab-estadisticas -->
 
 <script type="module" src="./js/panel.js?v=2"></script>
+<script type="module" src="./js/inventario.js"></script>
 
 
 <!-- ── MODAL: EMITIR FACTURA C ─────────────────────────────────────── -->
@@ -1086,6 +1211,65 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- ── MODAL: PRODUCTO ─────────────────────────────────────── -->
+<div class="modal-overlay" id="modalProductoOverlay" role="dialog" aria-modal="true" aria-hidden="true" hidden inert>
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">📦 Producto / Repuesto</div>
+      <button class="modal-close" onclick="cerrarModalProducto()">✕</button>
+    </div>
+    <div class="modal-form-grid">
+      <div class="modal-form-group">
+        <label class="modal-label">Nombre *</label>
+        <input class="modal-input" id="prodNombre" type="text" placeholder="Disco SSD 240GB">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">SKU / Código</label>
+        <input class="modal-input" id="prodSku" type="text" placeholder="SSD-240-001">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Tipo *</label>
+        <select class="modal-select" id="prodTipo">
+          <option value="producto">Producto</option>
+          <option value="repuesto">Repuesto</option>
+        </select>
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Categoría</label>
+        <input class="modal-input" id="prodCategoria" type="text" placeholder="Almacenamiento">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Precio Compra ($)</label>
+        <input class="modal-input" id="prodPrecioCompra" type="number" placeholder="0">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Precio Venta ($) *</label>
+        <input class="modal-input" id="prodPrecioVenta" type="number" placeholder="0">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Stock Inicial *</label>
+        <input class="modal-input" id="prodStock" type="number" placeholder="0">
+      </div>
+      <div class="modal-form-group">
+        <label class="modal-label">Stock Mínimo</label>
+        <input class="modal-input" id="prodStockMinimo" type="number" placeholder="5">
+      </div>
+      <div class="modal-form-group full">
+        <label class="modal-label">Proveedor</label>
+        <input class="modal-input" id="prodProveedor" type="text" placeholder="Proveedor XYZ">
+      </div>
+      <div class="modal-form-group full">
+        <label class="modal-label">Descripción</label>
+        <textarea class="modal-input" id="prodDescripcion" placeholder="Detalles del producto..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="cerrarModalProducto()">Cancelar</button>
+      <button class="modal-btn-primary" onclick="guardarProducto()">Guardar</button>
+    </div>
   </div>
 </div>
 
