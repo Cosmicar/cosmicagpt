@@ -1,14 +1,17 @@
 import {
   getProductos,
   addProducto,
-  getVentas
+  getVentas,
+  registrarVenta
 } from "./inventario-repository.js";
 
 import { escapeHtml, formatMoney, formatDate } from "./utils.js";
+import { printTicketVenta } from "./ticket.js";
 
 let _productosCache = [];
 let _ventasCache = [];
 let _subSeccionActual = "productos";
+let _carrito = [];
 
 // Inicialización
 window.cargarModuloInventario = async function() {
@@ -169,7 +172,7 @@ function renderReportes(productos, ventas) {
   repProdActivos.innerText = productos.filter(p => p.activo).length;
 }
 
-// Modals
+// Modals Producto
 window.abrirModalProducto = function() {
   document.getElementById("modalProductoOverlay").hidden = false;
   document.getElementById("modalProductoOverlay").removeAttribute("inert");
@@ -238,4 +241,192 @@ window.filtrarProductos = function(termino) {
     p.sku?.toLowerCase().includes(t)
   );
   renderProductos(filtrados);
+};
+
+// ── MÓDULO DE VENTAS (POS) ───────────────────────────────────────
+
+window.abrirModalVenta = function() {
+  document.getElementById("modalVentaOverlay").hidden = false;
+  document.getElementById("modalVentaOverlay").removeAttribute("inert");
+  _carrito = [];
+  renderCarrito();
+  document.getElementById("busquedaVentaProducto").value = "";
+  document.getElementById("resultadosBusquedaVenta").style.display = "none";
+};
+
+window.cerrarModalVenta = function() {
+  document.getElementById("modalVentaOverlay").hidden = true;
+  document.getElementById("modalVentaOverlay").setAttribute("inert", "");
+};
+
+window.buscarProductosVenta = function(termino) {
+  const t = termino.toLowerCase().trim();
+  const resultadosDiv = document.getElementById("resultadosBusquedaVenta");
+  
+  if (!t) {
+    resultadosDiv.style.display = "none";
+    return;
+  }
+  
+  const filtrados = _productosCache.filter(p => 
+    p.activo && (
+      p.nombre?.toLowerCase().includes(t) || 
+      p.sku?.toLowerCase().includes(t) ||
+      p.categoria?.toLowerCase().includes(t)
+    )
+  );
+  
+  if (!filtrados.length) {
+    resultadosDiv.innerHTML = `<div style="padding:10px; color:var(--muted); text-align:center;">No se encontraron productos</div>`;
+    resultadosDiv.style.display = "block";
+    return;
+  }
+  
+  resultadosDiv.innerHTML = filtrados.map(p => `
+    <div style="padding:10px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="agregarAlCarrito('${p.id}')">
+      <div>
+        <div style="font-weight:bold;">${escapeHtml(p.nombre)}</div>
+        <div style="font-size:12px; color:var(--muted);">${escapeHtml(p.sku || "Sin SKU")} | Stock: ${p.stock || 0}</div>
+      </div>
+      <div style="font-weight:bold; color:var(--success);">$${formatMoney(p.precioVenta)}</div>
+    </div>
+  `).join("");
+  
+  resultadosDiv.style.display = "block";
+};
+
+window.agregarAlCarrito = function(productoId) {
+  const producto = _productosCache.find(p => p.id === productoId);
+  if (!producto) return;
+  
+  if (producto.stock <= 0) {
+    alert("No hay stock disponible de este producto.");
+    return;
+  }
+  
+  const itemExistente = _carrito.find(item => item.productoId === productoId);
+  
+  if (itemExistente) {
+    if (itemExistente.cantidad >= producto.stock) {
+      alert("No puedes agregar más de este producto. Supera el stock disponible.");
+      return;
+    }
+    itemExistente.cantidad += 1;
+    itemExistente.subtotal = itemExistente.cantidad * itemExistente.precioUnitario;
+  } else {
+    _carrito.push({
+      productoId: producto.id,
+      sku: producto.sku || "",
+      nombre: producto.nombre,
+      cantidad: 1,
+      precioUnitario: producto.precioVenta,
+      subtotal: producto.precioVenta
+    });
+  }
+  
+  // Ocultar resultados de búsqueda
+  document.getElementById("resultadosBusquedaVenta").style.display = "none";
+  document.getElementById("busquedaVentaProducto").value = "";
+  
+  renderCarrito();
+};
+
+window.actualizarCantidad = function(productoId, cambio) {
+  const item = _carrito.find(item => item.productoId === productoId);
+  if (!item) return;
+  
+  const producto = _productosCache.find(p => p.id === productoId);
+  
+  const nuevaCantidad = item.cantidad + cambio;
+  
+  if (nuevaCantidad <= 0) {
+    window.eliminarDelCarrito(productoId);
+    return;
+  }
+  
+  if (producto && nuevaCantidad > producto.stock) {
+    alert("No hay suficiente stock.");
+    return;
+  }
+  
+  item.cantidad = nuevaCantidad;
+  item.subtotal = item.cantidad * item.precioUnitario;
+  
+  renderCarrito();
+};
+
+window.eliminarDelCarrito = function(productoId) {
+  _carrito = _carrito.filter(item => item.productoId !== productoId);
+  renderCarrito();
+};
+
+function renderCarrito() {
+  const tbody = document.getElementById("carritoTablaBody");
+  if (!tbody) return;
+  
+  if (!_carrito.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted); padding:10px;">El carrito está vacío</td></tr>`;
+    document.getElementById("ventaTotal").innerText = "0.00";
+    return;
+  }
+  
+  tbody.innerHTML = _carrito.map(item => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:8px;">
+        <div style="font-weight:bold;">${escapeHtml(item.nombre)}</div>
+        <div style="font-size:11px; color:var(--muted);">${escapeHtml(item.sku)}</div>
+      </td>
+      <td style="padding:8px;">
+        <div style="display:flex; align-items:center; gap:5px;">
+          <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" onclick="actualizarCantidad('${item.productoId}', -1)">-</button>
+          <span>${item.cantidad}</span>
+          <button class="btn btn-sm btn-secondary" style="padding:2px 6px;" onclick="actualizarCantidad('${item.productoId}', 1)">+</button>
+        </div>
+      </td>
+      <td style="padding:8px;">$${formatMoney(item.precioUnitario)}</td>
+      <td style="padding:8px; font-weight:bold;">$${formatMoney(item.subtotal)}</td>
+      <td style="padding:8px; text-align:right;">
+        <button class="btn btn-sm btn-danger" style="padding:2px 6px;" onclick="eliminarDelCarrito('${item.productoId}')">✕</button>
+      </td>
+    </tr>
+  `).join("");
+  
+  const total = _carrito.reduce((acc, item) => acc + item.subtotal, 0);
+  document.getElementById("ventaTotal").innerText = formatMoney(total);
+}
+
+window.confirmarVenta = async function() {
+  if (!_carrito.length) {
+    alert("El carrito está vacío.");
+    return;
+  }
+  
+  const cliente = document.getElementById("ventaCliente").value.trim() || "Consumidor Final";
+  const metodoPago = document.getElementById("ventaMetodoPago").value;
+  const total = _carrito.reduce((acc, item) => acc + item.subtotal, 0);
+  
+  const venta = {
+    cliente,
+    items: _carrito,
+    total,
+    metodoPago,
+    fecha: new Date().toISOString()
+  };
+  
+  try {
+    await registrarVenta(venta);
+    alert("✅ Venta registrada correctamente.");
+    cerrarModalVenta();
+    await window.cargarModuloInventario(); // Recargar datos
+    
+    // Generar ticket de venta
+    try {
+      printTicketVenta(venta);
+    } catch (err) {
+      console.error("Error al generar ticket:", err);
+      alert("La venta se registró pero no se pudo abrir la ventana del ticket.");
+    }
+  } catch (error) {
+    alert("Error al registrar la venta: " + error.message);
+  }
 };

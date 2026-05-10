@@ -1273,6 +1273,79 @@
   </div>
 </div>
 
+<!-- ── MODAL: VENTA ────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalVentaOverlay" role="dialog" aria-modal="true" aria-hidden="true" hidden inert>
+  <div class="modal-box" style="max-width: 600px;">
+    <div class="modal-header">
+      <div class="modal-title">🛒 Registrar Venta</div>
+      <button class="modal-close" onclick="cerrarModalVenta()">✕</button>
+    </div>
+    
+    <div class="modal-form-grid">
+      <!-- Buscador de productos -->
+      <div class="modal-form-group full">
+        <label class="modal-label">🔍 Buscar producto o repuesto</label>
+        <div style="position: relative;">
+          <input class="modal-input" id="busquedaVentaProducto" type="text" placeholder="Nombre, SKU o categoría..." oninput="buscarProductosVenta(this.value)">
+          <div id="resultadosBusquedaVenta" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; z-index:10; max-height:200px; overflow-y:auto;">
+            <!-- Resultados de búsqueda -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Carrito -->
+      <div class="modal-form-group full">
+        <label class="modal-label">Carrito</label>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="text-align: left; color: var(--muted); border-bottom: 1px solid var(--border);">
+                <th style="padding: 6px;">Item</th>
+                <th style="padding: 6px;">Cant.</th>
+                <th style="padding: 6px;">Precio</th>
+                <th style="padding: 6px;">Subtotal</th>
+                <th style="padding: 6px;"></th>
+              </tr>
+            </thead>
+            <tbody id="carritoTablaBody">
+              <!-- Items del carrito -->
+              <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:10px;">El carrito está vacío</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Datos del Cliente (Opcional) -->
+      <div class="modal-form-group">
+        <label class="modal-label">Cliente (Opcional)</label>
+        <input class="modal-input" id="ventaCliente" type="text" placeholder="Consumidor Final">
+      </div>
+
+      <!-- Método de Pago -->
+      <div class="modal-form-group">
+        <label class="modal-label">Método de Pago *</label>
+        <select class="modal-select" id="ventaMetodoPago">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="MercadoPago">MercadoPago</option>
+          <option value="tarjeta">Tarjeta</option>
+        </select>
+      </div>
+
+      <!-- Totales -->
+      <div class="modal-form-group full" style="text-align: right; font-size: 1.2rem; font-weight: bold; margin-top: 10px;">
+        <span style="color: var(--muted); font-size: 1rem;">Total:</span>
+        <span style="color: var(--success);">$<span id="ventaTotal">0.00</span></span>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="cerrarModalVenta()">Cancelar</button>
+      <button class="modal-btn-primary" onclick="confirmarVenta()">Confirmar Venta</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Modal Factura C — lógica standalone (sin módulos ES6) ────────────────
 

@@ -103,3 +103,74 @@ export async function printTicket(id) {
   `);
   v.document.close();
 }
+
+export function printTicketVenta(venta) {
+  const logoUrl = new URL("cosmica-logo.png", window.location.href).href;
+  const v = window.open("", "_blank");
+
+  if (!v) {
+    throw new Error("El navegador bloqueó la ventana del ticket.");
+  }
+
+  const itemsHtml = venta.items.map(item => `
+    <div class="row">
+      <span>${escapeHtml(item.nombre)} x${item.cantidad}</span>
+      <span>$${formatMoney(item.subtotal)}</span>
+    </div>
+  `).join("");
+
+  v.document.write(`
+    <html><head><title>Ticket de Venta</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=DM+Sans:wght@400;500&display=swap');
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'DM Sans',sans-serif; font-size:13px; max-width:380px; margin:0 auto; padding:20px; color:#111; }
+      .header-ticket { text-align:center; margin-bottom:16px; }
+      .logo-img { width:58px; height:58px; object-fit:contain; display:block; margin:0 auto 6px; }
+      .logo-t { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:2px; }
+      .sub-t  { font-size:11px; color:#888; margin-top:2px; }
+      .orden-num { font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; text-align:center; margin:10px 0; }
+      hr { border:none; border-top:1px dashed #ccc; margin:12px 0; }
+      .row { margin:5px 0; display:flex; justify-content:space-between; gap:12px; }
+      .row b { min-width:90px; color:#555; font-weight:500; }
+      .footer-ticket { text-align:center; font-size:11px; color:#888; margin-top:16px; }
+    </style>
+    </head>
+    <body>
+      <div class="header-ticket">
+        <img class="logo-img" src="${logoUrl}" id="ticketLogo" alt="Cosmica.ar">
+        <div class="logo-t">Cosmica.ar</div>
+        <div class="sub-t">Muchas gracias por tu compra</div>
+      </div>
+
+      <div class="orden-num">TICKET DE VENTA</div>
+
+      <hr>
+      <div class="row"><b>Cliente</b> <span>${escapeHtml(venta.cliente || "Consumidor Final")}</span></div>
+      <div class="row"><b>Fecha</b> <span>${formatDateTime(venta.fecha)}</span></div>
+      <div class="row"><b>Pago</b> <span>${escapeHtml(venta.metodoPago || "—")}</span></div>
+      <hr>
+      <div style="margin:5px 0;color:#555;font-size:12px;font-weight:500;">Detalle:</div>
+      ${itemsHtml}
+      <hr>
+      <div class="row" style="font-size:16px; font-weight:bold;"><b>Total</b> <span>$${formatMoney(venta.total)}</span></div>
+      <hr>
+      <div class="footer-ticket">
+        WhatsApp: 3883298736 · Ramírez de Velazco 111, SSJ<br>
+        www.cosmica.ar
+      </div>
+
+      <script>
+        const logo = document.getElementById("ticketLogo");
+        let loaded = 0;
+        const ready = () => {
+          loaded += 1;
+          if (loaded >= 1) setTimeout(() => window.print(), 150);
+        };
+        logo.onload = ready;
+        logo.onerror = ready;
+      <\/script>
+    </body></html>
+  `);
+  v.document.close();
+}
