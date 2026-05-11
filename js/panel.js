@@ -240,6 +240,7 @@ function bindGlobalActions() {
   window.reingresarTrabajo = reingresarTrabajo;
   window.borrarTrabajo = borrarTrabajo;
   window.imprimirTicket = imprimirTicket;
+  window.confirmarDesacople = confirmarDesacople;
   window.setPeriodo = setPeriodo;
   window.cargarIngresos = cargarIngresos;
   window.exportarExcel = exportarExcel;
