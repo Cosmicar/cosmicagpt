@@ -36,20 +36,36 @@ export async function getCliente(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-export async function upsertClienteByDni(cliente) {
+export async function findClienteMatch(cliente) {
   if (cliente.dni && cliente.dni.trim() !== "") {
-    const existing = await findClienteByDni(cliente.dni);
-    if (existing) {
-      await updateDoc(doc(db, getClientesCol(), existing.id), {
-        nombre: cliente.nombre,
-        apellido: cliente.apellido || "",
-        telefono: cliente.telefono,
-        provincia: cliente.provincia
-      });
-      return existing.id;
+    const qDni = query(collection(db, getClientesCol()), where("dni", "==", cliente.dni.trim()));
+    const snapDni = await getDocs(qDni);
+    if (!snapDni.empty) return { type: 'dni', client: { id: snapDni.docs[0].id, ...snapDni.docs[0].data() } };
+  }
+
+  if (cliente.telefono && cliente.telefono.trim() !== "") {
+    const qTel = query(collection(db, getClientesCol()), where("telefono", "==", cliente.telefono.trim()));
+    const snapTel = await getDocs(qTel);
+    if (!snapTel.empty) {
+      return { type: 'telefono', client: { id: snapTel.docs[0].id, ...snapTel.docs[0].data() } };
     }
   }
 
+  if (cliente.nombre && cliente.nombre.trim() !== "") {
+    const qNom = query(collection(db, getClientesCol()), where("nombre", "==", cliente.nombre.trim()));
+    const snapNom = await getDocs(qNom);
+    for (const d of snapNom.docs) {
+      const data = d.data();
+      if ((data.apellido || "").trim().toLowerCase() === (cliente.apellido || "").trim().toLowerCase()) {
+        return { type: 'nombre', client: { id: d.id, ...data } };
+      }
+    }
+  }
+
+  return null;
+}
+
+export async function createNewCliente(cliente) {
   const ref = await addDoc(collection(db, getClientesCol()), {
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",

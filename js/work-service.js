@@ -3,6 +3,8 @@ import { nowIso } from "./utils.js";
 import { confirmarItemsOrden, devolverItemsOrden } from "./inventario-repository.js";
 import { getSystemConfig, logSystem } from "./system-service.js";
 
+const _locks = new Set();
+
 
 import {
   addTrabajo,
@@ -13,7 +15,8 @@ import {
   publishPublicOrder,
   updateCliente,
   updateTrabajo,
-  upsertClienteByDni,
+  findClienteMatch,
+  createNewCliente,
   resetContabilidadBatch,
   listTrabajos
 } from "./work-repository.js";
@@ -80,7 +83,31 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     return { mode: "updated" };
   }
 
-  const clienteId = await upsertClienteByDni(cliente);
+  const match = await findClienteMatch(cliente);
+  let clienteId = null;
+
+  if (match) {
+    if (match.type === 'dni') {
+      const c = match.client;
+      if ((c.nombre !== cliente.nombre || c.telefono !== cliente.telefono) && (cliente.nombre && cliente.telefono)) {
+        if (!window.confirm(`⚠️ Existe un cliente con este DNI: ${c.nombre} ${c.apellido} (Tel: ${c.telefono}).\n\n¿Deseas actualizarlo con los nuevos datos (${cliente.nombre}, ${cliente.telefono}) y vincularle esta orden?`)) {
+          throw new Error("Operación cancelada por el usuario para proteger los datos del cliente existente.");
+        }
+      }
+      await updateCliente(c.id, cliente);
+      clienteId = c.id;
+    } else {
+      const c = match.client;
+      if (window.confirm(`⚠️ Coincidencia dudosa detectada por ${match.type === 'telefono' ? 'teléfono' : 'nombre'}.\nEn la base de datos ya existe: ${c.nombre} ${c.apellido} (DNI: ${c.dni || 'vacío'}, Tel: ${c.telefono}).\n\n[ACEPTAR] = Son la misma persona. Vincular esta orden y actualizar sus datos.\n[CANCELAR] = Crear como un cliente totalmente nuevo e independiente.`)) {
+        await updateCliente(c.id, cliente);
+        clienteId = c.id;
+      } else {
+        clienteId = await createNewCliente(cliente);
+      }
+    }
+  } else {
+    clienteId = await createNewCliente(cliente);
+  }
   const tipo = normalizeServiceType(values.tipo);
   // Pasamos el perfil para que la consulta interna respete RBAC
   const numeroOrden = await getNextOrderNumber(tipo, profile);
@@ -146,13 +173,16 @@ export async function changeWorkStatus(id, nextStatus) {
 }
 
 export async function reenterWork(id, newPrice, profile = null) {
-  const trabajo = await getTrabajo(id);
-  if (!trabajo) throw new Error("La orden no existe.");
-  if (!canReenterWork(trabajo.estado)) {
-    throw new Error("Solo se puede reingresar una orden entregada.");
-  }
+  if (_locks.has(`reenter_${id}`)) throw new Error("Procesando reingreso, espera un momento...");
+  _locks.add(`reenter_${id}`);
+  try {
+    const trabajo = await getTrabajo(id);
+    if (!trabajo) throw new Error("La orden no existe.");
+    if (!canReenterWork(trabajo.estado)) {
+      throw new Error("Solo se puede reingresar una orden entregada.");
+    }
 
-  const precio = Number(newPrice);
+    const precio = Number(newPrice);
   if (!Number.isFinite(precio) || precio < 0) {
     throw new Error("Precio inválido.");
   }
@@ -185,15 +215,21 @@ export async function reenterWork(id, newPrice, profile = null) {
     ordenOriginal: trabajo.numeroOrden || ""
   };
 
-  const nuevoTrabajoId = await addTrabajo(nuevoTrabajo);
-  await publishPublicOrder(nuevoTrabajoId, nuevoTrabajo);
+    const nuevoTrabajoId = await addTrabajo(nuevoTrabajo);
+    await publishPublicOrder(nuevoTrabajoId, nuevoTrabajo);
 
-  return numeroOrden;
+    return numeroOrden;
+  } finally {
+    _locks.delete(`reenter_${id}`);
+  }
 }
 
 export async function removeWork(id, profile) {
-  const trabajo = await getTrabajo(id);
-  if (!trabajo) throw new Error("La orden no existe.");
+  if (_locks.has(`remove_${id}`)) throw new Error("Procesando eliminación, espera...");
+  _locks.add(`remove_${id}`);
+  try {
+    const trabajo = await getTrabajo(id);
+    if (!trabajo) throw new Error("La orden no existe.");
 
   if (profile?.rol === "operador" && trabajo.estado === "Entregado") {
     throw new Error("Los operadores no pueden borrar órdenes entregadas.");
@@ -209,9 +245,12 @@ export async function removeWork(id, profile) {
   } else {
     await logSystem("orden_eliminada_inventario_desactivado", { trabajoId: id });
   }
-  await deleteTrabajo(id);
 
+  await deleteTrabajo(id);
   await deletePublicOrder(id).catch(() => {});
+  } finally {
+    _locks.delete(`remove_${id}`);
+  }
 }
 
 export async function deleteAllWorks(profile) {

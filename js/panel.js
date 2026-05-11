@@ -1292,6 +1292,8 @@ function readWorkForm() {
 
 
 async function guardarCliente() {
+  if (window._processingGuardar) return;
+  window._processingGuardar = true;
   const btn = $("btnGuardarCliente");
   if (btn) btn.disabled = true;
   try {
@@ -1318,6 +1320,7 @@ async function guardarCliente() {
 
     showAlertError(error, "No se pudo guardar la orden.");
   } finally {
+    window._processingGuardar = false;
     if (btn) btn.disabled = false;
   }
 }
