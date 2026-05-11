@@ -244,6 +244,19 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+
+  window.ejecutarAuditoriaYReparacion = async function() {
+    if (!confirm("⚠️ ¿Iniciar depuración de la base de datos?\\nEsto unificará clientes duplicados y eliminará órdenes doble-submit. Se registrarán los cambios en la consola.")) return;
+    try {
+      const { auditarYRepararBD } = await import("./repair-service.js");
+      await auditarYRepararBD();
+      alert("✅ Depuración finalizada. Revisar consola para más detalles.");
+      await limpiarBusqueda();
+    } catch (e) {
+      alert("Error en la auditoría: " + e.message);
+      console.error(e);
+    }
+  };
   
   // ── Notificaciones FCM (Campanita) ──────────────────────────────────────────────
   // togglePushNotifications ya está definida como window.* arriba
@@ -1611,6 +1624,17 @@ async function cambiarEstado(id, estado) {
 }
 
 async function reingresarTrabajo(id) {
+  if (window._processingReingreso) return;
+  window._processingReingreso = true;
+  try {
+    const res = await _reingresarTrabajo(id);
+    return res;
+  } finally {
+    window._processingReingreso = false;
+  }
+}
+
+async function _reingresarTrabajo(id) {
   try {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("No se encontró la orden.");
@@ -1628,6 +1652,17 @@ async function reingresarTrabajo(id) {
 }
 
 async function borrarTrabajo(id) {
+  if (window._processingBorrar) return;
+  window._processingBorrar = true;
+  try {
+    const res = await _borrarTrabajo(id);
+    return res;
+  } finally {
+    window._processingBorrar = false;
+  }
+}
+
+async function _borrarTrabajo(id) {
   if (!confirm("¿Eliminar esta orden? No se puede deshacer.")) return;
 
   try {

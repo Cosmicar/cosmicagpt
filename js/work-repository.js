@@ -37,21 +37,23 @@ export async function getCliente(id) {
 }
 
 export async function upsertClienteByDni(cliente) {
-  const existing = await findClienteByDni(cliente.dni);
-  if (existing) {
-    await updateDoc(doc(db, getClientesCol(), existing.id), {
-      nombre: cliente.nombre,
-      apellido: cliente.apellido || "",
-      telefono: cliente.telefono,
-      provincia: cliente.provincia
-    });
-    return existing.id;
+  if (cliente.dni && cliente.dni.trim() !== "") {
+    const existing = await findClienteByDni(cliente.dni);
+    if (existing) {
+      await updateDoc(doc(db, getClientesCol(), existing.id), {
+        nombre: cliente.nombre,
+        apellido: cliente.apellido || "",
+        telefono: cliente.telefono,
+        provincia: cliente.provincia
+      });
+      return existing.id;
+    }
   }
 
   const ref = await addDoc(collection(db, getClientesCol()), {
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",
-    dni: cliente.dni,
+    dni: cliente.dni || "",
     telefono: cliente.telefono,
     provincia: cliente.provincia,
     origenContacto: cliente.origenContacto || ""
@@ -232,28 +234,17 @@ export async function getNextOrderNumber(tipo, profile) {
   const normalizedType = normalizeServiceType(tipo);
   const counterKey = normalizedType === SERVICE_TYPES.remoto ? "remoto" : "taller";
   const prefix = ORDER_PREFIX[normalizedType];
-  const baseline = await getMaxOrderSequence(normalizedType, profile);
   const counterRef = doc(db, COLLECTIONS.config, "ordenes");
 
   const next = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(counterRef);
     const current = Number(snap.exists() ? snap.data()?.[counterKey] || 0 : 0);
-    const nextValue = Math.max(current, baseline) + 1;
+    const nextValue = current + 1;
     transaction.set(counterRef, { [counterKey]: nextValue }, { merge: true });
     return nextValue;
   });
 
   return `${prefix}-${String(next).padStart(4, "0")}`;
-}
-
-async function getMaxOrderSequence(tipo, profile) {
-  const prefix = `${ORDER_PREFIX[tipo]}-`;
-  const trabajos = await listTrabajos(profile);
-  return trabajos.reduce((max, trabajo) => {
-    if (trabajo.tipo !== tipo || !String(trabajo.numeroOrden || "").startsWith(prefix)) return max;
-    const value = Number(String(trabajo.numeroOrden).replace(prefix, ""));
-    return Number.isFinite(value) ? Math.max(max, value) : max;
-  }, 0);
 }
 
 export async function setOrderCounterBaseline({ taller, remoto }) {
