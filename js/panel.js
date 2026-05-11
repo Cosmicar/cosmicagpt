@@ -1682,7 +1682,7 @@ function renderTrabajoCard(t, c = {}) {
   const card = document.createElement("div");
   card.className = "card-trabajo";
 
-  const diasSinMover = daysSince(t.fechaIngreso);
+  const diasSinMover = daysSince(t.updatedAt || t.fechaIngreso);
   const alertaDemora = diasSinMover > 5
     && t.estado !== WORK_STATUS.entregado
     && t.estado !== WORK_STATUS.reingresada;

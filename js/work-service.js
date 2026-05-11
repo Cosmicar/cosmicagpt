@@ -92,7 +92,8 @@ export async function updateWork(values, editState, profile = null) {
     diagnostico: values.diagnostico || "",
     servicioRealizado: values.servicioRealizado || "",
     precio: values.precio,
-    itemsInventario: itemsLimpios
+    itemsInventario: itemsLimpios,
+    updatedAt: nowIso()
   };
 
   const cliente = {
@@ -235,7 +236,8 @@ export async function changeWorkStatus(id, nextStatus) {
 
   const update = { 
     estado: nextStatus,
-    tipo: trabajo.tipo // Incluir explícitamente el tipo original
+    tipo: trabajo.tipo, // Incluir explícitamente el tipo original
+    updatedAt: nowIso()
   };
   let inventoryLogType = null;
   if (nextStatus === WORK_STATUS.listo) update.fechaReparado = nowIso();
