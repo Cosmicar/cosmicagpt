@@ -8,6 +8,7 @@ import {
   onSnapshot,
   query,
   runTransaction,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -65,15 +66,46 @@ export async function findClienteMatch(cliente) {
   return null;
 }
 
+export async function getNextClienteCodigo() {
+  const counterRef = doc(db, COLLECTIONS.config, "clientes");
+
+  const next = await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(counterRef);
+    const current = Number(snap.exists() ? snap.data()?.current || 0 : 0);
+    const nextValue = current + 1;
+    transaction.set(counterRef, { current: nextValue, updatedAt: serverTimestamp() }, { merge: true });
+    return nextValue;
+  });
+
+  return `CLI-${String(next).padStart(4, "0")}`;
+}
+
 export async function createNewCliente(cliente) {
+  const clienteCodigo = await getNextClienteCodigo();
   const ref = await addDoc(collection(db, getClientesCol()), {
+    clienteCodigo,
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",
     dni: cliente.dni || "",
     telefono: cliente.telefono,
     provincia: cliente.provincia,
-    origenContacto: cliente.origenContacto || ""
+    origenContacto: cliente.origenContacto || "",
+    createdAt: serverTimestamp()
   });
+  
+  try {
+    const { logSystem } = await import("./system-service.js");
+    const session = getSession();
+    await logSystem("[CLIENT_CODE_GENERATED]", {
+      clienteId: ref.id,
+      clienteCodigo,
+      usuario: session?.user?.email || "N/A",
+      fecha: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("No se pudo registrar log de cliente creado", e);
+  }
+
   return ref.id;
 }
 
