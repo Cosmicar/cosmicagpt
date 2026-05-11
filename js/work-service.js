@@ -455,14 +455,15 @@ export async function mergeClientes(clienteAId, clienteBId, profile = null) {
   const { logSystem } = await import("./system-service.js");
 
   // 1. Buscar todas las órdenes de Cliente B
-  const q = query(collection(db, getTrabajosCol()), where("clienteId", "==", clienteBId));
-  const snap = await getDocs(q);
+  const { findTrabajosByClienteId } = await import("./work-repository.js");
+  const works = await findTrabajosByClienteId(clienteBId, profile);
 
   const batch = writeBatch(db);
 
   // 2. Mover órdenes a Cliente A
-  snap.docs.forEach(d => {
-    batch.update(d.ref, { clienteId: clienteAId });
+  works.forEach(w => {
+    const ref = doc(db, getTrabajosCol(), w.id);
+    batch.update(ref, { clienteId: clienteAId });
   });
 
   // 3. Marcar Cliente B como merged
@@ -480,8 +481,8 @@ export async function mergeClientes(clienteAId, clienteBId, profile = null) {
     operador: profile?.email || "N/A",
     clienteA: clienteAId,
     clienteB: clienteBId,
-    cantidadOrdenes: snap.docs.length
+    cantidadOrdenes: works.length
   });
 
-  return { success: true, ordenesMovidas: snap.docs.length };
+  return { success: true, ordenesMovidas: works.length };
 }
