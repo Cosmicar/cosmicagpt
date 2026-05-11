@@ -756,12 +756,17 @@ function renderTarjetaCliente(c) {
     ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,94,0,.12);color:var(--accent);">Remoto</span>`
     : `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,229,255,.1);color:var(--accent2);">Taller</span>`;
 
+  const unificadoBadge = c.status === "merged" 
+    ? `<span class="badge" style="background:rgba(255,170,0,0.1);color:var(--warning);font-size:10px;padding:2px 6px;border:1px solid var(--warning);">UNIFICADO</span>` 
+    : "";
+
   card.innerHTML = `
-    <div style="font-size:16px;font-weight:700;color:var(--accent2);margin-bottom:4px;">
-      ${escapeHtml(c.apellido || "—")}, ${escapeHtml(c.nombre || "—")}
+    <div style="font-size:16px;font-weight:700;color:var(--accent2);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
+      <span>${escapeHtml(c.apellido || "—")}, ${escapeHtml(c.nombre || "—")}</span>
+      ${unificadoBadge}
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
-      DNI: ${escapeHtml(c.dni || "—")} &nbsp;|&nbsp; Tel: ${escapeHtml(c.telefono || "—")}
+      <span style="color:var(--accent2);font-weight:bold;">${escapeHtml(c.clienteCodigo || "CLI-???")}</span> &nbsp;·&nbsp; DNI: ${escapeHtml(c.dni || "—")} &nbsp;·&nbsp; Tel: ${escapeHtml(c.telefono || "—")}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <span style="font-size:12px;color:var(--muted);">${escapeHtml(c.provincia || "—")}</span>
