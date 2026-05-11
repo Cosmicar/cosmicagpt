@@ -113,9 +113,12 @@ export async function auditarYRepararBD() {
       clientesAEliminar.add(c.id);
       remapClientes[c.id] = mainClient.id;
       
+      const clone = { ...c };
+      delete clone.ref; // Firestore doesnt support undefined
+      
       rollbackData.mergedClientes.push({
         deletedId: c.id,
-        deletedData: { ...c, ref: undefined },
+        deletedData: clone,
         masterId: mainClient.id
       });
     }
@@ -134,8 +137,8 @@ export async function auditarYRepararBD() {
       changes++;
       rollbackData.remappedTrabajos.push({
         trabajoId: t.id,
-        numeroOrden: t.numeroOrden,
-        oldClienteId: oldId,
+        numeroOrden: t.numeroOrden || null,
+        oldClienteId: oldId || null,
         newClienteId: newId
       });
       t.clienteId = newId; // Update in memory for later checks
@@ -158,8 +161,8 @@ export async function auditarYRepararBD() {
       changes++;
       rollbackData.remappedTrabajos.push({
         trabajoId: t.id,
-        numeroOrden: t.numeroOrden,
-        oldClienteId: t.clienteId,
+        numeroOrden: t.numeroOrden || null,
+        oldClienteId: t.clienteId || null,
         newClienteId: clienteGenericoId,
         reason: "referencia_rota"
       });
@@ -180,9 +183,12 @@ export async function auditarYRepararBD() {
     if (!clientesAEliminar.has(c.id) && !idsConOrden.has(c.id)) {
       batch.delete(c.ref);
       changes++;
+      const clone = { ...c };
+      delete clone.ref; // Firestore doesnt support undefined
+      
       rollbackData.deletedHuérfanos.push({
         id: c.id,
-        data: { ...c, ref: undefined }
+        data: clone
       });
     }
   }
@@ -240,7 +246,7 @@ export async function auditarYRepararBD() {
         
         rollbackData.renumberedTrabajos.push({
           trabajoId: t.id,
-          oldOrder: t.numeroOrden,
+          oldOrder: t.numeroOrden || null,
           newOrder: newOrder
         });
       }
