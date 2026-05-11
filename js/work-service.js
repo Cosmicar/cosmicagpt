@@ -106,12 +106,8 @@ export async function updateWork(values, editState, profile = null) {
   return { mode: "updated", numeroOrden: trabajoActual.numeroOrden };
 }
 
-export async function createWork(values, profile = null) {
+export async function createWork(values, profile = null, forceCreateNewClient = false) {
   validateWorkForm(values, profile);
-
-  if (!window.confirm("⚠️ ¿Estás seguro de que deseas crear esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
-    throw new Error("Operación cancelada por el usuario.");
-  }
 
   const cliente = {
     nombre: values.nombre,
@@ -122,30 +118,53 @@ export async function createWork(values, profile = null) {
     origenContacto: normalizeServiceType(values.tipo) // 'taller' | 'remoto'
   };
 
-  const match = await findClienteMatch(cliente);
-  let clienteId = null;
+  let clienteId = values.clienteId; // Si ya viene seleccionado de la UI
 
-  if (match) {
-    if (match.type === 'dni') {
-      const c = match.client;
-      if ((c.nombre !== cliente.nombre || c.telefono !== cliente.telefono) && (cliente.nombre && cliente.telefono)) {
-        if (!window.confirm(`⚠️ Existe un cliente con este DNI: ${c.nombre} ${c.apellido} (Tel: ${c.telefono}).\n\n¿Deseas actualizarlo con los nuevos datos (${cliente.nombre}, ${cliente.telefono}) y vincularle esta orden?`)) {
-          throw new Error("Operación cancelada por el usuario para proteger los datos del cliente existente.");
-        }
-      }
-      await updateCliente(c.id, cliente);
-      clienteId = c.id;
-    } else {
-      const c = match.client;
-      if (window.confirm(`⚠️ Coincidencia dudosa detectada por ${match.type === 'telefono' ? 'teléfono' : 'nombre'}.\nEn la base de datos ya existe: ${c.nombre} ${c.apellido} (DNI: ${c.dni || 'vacío'}, Tel: ${c.telefono}).\n\n[ACEPTAR] = Son la misma persona. Vincular esta orden y actualizar sus datos.\n[CANCELAR] = Crear como un cliente totalmente nuevo e independiente.`)) {
-        await updateCliente(c.id, cliente);
-        clienteId = c.id;
-      } else {
-        clienteId = await createNewCliente(cliente);
-      }
+  if (!clienteId && !forceCreateNewClient) {
+    const { findClienteMatch } = await import("./work-repository.js");
+    const matches = await findClienteMatch(cliente);
+    
+    if (matches && matches.length > 0) {
+      // Registrar log de coincidencias encontradas
+      try {
+        const { logSystem } = await import("./system-service.js");
+        await logSystem("[CLIENT_MATCH_FOUND]", {
+          operador: profile?.email || "N/A",
+          matchesEncontrados: matches.length,
+          mejorScore: matches[0].score
+        });
+      } catch (e) {}
+
+      // Retornar estado para que la UI decida
+      return {
+        requiresClientSelection: true,
+        matches
+      };
     }
-  } else {
+  }
+
+  // Si no hay clienteId seleccionado y no hubo coincidencias (o se forzó la creación)
+  if (!clienteId) {
+    const { createNewCliente } = await import("./work-repository.js");
     clienteId = await createNewCliente(cliente);
+    
+    // Registrar log de cliente nuevo forzado o creado sin coincidencias
+    try {
+      const { logSystem } = await import("./system-service.js");
+      await logSystem(forceCreateNewClient ? "[CLIENT_NEW_FORCED]" : "[CLIENT_CREATED_AUTO]", {
+        clienteId,
+        operador: profile?.email || "N/A"
+      });
+    } catch (e) {}
+  } else {
+    // Si se usó un cliente existente
+    try {
+      const { logSystem } = await import("./system-service.js");
+      await logSystem("[CLIENT_SELECTED]", {
+        clienteId,
+        operador: profile?.email || "N/A"
+      });
+    } catch (e) {}
   }
   
   const tipo = normalizeServiceType(values.tipo);
@@ -175,7 +194,7 @@ export async function createWork(values, profile = null) {
   const trabajoId = await addTrabajo(nuevoTrabajo);
   await publishPublicOrder(trabajoId, nuevoTrabajo);
 
-  return { mode: "created", numeroOrden };
+  return { success: true, mode: "created", numeroOrden };
 }
 
 export async function changeWorkStatus(id, nextStatus) {

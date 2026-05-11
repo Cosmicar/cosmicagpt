@@ -1345,7 +1345,13 @@ async function guardarCliente() {
       result = await updateWork(formData, state.edit, state.session?.profile);
     } else {
       result = await createWork(formData, state.session?.profile);
+      
+      if (result.requiresClientSelection) {
+        abrirModalCoincidencias(result.matches, formData);
+        return; // El flujo continúa en el modal
+      }
     }
+    
     const wasCreated = result.mode === "created";
     cancelarEdicion();
     limpiarCampos();
@@ -1369,8 +1375,88 @@ async function guardarCliente() {
     }
   } catch (error) {
     await logSystem("error_guardar_orden", { message: error.message }, "error").catch(() => {});
-
     showAlertError(error, "No se pudo guardar la orden.");
+  } finally {
+    // Si no se abrió el modal, liberamos el botón
+    if (!document.getElementById("modalCoincidenciasCliente")) {
+      window._processingGuardar = false;
+      if (btn) btn.disabled = false;
+    }
+  }
+}
+
+function abrirModalCoincidencias(matches, formData) {
+  const modalId = "modalCoincidenciasCliente";
+  const oldModal = document.getElementById(modalId);
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+  const content = document.createElement("div");
+  content.style.cssText = "background:var(--bg-card, #1a1a1a);padding:24px;border-radius:12px;width:90%;max-width:600px;border:1px solid var(--accent, #00ffcc);box-shadow:0 0 20px rgba(0,255,204,0.2);color:white;";
+
+  content.innerHTML = `
+    <h3 style="color:var(--warning, #ffaa00);margin-top:0;">⚠️ Posibles clientes encontrados</h3>
+    <p>Se detectaron coincidencias en la base de datos. Por favor, selecciona una opción:</p>
+    <div style="max-height:300px;overflow-y:auto;margin:16px 0;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px;">
+      ${matches.map(m => `
+        <div class="match-item" style="padding:12px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span style="color:var(--accent);font-weight:bold;">${m.clienteCodigo || "S/C"}</span> | 
+            <b>${escapeHtml(m.nombre)}</b><br>
+            <small style="color:var(--muted);">${m.telefono} | ${m.alias || 'Sin alias'}</small>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge" style="background:rgba(0,255,204,0.1);color:var(--accent);font-size:11px;">Score: ${m.score}</span><br>
+            <button class="btn btn-sm btn-edit" style="margin-top:4px;" onclick="window._seleccionarClienteMatch('${m.clienteId}')">Usar Cliente</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:12px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove(); window._processingGuardar=false; if($('btnGuardarCliente')) $('btnGuardarCliente').disabled=false;">Cancelar</button>
+      <button class="btn btn-success" style="background:var(--success);color:black;" onclick="window._forzarCrearCliente()">Crear Cliente Nuevo</button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  window._seleccionarClienteMatch = async (clienteId) => {
+    modal.remove();
+    await completarCreacionOrden({ ...formData, clienteId });
+  };
+
+  window._forzarCrearCliente = async () => {
+    modal.remove();
+    await completarCreacionOrden(formData, true);
+  };
+}
+
+async function completarCreacionOrden(formData, forceCreateNewClient = false) {
+  const btn = $("btnGuardarCliente");
+  try {
+    const result = await createWork(formData, state.session?.profile, forceCreateNewClient);
+    
+    cancelarEdicion();
+    limpiarCampos();
+    alert(`Registrado. Orden: ${result.numeroOrden}`);
+    showTab("trabajos");
+    if (result.numeroOrden) {
+      $("busquedaDni").value = result.numeroOrden;
+      await cargar(result.numeroOrden);
+    } else {
+      await cargar();
+    }
+
+    dispararPushBackend(
+      '🔔 Nuevo Trabajo Registrado',
+      `Orden: ${result.numeroOrden} | Tipo: ${formData.tipo || 'General'}`.trim()
+    );
+  } catch (error) {
+    showAlertError(error, "No se pudo completar la creación de la orden.");
   } finally {
     window._processingGuardar = false;
     if (btn) btn.disabled = false;

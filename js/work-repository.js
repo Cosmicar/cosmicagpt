@@ -38,32 +38,58 @@ export async function getCliente(id) {
 }
 
 export async function findClienteMatch(cliente) {
+  const matches = [];
+  const seenIds = new Set();
+
+  const addMatch = (docSnap, tipoCoincidencia, score) => {
+    if (seenIds.has(docSnap.id)) return;
+    seenIds.add(docSnap.id);
+    const data = docSnap.data();
+    matches.push({
+      clienteId: docSnap.id,
+      clienteCodigo: data.clienteCodigo || "",
+      nombre: `${data.nombre || ""} ${data.apellido || ""}`.trim(),
+      telefono: data.telefono || "",
+      alias: data.alias || "",
+      tipoCoincidencia,
+      score
+    });
+  };
+
+  // 1. DNI exacto (Score 100)
   if (cliente.dni && cliente.dni.trim() !== "") {
     const qDni = query(collection(db, getClientesCol()), where("dni", "==", cliente.dni.trim()));
     const snapDni = await getDocs(qDni);
-    if (!snapDni.empty) return { type: 'dni', client: { id: snapDni.docs[0].id, ...snapDni.docs[0].data() } };
+    snapDni.docs.forEach(d => addMatch(d, "dni", 100));
   }
 
+  // 2. Teléfono exacto (Score 80)
   if (cliente.telefono && cliente.telefono.trim() !== "") {
     const qTel = query(collection(db, getClientesCol()), where("telefono", "==", cliente.telefono.trim()));
     const snapTel = await getDocs(qTel);
-    if (!snapTel.empty) {
-      return { type: 'telefono', client: { id: snapTel.docs[0].id, ...snapTel.docs[0].data() } };
-    }
+    snapTel.docs.forEach(d => addMatch(d, "telefono", 80));
   }
 
+  // 3. Nombre similar (Score 60)
   if (cliente.nombre && cliente.nombre.trim() !== "") {
     const qNom = query(collection(db, getClientesCol()), where("nombre", "==", cliente.nombre.trim()));
     const snapNom = await getDocs(qNom);
     for (const d of snapNom.docs) {
       const data = d.data();
       if ((data.apellido || "").trim().toLowerCase() === (cliente.apellido || "").trim().toLowerCase()) {
-        return { type: 'nombre', client: { id: d.id, ...data } };
+        addMatch(d, "nombre", 60);
       }
     }
   }
 
-  return null;
+  // 4. Alias similar (Score 40)
+  if (cliente.alias && cliente.alias.trim() !== "") {
+    const qAlias = query(collection(db, getClientesCol()), where("alias", "==", cliente.alias.trim()));
+    const snapAlias = await getDocs(qAlias);
+    snapAlias.docs.forEach(d => addMatch(d, "alias", 40));
+  }
+
+  return matches.sort((a, b) => b.score - a.score);
 }
 
 export async function getNextClienteCodigo() {
