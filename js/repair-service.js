@@ -27,12 +27,36 @@ const getSystemLogsCol = () => isTesterSession() ? "system_logs_demo" : "system_
 export async function auditarYRepararBD() {
   logAudit("Iniciando EJECUCIÓN DE RECUPERACIÓN de base de datos...");
 
-  const [clientesSnap, trabajosSnap, productosSnap, movsSnap] = await Promise.all([
-    getDocs(collection(db, getClientesCol())),
-    getDocs(collection(db, getTrabajosCol())),
-    getDocs(collection(db, getProductosCol())),
-    getDocs(collection(db, getMovimientosCol()))
-  ]);
+  // Diagnóstico: leer colecciones una por una para identificar cuál falla
+  const session = getSession();
+  logAudit(`Sesión activa: ${session?.user?.email || "N/A"} | Rol: ${session?.profile?.rol || "N/A"}`);
+  logAudit(`Colecciones objetivo: clientes=${getClientesCol()}, trabajos=${getTrabajosCol()}, productos=${getProductosCol()}, movimientos=${getMovimientosCol()}`);
+
+  let clientesSnap, trabajosSnap, productosSnap, movsSnap;
+  try {
+    logAudit("Leyendo clientes...");
+    clientesSnap = await getDocs(collection(db, getClientesCol()));
+    logAudit(`✔ clientes: ${clientesSnap.size} docs`);
+  } catch (e) { throw new Error(`Falló lectura de '${getClientesCol()}': ${e.message}`); }
+
+  try {
+    logAudit("Leyendo trabajos...");
+    trabajosSnap = await getDocs(collection(db, getTrabajosCol()));
+    logAudit(`✔ trabajos: ${trabajosSnap.size} docs`);
+  } catch (e) { throw new Error(`Falló lectura de '${getTrabajosCol()}': ${e.message}`); }
+
+  try {
+    logAudit("Leyendo productos...");
+    productosSnap = await getDocs(collection(db, getProductosCol()));
+    logAudit(`✔ productos: ${productosSnap.size} docs`);
+  } catch (e) { throw new Error(`Falló lectura de '${getProductosCol()}': ${e.message}`); }
+
+  try {
+    logAudit("Leyendo movimientos_stock...");
+    movsSnap = await getDocs(collection(db, getMovimientosCol()));
+    logAudit(`✔ movimientos: ${movsSnap.size} docs`);
+  } catch (e) { throw new Error(`Falló lectura de '${getMovimientosCol()}': ${e.message}`); }
+
 
   const clientes = clientesSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
   const trabajos = trabajosSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));

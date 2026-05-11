@@ -246,15 +246,21 @@ function bindGlobalActions() {
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 
   window.ejecutarAuditoriaYReparacion = async function() {
-    if (!confirm("⚠️ ¿Iniciar depuración de la base de datos?\\nEsto unificará clientes duplicados y eliminará órdenes doble-submit. Se registrarán los cambios en la consola.")) return;
+    // Verificar permisos antes de intentar acceder a Firestore
+    const profile = state.session?.profile;
+    if (!isAdmin(profile)) {
+      alert("⛔ Solo los administradores pueden ejecutar la depuración de la base de datos.");
+      return;
+    }
+    if (!confirm("⚠️ ¿Iniciar depuración de la base de datos?\nEsto unificará clientes duplicados y eliminará órdenes doble-submit. Se registrarán los cambios en la consola.")) return;
     try {
       const { auditarYRepararBD } = await import("./repair-service.js");
       await auditarYRepararBD();
       alert("✅ Depuración finalizada. Revisar consola para más detalles.");
       await limpiarBusqueda();
     } catch (e) {
+      console.error("[REPAIR] Error completo:", e);
       alert("Error en la auditoría: " + e.message);
-      console.error(e);
     }
   };
 
