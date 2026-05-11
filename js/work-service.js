@@ -443,3 +443,45 @@ export async function desacoplarClienteOrden(trabajoId, numeroOrden, profile = n
 
   return { success: true, nuevoClienteId: next, clienteCodigoNuevo };
 }
+
+export async function mergeClientes(clienteAId, clienteBId, profile = null) {
+  if (!isAdmin(profile)) {
+    throw new Error("Solo los administradores pueden unir clientes.");
+  }
+
+  const { db } = await import("./firebase.js");
+  const { collection, query, where, getDocs, writeBatch, doc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js");
+  const { getTrabajosCol, getClientesCol } = await import("./work-repository.js");
+  const { logSystem } = await import("./system-service.js");
+
+  // 1. Buscar todas las órdenes de Cliente B
+  const q = query(collection(db, getTrabajosCol()), where("clienteId", "==", clienteBId));
+  const snap = await getDocs(q);
+
+  const batch = writeBatch(db);
+
+  // 2. Mover órdenes a Cliente A
+  snap.docs.forEach(d => {
+    batch.update(d.ref, { clienteId: clienteAId });
+  });
+
+  // 3. Marcar Cliente B como merged
+  const clienteBRef = doc(db, getClientesCol(), clienteBId);
+  batch.update(clienteBRef, {
+    mergedInto: clienteAId,
+    mergedAt: serverTimestamp(),
+    status: "merged"
+  });
+
+  await batch.commit();
+
+  // 4. Logger
+  await logSystem("[CLIENTS_MERGED]", {
+    operador: profile?.email || "N/A",
+    clienteA: clienteAId,
+    clienteB: clienteBId,
+    cantidadOrdenes: snap.docs.length
+  });
+
+  return { success: true, ordenesMovidas: snap.docs.length };
+}

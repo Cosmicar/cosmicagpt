@@ -57,7 +57,8 @@ const state = {
   },
   ingresosData: [],
   periodoActual: "hoy",
-  searchId: 0
+  searchId: 0,
+  selectedClienteIdForNewWork: null
 };
 
 const STATUS_CLASS = {
@@ -200,6 +201,7 @@ function boot() {
       $("usuarioLogueado").innerText = nombreMostrar;
       await getSystemConfig();
       renderRoleUi();
+      initAutocomplete();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
 
@@ -241,6 +243,7 @@ function bindGlobalActions() {
   window.borrarTrabajo = borrarTrabajo;
   window.imprimirTicket = imprimirTicket;
   window.confirmarDesacople = confirmarDesacople;
+  window.abrirModalMergeClientes = abrirModalMergeClientes;
   window.setPeriodo = setPeriodo;
   window.cargarIngresos = cargarIngresos;
   window.exportarExcel = exportarExcel;
@@ -1216,6 +1219,8 @@ function limpiarCampos() {
   
   state.currentItemsInventario = [];
   renderItemsInventario();
+  
+  state.selectedClienteIdForNewWork = null;
 }
 
 
@@ -1340,7 +1345,8 @@ function readWorkForm() {
     diagnostico: document.getElementById("diagnostico") ? document.getElementById("diagnostico").value.trim() : "",
     servicioRealizado: document.getElementById("servicioRealizado") ? document.getElementById("servicioRealizado").value.trim() : "",
     planServicio: document.getElementById("planServicio") ? document.getElementById("planServicio").value : "",
-    itemsInventario: state.currentItemsInventario
+    itemsInventario: state.currentItemsInventario,
+    clienteId: state.selectedClienteIdForNewWork
   };
 }
 
@@ -2311,6 +2317,238 @@ window.easterEgg = function() {
     versionClicks = 0;
   }
 };
+
+function initAutocomplete() {
+  const dniInput = $("dni");
+  const telInput = $("telefono");
+
+  if (dniInput) {
+    dniInput.addEventListener("input", debounce(async (e) => {
+      const val = e.target.value.trim();
+      if (val.length >= 4) {
+        await detectarDuplicado({ dni: val });
+      }
+    }, 500));
+  }
+
+  if (telInput) {
+    telInput.addEventListener("input", debounce(async (e) => {
+      const val = e.target.value.trim();
+      if (val.length >= 6) {
+        await detectarDuplicado({ telefono: val });
+      }
+    }, 500));
+  }
+}
+
+let _ultimoClienteDetectadoId = null;
+
+async function detectarDuplicado(criterio) {
+  const { findClienteMatch } = await import("./work-repository.js");
+  const matches = await findClienteMatch(criterio);
+
+  if (matches && matches.length > 0) {
+    const match = matches[0];
+    
+    if (match.clienteId === _ultimoClienteDetectadoId) return;
+    _ultimoClienteDetectadoId = match.clienteId;
+
+    try {
+      const { logSystem } = await import("./system-service.js");
+      await logSystem("[DUPLICATE_DETECTED]", {
+        operador: state.session?.user?.email || "N/A",
+        clienteDetectadoId: match.clienteId,
+        score: match.score
+      });
+    } catch (e) {}
+
+    const { getCliente, findTrabajosByClienteId } = await import("./work-repository.js");
+    const cliente = await getCliente(match.clienteId);
+    const trabajos = await findTrabajosByClienteId(match.clienteId, state.session?.profile);
+
+    mostrarModalAlertaDuplicado(cliente, trabajos.length, match.score);
+  } else {
+    _ultimoClienteDetectadoId = null;
+  }
+}
+
+function mostrarModalAlertaDuplicado(cliente, cantOrdenes, score) {
+  const modalId = "modalAlertaDuplicado";
+  const oldModal = document.getElementById(modalId);
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+  const content = document.createElement("div");
+  content.style.cssText = "background:var(--bg-card, #1a1a1a);padding:24px;border-radius:12px;width:90%;max-width:400px;border:1px solid var(--warning, #ffaa00);box-shadow:0 0 20px rgba(255,170,0,0.2);color:white;";
+
+  content.innerHTML = `
+    <h3 style="color:var(--warning, #ffaa00);margin-top:0;">⚠ Cliente existente encontrado</h3>
+    <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin:16px 0;">
+      <div style="color:var(--accent);font-weight:bold;">${cliente.clienteCodigo || "S/C"}</div>
+      <div style="font-size:18px;font-weight:bold;">${cliente.nombre} ${cliente.apellido || ""}</div>
+      <div style="color:var(--muted);">${cliente.telefono || "Sin teléfono"}</div>
+      <div style="color:var(--muted);">${cliente.dni || "Sin DNI"}</div>
+      <div style="margin-top:8px;font-size:12px;"><span class="badge" style="background:rgba(0,255,204,0.1);color:var(--accent);">${cantOrdenes} órdenes registradas</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-success" style="background:var(--success);color:black;" id="btnUsarExistente">Usar Cliente Existente</button>
+      <button class="btn btn-secondary" id="btnCrearNuevoForzado">Crear Cliente Nuevo</button>
+      <button class="btn btn-link" style="color:var(--muted);" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  content.querySelector("#btnUsarExistente").onclick = () => {
+    $("nombre").value = cliente.nombre || "";
+    $("apellido").value = cliente.apellido || "";
+    $("telefono").value = cliente.telefono || "";
+    $("dni").value = cliente.dni || "";
+    $("provincia").value = cliente.provincia || "";
+    
+    state.selectedClienteIdForNewWork = cliente.id;
+    
+    modal.remove();
+  };
+
+  content.querySelector("#btnCrearNuevoForzado").onclick = async () => {
+    try {
+      const { logSystem } = await import("./system-service.js");
+      await logSystem("[DUPLICATE_OVERRIDE]", {
+        operador: state.session?.user?.email || "N/A",
+        clienteDetectadoId: cliente.id
+      });
+    } catch (e) {}
+
+    state.selectedClienteIdForNewWork = null;
+    modal.remove();
+  };
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function abrirModalMergeClientes() {
+  const modalId = "modalMergeClientes";
+  const oldModal = document.getElementById(modalId);
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+  const content = document.createElement("div");
+  content.style.cssText = "background:var(--bg-card, #1a1a1a);padding:24px;border-radius:12px;width:90%;max-width:500px;border:1px solid var(--border);color:white;";
+
+  content.innerHTML = `
+    <h3 style="margin-top:0;">🔗 Unir Clientes</h3>
+    <p style="color:var(--muted);font-size:13px;">Las órdenes del Cliente B se moverán al Cliente A. El Cliente B quedará marcado como fusionado.</p>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;">
+      <div>
+        <label style="color:var(--success);">Cliente A (Principal)</label>
+        <input id="mergeClienteA" placeholder="ID o Código" style="width:100%;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:white;">
+        <div id="infoClienteA" style="font-size:12px;margin-top:4px;color:var(--muted);"></div>
+      </div>
+      <div>
+        <label style="color:var(--danger);">Cliente B (Duplicado)</label>
+        <input id="mergeClienteB" placeholder="ID o Código" style="width:100%;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:white;">
+        <div id="infoClienteB" style="font-size:12px;margin-top:4px;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmarMerge" style="background:var(--success);color:black;">Confirmar Unión</button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  const searchClient = async (idOrCode, targetInfoDiv) => {
+    if (!idOrCode) {
+      targetInfoDiv.innerHTML = "";
+      return null;
+    }
+    const { listClientesMap } = await import("./work-repository.js");
+    const clientes = await listClientesMap();
+    
+    let cliente = clientes[idOrCode];
+    if (!cliente) {
+      cliente = Object.values(clientes).find(c => c.clienteCodigo === idOrCode);
+    }
+
+    if (cliente) {
+      const { findTrabajosByClienteId } = await import("./work-repository.js");
+      const trabajos = await findTrabajosByClienteId(cliente.id, state.session?.profile);
+      
+      targetInfoDiv.innerHTML = `
+        <div style="color:white;font-weight:bold;">${cliente.nombre} ${cliente.apellido || ""}</div>
+        <div>${cliente.clienteCodigo || "S/C"} | ${trabajos.length} órdenes</div>
+      `;
+      return cliente.id;
+    } else {
+      targetInfoDiv.innerHTML = "<span style='color:var(--danger);'>No encontrado</span>";
+      return null;
+    }
+  };
+
+  let clienteAId = null;
+  let clienteBId = null;
+
+  content.querySelector("#mergeClienteA").oninput = debounce(async (e) => {
+    clienteAId = await searchClient(e.target.value.trim(), content.querySelector("#infoClienteA"));
+  }, 500);
+
+  content.querySelector("#mergeClienteB").oninput = debounce(async (e) => {
+    clienteBId = await searchClient(e.target.value.trim(), content.querySelector("#infoClienteB"));
+  }, 500);
+
+  content.querySelector("#btnConfirmarMerge").onclick = async () => {
+    if (!clienteAId || !clienteBId) {
+      alert("Por favor selecciona ambos clientes válidos.");
+      return;
+    }
+    if (clienteAId === clienteBId) {
+      alert("No puedes unir un cliente consigo mismo.");
+      return;
+    }
+
+    if (!confirm("¿Estás seguro de que deseas unir estos clientes? Esta acción moverá todas las órdenes del Cliente B al Cliente A.")) {
+      return;
+    }
+
+    const btn = content.querySelector("#btnConfirmarMerge");
+    btn.disabled = true;
+    btn.innerText = "Procesando...";
+
+    try {
+      const { mergeClientes } = await import("./work-service.js");
+      const result = await mergeClientes(clienteAId, clienteBId, state.session?.profile);
+      alert(`Éxito. Se movieron ${result.ordenesMovidas} órdenes.`);
+      modal.remove();
+      await loadDirectorioClientes();
+    } catch (error) {
+      alert("Error: " + error.message);
+      btn.disabled = false;
+      btn.innerText = "Confirmar Unión";
+    }
+  };
+}
 
 boot();
 
