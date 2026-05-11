@@ -287,7 +287,7 @@ function bindGlobalActions() {
       if (clicks === 7) {
         clicks = 0;
         clearTimeout(timer);
-        alert("Mira lo que haces hacer, sos un Hxxx de mil pxxx 💀");
+        alert("Astra esta trabajando para hacerte feliz (L)");
       }
     });
   })();
@@ -2117,7 +2117,7 @@ let versionClicks = 0;
 window.easterEgg = function() {
   versionClicks++;
   if (versionClicks === 5) {
-    alert("Astra esta aqui para siempre ❤️");
+    alert("Astra esta trabajando para hacerte feliz (L)");
     versionClicks = 0;
   }
 };

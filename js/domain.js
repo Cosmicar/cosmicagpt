@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.9-stable";
+export const APP_VERSION = "1.0-core-stable";
 
 export const COLLECTIONS = Object.freeze({
 
