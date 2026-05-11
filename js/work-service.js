@@ -42,10 +42,74 @@ export function validateWorkForm(values, profile) {
   }
 }
 
-export async function saveWorkForm(values, editState = {}, profile = null) {
+export async function updateWork(values, editState, profile = null) {
   validateWorkForm(values, profile);
 
-  if (!window.confirm("⚠️ ¿Estás seguro de que deseas guardar esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
+  if (!window.confirm("⚠️ ¿Estás seguro de que deseas guardar los cambios en esta orden?")) {
+    throw new Error("Operación cancelada por el usuario.");
+  }
+
+  const trabajoActual = await getTrabajo(editState.trabajoId);
+  
+  // Si está bloqueado (Entregado) y NO es modo admin, bloquear
+  const bloqueado = trabajoActual.estado === WORK_STATUS.entregado || trabajoActual.estado === WORK_STATUS.reingresada;
+  if (bloqueado && !editState.modoAdminEdicion) {
+    throw new Error("Esta orden está bloqueada. Solo un administrador puede editarla en Modo Avanzado.");
+  }
+
+  const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
+  const update = {
+    tipo: normalizeServiceType(values.tipo || trabajoActual.tipo),
+    equipo: values.equipo,
+    marca: values.marca || "",
+    modelo: values.modelo || "",
+    problema: values.problema,
+    diagnostico: values.diagnostico || "",
+    servicioRealizado: values.servicioRealizado || "",
+    precio: values.precio,
+    itemsInventario: itemsLimpios
+  };
+
+  const cliente = {
+    nombre: values.nombre,
+    apellido: values.apellido,
+    dni: values.dni,
+    telefono: values.telefono,
+    provincia: values.provincia
+  };
+
+  if (editState.modoAdminEdicion) {
+    // Hardening: Snapshot before edit
+    await logSystem("[SAFE_ADMIN_EDIT]", {
+      trabajoId: editState.trabajoId,
+      snapshotBefore: trabajoActual,
+      snapshotAfter: update,
+      clienteId: editState.clienteId,
+      usuario: profile?.email || "N/A",
+      fecha: new Date().toISOString()
+    });
+  }
+
+  await updateTrabajo(editState.trabajoId, update);
+  
+  // REGLA CRÍTICA: NO buscar coincidencias, NO crear nuevo cliente.
+  // Solo actualizamos los datos del cliente ya vinculado.
+  await updateCliente(editState.clienteId, cliente);
+  
+  await publishPublicOrder(editState.trabajoId, {
+    ...trabajoActual,
+    ...update,
+    diagnostico: values.diagnostico || "",
+    servicioRealizado: values.servicioRealizado || ""
+  });
+  
+  return { mode: "updated", numeroOrden: trabajoActual.numeroOrden };
+}
+
+export async function createWork(values, profile = null) {
+  validateWorkForm(values, profile);
+
+  if (!window.confirm("⚠️ ¿Estás seguro de que deseas crear esta orden? Revisa que los datos y el tipo de servicio sean correctos.")) {
     throw new Error("Operación cancelada por el usuario.");
   }
 
@@ -57,51 +121,6 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     provincia: values.provincia,
     origenContacto: normalizeServiceType(values.tipo) // 'taller' | 'remoto'
   };
-
-  if (editState.trabajoId) {
-    const trabajoActual = await getTrabajo(editState.trabajoId);
-    
-    // Si está bloqueado (Entregado) y NO es modo admin, bloquear
-    const bloqueado = trabajoActual.estado === WORK_STATUS.entregado || trabajoActual.estado === WORK_STATUS.reingresada;
-    if (bloqueado && !editState.modoAdminEdicion) {
-      throw new Error("Esta orden está bloqueada. Solo un administrador puede editarla en Modo Avanzado.");
-    }
-
-    // Filtrar items devueltos al actualizar
-    const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
-    const update = {
-      tipo: normalizeServiceType(values.tipo || trabajoActual.tipo),
-      equipo: values.equipo,
-      marca: values.marca || "",
-      modelo: values.modelo || "",
-      problema: values.problema,
-      diagnostico: values.diagnostico || "",
-      servicioRealizado: values.servicioRealizado || "",
-      precio: values.precio,
-      itemsInventario: itemsLimpios
-    };
-
-    if (editState.modoAdminEdicion) {
-      // Hardening: Snapshot before edit
-      await logSystem("[ADMIN_EDIT]", {
-        trabajoId: editState.trabajoId,
-        snapshotBefore: trabajoActual,
-        snapshotAfter: update,
-        usuario: profile?.email || "N/A",
-        fecha: new Date().toISOString()
-      });
-    }
-
-    await updateTrabajo(editState.trabajoId, update);
-    await updateCliente(editState.clienteId, cliente);
-    await publishPublicOrder(editState.trabajoId, {
-      ...trabajoActual,
-      ...update,
-      diagnostico: values.diagnostico || "",
-      servicioRealizado: values.servicioRealizado || ""
-    });
-    return { mode: "updated", numeroOrden: trabajoActual.numeroOrden };
-  }
 
   const match = await findClienteMatch(cliente);
   let clienteId = null;
@@ -128,11 +147,10 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
   } else {
     clienteId = await createNewCliente(cliente);
   }
+  
   const tipo = normalizeServiceType(values.tipo);
-  // Pasamos el perfil para que la consulta interna respete RBAC
   const numeroOrden = await getNextOrderNumber(tipo, profile);
 
-  // Filtrar items devueltos antes de guardar (no enviar datos fantasma a Firestore)
   const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
 
   const nuevoTrabajo = {
@@ -150,7 +168,6 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     itemsInventario: itemsLimpios,
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
-
     garantiaDias: 90,
     creadoPor: profile?.email || ""
   };

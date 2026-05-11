@@ -31,7 +31,8 @@ import {
   changeWorkStatus,
   reenterWork,
   removeWork,
-  saveWorkForm,
+  updateWork,
+  createWork,
   resetAccountancy
 } from "./work-service.js";
 import {
@@ -1339,7 +1340,12 @@ async function guardarCliente() {
       }
     }
 
-    const result = await saveWorkForm(formData, state.edit, state.session?.profile);
+    let result;
+    if (state.edit.trabajoId) {
+      result = await updateWork(formData, state.edit, state.session?.profile);
+    } else {
+      result = await createWork(formData, state.session?.profile);
+    }
     const wasCreated = result.mode === "created";
     cancelarEdicion();
     limpiarCampos();
