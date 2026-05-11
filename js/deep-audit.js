@@ -20,6 +20,14 @@ import { logSystem } from "./system-service.js";
 
 const auditOnly = true; // NUNCA cambiar a false sin backup previo
 
+import { getSession } from "./auth-service.js";
+const isTesterSession = () => getSession()?.profile?.rol === 'tester';
+const getTrabajosCol = () => isTesterSession() ? "trabajos_demo" : COLLECTIONS.trabajos;
+const getClientesCol = () => isTesterSession() ? "clientes_demo" : COLLECTIONS.clientes;
+const getProductosCol = () => isTesterSession() ? "productos_demo" : COLLECTIONS.productos;
+const getVentasCol = () => isTesterSession() ? "ventas_demo" : COLLECTIONS.ventas;
+const getMovimientosCol = () => isTesterSession() ? "movimientos_stock_demo" : COLLECTIONS.movimientos_stock;
+
 function log(category, severity, message, data = null) {
   const entry = { category, severity, message, data, timestamp: new Date().toISOString() };
   console.log(`[AUDIT][${severity}][${category}] ${message}`, data || "");
@@ -36,11 +44,11 @@ export async function ejecutarAuditoriaProfunda() {
 
   // ── 1. Cargar todos los datos ──────────────────────────────
   const [clientesSnap, trabajosSnap, productosSnap, ventasSnap, movimientosSnap] = await Promise.all([
-    getDocs(collection(db, COLLECTIONS.clientes)),
-    getDocs(collection(db, COLLECTIONS.trabajos)),
-    getDocs(collection(db, COLLECTIONS.productos)),
-    getDocs(collection(db, COLLECTIONS.ventas)),
-    getDocs(collection(db, COLLECTIONS.movimientos_stock))
+    getDocs(collection(db, getClientesCol())),
+    getDocs(collection(db, getTrabajosCol())),
+    getDocs(collection(db, getProductosCol())),
+    getDocs(collection(db, getVentasCol())),
+    getDocs(collection(db, getMovimientosCol()))
   ]);
 
   const clientes = clientesSnap.docs.map(d => ({ id: d.id, ...d.data() }));

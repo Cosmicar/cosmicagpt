@@ -15,14 +15,23 @@ function logAudit(msg) {
   console.log(`[REPAIR] ${msg}`);
 }
 
+import { getSession } from "./auth-service.js";
+const isTesterSession = () => getSession()?.profile?.rol === 'tester';
+const getTrabajosCol = () => isTesterSession() ? "trabajos_demo" : COLLECTIONS.trabajos;
+const getClientesCol = () => isTesterSession() ? "clientes_demo" : COLLECTIONS.clientes;
+const getPublicasCol = () => isTesterSession() ? "ordenesPublicas_demo" : COLLECTIONS.ordenesPublicas;
+const getProductosCol = () => isTesterSession() ? "productos_demo" : COLLECTIONS.productos;
+const getMovimientosCol = () => isTesterSession() ? "movimientos_stock_demo" : COLLECTIONS.movimientos_stock;
+const getSystemLogsCol = () => isTesterSession() ? "system_logs_demo" : "system_logs";
+
 export async function auditarYRepararBD() {
   logAudit("Iniciando EJECUCIÓN DE RECUPERACIÓN de base de datos...");
 
   const [clientesSnap, trabajosSnap, productosSnap, movsSnap] = await Promise.all([
-    getDocs(collection(db, COLLECTIONS.clientes)),
-    getDocs(collection(db, COLLECTIONS.trabajos)),
-    getDocs(collection(db, COLLECTIONS.productos)),
-    getDocs(collection(db, COLLECTIONS.movimientos_stock))
+    getDocs(collection(db, getClientesCol())),
+    getDocs(collection(db, getTrabajosCol())),
+    getDocs(collection(db, getProductosCol())),
+    getDocs(collection(db, getMovimientosCol()))
   ]);
 
   const clientes = clientesSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
@@ -111,7 +120,7 @@ export async function auditarYRepararBD() {
     else if (!clientesActivos.has(t.clienteId)) {
       if (!clienteGenericoId) {
         // Crear cliente genérico en batch
-        const newRef = doc(collection(db, COLLECTIONS.clientes));
+        const newRef = doc(collection(db, getClientesCol()));
         clienteGenericoId = newRef.id;
         batch.set(newRef, {
           nombre: "Cliente Eliminado",
@@ -136,7 +145,7 @@ export async function auditarYRepararBD() {
 
   // Ejecutar eliminación de duplicados
   for (const cId of clientesAEliminar) {
-    const cRef = doc(db, COLLECTIONS.clientes, cId);
+    const cRef = doc(db, getClientesCol(), cId);
     batch.delete(cRef);
     changes++;
   }
@@ -181,7 +190,7 @@ export async function auditarYRepararBD() {
       if (t.clienteId === original.clienteId && t.equipo === original.equipo && t.precio === original.precio) {
         // Clon exacto (double submit sin modificar params) -> Borrar clon
         batch.delete(t.ref);
-        const pubRef = doc(db, COLLECTIONS.ordenesPublicas, t.id);
+        const pubRef = doc(db, getPublicasCol(), t.id);
         // pubRef is not verified if exists before batch.delete, but in v12 it is safe or we can do conditional.
         // Actually, safer to just try delete. Firestore batch allows deleting non-existent docs.
         batch.delete(pubRef);
@@ -201,7 +210,7 @@ export async function auditarYRepararBD() {
         batch.update(t.ref, { numeroOrden: newOrder });
         
         // Es más seguro usar set merge por si la orden publica se borró
-        const pubRef = doc(db, COLLECTIONS.ordenesPublicas, t.id);
+        const pubRef = doc(db, getPublicasCol(), t.id);
         batch.set(pubRef, { numeroOrden: newOrder }, { merge: true });
         changes++;
         
@@ -280,7 +289,7 @@ export async function auditarYRepararBD() {
 
   if (changes > 0) {
     // Guardar rollback data en system_logs
-    const logRef = doc(collection(db, COLLECTIONS.system_logs));
+    const logRef = doc(collection(db, getSystemLogsCol()));
     batch.set(logRef, {
       tipo: "recovery_execution",
       level: "critical",
