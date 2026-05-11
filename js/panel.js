@@ -251,6 +251,13 @@ function bindGlobalActions() {
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 
+  window.ejecutarMigracionClienteCodigo = async function() {
+    const { migrarClienteCodigoFaltantes } = await import("./work-repository.js");
+    const count = await migrarClienteCodigoFaltantes(state.session?.profile);
+    alert(`Migración completada. Se migraron ${count} clientes.`);
+    await loadDirectorioClientes();
+  };
+
   window.ejecutarAuditoriaYReparacion = async function() {
     // Verificar permisos antes de intentar acceder a Firestore
     const profile = state.session?.profile;

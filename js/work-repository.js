@@ -182,6 +182,53 @@ export async function migrarClientesGeolocalizados() {
   return contador; // devuelve cuántos docs se actualizaron
 }
 
+export async function migrarClienteCodigoFaltantes(profile = null) {
+  const { logSystem } = await import("./system-service.js");
+  const snap = await getDocs(collection(db, getClientesCol()));
+  if (snap.empty) return 0;
+
+  const aMigrar = [];
+  snap.docs.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (data.status !== "merged" && !data.clienteCodigo) {
+      aMigrar.push({ id: docSnap.id, ref: docSnap.ref });
+    }
+  });
+
+  if (aMigrar.length === 0) return 0;
+
+  const counterRef = doc(db, COLLECTIONS.config, "clientes");
+  const counterSnap = await getDoc(counterRef);
+  let current = Number(counterSnap.exists() ? counterSnap.data()?.current || 0 : 0);
+
+  let migrados = 0;
+
+  for (const item of aMigrar) {
+    current++;
+    const nextCode = `CLI-${String(current).padStart(4, "0")}`;
+
+    await updateDoc(item.ref, {
+      clienteCodigo: nextCode,
+      codigoMigradoAt: serverTimestamp()
+    });
+
+    await logSystem("[CLIENT_CODE_MIGRATED]", {
+      clienteId: item.id,
+      clienteCodigo: nextCode,
+      operador: profile?.email || "N/A"
+    });
+
+    migrados++;
+  }
+
+  await updateDoc(counterRef, {
+    current: current,
+    updatedAt: serverTimestamp()
+  });
+
+  return migrados;
+}
+
 export async function listClientesMap() {
   const snap = await getDocs(collection(db, getClientesCol()));
   const clientes = {};
