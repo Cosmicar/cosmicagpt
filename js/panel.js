@@ -808,7 +808,7 @@ async function abrirPerfilCliente(clienteId) {
 
   // Admin y operador pueden editar — solo tester queda en modo lectura
   const esTester = state.session?.profile?.rol === "tester";
-  ["crmNombre","crmApellido","crmDni","crmTelefono","crmProvincia"].forEach((id) => {
+  ["crmNombre","crmApellido","crmDni","crmTelefono","crmProvincia","crmOrigen"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.disabled = esTester;
   });
@@ -881,7 +881,8 @@ async function guardarCambiosCliente() {
     apellido:  document.getElementById("crmApellido")?.value.trim()  || "",
     dni:       document.getElementById("crmDni")?.value.trim()       || "",
     telefono:  document.getElementById("crmTelefono")?.value.trim()  || "",
-    provincia: document.getElementById("crmProvincia")?.value.trim() || ""
+    provincia: document.getElementById("crmProvincia")?.value.trim() || "",
+    origenContacto: document.getElementById("crmOrigen")?.value || ""
   };
 
   if (!datos.nombre) { alert("El nombre del cliente es obligatorio."); return; }

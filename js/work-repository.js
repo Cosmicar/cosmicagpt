@@ -147,6 +147,9 @@ export async function updateCliente(id, cliente) {
   if (cliente.dni && cliente.dni.trim() !== "") {
     update.dni = cliente.dni.trim();
   }
+  if (cliente.origenContacto !== undefined) {
+    update.origenContacto = cliente.origenContacto;
+  }
   await updateDoc(doc(db, getClientesCol(), id), update);
 }
 
