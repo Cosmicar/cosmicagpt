@@ -465,6 +465,33 @@
         <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
         <button class="btn btn-sm btn-edit" onclick="limpiarBusqueda()">Ver todos</button>
       </div>
+      
+      <!-- Operative Counters (Feature 4) -->
+      <div class="operative-counters" style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px; flex-wrap: wrap; font-size: 13px;">
+        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
+          Activos: <span id="countActivos" style="color: var(--accent2); font-weight: 700;">0</span>
+        </div>
+        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
+          Listos: <span id="countListos" style="color: var(--success); font-weight: 700;">0</span>
+        </div>
+        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
+          Entregados hoy: <span id="countEntregadosHoy" style="color: var(--purple); font-weight: 700;">0</span>
+        </div>
+        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
+          Abandonados: <span id="countAbandonados" style="color: var(--danger); font-weight: 700;">0</span>
+        </div>
+      </div>
+
+      <!-- Quick Filters (Feature 1, 5, 6) -->
+      <div class="quick-filters" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
+        <label style="display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer;">
+          <input type="checkbox" id="chkSoloActivos" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
+          Solo activos
+        </label>
+        <button class="btn btn-sm" onclick="aplicarFiltroRapido('abandonados')" style="background: rgba(255,0,127,0.1); color: var(--danger); border: 1px solid rgba(255,0,127,0.3);">⚠️ Abandonados</button>
+        <button class="btn btn-sm btn-listo" onclick="aplicarFiltroRapido('listos')">📦 Listos</button>
+      </div>
+
       <div style="font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic;">
         Recuerde, usted esta aqui para siempre
       </div>

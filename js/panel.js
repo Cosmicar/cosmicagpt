@@ -1119,14 +1119,18 @@ async function actualizarTotalesDashboard() {
 
 function renderRoleUi() {
   const admin = isAdmin(state.session?.profile) || state.session?.profile?.rol === 'tester';
-  document.querySelectorAll(".admin-section").forEach((el) => {
-    el.style.display = admin ? "" : "none";
-  });
-
-  // Filtros avanzados de búsqueda: solo visibles para admin
-  document.querySelectorAll(".filtro-admin").forEach((el) => {
-    el.style.display = admin ? "" : "none";
-  });
+  
+  if (!admin) {
+    document.querySelectorAll(".admin-section").forEach((el) => el.remove());
+    document.querySelectorAll(".filtro-admin").forEach((el) => el.remove());
+  } else {
+    document.querySelectorAll(".admin-section").forEach((el) => {
+      el.style.display = "";
+    });
+    document.querySelectorAll(".filtro-admin").forEach((el) => {
+      el.style.display = "";
+    });
+  }
 
   const kpiRemoto = document.getElementById("kpiCardRemoto");
   if (kpiRemoto) {
@@ -1549,6 +1553,7 @@ async function cargar(filtro = "", options = {}) {
     const tipoFiltro = $("filtroTipo")?.value || "";
     const ordenFiltro = $("filtroOrden")?.value || "recientes";
     const sinMovimientoFiltro = Number($("filtroSinMovimiento")?.value || 0);
+    const soloActivosFiltro = $("chkSoloActivos")?.checked || false;
     const filtroLimpio = String(filtro || "").trim();
     const cargarTodos = options.cargarTodos === true || (!filtroLimpio && options.fromFilter === true);
 
@@ -1622,9 +1627,27 @@ async function cargar(filtro = "", options = {}) {
     let totalDia = 0;
     let totalMes = 0;
     const resultados = [];
+    
+    let activosCount = 0;
+    let listosCount = 0;
+    let entregadosHoyCount = 0;
+    let abandonadosCount = 0;
 
     trabajos.forEach((trabajo) => {
       const cliente = clientes[trabajo.clienteId];
+      
+      const ref = trabajo.updatedAt || trabajo.fechaReparado || trabajo.fechaEntregado || trabajo.fechaIngreso;
+      const dias = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
+
+      const isActivo = [WORK_STATUS.ingresado, WORK_STATUS.enReparacion, WORK_STATUS.listo].includes(trabajo.estado);
+      if (isActivo) activosCount++;
+      if (trabajo.estado === WORK_STATUS.listo) listosCount++;
+      if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado && trabajo.fechaEntregado.startsWith(hoy)) {
+        entregadosHoyCount++;
+      }
+      if (dias >= 7 && trabajo.estado !== WORK_STATUS.entregado && trabajo.estado !== WORK_STATUS.reingresada) {
+        abandonadosCount++;
+      }
 
       if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado) {
         // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
@@ -1635,6 +1658,11 @@ async function cargar(filtro = "", options = {}) {
 
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
       if (tipoFiltro && (trabajo.tipo || "").toLowerCase() !== tipoFiltro.toLowerCase()) return;
+      
+      if (soloActivosFiltro) {
+        const activos = [WORK_STATUS.ingresado, WORK_STATUS.enReparacion, WORK_STATUS.listo];
+        if (!activos.includes(trabajo.estado)) return;
+      }
       if (sinMovimientoFiltro > 0) {
         const ref = trabajo.updatedAt || trabajo.fechaReparado || trabajo.fechaEntregado || trabajo.fechaIngreso;
         const dias = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
@@ -1652,6 +1680,11 @@ async function cargar(filtro = "", options = {}) {
 
     $("totalDia").innerText = formatMoney(totalDia);
     $("totalMes").innerText = formatMoney(totalMes);
+    
+    if ($("countActivos")) $("countActivos").innerText = activosCount;
+    if ($("countListos")) $("countListos").innerText = listosCount;
+    if ($("countEntregadosHoy")) $("countEntregadosHoy").innerText = entregadosHoyCount;
+    if ($("countAbandonados")) $("countAbandonados").innerText = abandonadosCount;
 
     if (!resultados.length) {
       cont.innerHTML = "<div class='empty-state'>No se encontraron resultados</div>";
@@ -1688,6 +1721,22 @@ async function cargar(filtro = "", options = {}) {
   }
 }
 
+window.aplicarFiltroRapido = function(tipo) {
+  const busqueda = document.getElementById('busquedaDni').value.trim();
+  if (tipo === 'abandonados') {
+    if ($("filtroEstado")) $("filtroEstado").value = "";
+    if ($("filtroSinMovimiento")) $("filtroSinMovimiento").value = "7";
+    if ($("filtroOrden")) $("filtroOrden").value = "recientes";
+    if ($("chkSoloActivos")) $("chkSoloActivos").checked = false;
+  } else if (tipo === 'listos') {
+    if ($("filtroEstado")) $("filtroEstado").value = "Listo";
+    if ($("filtroSinMovimiento")) $("filtroSinMovimiento").value = "";
+    if ($("filtroOrden")) $("filtroOrden").value = "recientes";
+    if ($("chkSoloActivos")) $("chkSoloActivos").checked = false;
+  }
+  cargar(busqueda, { fromFilter: true });
+};
+
 function mergeTrabajosById(trabajos) {
   const map = new Map();
   trabajos.forEach((trabajo) => {
@@ -1701,10 +1750,16 @@ function renderTrabajoCard(t, c = {}) {
   card.className = "card-trabajo";
 
   const diasSinMover = daysSince(t.updatedAt || t.fechaReparado || t.fechaEntregado || t.fechaIngreso);
-  const alertaDemora = diasSinMover > 5
-    && t.estado !== WORK_STATUS.entregado
-    && t.estado !== WORK_STATUS.reingresada;
-  if (alertaDemora) card.classList.add("alerta-demora");
+  const isActivo = t.estado !== WORK_STATUS.entregado && t.estado !== WORK_STATUS.reingresada;
+
+  if (isActivo) {
+    if (diasSinMover >= 7) {
+      card.style.border = "1px solid var(--danger)";
+      card.style.boxShadow = "0 0 15px rgba(255,0,127,0.2)";
+    } else if (diasSinMover >= 3) {
+      card.style.border = "1px solid var(--warning)";
+    }
+  }
 
   let garantiaHtml = "";
   if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
@@ -1789,7 +1844,7 @@ function renderTrabajoCard(t, c = {}) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
         ${badgeEstado(t.estado)}
-        ${alertaDemora ? `<span class="demora-tag">${diasSinMover} días sin actualizar</span>` : ""}
+        ${(diasSinMover >= 3 && isActivo) ? `<span class="demora-tag" style="color: ${diasSinMover >= 7 ? 'var(--danger)' : 'var(--warning)'}">${diasSinMover} días sin actualizar</span>` : ""}
       </div>
     </div>
     <div class="card-info">
