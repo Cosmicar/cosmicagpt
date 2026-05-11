@@ -1123,6 +1123,11 @@ function renderRoleUi() {
     el.style.display = admin ? "" : "none";
   });
 
+  // Filtros avanzados de búsqueda: solo visibles para admin
+  document.querySelectorAll(".filtro-admin").forEach((el) => {
+    el.style.display = admin ? "" : "none";
+  });
+
   const kpiRemoto = document.getElementById("kpiCardRemoto");
   if (kpiRemoto) {
     kpiRemoto.style.display = admin ? "" : "none";
@@ -1540,7 +1545,10 @@ async function cargar(filtro = "", options = {}) {
   try {
     const hoy = new Date().toISOString().split("T")[0];
     const mesActual = new Date().toISOString().slice(0, 7);
-    const estadoFiltro = $("filtroEstado").value;
+    const estadoFiltro = $("filtroEstado")?.value || "";
+    const tipoFiltro = $("filtroTipo")?.value || "";
+    const ordenFiltro = $("filtroOrden")?.value || "recientes";
+    const sinMovimientoFiltro = Number($("filtroSinMovimiento")?.value || 0);
     const filtroLimpio = String(filtro || "").trim();
     const cargarTodos = options.cargarTodos === true || (!filtroLimpio && options.fromFilter === true);
 
@@ -1626,11 +1634,21 @@ async function cargar(filtro = "", options = {}) {
       }
 
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
+      if (tipoFiltro && (trabajo.tipo || "").toLowerCase() !== tipoFiltro.toLowerCase()) return;
+      if (sinMovimientoFiltro > 0) {
+        const ref = trabajo.updatedAt || trabajo.fechaReparado || trabajo.fechaEntregado || trabajo.fechaIngreso;
+        const dias = Math.floor((Date.now() - new Date(ref).getTime()) / 86400000);
+        if (dias < sinMovimientoFiltro) return;
+      }
 
       resultados.push({ trabajo, cliente });
     });
 
-    resultados.sort((a, b) => new Date(b.trabajo.fechaIngreso) - new Date(a.trabajo.fechaIngreso));
+    resultados.sort((a, b) => {
+      const ta = new Date(a.trabajo.updatedAt || a.trabajo.fechaReparado || a.trabajo.fechaEntregado || a.trabajo.fechaIngreso);
+      const tb = new Date(b.trabajo.updatedAt || b.trabajo.fechaReparado || b.trabajo.fechaEntregado || b.trabajo.fechaIngreso);
+      return ordenFiltro === "antiguos" ? ta - tb : tb - ta;
+    });
 
     $("totalDia").innerText = formatMoney(totalDia);
     $("totalMes").innerText = formatMoney(totalMes);

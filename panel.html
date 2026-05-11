@@ -445,6 +445,22 @@
           <option value="Entregado">Entregado</option>
           <option value="Reingresada">Reingresada</option>
         </select>
+        <select id="filtroTipo" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none;">
+          <option value="">Todos los tipos</option>
+          <option value="taller">Taller</option>
+          <option value="remoto">Remoto</option>
+          <option value="mixto">Mixto</option>
+        </select>
+        <select id="filtroOrden" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
+          <option value="recientes">Más recientes</option>
+          <option value="antiguos">Más antiguos</option>
+        </select>
+        <select id="filtroSinMovimiento" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none;">
+          <option value="">Sin filtro demora</option>
+          <option value="3">+3 días sin movimiento</option>
+          <option value="7">+7 días sin movimiento</option>
+          <option value="15">+15 días sin movimiento</option>
+        </select>
         <input id="busquedaDni" placeholder="DNI, Nº de orden, Nombre o Apellido..."
           onkeydown="if(event.key==='Enter') buscar()">
         <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
