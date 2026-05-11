@@ -82,7 +82,7 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
       diagnostico: values.diagnostico || "",
       servicioRealizado: values.servicioRealizado || ""
     });
-    return { mode: "updated" };
+    return { mode: "updated", numeroOrden: trabajoActual.numeroOrden };
   }
 
   const match = await findClienteMatch(cliente);
@@ -235,6 +235,21 @@ export async function removeWork(id, profile) {
   try {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("La orden no existe.");
+
+    // UX-01: Si es un reingreso, restaurar el estado de la orden original
+    if (trabajo.reingreso && trabajo.ordenOriginal) {
+      const { findTrabajosByNumeroOrden } = await import("./work-repository.js");
+      const parentOrders = await findTrabajosByNumeroOrden(trabajo.ordenOriginal);
+      if (parentOrders && parentOrders.length > 0) {
+        const parent = parentOrders[0];
+        const updateParent = {
+          estado: WORK_STATUS.entregado,
+          fechaReingreso: null
+        };
+        await updateTrabajo(parent.id, updateParent);
+        await publishPublicOrder(parent.id, { ...parent, ...updateParent });
+      }
+    }
 
   if (profile?.rol === "operador" && trabajo.estado === "Entregado") {
     throw new Error("Los operadores no pueden borrar órdenes entregadas.");

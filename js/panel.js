@@ -1319,7 +1319,12 @@ async function guardarCliente() {
       ? `Registrado. Orden: ${result.numeroOrden}`
       : "Orden actualizada correctamente");
     showTab("trabajos");
-    await cargar();
+    if (result.numeroOrden) {
+      $("busquedaDni").value = result.numeroOrden;
+      await cargar(result.numeroOrden);
+    } else {
+      await cargar();
+    }
 
     // Push a admins cuando se registra un trabajo nuevo
     if (wasCreated) {
@@ -1661,7 +1666,8 @@ async function _reingresarTrabajo(id) {
 
     const numeroOrden = await reenterWork(id, Number(nuevoPrecioStr), state.session?.profile);
     alert(`Reingreso registrado. Nueva orden: ${numeroOrden}`);
-    await cargar($("busquedaDni").value.trim());
+    $("busquedaDni").value = numeroOrden;
+    await cargar(numeroOrden);
   } catch (error) {
     showAlertError(error, "No se pudo reingresar la orden.");
   }

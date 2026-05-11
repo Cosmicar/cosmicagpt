@@ -1,44 +1,56 @@
 import { db } from "./firebase.js";
-import { collection, getDocs, doc, writeBatch, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-import { getTrabajosNoLiquidados } from "./work-repository.js";
+import {
+  collection,
+  getDocs,
+  doc,
+  writeBatch,
+  addDoc,
+  serverTimestamp,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { COLLECTIONS, WORK_STATUS } from "./domain.js";
 
 // Helper para logs
 function logAudit(msg) {
-  console.log(`[AUDIT] ${msg}`);
-  const logDiv = document.getElementById("auditLogs");
-  if (logDiv) {
-    logDiv.innerHTML += `<div>${msg}</div>`;
-  }
+  console.log(`[REPAIR] ${msg}`);
 }
 
 export async function auditarYRepararBD() {
-  logAudit("Iniciando auditoría de base de datos...");
-  
-  const clientesCol = collection(db, "clientes");
-  const trabajosCol = collection(db, "trabajos");
+  logAudit("Iniciando EJECUCIÓN DE RECUPERACIÓN de base de datos...");
 
-  const [clientesSnap, trabajosSnap] = await Promise.all([
-    getDocs(clientesCol),
-    getDocs(trabajosCol)
+  const [clientesSnap, trabajosSnap, productosSnap, movsSnap] = await Promise.all([
+    getDocs(collection(db, COLLECTIONS.clientes)),
+    getDocs(collection(db, COLLECTIONS.trabajos)),
+    getDocs(collection(db, COLLECTIONS.productos)),
+    getDocs(collection(db, COLLECTIONS.movimientos_stock))
   ]);
 
-  const clientes = [];
-  clientesSnap.forEach(snap => clientes.push({ id: snap.id, ref: snap.ref, ...snap.data() }));
-
-  const trabajos = [];
-  trabajosSnap.forEach(snap => trabajos.push({ id: snap.id, ref: snap.ref, ...snap.data() }));
-
-  logAudit(`Se encontraron ${clientes.length} clientes y ${trabajos.length} trabajos.`);
+  const clientes = clientesSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
+  const trabajos = trabajosSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
+  const productos = productosSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
+  const movimientos = movsSnap.docs.map(snap => ({ id: snap.id, ref: snap.ref, ...snap.data() }));
 
   const batch = writeBatch(db);
   let changes = 0;
+  const rollbackData = {
+    timestamp: new Date().toISOString(),
+    event: "recovery_rollback_data",
+    mergedClientes: [],
+    remappedTrabajos: [],
+    renumberedTrabajos: [],
+    deletedHuérfanos: [],
+    stockReconciled: []
+  };
 
-  // 1. REPARAR CLIENTES DUPLICADOS (Por DNI y por Nombre+Teléfono)
+  // ── FASE 1: CLIENTES Y REFERENCIAS ────────────────────────────────────────
+
+  // 1.1 Merge de Clientes duplicados (DNI y Nombre+Tel)
   const dnis = {};
   const names = {};
   const clientesAEliminar = new Set();
   const remapClientes = {}; // old_id -> new_id
 
+  // Identificar el Master y los duplicados
   for (const c of clientes) {
     if (clientesAEliminar.has(c.id)) continue;
 
@@ -63,93 +75,225 @@ export async function auditarYRepararBD() {
     }
 
     if (isDuplicate && mainClient) {
-      logAudit(`Cliente duplicado detectado: ${c.nombre} (ID: ${c.id}). Se fusionará con ${mainClient.id}`);
+      // Priorizar el master que tenga más datos o más órdenes, simplificado a: nos quedamos con el primero.
+      logAudit(`Cliente duplicado: ${c.nombre} (ID: ${c.id}). Se fusionará hacia ${mainClient.id}`);
       clientesAEliminar.add(c.id);
       remapClientes[c.id] = mainClient.id;
+      
+      rollbackData.mergedClientes.push({
+        deletedId: c.id,
+        deletedData: { ...c, ref: undefined },
+        masterId: mainClient.id
+      });
     }
   }
 
-  // 2. REASIGNAR TRABAJOS DE CLIENTES DUPLICADOS
+  // 1.2 Detectar referencias rotas (clienteId que no existe)
+  const clientesActivos = new Set(clientes.map(c => c.id));
+  let clienteGenericoId = null;
+
   for (const t of trabajos) {
+    // Si la orden apunta a un cliente que será eliminado, lo remapeamos
     if (remapClientes[t.clienteId]) {
-      logAudit(`Trabajo ${t.numeroOrden} reasignado al cliente fusionado ${remapClientes[t.clienteId]}`);
-      batch.update(t.ref, { clienteId: remapClientes[t.clienteId] });
+      const oldId = t.clienteId;
+      const newId = remapClientes[oldId];
+      batch.update(t.ref, { clienteId: newId });
       changes++;
+      rollbackData.remappedTrabajos.push({
+        trabajoId: t.id,
+        numeroOrden: t.numeroOrden,
+        oldClienteId: oldId,
+        newClienteId: newId
+      });
+      t.clienteId = newId; // Update in memory for later checks
+    }
+    // Si la orden apunta a un cliente que directamente no existe en Firestore
+    else if (!clientesActivos.has(t.clienteId)) {
+      if (!clienteGenericoId) {
+        // Crear cliente genérico en batch
+        const newRef = doc(collection(db, COLLECTIONS.clientes));
+        clienteGenericoId = newRef.id;
+        batch.set(newRef, {
+          nombre: "Cliente Eliminado",
+          apellido: "(Recuperado)",
+          telefono: "0000000000",
+          origenContacto: "taller"
+        });
+        changes++;
+      }
+      batch.update(t.ref, { clienteId: clienteGenericoId });
+      changes++;
+      rollbackData.remappedTrabajos.push({
+        trabajoId: t.id,
+        numeroOrden: t.numeroOrden,
+        oldClienteId: t.clienteId,
+        newClienteId: clienteGenericoId,
+        reason: "referencia_rota"
+      });
+      t.clienteId = clienteGenericoId;
     }
   }
 
-  // 3. ELIMINAR CLIENTES DUPLICADOS
+  // Ejecutar eliminación de duplicados
   for (const cId of clientesAEliminar) {
-    const cRef = doc(db, "clientes", cId);
+    const cRef = doc(db, COLLECTIONS.clientes, cId);
     batch.delete(cRef);
     changes++;
   }
 
-  // 4. DETECTAR Y REPARAR ÓRDENES DUPLICADAS (Ej. REM-0030)
-  const ordenesVistas = {};
-  let counterRemoto = 0;
-  let counterTaller = 0;
-
-  // Actualizar los contadores base primero
-  for (const t of trabajos) {
-    if (t.numeroOrden) {
-      const num = parseInt(t.numeroOrden.split("-")[1] || "0", 10);
-      if (t.tipo === "remoto" && num > counterRemoto) counterRemoto = num;
-      if (t.tipo === "taller" && num > counterTaller) counterTaller = num;
+  // 1.3 Limpiar Clientes Huérfanos
+  const idsConOrden = new Set(trabajos.map(t => t.clienteId));
+  for (const c of clientes) {
+    if (!clientesAEliminar.has(c.id) && !idsConOrden.has(c.id)) {
+      batch.delete(c.ref);
+      changes++;
+      rollbackData.deletedHuérfanos.push({
+        id: c.id,
+        data: { ...c, ref: undefined }
+      });
     }
   }
 
+  // ── FASE 2: ÓRDENES DUPLICADAS Y CONTADORES ───────────────────────────────
+  
+  const ordenesVistas = {};
+  let maxRem = 0;
+  let maxTal = 0;
+
+  // Encontrar el max real
+  for (const t of trabajos) {
+    if (t.numeroOrden) {
+      const num = parseInt(t.numeroOrden.split("-")[1] || "0", 10);
+      if (t.tipo === "remoto" && num > maxRem) maxRem = num;
+      if (t.tipo === "taller" && num > maxTal) maxTal = num;
+    }
+  }
+
+  // Renumerar colisiones
+  trabajos.sort((a, b) => new Date(a.fechaIngreso || 0) - new Date(b.fechaIngreso || 0));
+
   for (const t of trabajos) {
     if (!t.numeroOrden) continue;
-    
-    // Verificar si es un número duplicado exacto
+
     if (ordenesVistas[t.numeroOrden]) {
       const original = ordenesVistas[t.numeroOrden];
-      logAudit(`¡ORDEN DUPLICADA ENCONTRADA! ${t.numeroOrden}`);
-      logAudit(`Original ID: ${original.id}, Duplicada ID: ${t.id}`);
       
-      // Si tienen exactamente los mismos datos (mismo equipo, mismo precio, misma fecha, etc.)
-      // Es un doble-submit 100%. Eliminamos la duplicada.
-      if (t.clienteId === original.clienteId && t.equipo === original.equipo) {
-        logAudit(`La orden ${t.id} es un clon de ${original.id}. Se eliminará.`);
+      if (t.clienteId === original.clienteId && t.equipo === original.equipo && t.precio === original.precio) {
+        // Clon exacto (double submit sin modificar params) -> Borrar clon
         batch.delete(t.ref);
-        
-        // También eliminar de ordenesPublicas
-        const publicRef = doc(db, "ordenesPublicas", t.id);
-        batch.delete(publicRef);
+        const pubRef = doc(db, COLLECTIONS.ordenesPublicas, t.id);
+        // pubRef is not verified if exists before batch.delete, but in v12 it is safe or we can do conditional.
+        // Actually, safer to just try delete. Firestore batch allows deleting non-existent docs.
+        batch.delete(pubRef);
         changes++;
+        rollbackData.renumberedTrabajos.push({
+          trabajoId: t.id,
+          action: "deleted_clone",
+          cloneOf: original.id
+        });
       } else {
-        // Es una orden distinta que colisionó en el ID. Le damos un ID nuevo.
-        const num = t.tipo === "remoto" ? ++counterRemoto : ++counterTaller;
-        const prefix = t.tipo === "remoto" ? "REM" : "TAL";
+        // Colisión real (ej. REM-0030) -> Renumerar
+        const isRemoto = t.numeroOrden.startsWith("REM");
+        const num = isRemoto ? ++maxRem : ++maxTal;
+        const prefix = isRemoto ? "REM" : "TAL";
         const newOrder = `${prefix}-${String(num).padStart(4, "0")}`;
         
-        logAudit(`La orden ${t.id} colisionó pero es distinta. Se renombra a ${newOrder}`);
         batch.update(t.ref, { numeroOrden: newOrder });
         
-        const publicRef = doc(db, "ordenesPublicas", t.id);
-        batch.update(publicRef, { numeroOrden: newOrder });
+        // Es más seguro usar set merge por si la orden publica se borró
+        const pubRef = doc(db, COLLECTIONS.ordenesPublicas, t.id);
+        batch.set(pubRef, { numeroOrden: newOrder }, { merge: true });
         changes++;
+        
+        rollbackData.renumberedTrabajos.push({
+          trabajoId: t.id,
+          oldOrder: t.numeroOrden,
+          newOrder: newOrder
+        });
       }
     } else {
       ordenesVistas[t.numeroOrden] = t;
     }
   }
 
-  // 5. RESTAURAR CONTADORES DE ORDENES (Sanity check)
-  const counterRef = doc(db, "config", "ordenes");
+  // Update Counters
+  const counterRef = doc(db, COLLECTIONS.config, "ordenes");
   batch.set(counterRef, {
-    remoto: counterRemoto,
-    taller: counterTaller
+    remoto: maxRem,
+    taller: maxTal
   }, { merge: true });
   changes++;
 
-  logAudit(`Auditoría finalizada. Se aplicarán ${changes} correcciones en batch...`);
-  
+  // ── FASE 3: INVENTARIO (Reservas Huérfanas y Stock Matemático) ────────────
+
+  // 3.1 Limpiar reservas en órdenes inactivas
+  for (const t of trabajos) {
+    if (t.estado === WORK_STATUS.entregado || t.estado === "Cancelado") {
+      let invModificado = false;
+      const items = t.itemsInventario || [];
+      for (const i of items) {
+        if (i.estado === "reservado") {
+          i.estado = "devuelto"; // Liberamos la reserva huérfana
+          invModificado = true;
+          
+          // También devolvemos el stock físicamente por la reserva que nunca se restó
+          // OJO: las reservas nunca descontaron stock en este sistema viejo, así que no restauramos.
+          // Solo limpiamos el estado fantasma.
+        }
+      }
+      if (invModificado) {
+        batch.update(t.ref, { itemsInventario: items });
+        changes++;
+      }
+    }
+  }
+
+  // 3.2 Recalcular Stock Real
+  const stockCalculado = {};
+  for (const m of movimientos) {
+    if (!stockCalculado[m.productoId]) stockCalculado[m.productoId] = 0;
+    const cant = Number(m.cantidad || 0);
+    if (["ingreso", "devolucion", "ajuste_positivo"].includes(m.tipo)) {
+      stockCalculado[m.productoId] += cant;
+    } else if (["salida", "venta", "reparacion", "ajuste_negativo"].includes(m.tipo)) {
+      stockCalculado[m.productoId] -= cant;
+    } else if (m.tipo === "ajuste") {
+      stockCalculado[m.productoId] += cant; 
+    }
+  }
+
+  for (const p of productos) {
+    const esperado = stockCalculado[p.id] || 0;
+    const actual = p.stock || 0;
+    if (actual !== esperado) {
+      batch.update(p.ref, { stock: esperado });
+      changes++;
+      rollbackData.stockReconciled.push({
+        productoId: p.id,
+        oldStock: actual,
+        newStock: esperado
+      });
+    }
+  }
+
+  // ── COMMIT ────────────────────────────────────────────────────────────────
+
   if (changes > 0) {
+    // Guardar rollback data en system_logs
+    const logRef = doc(collection(db, COLLECTIONS.system_logs));
+    batch.set(logRef, {
+      tipo: "recovery_execution",
+      level: "critical",
+      payload: rollbackData,
+      usuario: "system_repair",
+      fecha: new Date().toISOString(),
+      createdAt: serverTimestamp()
+    });
+
+    logAudit(`Aplicando ${changes} modificaciones en la base de datos...`);
     await batch.commit();
-    logAudit("¡Correcciones aplicadas con éxito en Firestore!");
+    logAudit("✅ Reparación y recuperación finalizada exitosamente.");
   } else {
-    logAudit("La base de datos está sana, no se requirieron cambios.");
+    logAudit("✅ Sistema intacto. No se requirieron modificaciones.");
   }
 }

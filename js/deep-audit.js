@@ -252,12 +252,30 @@ export async function ejecutarAuditoriaProfunda() {
   // ── 6. AUDITORÍA INVENTARIO ────────────────────────────────
   console.log("\n── INVENTARIO ────────────────────────────────");
 
-  // 6.1 Stock negativo
+  // 6.1 Stock negativo y Productos inválidos
   for (const p of productos) {
     if ((p.stock || 0) < 0) {
       f("INVENTARIO", "CRITICO", `Stock negativo: ${p.nombre}`, {
         id: p.id, sku: p.sku, stock: p.stock
       });
+    }
+    if (!p.nombre || p.precioVenta === undefined) {
+      f("INVENTARIO", "MEDIO", `Producto inválido (faltan datos): ${p.id}`, {
+        id: p.id, data: p
+      });
+    }
+  }
+
+  // 6.1.5 Reservas huérfanas
+  // Buscar items en estado 'reservado' en órdenes que ya no están activas o fueron borradas/entregadas
+  for (const t of trabajos) {
+    if (t.estado === WORK_STATUS.entregado || t.estado === "Cancelado") {
+      const reservas = (t.itemsInventario || []).filter(i => i.estado === "reservado");
+      if (reservas.length > 0) {
+        f("INVENTARIO", "MEDIO", `Reservas huérfanas en orden terminada/cancelada: ${t.numeroOrden}`, {
+          numeroOrden: t.numeroOrden, estado: t.estado, reservas
+        });
+      }
     }
   }
 
