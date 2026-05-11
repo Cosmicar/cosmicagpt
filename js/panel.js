@@ -1286,7 +1286,8 @@ async function editarTrabajo(trabajoId, clienteId, modoAdmin = false) {
       diagContainer.style.display = "block";
     }
 
-    state.edit = { trabajoId, clienteId };
+    state.edit.trabajoId = trabajoId;
+    state.edit.clienteId = clienteId;
     state.currentItemsInventario = trabajo.itemsInventario || [];
     renderItemsInventario();
 
