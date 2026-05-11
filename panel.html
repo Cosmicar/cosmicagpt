@@ -597,12 +597,17 @@
         </div>
       </div>
 
-      <div class="form-actions">
-        <button id="btnGuardarCliente" class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+        <div id="adminCorrectionContainer" style="display:none; align-items: center; gap: 8px; margin-bottom: 15px; background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--warning);">
+          <input type="checkbox" id="chkModoCorreccion" style="width: auto; cursor: pointer;">
+          <label for="chkModoCorreccion" style="color: var(--warning); font-weight: 600; cursor: pointer;">🛠️ Activar Modo Corrección (Permite guardar cambios en órdenes bloqueadas)</label>
+        </div>
 
-        <button class="btn btn-edit" id="btnCancelar"
-          style="display:none" onclick="cancelarEdicion()">✕ Cancelar edición</button>
-      </div>
+        <div class="form-actions">
+          <button id="btnGuardarCliente" class="btn btn-primary" onclick="guardarCliente()">💾 Guardar</button>
+
+          <button class="btn btn-edit" id="btnCancelar"
+            style="display:none" onclick="cancelarEdicion()">✕ Cancelar edición</button>
+        </div>
     </div>
   </div>
 

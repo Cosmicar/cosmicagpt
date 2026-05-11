@@ -60,6 +60,13 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
 
   if (editState.trabajoId) {
     const trabajoActual = await getTrabajo(editState.trabajoId);
+    
+    // Si está bloqueado (Entregado) y NO es modo admin, bloquear
+    const bloqueado = trabajoActual.estado === WORK_STATUS.entregado || trabajoActual.estado === WORK_STATUS.reingresada;
+    if (bloqueado && !editState.modoAdminEdicion) {
+      throw new Error("Esta orden está bloqueada. Solo un administrador puede editarla en Modo Avanzado.");
+    }
+
     // Filtrar items devueltos al actualizar
     const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
     const update = {
@@ -73,6 +80,17 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
       precio: values.precio,
       itemsInventario: itemsLimpios
     };
+
+    if (editState.modoAdminEdicion) {
+      // Hardening: Snapshot before edit
+      await logSystem("[ADMIN_EDIT]", {
+        trabajoId: editState.trabajoId,
+        snapshotBefore: trabajoActual,
+        snapshotAfter: update,
+        usuario: profile?.email || "N/A",
+        fecha: new Date().toISOString()
+      });
+    }
 
     await updateTrabajo(editState.trabajoId, update);
     await updateCliente(editState.clienteId, cliente);
@@ -261,9 +279,21 @@ export async function removeWork(id, profile) {
   
   const systemConfig = await getSystemConfig();
   if (systemConfig.inventarioActivo) {
-    await devolverItemsOrden(id);
+    // Si es admin borrando un reingreso o un entregado, forzamos la devolución de items confirmados
+    const forzar = profile?.rol === "admin" && (trabajo.reingreso || trabajo.estado === "Entregado");
+    await devolverItemsOrden(id, null, forzar);
   } else {
     await logSystem("orden_eliminada_inventario_desactivado", { trabajoId: id });
+  }
+
+  if (profile?.rol === "admin") {
+    // Hardening: Snapshot before delete
+    await logSystem("[ADMIN_DELETE]", {
+      trabajoId: id,
+      snapshotBefore: trabajo,
+      usuario: profile?.email || "N/A",
+      fecha: new Date().toISOString()
+    });
   }
 
   await deleteTrabajo(id);

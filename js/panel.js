@@ -51,7 +51,8 @@ const state = {
   session: null,
   edit: {
     trabajoId: null,
-    clienteId: null
+    clienteId: null,
+    modoAdminEdicion: false
   },
   ingresosData: [],
   periodoActual: "hoy",
@@ -1217,10 +1218,13 @@ function limpiarCampos() {
 
 
 function cancelarEdicion() {
-  state.edit = { trabajoId: null, clienteId: null };
+  state.edit = { trabajoId: null, clienteId: null, modoAdminEdicion: false };
   limpiarCampos();
   $("modoEdicionBanner").style.display = "none";
   $("btnCancelar").style.display = "none";
+  if (document.getElementById("adminCorrectionContainer")) {
+    document.getElementById("adminCorrectionContainer").style.display = "none";
+  }
 }
 
 async function buscarClienteAutofill() {
@@ -1239,8 +1243,16 @@ async function buscarClienteAutofill() {
   }
 }
 
-async function editarTrabajo(trabajoId, clienteId) {
+async function editarTrabajo(trabajoId, clienteId, modoAdmin = false) {
   try {
+    state.edit.modoAdminEdicion = modoAdmin;
+    if (modoAdmin) {
+      alert("⚠️ ATENCIÓN: Entrando en MODO EDICIÓN ADMINISTRATIVA.\n\nLas modificaciones en órdenes entregadas o históricas deben realizarse con precaución para no romper la integridad del sistema.");
+    }
+    if (document.getElementById("adminCorrectionContainer")) {
+      document.getElementById("adminCorrectionContainer").style.display = modoAdmin ? "flex" : "none";
+      document.getElementById("chkModoCorreccion").checked = false;
+    }
     const [trabajo, cliente] = await Promise.all([
       getTrabajo(trabajoId),
       getCliente(clienteId)
@@ -1317,6 +1329,15 @@ async function guardarCliente() {
   if (btn) btn.disabled = true;
   try {
     const formData = readWorkForm();
+    
+    // Si estamos en modo admin, verificar que el checkbox esté marcado
+    if (state.edit.modoAdminEdicion) {
+      const chk = document.getElementById("chkModoCorreccion");
+      if (chk && !chk.checked) {
+        throw new Error("Debés activar el 'Modo Corrección' (checkbox) para guardar cambios en una orden bloqueada.");
+      }
+    }
+
     const result = await saveWorkForm(formData, state.edit, state.session?.profile);
     const wasCreated = result.mode === "created";
     cancelarEdicion();
@@ -1576,29 +1597,29 @@ function renderTrabajoCard(t, c = {}) {
         <div class="btn-group">
           <div class="btn-group-title">Acciones</div>
           ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
-          ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">Borrar</button>` : ""}
-          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
-          ${btnWa}
-        </div>
-      </div>
-    `;
-  } else if (canReenterWork(t.estado)) {
-    botonesHtml = `
-      <div class="card-actions-wrapper">
-        <div class="btn-group">
-          <div class="btn-group-title">Acciones</div>
-          <button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${t.id}')">Reingresar</button>
+          ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar"}</button>` : ""}
           <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
           ${btnWa}
         </div>
       </div>
     `;
   } else {
+    // Estado Bloqueado (Entregado o Reingresada)
+    const isReingresada = t.estado === WORK_STATUS.reingresada;
     botonesHtml = `
       <div class="card-actions-wrapper">
         <div class="btn-group">
-          <span class="reingresada-label">Orden reingresada</span>
+          <div class="btn-group-title">Acciones ${admin ? '<span class="badge badge-admin">MODO ADMIN</span>' : ''}</div>
+          ${canReenterWork(t.estado) ? `<button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${t.id}')">Reingresar</button>` : ""}
+          
+          ${admin ? `
+            <button class="btn btn-sm btn-edit btn-admin" onclick="editarTrabajo('${t.id}','${t.clienteId}', true)">Editar (Admin)</button>
+            <button class="btn btn-sm btn-danger btn-admin" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar (Admin)"}</button>
+          ` : ""}
+          
+          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
           ${btnWa}
+          ${isReingresada ? `<span class="reingresada-label">Orden reingresada</span>` : ""}
         </div>
       </div>
     `;

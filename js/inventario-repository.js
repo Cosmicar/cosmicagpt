@@ -198,7 +198,7 @@ export async function confirmarItemsOrden(trabajoId) {
   });
 }
 
-export async function devolverItemsOrden(trabajoId, productoId = null) {
+export async function devolverItemsOrden(trabajoId, productoId = null, forzar = false) {
   const session = getSession();
   const trabajosCol = isTesterSession() ? "trabajos_demo" : COLLECTIONS.trabajos;
   
@@ -216,7 +216,11 @@ export async function devolverItemsOrden(trabajoId, productoId = null) {
     
     for (const item of itemsInventario) {
       if (productoId && item.productoId !== productoId) continue;
-      if (item.estado !== "reservado") continue;
+      
+      // Si no es forzado, solo devolvemos reservados.
+      // Si es forzado (modo admin), devolvemos también confirmados.
+      const estadosValidos = forzar ? ["reservado", "confirmado"] : ["reservado"];
+      if (!estadosValidos.includes(item.estado)) continue;
       
       // Restaurar stock del producto
       const prodRef = doc(db, getProductosCol(), item.productoId);
