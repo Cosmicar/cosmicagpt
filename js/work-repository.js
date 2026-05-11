@@ -78,12 +78,17 @@ export async function createNewCliente(cliente) {
 }
 
 export async function updateCliente(id, cliente) {
-  await updateDoc(doc(db, getClientesCol(), id), {
+  const update = {
     nombre: cliente.nombre,
     apellido: cliente.apellido || "",
     telefono: cliente.telefono,
     provincia: cliente.provincia
-  });
+  };
+  // Preservar DNI si se proporciona (no sobrescribir con vacío)
+  if (cliente.dni && cliente.dni.trim() !== "") {
+    update.dni = cliente.dni.trim();
+  }
+  await updateDoc(doc(db, getClientesCol(), id), update);
 }
 
 export async function deleteCliente(id) {

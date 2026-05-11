@@ -218,7 +218,17 @@ export async function devolverItemsOrden(trabajoId, productoId = null) {
       if (productoId && item.productoId !== productoId) continue;
       if (item.estado !== "reservado") continue;
       
-      // Registrar movimiento de devolución (sin cambiar stock)
+      // Restaurar stock del producto
+      const prodRef = doc(db, getProductosCol(), item.productoId);
+      const prodSnap = await transaction.get(prodRef);
+      
+      if (prodSnap.exists()) {
+        const prodData = prodSnap.data();
+        const nuevoStock = Number(prodData.stock || 0) + Number(item.cantidad);
+        transaction.update(prodRef, { stock: nuevoStock });
+      }
+
+      // Registrar movimiento de devolución
       const movRef = doc(collection(db, getMovimientosCol()));
       transaction.set(movRef, {
         productoId: item.productoId,

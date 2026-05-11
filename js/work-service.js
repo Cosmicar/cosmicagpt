@@ -60,6 +60,8 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
 
   if (editState.trabajoId) {
     const trabajoActual = await getTrabajo(editState.trabajoId);
+    // Filtrar items devueltos al actualizar
+    const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
     const update = {
       tipo: normalizeServiceType(values.tipo || trabajoActual.tipo),
       equipo: values.equipo,
@@ -69,7 +71,7 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
       diagnostico: values.diagnostico || "",
       servicioRealizado: values.servicioRealizado || "",
       precio: values.precio,
-      itemsInventario: values.itemsInventario || []
+      itemsInventario: itemsLimpios
     };
 
     await updateTrabajo(editState.trabajoId, update);
@@ -112,6 +114,9 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
   // Pasamos el perfil para que la consulta interna respete RBAC
   const numeroOrden = await getNextOrderNumber(tipo, profile);
 
+  // Filtrar items devueltos antes de guardar (no enviar datos fantasma a Firestore)
+  const itemsLimpios = (values.itemsInventario || []).filter(i => i.estado !== "devuelto");
+
   const nuevoTrabajo = {
     numeroOrden,
     clienteId,
@@ -124,7 +129,7 @@ export async function saveWorkForm(values, editState = {}, profile = null) {
     servicioRealizado: values.servicioRealizado || "",
     precio: values.precio,
     planServicio: values.planServicio || "",
-    itemsInventario: values.itemsInventario || [],
+    itemsInventario: itemsLimpios,
     estado: WORK_STATUS.ingresado,
     fechaIngreso: nowIso(),
 

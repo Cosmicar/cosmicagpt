@@ -483,11 +483,13 @@ window.confirmarVenta = async function() {
 
   const config = await getSystemConfig();
   if (!config.inventarioActivo || !config.ventasActivas) {
+    if (btn) btn.disabled = false;
     alert("Ventas está desactivado temporalmente.");
     return;
   }
 
   if (!_carrito.length) {
+    if (btn) btn.disabled = false;
     alert("El carrito está vacío.");
     return;
   }

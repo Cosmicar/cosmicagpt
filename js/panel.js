@@ -257,6 +257,19 @@ function bindGlobalActions() {
       console.error(e);
     }
   };
+
+  window.ejecutarAuditoriaProfunda = async function() {
+    if (!confirm("🔬 ¿Ejecutar auditoría profunda de integridad?\\n\\nModo: SOLO LECTURA (no modifica datos).\\nSe analizarán todas las colecciones y se reportarán hallazgos en la consola.")) return;
+    try {
+      const { ejecutarAuditoriaProfunda } = await import("./deep-audit.js");
+      const resultado = await ejecutarAuditoriaProfunda();
+      const s = resultado.summary;
+      alert(`🔬 Auditoría completada.\\n\\n🔴 Críticos: ${s.CRITICO}\\n🟡 Medios: ${s.MEDIO}\\n🟢 Bajos: ${s.BAJO}\\nℹ️ Info: ${s.INFO}\\n\\nTotal: ${resultado.findings.length} hallazgos.\\n\\nRevisar consola (F12) para el detalle completo.`);
+    } catch (e) {
+      alert("Error en la auditoría profunda: " + e.message);
+      console.error(e);
+    }
+  };
   
   // ── Notificaciones FCM (Campanita) ──────────────────────────────────────────────
   // togglePushNotifications ya está definida como window.* arriba
@@ -1887,6 +1900,8 @@ async function crearUsuario() {
 
 state.currentItemsInventario = [];
 
+let _repuestoSearchTimer = null;
+
 window.buscarRepuestosParaOrden = function(termino) {
   if (getCachedSystemConfig().inventarioActivo === false) {
     const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
@@ -1897,6 +1912,14 @@ window.buscarRepuestosParaOrden = function(termino) {
     return;
   }
 
+  // Debounce 300ms para evitar queries excesivas en tipeo rápido
+  clearTimeout(_repuestoSearchTimer);
+  _repuestoSearchTimer = setTimeout(() => {
+    _buscarRepuestosInterno(termino);
+  }, 300);
+};
+
+function _buscarRepuestosInterno(termino) {
   const t = termino.toLowerCase().trim();
   const resultadosDiv = document.getElementById("resultadosBusquedaRepuesto");
   if (!resultadosDiv) return;
