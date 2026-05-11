@@ -51,6 +51,31 @@ export async function updateWork(values, editState, profile = null) {
 
   const trabajoActual = await getTrabajo(editState.trabajoId);
   
+  // REGLA CRÍTICA: El clienteId CANÓNICO siempre viene del documento
+  // en Firestore, NUNCA del estado de la UI (que puede estar obsoleto).
+  // Esto previene que un botón HTML renderizado antes del desacople
+  // vuelva a apuntar al clienteId viejo.
+  const canonicalClienteId = trabajoActual.clienteId;
+  
+  if (!canonicalClienteId) {
+    throw new Error("La orden no tiene clienteId. Contactá a un administrador.");
+  }
+
+  // Detección de mutación: si el editState tiene un clienteId diferente al
+  // de Firestore, lo bloqueamos y logueamos.
+  if (editState.clienteId && editState.clienteId !== canonicalClienteId) {
+    try {
+      await logSystem("[CLIENT_ID_MUTATION_BLOCKED]", {
+        trabajoId: editState.trabajoId,
+        clienteIdEnEstado: editState.clienteId,
+        clienteIdEnFirestore: canonicalClienteId,
+        usuario: profile?.email || "N/A",
+        motivo: "editState.clienteId difería del clienteId en Firestore — se usó el de Firestore"
+      });
+    } catch (_) {}
+    // No lanzamos error; simplemente usamos el valor canónico de Firestore.
+  }
+
   // Si está bloqueado (Entregado) y NO es modo admin, bloquear
   const bloqueado = trabajoActual.estado === WORK_STATUS.entregado || trabajoActual.estado === WORK_STATUS.reingresada;
   if (bloqueado && !editState.modoAdminEdicion) {
@@ -84,7 +109,7 @@ export async function updateWork(values, editState, profile = null) {
       trabajoId: editState.trabajoId,
       snapshotBefore: trabajoActual,
       snapshotAfter: update,
-      clienteId: editState.clienteId,
+      clienteId: canonicalClienteId,
       usuario: profile?.email || "N/A",
       fecha: new Date().toISOString()
     });
@@ -92,9 +117,9 @@ export async function updateWork(values, editState, profile = null) {
 
   await updateTrabajo(editState.trabajoId, update);
   
-  // REGLA CRÍTICA: NO buscar coincidencias, NO crear nuevo cliente.
-  // Solo actualizamos los datos del cliente ya vinculado.
-  await updateCliente(editState.clienteId, cliente);
+  // REGLA CRÍTICA: usamos canonicalClienteId (leído de Firestore),
+  // no editState.clienteId (que puede venir de HTML obsoleto).
+  await updateCliente(canonicalClienteId, cliente);
   
   await publishPublicOrder(editState.trabajoId, {
     ...trabajoActual,

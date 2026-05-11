@@ -1245,7 +1245,7 @@ async function buscarClienteAutofill() {
   }
 }
 
-async function editarTrabajo(trabajoId, clienteId, modoAdmin = false) {
+async function editarTrabajo(trabajoId, _clienteIdObsoleto, modoAdmin = false) {
   try {
     state.edit.modoAdminEdicion = modoAdmin;
     if (modoAdmin) {
@@ -1255,11 +1255,31 @@ async function editarTrabajo(trabajoId, clienteId, modoAdmin = false) {
       document.getElementById("adminCorrectionContainer").style.display = modoAdmin ? "flex" : "none";
       document.getElementById("chkModoCorreccion").checked = false;
     }
-    const [trabajo, cliente] = await Promise.all([
-      getTrabajo(trabajoId),
-      getCliente(clienteId)
-    ]);
-    if (!trabajo || !cliente) throw new Error("No se encontró la orden o el cliente.");
+
+    // REGLA CRÍTICA ANTI-CONTAMINACIÓN:
+    // Leemos el trabajo PRIMERO para obtener el clienteId canónico desde Firestore.
+    // NO usamos el parámetro _clienteIdObsoleto porque puede venir de un botón HTML
+    // renderizado ANTES de un desacople, apuntando al clienteId viejo.
+    const trabajo = await getTrabajo(trabajoId);
+    if (!trabajo) throw new Error("No se encontró la orden.");
+    
+    const canonicalClienteId = trabajo.clienteId;
+    if (!canonicalClienteId) throw new Error("La orden no tiene clienteId válido.");
+
+    // Detectar y loggear si el parámetro HTML difiere del valor en Firestore
+    if (_clienteIdObsoleto && _clienteIdObsoleto !== canonicalClienteId) {
+      import("./system-service.js").then(({ logSystem }) => {
+        logSystem("[CLIENT_ID_MUTATION_BLOCKED]", {
+          trabajoId,
+          clienteIdHTMLObsoleto: _clienteIdObsoleto,
+          clienteIdCanonicoFirestore: canonicalClienteId,
+          motivo: "El parámetro del botón difería del clienteId en Firestore — se usó el de Firestore"
+        }).catch(() => {});
+      });
+    }
+
+    const cliente = await getCliente(canonicalClienteId);
+    if (!cliente) throw new Error("No se encontró el cliente de la orden.");
 
     $("nombre").value = cliente.nombre || "";
     $("apellido").value = cliente.apellido || "";
@@ -1288,13 +1308,13 @@ async function editarTrabajo(trabajoId, clienteId, modoAdmin = false) {
       diagContainer.style.display = "block";
     }
 
+    // Usar SIEMPRE el clienteId canónico de Firestore
     state.edit.trabajoId = trabajoId;
-    state.edit.clienteId = clienteId;
+    state.edit.clienteId = canonicalClienteId;
     state.currentItemsInventario = trabajo.itemsInventario || [];
     renderItemsInventario();
 
     $("modoEdicionBanner").style.display = "block";
-
     $("btnCancelar").style.display = "inline-flex";
 
     showTab("nuevo");
