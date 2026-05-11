@@ -434,7 +434,10 @@
     </div>
 
     <div class="section">
-      <div class="section-title">🔍 Buscar trabajos</div>
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>🔍 Buscar trabajos</span>
+        <span id="indicadorRefresh" style="font-size: 11px; color: var(--muted); font-weight: normal;">Sincronizado</span>
+      </div>
       <div class="search-bar">
         <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
           <option value="">Todos los estados</option>

@@ -204,6 +204,7 @@ function boot() {
       initAutocomplete();
       await loadInitialWorkList();
       await actualizarTotalesDashboard();
+      iniciarAutoRefresh();
 
       // Iniciar FCM SW en background (no bloquea el boot)
       registrarSWFcm().catch(err => console.warn('[FCM] registrarSWFcm:', err));
@@ -478,8 +479,34 @@ function calcularContribContable(t, profile) {
 
 // ── Cierre de Caja Taller — estado temporal del cálculo ─────────
 let _trabajosPendientesCierre = [];
+let _autoRefreshInterval = null;
+
+function iniciarAutoRefresh() {
+  if (_autoRefreshInterval) clearInterval(_autoRefreshInterval);
+  
+  _autoRefreshInterval = setInterval(async () => {
+    const hayModal = document.querySelector('.modal-overlay.open') || document.querySelector('.modal.show');
+    const hayEdicion = state.edit?.trabajoId || $("modoEdicionBanner")?.style.display !== "none";
+    
+    if (hayModal || hayEdicion) return;
+    
+    const busqueda = $("busquedaDni")?.value.trim() || "";
+    await cargar(busqueda, { fromFilter: true });
+    
+    const ind = $("indicadorRefresh");
+    if (ind) {
+      ind.innerText = `Sincronizado: ${new Date().toLocaleTimeString('es-AR')}`;
+    }
+  }, 60000);
+}
 
 async function loadInitialWorkList() {
+  if ($("filtroEstado")) $("filtroEstado").value = localStorage.getItem("filtroEstado") || "";
+  if ($("filtroTipo")) $("filtroTipo").value = localStorage.getItem("filtroTipo") || "";
+  if ($("filtroOrden")) $("filtroOrden").value = localStorage.getItem("filtroOrden") || "recientes";
+  if ($("filtroSinMovimiento")) $("filtroSinMovimiento").value = localStorage.getItem("filtroSinMovimiento") || "";
+  if ($("chkSoloActivos")) $("chkSoloActivos").checked = localStorage.getItem("chkSoloActivos") === "true";
+
   const orden = new URLSearchParams(window.location.search).get("orden");
   if (orden) {
     $("busquedaDni").value = orden;
@@ -1555,6 +1582,12 @@ async function cargar(filtro = "", options = {}) {
     const sinMovimientoFiltro = Number($("filtroSinMovimiento")?.value || 0);
     const soloActivosFiltro = $("chkSoloActivos")?.checked || false;
     const filtroLimpio = String(filtro || "").trim();
+
+    localStorage.setItem("filtroEstado", estadoFiltro);
+    localStorage.setItem("filtroTipo", tipoFiltro);
+    localStorage.setItem("filtroOrden", ordenFiltro);
+    localStorage.setItem("filtroSinMovimiento", sinMovimientoFiltro.toString());
+    localStorage.setItem("chkSoloActivos", soloActivosFiltro.toString());
     const cargarTodos = options.cargarTodos === true || (!filtroLimpio && options.fromFilter === true);
 
     if (!filtroLimpio && !cargarTodos) {
@@ -1844,7 +1877,7 @@ function renderTrabajoCard(t, c = {}) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
         ${badgeEstado(t.estado)}
-        ${(diasSinMover >= 3 && isActivo) ? `<span class="demora-tag" style="color: ${diasSinMover >= 7 ? 'var(--danger)' : 'var(--warning)'}">${diasSinMover} días sin actualizar</span>` : ""}
+        ${(diasSinMover >= 3 && isActivo) ? `<span class="demora-tag" style="color: ${diasSinMover >= 7 ? 'var(--danger)' : 'var(--warning)'}" title="Último movimiento: ${formatDateTime(t.updatedAt || t.fechaReparado || t.fechaEntregado || t.fechaIngreso)}">${diasSinMover} días sin actualizar</span>` : ""}
       </div>
     </div>
     <div class="card-info">
