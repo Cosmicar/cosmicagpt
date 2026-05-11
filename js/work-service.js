@@ -362,3 +362,59 @@ export async function resetAccountancy(profile) {
   }
   await resetContabilidadBatch();
 }
+
+export async function desacoplarClienteOrden(trabajoId, numeroOrden, profile = null) {
+  if (!isAdmin(profile) && profile?.rol !== 'tester') {
+    throw new Error("Solo los administradores pueden desacoplar clientes.");
+  }
+
+  const { getTrabajo, getCliente, getClientesCol, getTrabajosCol, getNextClienteCodigo } = await import("./work-repository.js");
+  const { db } = await import("./firebase.js");
+  const { doc, runTransaction, serverTimestamp, collection } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js");
+  const { logSystem } = await import("./system-service.js");
+
+  const trabajo = await getTrabajo(trabajoId);
+  if (!trabajo) throw new Error("No se encontró la orden.");
+
+  const clienteOriginalId = trabajo.clienteId;
+  const clienteOriginal = await getCliente(clienteOriginalId);
+  if (!clienteOriginal) throw new Error("No se encontró el cliente original.");
+
+  // Generar nuevo código de cliente
+  const clienteCodigoNuevo = await getNextClienteCodigo();
+
+  const nuevoCliente = {
+    clienteCodigo: clienteCodigoNuevo,
+    nombre: clienteOriginal.nombre || "",
+    apellido: clienteOriginal.apellido || "",
+    telefono: clienteOriginal.telefono || "",
+    dni: clienteOriginal.dni || "",
+    alias: clienteOriginal.alias || "",
+    createdAt: serverTimestamp()
+  };
+
+  const next = await runTransaction(db, async (transaction) => {
+    const clientesColRef = collection(db, getClientesCol());
+    const nuevoClienteRef = doc(clientesColRef); // Genera ID aleatorio
+    
+    // Crear nuevo cliente
+    transaction.set(nuevoClienteRef, nuevoCliente);
+
+    // Actualizar la orden
+    const trabajoRef = doc(db, getTrabajosCol(), trabajoId);
+    transaction.update(trabajoRef, { clienteId: nuevoClienteRef.id });
+
+    return nuevoClienteRef.id;
+  });
+
+  // Registrar log
+  await logSystem("[CLIENT_DECOUPLED]", {
+    orden: numeroOrden,
+    clienteOriginalId,
+    clienteNuevoId: next,
+    clienteCodigoNuevo,
+    operador: profile?.email || "N/A"
+  });
+
+  return { success: true, nuevoClienteId: next, clienteCodigoNuevo };
+}

@@ -1690,6 +1690,7 @@ function renderTrabajoCard(t, c = {}) {
         <div class="btn-group">
           <div class="btn-group-title">Acciones</div>
           ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
+          ${admin ? `<button class="btn btn-sm btn-warning" style="background:rgba(255,170,0,0.1);color:var(--warning);" onclick="confirmarDesacople('${t.id}','${t.numeroOrden}')">🔓 Desacoplar</button>` : ""}
           ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar"}</button>` : ""}
           <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
           ${btnWa}
@@ -1707,6 +1708,7 @@ function renderTrabajoCard(t, c = {}) {
           
           ${admin ? `
             <button class="btn btn-sm btn-edit btn-admin" onclick="editarTrabajo('${t.id}','${t.clienteId}', true)">Editar (Admin)</button>
+            <button class="btn btn-sm btn-warning btn-admin" style="background:rgba(255,170,0,0.1);color:var(--warning);" onclick="confirmarDesacople('${t.id}','${t.numeroOrden}')">🔓 Desacoplar Cliente</button>
             <button class="btn btn-sm btn-danger btn-admin" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar (Admin)"}</button>
           ` : ""}
           
@@ -1752,6 +1754,53 @@ function renderTrabajoCard(t, c = {}) {
   `;
 
   return card;
+}
+
+function confirmarDesacople(trabajoId, numeroOrden) {
+  const modalId = "modalConfirmarDesacople";
+  const oldModal = document.getElementById(modalId);
+  if (oldModal) oldModal.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+  const content = document.createElement("div");
+  content.style.cssText = "background:var(--bg-card, #1a1a1a);padding:24px;border-radius:12px;width:90%;max-width:500px;border:1px solid var(--warning, #ffaa00);box-shadow:0 0 20px rgba(255,170,0,0.2);color:white;";
+
+  content.innerHTML = `
+    <h3 style="color:var(--warning, #ffaa00);margin-top:0;">🔓 Desacoplar Cliente</h3>
+    <p>Esta acción creará un nuevo cliente independiente para esta orden específica (<b>${numeroOrden}</b>).</p>
+    <p>La orden dejará de compartir identidad con otras órdenes históricas.</p>
+    <p style="color:var(--muted);">¿Continuar?</p>
+    <div style="display:flex;justify-content:space-between;gap:12px;margin-top:20px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+      <button class="btn btn-warning" id="btnEjecutarDesacople" style="background:var(--warning);color:black;">Desacoplar</button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  const btnEjecutar = content.querySelector("#btnEjecutarDesacople");
+  btnEjecutar.onclick = async () => {
+    btnEjecutar.disabled = true;
+    btnEjecutar.innerText = "Procesando...";
+    try {
+      const { desacoplarClienteOrden } = await import("./work-service.js");
+      const res = await desacoplarClienteOrden(trabajoId, numeroOrden, state.session?.profile);
+      
+      modal.remove();
+      alert(`✅ Desacople exitoso. Se creó el cliente con código ${res.clienteCodigoNuevo}`);
+      
+      // Recargar la búsqueda actual para ver los cambios
+      await cargar($("busquedaDni").value.trim());
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      btnEjecutar.disabled = false;
+      btnEjecutar.innerText = "Desacoplar";
+    }
+  };
 }
 
 async function cambiarEstado(id, estado) {

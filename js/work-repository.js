@@ -21,8 +21,8 @@ import { getSession } from "./auth-service.js";
 // ── Getters de colección dinámicos (evalúados en tiempo de ejecución) ──
 // El tester apunta a colecciones _demo para no contaminar producción.
 const isTesterSession = () => getSession()?.profile?.rol === 'tester';
-const getTrabajosCol  = () => isTesterSession() ? "trabajos_demo"        : COLLECTIONS.trabajos;
-const getClientesCol  = () => isTesterSession() ? "clientes_demo"        : COLLECTIONS.clientes;
+export const getTrabajosCol  = () => isTesterSession() ? "trabajos_demo"        : COLLECTIONS.trabajos;
+export const getClientesCol  = () => isTesterSession() ? "clientes_demo"        : COLLECTIONS.clientes;
 const getPublicasCol  = () => isTesterSession() ? "ordenesPublicas_demo" : COLLECTIONS.ordenesPublicas;
 
 export async function findClienteByDni(dni) {
