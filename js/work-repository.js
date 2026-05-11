@@ -43,8 +43,9 @@ export async function findClienteMatch(cliente) {
 
   const addMatch = (docSnap, tipoCoincidencia, score) => {
     if (seenIds.has(docSnap.id)) return;
-    seenIds.add(docSnap.id);
     const data = docSnap.data();
+    if (data.status === "merged") return;
+    seenIds.add(docSnap.id);
     matches.push({
       clienteId: docSnap.id,
       clienteCodigo: data.clienteCodigo || "",
@@ -182,7 +183,10 @@ export async function listClientesMap() {
   const snap = await getDocs(collection(db, getClientesCol()));
   const clientes = {};
   snap.forEach((docSnap) => {
-    clientes[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
+    const data = docSnap.data();
+    if (data.status !== "merged") {
+      clientes[docSnap.id] = { id: docSnap.id, ...data };
+    }
   });
   return clientes;
 }
@@ -196,7 +200,9 @@ export async function listClientesCRM(profile) {
     q = collection(db, getClientesCol());
   }
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter(c => c.status !== "merged");
 }
 
 // ── CRM: historial de servicios de un cliente ────────────────
