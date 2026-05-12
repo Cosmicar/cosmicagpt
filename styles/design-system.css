@@ -9,6 +9,10 @@
 @import url('../components/ui/Sidebar.css');
 @import url('../components/ui/SectionTitle.css');
 @import url('../components/ui/Hero.css');
+@import url('../components/ui/Services.css');
+@import url('../components/ui/Planes.css');
+@import url('../components/ui/Backgrounds.css');
+@import url('../components/ui/Footer.css');
 
 /* Base Styles */
 body {
