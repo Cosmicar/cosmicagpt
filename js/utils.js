@@ -46,6 +46,27 @@ export function daysRemaining(value, days) {
   return days - Math.floor((Date.now() - date.getTime()) / 86400000);
 }
 
+export function isTodayLocal(value) {
+  const date = toDate(value);
+  if (!date) return false;
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
+
+export function isCurrentMonthLocal(value) {
+  const date = toDate(value);
+  if (!date) return false;
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth()
+  );
+}
+
 export function onlyDigits(value) {
   return String(value ?? "").replace(/[^0-9]/g, "");
 }

@@ -43,6 +43,8 @@ import {
   formatDate,
   formatDateTime,
   formatMoney,
+  isTodayLocal,
+  isCurrentMonthLocal,
   onlyDigits,
   showAlertError
 } from "./utils.js";
@@ -1579,8 +1581,7 @@ async function cargar(filtro = "", options = {}) {
   cont.innerHTML = "<div class='empty-state'>Cargando...</div>";
 
   try {
-    const hoy = new Date().toISOString().split("T")[0];
-    const mesActual = new Date().toISOString().slice(0, 7);
+
     const estadoFiltro = $("filtroEstado")?.value || "";
     const tipoFiltro = $("filtroTipo")?.value || "";
     const ordenFiltro = $("filtroOrden")?.value || "recientes";
@@ -1609,9 +1610,12 @@ async function cargar(filtro = "", options = {}) {
     let clientesWarning = "";
 
     if (cargarTodos) {
-      trabajos = await listTrabajos(state.session?.profile);
+      const pTrabajos = listTrabajos(state.session?.profile);
+      const pClientes = listClientesMap();
+      
+      trabajos = await pTrabajos;
       try {
-        clientes = await listClientesMap();
+        clientes = await pClientes;
       } catch (error) {
         clientesWarning = error?.code || error?.message || "No se pudo leer clientes";
         console.warn("No se pudo cargar clientes:", error);
@@ -1680,7 +1684,7 @@ async function cargar(filtro = "", options = {}) {
       const isActivo = [WORK_STATUS.ingresado, WORK_STATUS.enReparacion, WORK_STATUS.listo].includes(trabajo.estado);
       if (isActivo) activosCount++;
       if (trabajo.estado === WORK_STATUS.listo) listosCount++;
-      if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado && trabajo.fechaEntregado.startsWith(hoy)) {
+      if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado && isTodayLocal(trabajo.fechaEntregado)) {
         entregadosHoyCount++;
       }
       if (dias >= 7 && trabajo.estado !== WORK_STATUS.entregado && trabajo.estado !== WORK_STATUS.reingresada) {
@@ -1690,8 +1694,8 @@ async function cargar(filtro = "", options = {}) {
       if (trabajo.estado === WORK_STATUS.entregado && trabajo.fechaEntregado) {
         // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
         const contrib = calcularContribContable(trabajo, state.session?.profile);
-        if (String(trabajo.fechaEntregado).startsWith(hoy)) totalDia += contrib;
-        if (String(trabajo.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
+        if (isTodayLocal(trabajo.fechaEntregado)) totalDia += contrib;
+        if (isCurrentMonthLocal(trabajo.fechaEntregado)) totalMes += contrib;
       }
 
       if (estadoFiltro && trabajo.estado !== estadoFiltro) return;
@@ -1729,29 +1733,32 @@ async function cargar(filtro = "", options = {}) {
       return;
     }
 
-    cont.innerHTML = "";
-    if (clientesWarning) {
-      const warning = document.createElement("div");
-      warning.style.background = "rgba(255,170,0,.1)";
-      warning.style.border = "1px solid rgba(255,170,0,.3)";
-      warning.style.color = "var(--warning)";
-      warning.style.borderRadius = "8px";
-      warning.style.padding = "10px 14px";
-      warning.style.marginBottom = "16px";
-      warning.style.fontSize = "13px";
-      warning.textContent = `⚠️ Trabajos cargados, pero no se pudieron leer datos de clientes (${clientesWarning}).`;
-      cont.appendChild(warning);
-    }
-    resultados.forEach(({ trabajo, cliente }) => cont.appendChild(renderTrabajoCard(trabajo, cliente)));
-
-    if (resultados.length === 1) {
-      const card = cont.querySelector(".card-trabajo");
-      if (card) {
-        card.style.border = "2px solid var(--accent)";
-        card.style.boxShadow = "0 0 20px rgba(0,255,204,.15)";
-        card.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Diferir el renderizado pesado para permitir que el navegador pinte los contadores inmediatamente
+    setTimeout(() => {
+      cont.innerHTML = "";
+      if (clientesWarning) {
+        const warning = document.createElement("div");
+        warning.style.background = "rgba(255,170,0,.1)";
+        warning.style.border = "1px solid rgba(255,170,0,.3)";
+        warning.style.color = "var(--warning)";
+        warning.style.borderRadius = "8px";
+        warning.style.padding = "10px 14px";
+        warning.style.marginBottom = "16px";
+        warning.style.fontSize = "13px";
+        warning.textContent = `⚠️ Trabajos cargados, pero no se pudieron leer datos de clientes (${clientesWarning}).`;
+        cont.appendChild(warning);
       }
-    }
+      resultados.forEach(({ trabajo, cliente }) => cont.appendChild(renderTrabajoCard(trabajo, cliente)));
+
+      if (resultados.length === 1) {
+        const card = cont.querySelector(".card-trabajo");
+        if (card) {
+          card.style.border = "2px solid var(--accent)";
+          card.style.boxShadow = "0 0 20px rgba(0,255,204,.15)";
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    }, 0);
   } catch (error) {
     console.error(error);
     const detalle = error?.code || error?.message || "Error desconocido";
