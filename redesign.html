@@ -159,6 +159,111 @@
     </div>
   </section>
 
+  <!-- Testimonials Section -->
+  <section id="testimonios" class="testimonials-section">
+    <div class="badge badge-cyan">Clientes Satisfechos</div>
+    <h2 class="section-title">Lo que dicen en Google</h2>
+    <p class="section-subtitle">Nuestros clientes reales nos recomiendan.</p>
+    
+    <div class="testimonials-grid">
+      <!-- Testimonial 1 -->
+      <div class="card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background: #4285F4;">M</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">Martín Domínguez</div>
+            <div class="testimonial-date">Hace 2 semanas</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Excelente servicio. Tenía la computadora súper lenta y me la dejaron volando en menos de una hora sin que tenga que salir de casa. Súper recomendables."</p>
+      </div>
+      
+      <!-- Testimonial 2 -->
+      <div class="card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background: #0F9D58;">S</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">I. Millaleu</div>
+            <div class="testimonial-date">Hace 1 mes</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Excelente servicio. Muy buena atención. Súper claros para explicar y tuvieron una paciencia de oro."</p>
+      </div>
+      
+      <!-- Testimonial 3 -->
+      <div class="card testimonial-card">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar" style="background: #F4B400;">D</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">Diego R.</div>
+            <div class="testimonial-date">Hace 3 semanas</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Muy profesionales y rápidos. Contraté el plan Oro y mi máquina quedó como recién comprada. Además te instalan un bloqueador de publicidades que es un viaje de ida."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="faq-section">
+    <div class="badge badge-cyan">Dudas Frecuentes</div>
+    <h2 class="section-title">Preguntas Frecuentes</h2>
+    <p class="section-subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC.</p>
+    
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question">¿Cómo funciona el soporte remoto?</button>
+        <div class="faq-answer">Usamos software oficial que nos permite ver tu pantalla solo mientras vos lo autorices. Vas a estar viendo cómo movemos el mouse y solucionamos todo. Podés cortar la conexión en cualquier momento con un solo clic.</div>
+      </div>
+      
+      <div class="faq-item">
+        <button class="faq-question">¿Cuánto tarda el servicio?</button>
+        <div class="faq-answer">La mayoría de los problemas de lentitud y virus se resuelven en menos de 1 hora mediante nuestra asistencia remota.</div>
+      </div>
+      
+      <div class="faq-item">
+        <button class="faq-question">¿Atienden toda Argentina?</button>
+        <div class="faq-answer">Sí, brindamos soporte técnico remoto en todo el país, desde Jujuy hasta Tierra del Fuego.</div>
+      </div>
+      
+      <div class="faq-item">
+        <button class="faq-question">¿Qué programas instalan?</button>
+        <div class="faq-answer">Instalamos y activamos Windows, paquete Office, programas de diseño y herramientas específicas listas para usar, además de bloqueadores de publicidad.</div>
+      </div>
+      
+      <div class="faq-item">
+        <button class="faq-question">¿Cómo se realiza el pago?</button>
+        <div class="faq-answer">Aceptamos Transferencia Bancaria, MercadoPago, Ualá y tarjetas de crédito/débito. El pago se realiza de forma segura una vez elegido el plan.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contacto" class="contact-section">
+    <div class="badge badge-orange">Contacto</div>
+    <h2 class="section-title">¿Listo para Volar?</h2>
+    <p class="section-subtitle">Escribinos ahora y un técnico se conectará en minutos.</p>
+    
+    <form class="contact-form">
+      <div class="form-field">
+        <input type="text" id="name" placeholder=" " required>
+        <label for="name">Nombre</label>
+      </div>
+      <div class="form-field">
+        <input type="email" id="email" placeholder=" " required>
+        <label for="email">Email</label>
+      </div>
+      <div class="form-field">
+        <textarea id="message" rows="4" placeholder=" " required></textarea>
+        <label for="message">Mensaje</label>
+      </div>
+      <button type="submit" class="btn btn-primary">🚀 Enviar Mensaje</button>
+    </form>
+  </section>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-content">
@@ -187,6 +292,23 @@
       <div>Hecho con 💜 en Argentina</div>
     </div>
   </footer>
+
+  <script>
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        item.classList.toggle('active');
+        
+        // Close other items
+        document.querySelectorAll('.faq-item').forEach(otherItem => {
+          if (otherItem !== item) {
+            otherItem.classList.remove('active');
+          }
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>

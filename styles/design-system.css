@@ -13,6 +13,9 @@
 @import url('../components/ui/Planes.css');
 @import url('../components/ui/Backgrounds.css');
 @import url('../components/ui/Footer.css');
+@import url('../components/ui/Testimonials.css');
+@import url('../components/ui/FAQ.css');
+@import url('../components/ui/ContactForm.css');
 
 /* Base Styles */
 body {
