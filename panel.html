@@ -388,6 +388,36 @@
       .modal-form-grid { grid-template-columns: 1fr; }
       .modal-box { padding: 20px 16px; }
     }
+    /* Modo Compacto para Remoto */
+    .seccion-avanzada {
+      max-height: 2000px; /* Un valor alto pero seguro */
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-bottom 0.3s ease-out;
+      opacity: 1;
+    }
+    .seccion-avanzada.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-bottom: 0 !important;
+      padding-bottom: 0 !important;
+      pointer-events: none;
+    }
+    .btn-toggle-avanzado {
+      background: none;
+      border: none;
+      color: var(--accent2);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .btn-toggle-avanzado:hover {
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -598,20 +628,28 @@
             <label>Problema <span class="req">*</span></label>
             <textarea id="problema" placeholder="Describí el problema del equipo…"></textarea>
           </div>
-          <div class="form-group full">
-            <label>Diagnóstico Técnico</label>
-            <textarea id="diagnostico" placeholder="Detalle del diagnóstico..."></textarea>
+          <!-- Botón Toggle para Opciones Avanzadas -->
+          <div class="form-group full" style="margin-bottom: 0;">
+            <button type="button" id="btnToggleAvanzado" class="btn-toggle-avanzado" onclick="toggleSeccionAvanzada()">▸ Opciones avanzadas</button>
           </div>
-          <div class="form-group full">
-            <label>Servicio Realizado</label>
-            <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
+
+          <div id="seccionAvanzadaTexto" class="seccion-avanzada full">
+            <div class="form-group full">
+              <label>Diagnóstico Técnico</label>
+              <textarea id="diagnostico" placeholder="Detalle del diagnóstico..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label>Servicio Realizado</label>
+              <textarea id="servicioRealizado" placeholder="Detalle de la reparación..."></textarea>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- SECCIÓN 4: REPUESTOS UTILIZADOS -->
-      <div class="form-section">
-        <div class="form-section-title">🧩 Repuestos utilizados</div>
+      <div id="seccionAvanzadaRepuestos" class="seccion-avanzada">
+        <div class="form-section">
+          <div class="form-section-title">🧩 Repuestos utilizados</div>
         <div class="form-grid" style="margin-bottom: 15px;">
           <div class="form-group full" style="position: relative;">
             <label>Buscar Repuesto</label>
@@ -638,6 +676,7 @@
           </table>
         </div>
       </div>
+    </div> <!-- Cierre de seccionAvanzadaRepuestos -->
 
         <div id="adminCorrectionContainer" style="display:none; align-items: center; gap: 8px; margin-bottom: 15px; background: rgba(245,158,11,0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--warning);">
           <input type="checkbox" id="chkModoCorreccion" style="width: auto; cursor: pointer;">

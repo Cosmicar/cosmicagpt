@@ -451,7 +451,42 @@ function bindGlobalActions() {
         document.getElementById("planServicio").value = "";
       }
     }
+    
+    // MODO COMPACTO para Remoto
+    const seccionTexto = document.getElementById("seccionAvanzadaTexto");
+    const seccionRepuestos = document.getElementById("seccionAvanzadaRepuestos");
+    const btn = document.getElementById("btnToggleAvanzado");
+    
+    if (e.target.value === "remoto") {
+      if (seccionTexto) seccionTexto.classList.add("collapsed");
+      if (seccionRepuestos) seccionRepuestos.classList.add("collapsed");
+      if (btn) btn.innerHTML = "▸ Opciones avanzadas";
+    } else {
+      if (seccionTexto) seccionTexto.classList.remove("collapsed");
+      if (seccionRepuestos) seccionRepuestos.classList.remove("collapsed");
+      if (btn) btn.innerHTML = "▾ Menos opciones";
+    }
   });
+
+  // Función global para toggle
+  window.toggleSeccionAvanzada = function() {
+    const seccionTexto = document.getElementById("seccionAvanzadaTexto");
+    const seccionRepuestos = document.getElementById("seccionAvanzadaRepuestos");
+    const btn = document.getElementById("btnToggleAvanzado");
+    
+    if (seccionTexto) {
+      const isCollapsed = seccionTexto.classList.contains("collapsed");
+      if (isCollapsed) {
+        seccionTexto.classList.remove("collapsed");
+        if (seccionRepuestos) seccionRepuestos.classList.remove("collapsed");
+        if (btn) btn.innerHTML = "▾ Menos opciones";
+      } else {
+        seccionTexto.classList.add("collapsed");
+        if (seccionRepuestos) seccionRepuestos.classList.add("collapsed");
+        if (btn) btn.innerHTML = "▸ Opciones avanzadas";
+      }
+    }
+  };
 
   // ── Plan de servicio: autocompletar precio ──────────────────────
   // Cargamos los precios al iniciar para tenerlos en memoria
