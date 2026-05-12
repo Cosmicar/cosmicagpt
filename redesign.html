@@ -73,7 +73,7 @@
   </section>
 
   <!-- Services Section -->
-  <section id="servicios" class="services-section">
+  <section id="servicios" class="services-section fade">
     <div class="badge badge-cyan">Soluciones Rápidas</div>
     <h2 class="section-title">Nuestros Servicios</h2>
     <p class="section-subtitle">Soporte técnico premium para que tu equipo vuelva a volar.</p>
@@ -110,7 +110,7 @@
   </section>
 
   <!-- Planes Section -->
-  <section id="planes" class="planes-section">
+  <section id="planes" class="planes-section fade">
     <div class="badge badge-orange">Precios Transparentes</div>
     <h2 class="section-title">Planes a tu Medida</h2>
     <p class="section-subtitle">De lenta y llena de errores… a rápida y limpia en una sola sesión.</p>
@@ -160,7 +160,7 @@
   </section>
 
   <!-- Testimonials Section -->
-  <section id="testimonios" class="testimonials-section">
+  <section id="testimonios" class="testimonials-section fade">
     <div class="badge badge-cyan">Clientes Satisfechos</div>
     <h2 class="section-title">Lo que dicen en Google</h2>
     <p class="section-subtitle">Nuestros clientes reales nos recomiendan.</p>
@@ -208,7 +208,7 @@
   </section>
 
   <!-- FAQ Section -->
-  <section id="faq" class="faq-section">
+  <section id="faq" class="faq-section fade">
     <div class="badge badge-cyan">Dudas Frecuentes</div>
     <h2 class="section-title">Preguntas Frecuentes</h2>
     <p class="section-subtitle">Resolvemos tus dudas antes de que pierdas más tiempo con tu PC.</p>
@@ -242,7 +242,7 @@
   </section>
 
   <!-- Contact Section -->
-  <section id="contacto" class="contact-section">
+  <section id="contacto" class="contact-section fade">
     <div class="badge badge-orange">Contacto</div>
     <h2 class="section-title">¿Listo para Volar?</h2>
     <p class="section-subtitle">Escribinos ahora y un técnico se conectará en minutos.</p>
@@ -293,22 +293,7 @@
     </div>
   </footer>
 
-  <script>
-    // FAQ Accordion
-    document.querySelectorAll('.faq-question').forEach(button => {
-      button.addEventListener('click', () => {
-        const item = button.parentElement;
-        item.classList.toggle('active');
-        
-        // Close other items
-        document.querySelectorAll('.faq-item').forEach(otherItem => {
-          if (otherItem !== item) {
-            otherItem.classList.remove('active');
-          }
-        });
-      });
-    });
-  </script>
+  <script type="module" src="js/main.js"></script>
 
 </body>
 </html>

@@ -47,3 +47,9 @@
   gap: var(--space-md);
   align-items: center;
 }
+
+.navbar.scrolled {
+  background: rgba(5, 11, 20, 0.8);
+  border-bottom-color: rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+}
