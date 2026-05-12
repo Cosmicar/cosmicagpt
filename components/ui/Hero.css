@@ -1,9 +1,9 @@
 .hero {
-  padding: 150px var(--space-xl) 100px;
+  padding: 180px var(--space-xl) 120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 80vh;
+  min-height: 90vh;
   gap: var(--space-3xl);
   max-width: 1200px;
   margin: 0 auto;
@@ -11,7 +11,7 @@
 }
 
 .hero-content {
-  flex: 1;
+  flex: 1.2;
   min-width: 300px;
   display: flex;
   flex-direction: column;
@@ -19,13 +19,14 @@
 }
 
 .hero-title {
-  font-size: var(--font-5xl);
+  font-size: 4.5rem;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.05;
   margin: 0;
   background: linear-gradient(to right, #fff, #8A99AD);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .hero-title span {
@@ -39,6 +40,7 @@
   color: var(--text-muted);
   margin: 0;
   max-width: 500px;
+  line-height: 1.6;
 }
 
 .hero-actions {
@@ -63,10 +65,11 @@
   font-size: var(--font-xs);
   color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .hero-image-container {
-  flex: 1;
+  flex: 0.8;
   min-width: 300px;
   display: flex;
   justify-content: center;
@@ -75,22 +78,58 @@
 
 .hero-glow {
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 400px;
   background: var(--accent-cyan-glow);
-  filter: blur(80px);
+  filter: blur(100px);
   border-radius: 50%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1;
+  opacity: 0.6;
 }
 
 .hero-image {
-  max-width: 100%;
+  max-width: 450px;
+  width: 100%;
   height: auto;
   position: relative;
   z-index: 2;
   border-radius: var(--radius-xl);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  transition: var(--transition-normal);
+}
+
+.hero-image:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 30px 60px rgba(0, 229, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 120px var(--space-xl) 60px;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+  }
+  
+  .hero-content {
+    align-items: center;
+  }
+  
+  .hero-description {
+    max-width: 100%;
+  }
+  
+  .hero-actions {
+    justify-content: center;
+  }
+  
+  .hero-stats {
+    justify-content: center;
+  }
 }

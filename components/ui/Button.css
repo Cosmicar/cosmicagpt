@@ -2,14 +2,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: var(--radius-full);
   font-weight: 600;
   font-size: var(--font-sm);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid transparent;
   gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-primary {
@@ -18,19 +24,20 @@
 }
 
 .btn-primary:hover {
-  box-shadow: 0 0 15px var(--accent-cyan-glow);
-  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), 0 5px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .btn-orange {
@@ -39,6 +46,6 @@
 }
 
 .btn-orange:hover {
-  box-shadow: 0 0 15px var(--accent-orange-glow);
-  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(255, 107, 0, 0.4), 0 5px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
