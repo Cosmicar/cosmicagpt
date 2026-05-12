@@ -1122,8 +1122,6 @@ async function actualizarTotalesDashboard() {
     const trabajos = await listTrabajos(state.session?.profile);
     
     // 2. Cálculos matemáticos puros (sin inyectar listas visuales)
-    const hoy = new Date().toISOString().split("T")[0];
-    const mesActual = new Date().toISOString().slice(0, 7);
     let totalDia = 0;
     let totalMes = 0;
 
@@ -1131,8 +1129,8 @@ async function actualizarTotalesDashboard() {
       if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
         // Regla contable: taller solo suma si está liquidado (20%), remoto suma 100%
         const contrib = calcularContribContable(t, state.session?.profile);
-        if (String(t.fechaEntregado).startsWith(hoy)) totalDia += contrib;
-        if (String(t.fechaEntregado).startsWith(mesActual)) totalMes += contrib;
+        if (isTodayLocal(t.fechaEntregado)) totalDia += contrib;
+        if (isCurrentMonthLocal(t.fechaEntregado)) totalMes += contrib;
       }
     });
 
