@@ -254,6 +254,32 @@ function bindGlobalActions() {
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
 
+  window.toggleModoMantenimiento = function(checked) {
+    const contenedor = document.getElementById("contenedorHerramientasMantenimiento");
+    if (contenedor) {
+      contenedor.style.display = checked ? "block" : "none";
+    }
+  };
+
+  window.desacoplarClienteManual = async function() {
+    const orden = prompt("Ingrese el número de orden a desacoplar:");
+    if (!orden) return;
+    
+    try {
+      const { findTrabajosByNumeroOrden } = await import("./work-repository.js");
+      const snapshot = await findTrabajosByNumeroOrden(orden, state.session?.profile);
+      if (snapshot.empty) {
+        alert("No se encontró ninguna orden con ese número.");
+        return;
+      }
+      const doc = snapshot.docs[0];
+      confirmarDesacople(doc.id, orden);
+    } catch (error) {
+      console.error("Error al buscar orden:", error);
+      alert("Hubo un error al buscar la orden.");
+    }
+  };
+
   window.ejecutarMigracionClienteCodigo = async function() {
     const { migrarClienteCodigoFaltantes } = await import("./work-repository.js");
     const count = await migrarClienteCodigoFaltantes(state.session?.profile);
@@ -1886,7 +1912,6 @@ function renderTrabajoCard(t, c = {}) {
         <div class="btn-group">
           <div class="btn-group-title">Acciones</div>
           ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
-          ${admin ? `<button class="btn btn-sm btn-warning" style="background:rgba(255,170,0,0.1);color:var(--warning);" onclick="confirmarDesacople('${t.id}','${t.numeroOrden}')">🔓 Desacoplar</button>` : ""}
           ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar"}</button>` : ""}
           <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
           ${btnWa}
@@ -1904,7 +1929,6 @@ function renderTrabajoCard(t, c = {}) {
           
           ${admin ? `
             <button class="btn btn-sm btn-edit btn-admin" onclick="editarTrabajo('${t.id}','${t.clienteId}', true)">Editar (Admin)</button>
-            <button class="btn btn-sm btn-warning btn-admin" style="background:rgba(255,170,0,0.1);color:var(--warning);" onclick="confirmarDesacople('${t.id}','${t.numeroOrden}')">🔓 Desacoplar Cliente</button>
             <button class="btn btn-sm btn-danger btn-admin" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar (Admin)"}</button>
           ` : ""}
           

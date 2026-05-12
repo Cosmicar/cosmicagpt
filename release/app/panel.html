@@ -388,6 +388,50 @@
       .modal-form-grid { grid-template-columns: 1fr; }
       .modal-box { padding: 20px 16px; }
     }
+    /* Switch Toggle */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255,255,255,0.1);
+      transition: .4s;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--muted);
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: rgba(0, 229, 255, 0.2);
+      border-color: var(--accent2);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: var(--accent2);
+    }
+
     /* Modo Compacto para Remoto */
     .seccion-avanzada {
       max-height: 2000px; /* Un valor alto pero seguro */
@@ -897,14 +941,55 @@
       </div>
     </div>
 
-    <!-- ZONA PELIGROSA -->
-    <div class="section" style="border-color: var(--danger); background: rgba(255, 0, 127, 0.05);">
-      <div class="section-title" style="color: var(--danger);">⚠️ Zona Peligrosa</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">
-        Las acciones en esta sección son irreversibles.
-      </p>
-      <button class="btn btn-danger" onclick="resetearContabilidad()">⚠️ Resetear Contabilidad (Borrar pruebas)</button>
-      <button class="btn btn-danger" onclick="borrarTodasLasOrdenes()" style="margin-top: 10px;">⚠️ Borrar TODAS las órdenes (Empezar de 0)</button>
+    <!-- HERRAMIENTAS ADMINISTRATIVAS -->
+    <div class="form-section admin-section" style="border-color: var(--warning); background: rgba(245,158,11,0.02);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="form-section-title" style="color:var(--warning); margin-bottom:0;">🛠️ Herramientas Administrativas</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; color:var(--muted);">Modo Mantenimiento</span>
+          <label class="switch">
+            <input type="checkbox" id="chkModoMantenimiento" onchange="toggleModoMantenimiento(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div id="contenedorHerramientasMantenimiento" style="display:none;">
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+          Atención: Estas herramientas son avanzadas and pueden modificar datos masivamente. Úselas con precaución.
+        </p>
+        <!-- Subgrupos -->
+        <div class="form-grid">
+          <!-- Recuperación -->
+          <div class="form-group">
+            <label style="color:var(--danger); font-weight:bold; margin-bottom:10px; display:block;">🩹 Recuperación</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-danger btn-sm" style="background:rgba(255,0,127,0.1); color:var(--danger); border-color:rgba(255,0,127,0.3);" onclick="desacoplarClienteManual()">🔓 Desacoplar Cliente</button>
+              <button class="btn btn-danger btn-sm" style="background:rgba(255,0,127,0.1); color:var(--danger); border-color:rgba(255,0,127,0.3);" onclick="abrirModalMergeClientes()">🔗 Unir Clientes</button>
+              <button class="btn btn-danger btn-sm" style="background:rgba(255,0,127,0.1); color:var(--danger); border-color:rgba(255,0,127,0.3);" onclick="alert('Recovery BD (Simulación)')">Recovery BD</button>
+            </div>
+          </div>
+          
+          <!-- Auditoría -->
+          <div class="form-group">
+            <label style="color:var(--purple); font-weight:bold; margin-bottom:10px; display:block;">🛡️ Auditoría</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-primary btn-sm" style="background:var(--purple); border-color:var(--purple);" onclick="ejecutarAuditoriaYReparacion()">🛡️ Ejecutar Auditoría</button>
+              <button class="btn btn-secondary btn-sm" onclick="alert('Ver Logs (Simulación)')">Ver Logs / Inconsistencias</button>
+            </div>
+          </div>
+          
+          <!-- Mantenimiento -->
+          <div class="form-group">
+            <label style="color:var(--accent2); font-weight:bold; margin-bottom:10px; display:block;">⚙️ Mantenimiento</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="ejecutarMigracionClienteCodigo()">Migraciones</button>
+              <button class="btn btn-danger btn-sm" style="background:rgba(255,0,127,0.1); color:var(--danger); border-color:rgba(255,0,127,0.3);" onclick="resetearContabilidad()">⚠️ Resetear Contabilidad</button>
+              <button class="btn btn-danger btn-sm" style="background:rgba(255,0,127,0.1); color:var(--danger); border-color:rgba(255,0,127,0.3);" onclick="borrarTodasLasOrdenes()">⚠️ Borrar TODAS las órdenes</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

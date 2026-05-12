@@ -244,6 +244,32 @@ function bindGlobalActions() {
   window.crearUsuario = crearUsuario;
   window.resetearContabilidad = resetearContabilidad;
   window.borrarTodasLasOrdenes = borrarTodasLasOrdenes;
+
+  window.toggleModoMantenimiento = function(checked) {
+    const contenedor = document.getElementById("contenedorHerramientasMantenimiento");
+    if (contenedor) {
+      contenedor.style.display = checked ? "block" : "none";
+    }
+  };
+
+  window.desacoplarClienteManual = async function() {
+    const orden = prompt("Ingrese el número de orden a desacoplar:");
+    if (!orden) return;
+    
+    try {
+      const { findTrabajosByNumeroOrden } = await import("./work-repository.js");
+      const snapshot = await findTrabajosByNumeroOrden(orden, state.session?.profile);
+      if (snapshot.empty) {
+        alert("No se encontró ninguna orden con ese número.");
+        return;
+      }
+      const doc = snapshot.docs[0];
+      confirmarDesacople(doc.id, orden);
+    } catch (error) {
+      console.error("Error al buscar orden:", error);
+      alert("Hubo un error al buscar la orden.");
+    }
+  };
   
   // ── Notificaciones FCM (Campanita) ──────────────────────────────────────────────
   // togglePushNotifications ya está definida como window.* arriba
