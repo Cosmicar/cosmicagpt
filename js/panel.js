@@ -520,12 +520,8 @@ async function loadInitialWorkList() {
     return;
   }
 
-  // No cargar nada inicialmente, esperar a búsqueda o filtro
-  $("listaTrabajos").innerHTML = `
-    <div class="empty-state">
-      🔍 Buscá un cliente o aplicá un filtro para ver los resultados.
-    </div>
-  `;
+  // Cargar contadores pero no el listado para no saturar
+  await cargar("", { cargarTodos: true, soloContadores: true });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1727,6 +1723,15 @@ async function cargar(filtro = "", options = {}) {
     if ($("countListos")) $("countListos").innerText = listosCount;
     if ($("countEntregadosHoy")) $("countEntregadosHoy").innerText = entregadosHoyCount;
     if ($("countAbandonados")) $("countAbandonados").innerText = abandonadosCount;
+
+    if (options.soloContadores) {
+      cont.innerHTML = `
+        <div class="empty-state">
+          🔍 Buscá un cliente o aplicá un filtro para ver los resultados.
+        </div>
+      `;
+      return;
+    }
 
     if (!resultados.length) {
       cont.innerHTML = "<div class='empty-state'>No se encontraron resultados</div>";
