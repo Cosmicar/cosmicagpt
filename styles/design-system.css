@@ -1,0 +1,44 @@
+@import url('./variables.css');
+@import url('./animations.css');
+@import url('../components/ui/Button.css');
+@import url('../components/ui/Card.css');
+@import url('../components/ui/Input.css');
+@import url('../components/ui/Modal.css');
+@import url('../components/ui/Badge.css');
+@import url('../components/ui/Navbar.css');
+@import url('../components/ui/Sidebar.css');
+@import url('../components/ui/SectionTitle.css');
+@import url('../components/ui/Hero.css');
+
+/* Base Styles */
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: var(--transition-normal);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px var(--accent-cyan-glow);
+}

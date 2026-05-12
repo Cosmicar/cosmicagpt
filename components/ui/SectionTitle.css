@@ -1,0 +1,25 @@
+.section-title {
+  font-size: var(--font-3xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 5px var(--accent-cyan-glow);
+}
+
+.section-subtitle {
+  font-size: var(--font-md);
+  color: var(--text-muted);
+  margin-bottom: var(--space-xl);
+}
