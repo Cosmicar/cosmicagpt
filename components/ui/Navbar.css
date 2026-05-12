@@ -53,3 +53,45 @@
   border-bottom-color: rgba(0, 229, 255, 0.2);
   box-shadow: 0 0 10px var(--accent-cyan-glow);
 }
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: var(--font-xl);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .navbar-actions {
+    display: none;
+  }
+
+  .navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(5, 11, 20, 0.95);
+    backdrop-filter: blur(10px);
+    flex-direction: column;
+    padding: var(--space-md) var(--space-xl);
+    border-bottom: 1px solid var(--border);
+    gap: var(--space-md);
+    z-index: 99;
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+}

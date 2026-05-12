@@ -21,11 +21,14 @@
     <div class="navbar-logo">
       <span>🚀</span> Cósmica
     </div>
-    <ul class="navbar-links">
+    <button class="menu-toggle" aria-label="Abrir menú">☰</button>
+    <ul class="navbar-links" id="menu">
       <li><a href="#" class="navbar-link active">Inicio</a></li>
-      <li><a href="#" class="navbar-link">Servicios</a></li>
-      <li><a href="#" class="navbar-link">Planes</a></li>
-      <li><a href="#" class="navbar-link">Contacto</a></li>
+      <li><a href="#servicios" class="navbar-link">Servicios</a></li>
+      <li><a href="#planes" class="navbar-link">Planes</a></li>
+      <li><a href="#contacto" class="navbar-link">Contacto</a></li>
+      <li class="mobile-only" style="display: none;"><button class="btn btn-secondary" style="width: 100%;">Iniciar Sesión</button></li>
+      <li class="mobile-only" style="display: none;"><button class="btn btn-primary" style="width: 100%;">Empezar</button></li>
     </ul>
     <div class="navbar-actions">
       <button class="btn btn-secondary">Iniciar Sesión</button>
