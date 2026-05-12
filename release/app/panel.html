@@ -442,36 +442,36 @@
       <!-- Fila 1: Input + Búsqueda -->
       <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
         <input id="busquedaDni" placeholder="DNI, Nº de orden, Nombre o Apellido..."
-          style="flex: 1; min-width: 200px;"
+          style="flex: 1; min-width: 200px; background: #0f172a; color: #fff; border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 6px; padding: 8px 12px;"
           onkeydown="if(event.key==='Enter') buscar()">
         <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
       </div>
 
       <!-- Fila 2: Filtros dropdown -->
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;">
-        <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px;">
-          <option value="">Todos los estados</option>
-          <option value="Ingresado">Ingresado</option>
-          <option value="En reparación">En reparación</option>
-          <option value="Listo">Listo</option>
-          <option value="Entregado">Entregado</option>
-          <option value="Reingresada">Reingresada</option>
+        <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px; background: #0f172a; color: #fff; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 6px 10px;">
+          <option value="" style="background: #0f172a;">Todos los estados</option>
+          <option value="Ingresado" style="background: #0f172a;">Ingresado</option>
+          <option value="En reparación" style="background: #0f172a;">En reparación</option>
+          <option value="Listo" style="background: #0f172a;">Listo</option>
+          <option value="Entregado" style="background: #0f172a;">Entregado</option>
+          <option value="Reingresada" style="background: #0f172a;">Reingresada</option>
         </select>
-        <select id="filtroOrden" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px;">
-          <option value="recientes">Más recientes</option>
-          <option value="antiguos">Más antiguos</option>
+        <select id="filtroOrden" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px; background: #0f172a; color: #fff; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 6px 10px;">
+          <option value="recientes" style="background: #0f172a;">Más recientes</option>
+          <option value="antiguos" style="background: #0f172a;">Más antiguos</option>
         </select>
-        <select id="filtroTipo" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 130px;">
-          <option value="">Todos los tipos</option>
-          <option value="taller">Taller</option>
-          <option value="remoto">Remoto</option>
-          <option value="mixto">Mixto</option>
+        <select id="filtroTipo" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 130px; background: #0f172a; color: #fff; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 6px 10px;">
+          <option value="" style="background: #0f172a;">Todos los tipos</option>
+          <option value="taller" style="background: #0f172a;">Taller</option>
+          <option value="remoto" style="background: #0f172a;">Remoto</option>
+          <option value="mixto" style="background: #0f172a;">Mixto</option>
         </select>
-        <select id="filtroSinMovimiento" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 150px;">
-          <option value="">Sin filtro demora</option>
-          <option value="3">+3 días sin movimiento</option>
-          <option value="7">+7 días sin movimiento</option>
-          <option value="15">+15 días sin movimiento</option>
+        <select id="filtroSinMovimiento" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 150px; background: #0f172a; color: #fff; border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 6px 10px;">
+          <option value="" style="background: #0f172a;">Sin filtro demora</option>
+          <option value="3" style="background: #0f172a;">+3 días sin movimiento</option>
+          <option value="7" style="background: #0f172a;">+7 días sin movimiento</option>
+          <option value="15" style="background: #0f172a;">+15 días sin movimiento</option>
         </select>
       </div>
 

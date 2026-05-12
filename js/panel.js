@@ -518,8 +518,12 @@ async function loadInitialWorkList() {
     return;
   }
 
-  // Auto-cargar todos si hay filtros persistidos o por defecto
-  await cargar("", { cargarTodos: true });
+  // No cargar nada inicialmente, esperar a búsqueda o filtro
+  $("listaTrabajos").innerHTML = `
+    <div class="empty-state">
+      🔍 Buscá un cliente o aplicá un filtro para ver los resultados.
+    </div>
+  `;
 }
 
 // ══════════════════════════════════════════════════════════════
