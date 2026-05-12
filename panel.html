@@ -437,10 +437,20 @@
     <div class="section">
       <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
         <span>🔍 Buscar trabajos</span>
-        <span id="indicadorRefresh" style="font-size: 11px; color: var(--muted); font-weight: normal;">Sincronizado</span>
+        <span id="indicadorRefresh" style="font-size: 11px; color: var(--muted); font-weight: normal; font-style: italic;">Sincronizado</span>
       </div>
-      <div class="search-bar">
-        <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
+
+      <!-- Fila 1: Input + Búsqueda -->
+      <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+        <input id="busquedaDni" placeholder="DNI, Nº de orden, Nombre o Apellido..."
+          style="flex: 1; min-width: 200px;"
+          onkeydown="if(event.key==='Enter') buscar()">
+        <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
+      </div>
+
+      <!-- Fila 2: Filtros dropdown -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;">
+        <select id="filtroEstado" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px;">
           <option value="">Todos los estados</option>
           <option value="Ingresado">Ingresado</option>
           <option value="En reparación">En reparación</option>
@@ -448,57 +458,43 @@
           <option value="Entregado">Entregado</option>
           <option value="Reingresada">Reingresada</option>
         </select>
-        <select id="filtroTipo" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none;">
+        <select id="filtroOrden" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="flex: 1; min-width: 130px;">
+          <option value="recientes">Más recientes</option>
+          <option value="antiguos">Más antiguos</option>
+        </select>
+        <select id="filtroTipo" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 130px;">
           <option value="">Todos los tipos</option>
           <option value="taller">Taller</option>
           <option value="remoto">Remoto</option>
           <option value="mixto">Mixto</option>
         </select>
-        <select id="filtroOrden" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
-          <option value="recientes">Más recientes</option>
-          <option value="antiguos">Más antiguos</option>
-        </select>
-        <select id="filtroSinMovimiento" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none;">
+        <select id="filtroSinMovimiento" class="filtro-admin" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })" style="display:none; flex: 1; min-width: 150px;">
           <option value="">Sin filtro demora</option>
           <option value="3">+3 días sin movimiento</option>
           <option value="7">+7 días sin movimiento</option>
           <option value="15">+15 días sin movimiento</option>
         </select>
-        <input id="busquedaDni" placeholder="DNI, Nº de orden, Nombre o Apellido..."
-          onkeydown="if(event.key==='Enter') buscar()">
-        <button class="btn btn-sm btn-secondary" onclick="buscar()">Buscar</button>
-        <button class="btn btn-sm btn-edit" onclick="limpiarBusqueda()">Ver todos</button>
       </div>
-      
-      <!-- Operative Counters (Feature 4) -->
-      <div class="operative-counters" style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px; flex-wrap: wrap; font-size: 13px;">
-        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
-          Activos: <span id="countActivos" style="color: var(--accent2); font-weight: 700;">0</span>
+
+      <!-- Fila 3: Filtros rápidos + Contadores en línea -->
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <label style="display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; white-space: nowrap;">
+            <input type="checkbox" id="chkSoloActivos" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
+            Solo activos
+          </label>
+          <button class="btn btn-sm" onclick="aplicarFiltroRapido('abandonados')" style="background: rgba(255,0,127,0.1); color: var(--danger); border: 1px solid rgba(255,0,127,0.3);">⚠ Abandonados</button>
+          <button class="btn btn-sm" onclick="aplicarFiltroRapido('listos')" style="background: rgba(0,255,170,0.08); color: var(--success); border: 1px solid rgba(0,255,170,0.25);">📦 Listos</button>
         </div>
-        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
-          Listos: <span id="countListos" style="color: var(--success); font-weight: 700;">0</span>
-        </div>
-        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
-          Entregados hoy: <span id="countEntregadosHoy" style="color: var(--purple); font-weight: 700;">0</span>
-        </div>
-        <div class="counter-card" style="background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px;">
-          Abandonados: <span id="countAbandonados" style="color: var(--danger); font-weight: 700;">0</span>
+        <!-- Contadores inline -->
+        <div style="display: flex; gap: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap;">
+          <span>Activos: <b id="countActivos" style="color: var(--accent2);">—</b></span>
+          <span>Listos: <b id="countListos" style="color: var(--success);">—</b></span>
+          <span>Entregados hoy: <b id="countEntregadosHoy" style="color: var(--purple);">—</b></span>
+          <span>Abandonados: <b id="countAbandonados" style="color: var(--danger);">—</b></span>
         </div>
       </div>
 
-      <!-- Quick Filters (Feature 1, 5, 6) -->
-      <div class="quick-filters" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;">
-        <label style="display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer;">
-          <input type="checkbox" id="chkSoloActivos" onchange="cargar(document.getElementById('busquedaDni').value.trim(), { fromFilter: true })">
-          Solo activos
-        </label>
-        <button class="btn btn-sm" onclick="aplicarFiltroRapido('abandonados')" style="background: rgba(255,0,127,0.1); color: var(--danger); border: 1px solid rgba(255,0,127,0.3);">⚠️ Abandonados</button>
-        <button class="btn btn-sm btn-listo" onclick="aplicarFiltroRapido('listos')">📦 Listos</button>
-      </div>
-
-      <div style="font-size: 12px; color: var(--muted); margin-top: 8px; font-style: italic;">
-        Recuerde, usted esta aqui para siempre
-      </div>
       <div id="listaTrabajos" class="empty-state">
         🔍 Buscá un cliente o presioná "Ver todos"
       </div>

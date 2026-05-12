@@ -324,6 +324,10 @@ function bindGlobalActions() {
   window.eliminarCliente        = eliminarCliente;
   window.nuevoTrabajoDesdeCliente = nuevoTrabajoDesdeCliente;
   window.facturarDesdeCliente     = facturarDesdeCliente;
+  // Exponer getter para que el onclick en HTML acceda a la variable del módulo
+  Object.defineProperty(window, '_crmClienteActualId', {
+    get: () => _crmClienteActualId
+  });
 
 
 
@@ -514,11 +518,8 @@ async function loadInitialWorkList() {
     return;
   }
 
-  $("listaTrabajos").innerHTML = `
-    <div class="empty-state">
-      🔍 Buscá un DNI, número de orden o presioná "Ver todos".
-    </div>
-  `;
+  // Auto-cargar todos si hay filtros persistidos o por defecto
+  await cargar("", { cargarTodos: true });
 }
 
 // ══════════════════════════════════════════════════════════════
