@@ -48,7 +48,7 @@
     <div class="navbar-logo">
       <span>🚀</span> Cósmica SaaS
     </div>
-    <button class="menu-toggle" aria-label="Abrir menú" onclick="toggleSidebar()">☰</button>
+    <button class="menu-toggle" aria-label="Abrir menú">☰</button>
     <div class="navbar-actions">
       <button class="btn btn-secondary">Notificaciones</button>
       <button class="btn btn-primary">Perfil</button>
@@ -58,19 +58,19 @@
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-nav">
-      <a href="#" class="sidebar-link active">
+      <a href="#dashboard" class="sidebar-link active">
         <i>📊</i> Dashboard
       </a>
-      <a href="#" class="sidebar-link">
+      <a href="#tickets" class="sidebar-link">
         <i>🛠️</i> Trabajos
       </a>
-      <a href="#" class="sidebar-link">
+      <a href="#inventario" class="sidebar-link">
         <i>📦</i> Inventario
       </a>
-      <a href="#" class="sidebar-link">
+      <a href="#clientes" class="sidebar-link">
         <i>👥</i> Clientes
       </a>
-      <a href="#" class="sidebar-link">
+      <a href="#configuracion" class="sidebar-link">
         <i>⚙️</i> Configuración
       </a>
     </div>
@@ -101,12 +101,6 @@
     </div>
   </main>
 
-  <script type="module" src="../../js/main.js"></script>
-  <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('active');
-    }
-  </script>
+  <script type="module" src="./core/app.js"></script>
 </body>
 </html>
