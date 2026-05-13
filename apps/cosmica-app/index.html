@@ -32,6 +32,42 @@
         padding-top: 80px;
       }
     }
+
+    /* Shell oculto hasta confirmar sesión */
+    .sidebar { display: none; }
+    .navbar-actions { display: none; }
+    .main-content { margin-left: 0; }
+
+    /* Shell visible cuando sesión confirmada */
+    body.session-ready .sidebar { display: block; }
+    body.session-ready .navbar-actions { display: flex; gap: var(--space-sm); align-items: center; }
+    body.session-ready .main-content { margin-left: 250px; }
+    @media (max-width: 768px) {
+      body.session-ready .main-content { margin-left: 0; }
+      body.session-ready .sidebar { display: block; transform: translateX(-100%); }
+      body.session-ready .sidebar.active { transform: translateX(0); }
+    }
+
+    /* Dropdown perfil */
+    .perfil-dropdown {
+      position: absolute;
+      top: 60px;
+      right: var(--space-lg);
+      background: rgba(5, 11, 20, 0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      min-width: 200px;
+      z-index: 200;
+      display: none;
+    }
+    .perfil-dropdown.open { display: block; }
+    .perfil-email {
+      font-size: var(--font-sm);
+      color: var(--text-muted);
+      margin-bottom: var(--space-md);
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -50,10 +86,16 @@
     </div>
     <button class="menu-toggle" aria-label="Abrir menú">☰</button>
     <div class="navbar-actions">
-      <button class="btn btn-secondary">Notificaciones</button>
-      <button class="btn btn-primary">Perfil</button>
+      <span id="userEmail" style="font-size: var(--font-sm); color: var(--text-muted);"></span>
+      <button class="btn btn-primary" id="btnPerfil">Perfil</button>
     </div>
   </nav>
+
+  <!-- Dropdown perfil -->
+  <div class="perfil-dropdown" id="perfilDropdown">
+    <div class="perfil-email" id="perfilEmail"></div>
+    <button class="btn btn-secondary" id="btnLogout" style="width:100%;">Cerrar sesión</button>
+  </div>
 
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">

@@ -1,4 +1,4 @@
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { auth } from "../../../js/firebase.js";
 import { getUserProfile } from "../services/auth.js";
 
@@ -50,4 +50,14 @@ export function getCurrentSession() {
  */
 export function clearSession() {
   currentSession = { user: null, profile: null };
+}
+
+/**
+ * Cierra la sesión de Firebase y limpia el estado en memoria.
+ * Recarga la página para volver al flujo de login.
+ */
+export async function logout() {
+  await signOut(auth);
+  clearSession();
+  window.location.reload();
 }

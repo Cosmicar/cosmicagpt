@@ -4,6 +4,7 @@ import { TicketsView } from '../views/tickets.js';
 import { ClienteFormView } from '../views/cliente-form.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
+import { getCurrentSession } from './session.js';
 
 /**
  * Router minimalista para el sistema SaaS Cosmica
@@ -37,6 +38,8 @@ export class Router {
   }
   
   handleRoute() {
+    if (!getCurrentSession().user) return;
+
     const hash = window.location.hash.slice(1) || 'dashboard';
     const ViewClass = this.routes[hash];
     
