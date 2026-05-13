@@ -8,6 +8,14 @@ import { renderEmptyState } from '../components/app-state.js';
  */
 export class Router {
   constructor() {
+    this.routeTitles = {
+      'dashboard': 'Dashboard | Cosmica SaaS',
+      'clientes': 'Clientes | Cosmica SaaS',
+      'tickets': 'Trabajos | Cosmica SaaS',
+      'inventario': 'Inventario | Cosmica SaaS',
+      'configuracion': 'Configuración | Cosmica SaaS'
+    };
+
     this.routes = {
       'dashboard': () => this.loadRoute(renderDashboard(), 'dashboard'),
       'clientes': () => this.loadRoute(renderClientes(), 'clientes'),
@@ -37,15 +45,24 @@ export class Router {
     const mainContent = document.querySelector('.main-content');
     if (mainContent) {
       mainContent.innerHTML = htmlContent;
+      // Scroll al inicio al cambiar de ruta
+      window.scrollTo(0, 0);
     }
     this.updateActiveLink(routeName);
+    this.updateDocumentTitle(routeName);
+  }
+
+  updateDocumentTitle(route) {
+    const title = this.routeTitles[route] || 'Cosmica SaaS';
+    document.title = title;
   }
   
   updateActiveLink(route) {
     document.querySelectorAll('.sidebar-link').forEach(link => {
       link.classList.remove('active');
       const href = link.getAttribute('href');
-      if (href === `#${route}` || (route === 'dashboard' && href === '#')) {
+      // Soporte para múltiples formas de referenciar la misma ruta
+      if (href === `#${route}` || (route === 'dashboard' && (href === '#' || href === '#dashboard'))) {
         link.classList.add('active');
       }
     });

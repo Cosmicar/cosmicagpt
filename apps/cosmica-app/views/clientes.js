@@ -2,6 +2,7 @@ import { getClientes } from '../services/clientes.js';
 import { renderLoadingState, renderErrorState, renderEmptyState } from '../components/app-state.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderClientCard } from '../components/client-card.js';
+import { renderBreadcrumb } from '../components/breadcrumb.js';
 
 /**
  * Vista de Clientes
@@ -28,7 +29,12 @@ async function loadClientesData() {
       return;
     }
     
-    let html = renderSectionHeader('Clientes', 'Listado de clientes registrados en el sistema Cosmica.', '👥 Módulo');
+    let html = renderBreadcrumb([
+      { label: 'Administración', href: '#dashboard', icon: '📁' },
+      { label: 'Clientes', href: '#clientes', icon: '👥' }
+    ]);
+    
+    html += renderSectionHeader('Clientes', 'Listado de clientes registrados en el sistema Cosmica.', '👥 Módulo');
     
     html += `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">

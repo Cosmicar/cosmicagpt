@@ -2,6 +2,7 @@ import { getTickets } from '../services/tickets.js';
 import { renderLoadingState, renderErrorState, renderEmptyState } from '../components/app-state.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
+import { renderBreadcrumb } from '../components/breadcrumb.js';
 
 /**
  * Vista de Tickets / Trabajos
@@ -28,7 +29,12 @@ async function loadTicketsData() {
       return;
     }
     
-    let html = renderSectionHeader('Tickets / Trabajos', 'Listado de órdenes de servicio en el sistema.', '🛠️ Módulo');
+    let html = renderBreadcrumb([
+      { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
+      { label: 'Trabajos', href: '#tickets', icon: '🛠️' }
+    ]);
+    
+    html += renderSectionHeader('Tickets / Trabajos', 'Listado de órdenes de servicio en el sistema.', '🛠️ Módulo');
     
     html += `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
