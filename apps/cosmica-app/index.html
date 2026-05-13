@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmica App - SaaS</title>
+  <link rel="stylesheet" href="../../styles/design-system.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Ajustes de Layout para el SaaS */
+    .sidebar {
+      top: 65px; /* Ajuste para no solapar con la navbar */
+      height: calc(100vh - 65px);
+      background: rgba(5, 11, 20, 0.8); /* Un poco más oscuro para el panel */
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: var(--space-xl);
+      padding-top: 90px; /* Espacio para la navbar fija */
+      min-height: 100vh;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Space Background -->
+  <div class="space-bg">
+    <div class="glow-point glow-point-1"></div>
+    <div class="glow-point glow-point-2"></div>
+    <div class="glow-point glow-point-3"></div>
+  </div>
+
+  <!-- Topbar (Navbar) -->
+  <nav class="navbar">
+    <div class="navbar-logo">
+      <span>🚀</span> Cósmica SaaS
+    </div>
+    <button class="menu-toggle" aria-label="Abrir menú" onclick="toggleSidebar()">☰</button>
+    <div class="navbar-actions">
+      <button class="btn btn-secondary">Notificaciones</button>
+      <button class="btn btn-primary">Perfil</button>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-nav">
+      <a href="#" class="sidebar-link active">
+        <i>📊</i> Dashboard
+      </a>
+      <a href="#" class="sidebar-link">
+        <i>🛠️</i> Trabajos
+      </a>
+      <a href="#" class="sidebar-link">
+        <i>📦</i> Inventario
+      </a>
+      <a href="#" class="sidebar-link">
+        <i>👥</i> Clientes
+      </a>
+      <a href="#" class="sidebar-link">
+        <i>⚙️</i> Configuración
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="card glass-card">
+      <div class="badge badge-cyan">Nueva Plataforma</div>
+      <h2 class="card-title" style="margin-top: var(--space-md);">Bienvenido a Cosmica App</h2>
+      <p class="card-content" style="color: var(--text-muted); margin-top: var(--space-sm);">
+        Este es el entorno inicial para el nuevo sistema SaaS. La estructura de carpetas ha sido creada y el sistema está listo para la migración modular.
+      </p>
+      <div style="margin-top: var(--space-lg);">
+        <button class="btn btn-primary">Comenzar Migración</button>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+      <div class="card glass-card">
+        <h3 class="card-title" style="font-size: var(--font-md);">Estructura Creada</h3>
+        <p class="card-content" style="font-size: var(--font-sm); color: var(--text-muted);">Se crearon las carpetas core, modules, components, layouts, services, assets, styles y views.</p>
+      </div>
+      <div class="card glass-card">
+        <h3 class="card-title" style="font-size: var(--font-md);">Estilos Heredados</h3>
+        <p class="card-content" style="font-size: var(--font-sm); color: var(--text-muted);">Se utilizan los estilos de design-system.css y componentes UI existentes.</p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>
