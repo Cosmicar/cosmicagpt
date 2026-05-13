@@ -1,24 +1,48 @@
+import { getTickets } from '../services/tickets.js';
+import { renderLoadingState, renderErrorState, renderEmptyState } from '../components/app-state.js';
+import { render as renderSectionHeader } from '../components/section-header.js';
+import { render as renderTicketCard } from '../components/ticket-card.js';
+
 /**
  * Vista de Tickets / Trabajos
  */
 export function render() {
+  setTimeout(() => loadTicketsData(), 0);
+  
   return `
-    <div class="card glass-card">
-      <div class="badge badge-cyan">🛠️ Módulo</div>
-      <h2 class="card-title" style="margin-top: var(--space-md);">Tickets / Trabajos</h2>
-      <p class="card-content" style="color: var(--text-muted); margin-top: var(--space-sm);">
-        Gestión de órdenes de servicio y soporte. Aquí verás los estados de las reparaciones.
-      </p>
-      <div style="margin-top: var(--space-lg);">
-        <button class="btn btn-primary">Nuevo Ticket</button>
-      </div>
-    </div>
-    
-    <div class="card glass-card" style="margin-top: var(--space-xl);">
-      <h3 class="card-title" style="font-size: var(--font-md);">Tickets Recientes</h3>
-      <p style="color: var(--text-muted); font-size: var(--font-sm); margin-top: var(--space-sm);">
-        [Aquí se renderizará el listado de tickets en el futuro]
-      </p>
+    <div id="tickets-container">
+      ${renderLoadingState()}
     </div>
   `;
+}
+
+async function loadTicketsData() {
+  const container = document.getElementById('tickets-container');
+  if (!container) return;
+  
+  try {
+    const tickets = await getTickets();
+    
+    if (tickets.length === 0) {
+      container.innerHTML = renderEmptyState('No hay tickets o órdenes de trabajo registradas.');
+      return;
+    }
+    
+    let html = renderSectionHeader('Tickets / Trabajos', 'Listado de órdenes de servicio en el sistema.', '🛠️ Módulo');
+    
+    html += `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+    `;
+    
+    tickets.forEach(ticket => {
+      html += renderTicketCard(ticket);
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    
+  } catch (error) {
+    console.error("Error al cargar datos de tickets en la vista:", error);
+    container.innerHTML = renderErrorState('No se pudo cargar el listado de tickets. Verifica tu conexión.');
+  }
 }
