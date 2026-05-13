@@ -1,6 +1,7 @@
 import { render as renderDashboard } from '../views/dashboard.js';
 import { render as renderClientes } from '../views/clientes.js';
 import { render as renderTickets } from '../views/tickets.js';
+import { renderEmptyState } from '../components/app-state.js';
 
 /**
  * Router minimalista para el sistema SaaS Cosmica
@@ -10,7 +11,9 @@ export class Router {
     this.routes = {
       'dashboard': () => this.loadRoute(renderDashboard(), 'dashboard'),
       'clientes': () => this.loadRoute(renderClientes(), 'clientes'),
-      'tickets': () => this.loadRoute(renderTickets(), 'tickets')
+      'tickets': () => this.loadRoute(renderTickets(), 'tickets'),
+      'inventario': () => this.loadRoute(renderEmptyState('El módulo de inventario aún no está implementado.'), 'inventario'),
+      'configuracion': () => this.loadRoute(renderEmptyState('El módulo de configuración aún no está implementado.'), 'configuracion')
     };
     
     // Escuchar cambios de ruta

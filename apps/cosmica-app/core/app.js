@@ -1,16 +1,35 @@
 import { Router } from './router.js';
+import { initializeSession } from './session.js';
+import { renderLoadingState, renderErrorState } from '../components/app-state.js';
 
 /**
  * Inicialización de la aplicación SaaS Cosmica
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('Cosmica SaaS App Iniciada');
   
-  // 1. Inicializar Router (Navegación)
-  const router = new Router();
+  const mainContent = document.querySelector('.main-content');
   
-  // 2. Inicializar Layout Base y Sidebar
-  initSidebarMobile();
+  // 1. Mostrar Loading inicial
+  if (mainContent) {
+    mainContent.innerHTML = renderLoadingState();
+  }
+  
+  try {
+    // 2. Inicializar Sesión (Verifica Firebase Auth)
+    await initializeSession();
+    
+    // 3. Inicializar Router (Navegación)
+    const router = new Router();
+    
+    // 4. Inicializar Layout Base y Sidebar
+    initSidebarMobile();
+  } catch (error) {
+    console.error('Fallo en el bootstrap de la aplicación:', error);
+    if (mainContent) {
+      mainContent.innerHTML = renderErrorState('No se pudo conectar con los servicios de autenticación. Intenta recargar la página.');
+    }
+  }
 });
 
 /**
