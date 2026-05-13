@@ -1,12 +1,16 @@
+import { render as renderDashboard } from '../views/dashboard.js';
+import { render as renderClientes } from '../views/clientes.js';
+import { render as renderTickets } from '../views/tickets.js';
+
 /**
  * Router minimalista para el sistema SaaS Cosmica
  */
 export class Router {
   constructor() {
     this.routes = {
-      'dashboard': () => this.loadDashboard(),
-      'clientes': () => this.loadClientes(),
-      'tickets': () => this.loadTickets()
+      'dashboard': () => this.loadRoute(renderDashboard(), 'dashboard'),
+      'clientes': () => this.loadRoute(renderClientes(), 'clientes'),
+      'tickets': () => this.loadRoute(renderTickets(), 'tickets')
     };
     
     // Escuchar cambios de ruta
@@ -22,41 +26,16 @@ export class Router {
       route();
     } else {
       console.warn(`Ruta no encontrada: ${hash}`);
-      this.loadDashboard(); // Fallback
+      this.routes['dashboard'](); // Fallback
     }
   }
   
-  loadDashboard() {
-    this.updateContentView('Dashboard', 'Vista del panel principal del SaaS.', '📊');
-    this.updateActiveLink('dashboard');
-  }
-  
-  loadClientes() {
-    this.updateContentView('Clientes', 'Gestión y listado de clientes.', '👥');
-    this.updateActiveLink('clientes');
-  }
-  
-  loadTickets() {
-    this.updateContentView('Tickets / Trabajos', 'Gestión de órdenes de servicio y soporte.', '🛠️');
-    this.updateActiveLink('tickets');
-  }
-  
-  updateContentView(title, description, icon) {
+  loadRoute(htmlContent, routeName) {
     const mainContent = document.querySelector('.main-content');
     if (mainContent) {
-      mainContent.innerHTML = `
-        <div class="card glass-card">
-          <div class="badge badge-cyan">${icon} Módulo</div>
-          <h2 class="card-title" style="margin-top: var(--space-md);">${title}</h2>
-          <p class="card-content" style="color: var(--text-muted); margin-top: var(--space-sm);">
-            ${description}
-          </p>
-          <div style="margin-top: var(--space-lg);">
-            <button class="btn btn-primary">Acción de ${title}</button>
-          </div>
-        </div>
-      `;
+      mainContent.innerHTML = htmlContent;
     }
+    this.updateActiveLink(routeName);
   }
   
   updateActiveLink(route) {
