@@ -1,14 +1,16 @@
-import { render as renderDashboard } from '../views/dashboard.js';
-import { render as renderClientes } from '../views/clientes.js';
-import { render as renderTickets } from '../views/tickets.js';
-import { render as renderClienteForm } from '../views/cliente-form.js';
+import { DashboardView } from '../views/dashboard.js';
+import { ClientesView } from '../views/clientes.js';
+import { TicketsView } from '../views/tickets.js';
+import { ClienteFormView } from '../views/cliente-form.js';
 import { renderEmptyState } from '../components/app-state.js';
+import { BaseView } from './base-view.js';
 
 /**
  * Router minimalista para el sistema SaaS Cosmica
  */
 export class Router {
   constructor() {
+    this.currentView = null;
     this.routeTitles = {
       'dashboard': 'Dashboard | Cosmica SaaS',
       'clientes': 'Clientes | Cosmica SaaS',
@@ -18,13 +20,15 @@ export class Router {
       'configuracion': 'Configuración | Cosmica SaaS'
     };
 
+    // Mapeo de rutas a Clases de Vista
     this.routes = {
-      'dashboard': () => this.loadRoute(renderDashboard(), 'dashboard'),
-      'clientes': () => this.loadRoute(renderClientes(), 'clientes'),
-      'tickets': () => this.loadRoute(renderTickets(), 'tickets'),
-      'cliente-nuevo': () => this.loadRoute(renderClienteForm(), 'cliente-nuevo'),
-      'inventario': () => this.loadRoute(renderEmptyState('El módulo de inventario aún no está implementado.'), 'inventario'),
-      'configuracion': () => this.loadRoute(renderEmptyState('El módulo de configuración aún no está implementado.'), 'configuracion')
+      'dashboard': DashboardView,
+      'clientes': ClientesView,
+      'tickets': TicketsView,
+      'cliente-nuevo': ClienteFormView,
+      // Fallback para módulos no implementados (pueden ser funciones que retornen HTML o clases simples)
+      'inventario': class extends BaseView { render() { return renderEmptyState('El módulo de inventario aún no está implementado.'); } },
+      'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
     };
     
     // Escuchar cambios de ruta
@@ -34,23 +38,38 @@ export class Router {
   
   handleRoute() {
     const hash = window.location.hash.slice(1) || 'dashboard';
-    const route = this.routes[hash];
+    const ViewClass = this.routes[hash];
     
-    if (route) {
-      route();
+    if (ViewClass) {
+      this.loadRoute(new ViewClass(), hash);
     } else {
       console.warn(`Ruta no encontrada: ${hash}`);
-      this.routes['dashboard'](); // Fallback
+      this.loadRoute(new DashboardView(), 'dashboard'); // Fallback
     }
   }
   
-  loadRoute(htmlContent, routeName) {
+  loadRoute(viewInstance, routeName) {
+    // 1. Ejecutar destroy en la vista anterior si existe
+    if (this.currentView && typeof this.currentView.destroy === 'function') {
+      this.currentView.destroy();
+    }
+
+    this.currentView = viewInstance;
+
     const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-      mainContent.innerHTML = htmlContent;
+    if (mainContent && viewInstance) {
+      // 2. Renderizar HTML
+      mainContent.innerHTML = viewInstance.render();
+      
+      // 3. Ejecutar lifecycle afterRender (Bindeo de eventos)
+      if (typeof viewInstance.afterRender === 'function') {
+        viewInstance.afterRender();
+      }
+
       // Scroll al inicio al cambiar de ruta
       window.scrollTo(0, 0);
     }
+
     this.updateActiveLink(routeName);
     this.updateDocumentTitle(routeName);
   }
