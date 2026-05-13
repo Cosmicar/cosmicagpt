@@ -3,6 +3,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { createCliente } from '../services/clientes.js';
+import { showToast } from '../components/toast.js';
 
 /**
  * Vista de Formulario de Cliente (Persistencia Real)
@@ -119,10 +120,14 @@ function initFormHandlers() {
     const result = await createCliente(data);
 
     if (result.success) {
+      showToast('Cliente registrado con éxito', 'success');
       form.reset();
-      // Pequeño retraso para que el usuario vea el éxito (opcional, aquí redirigimos directo)
-      window.location.hash = '#clientes';
+      // Pequeño retraso para que el usuario vea el éxito antes de redirigir
+      setTimeout(() => {
+        window.location.hash = '#clientes';
+      }, 1000);
     } else {
+      showToast(result.error || 'Error al registrar cliente', 'error');
       showError(result.error);
       toggleFormLoading(false);
     }
