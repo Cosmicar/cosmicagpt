@@ -1,3 +1,5 @@
+# Proyecto experimental congelado
+
 # Cosmo CM - Bot Social Inteligente
 
 Cosmo CM es un sistema automatizado para la generación y publicación de contenido en Facebook e Instagram, diseñado para correr de forma económica y autónoma.
