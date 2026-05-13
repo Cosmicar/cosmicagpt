@@ -37,6 +37,14 @@ async function loadClientesData() {
     html += renderSectionHeader('Clientes', 'Listado de clientes registrados en el sistema Cosmica.', '👥 Módulo');
     
     html += `
+      <div style="margin-top: var(--space-lg); display: flex; justify-content: flex-end;">
+        <a href="#cliente-nuevo" class="btn btn-primary">
+          <i>➕</i> Nuevo Cliente
+        </a>
+      </div>
+    `;
+    
+    html += `
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
     `;
     
