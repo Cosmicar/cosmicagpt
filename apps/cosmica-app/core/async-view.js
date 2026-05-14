@@ -69,6 +69,7 @@ export class AsyncView extends BaseView {
   }
 
   renderLoading() {
+    // Por defecto usa el genérico, pero las subclases pueden sobreescribir para usar skeletons específicos
     return renderLoadingState();
   }
 

@@ -3,7 +3,7 @@ import { getClientes } from '../services/clientes.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderClientCard } from '../components/client-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
-import { renderEmptyState } from '../components/app-state.js';
+import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -18,6 +18,20 @@ export class ClientesView extends AsyncView {
   async loadData() {
     this.allClientes = await getClientes();
     return this.allClientes;
+  }
+
+  /**
+   * Override para usar skeletons de cards
+   */
+  renderLoading() {
+    return `
+      <div style="margin-top: var(--space-xl);">
+        <div class="skeleton" style="width: 200px; height: 32px; margin-bottom: var(--space-lg);"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg);">
+          ${renderCardSkeletonList(6)}
+        </div>
+      </div>
+    `;
   }
 
   renderContent(clientes) {

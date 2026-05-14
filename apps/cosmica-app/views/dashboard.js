@@ -4,6 +4,8 @@ import { render as renderTicketCard } from '../components/ticket-card.js';
 import { render as renderClientCard } from '../components/client-card.js';
 import { canAccess } from '../core/session.js';
 
+import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
+
 /**
  * Vista de Dashboard Operacional
  * Delegación de lógica a dashboard service.
@@ -19,6 +21,39 @@ export class DashboardView extends AsyncView {
    */
   async loadData() {
     return await getDashboardData();
+  }
+
+  /**
+   * Override para usar skeletons específicos del dashboard
+   */
+  renderLoading() {
+    return `
+      <div class="dashboard-grid" style="display: flex; flex-direction: column; gap: var(--space-xl);">
+        <!-- Header Skeleton -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <div class="skeleton" style="width: 80px; height: 16px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 200px; height: 32px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 300px; height: 14px;"></div>
+          </div>
+        </div>
+        
+        <!-- KPIs Skeletons -->
+        ${renderKPISkeletons()}
+
+        <!-- Lists Skeletons -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
+          <section>
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: var(--space-lg);"></div>
+            ${renderCardSkeletonList(2)}
+          </section>
+          <section>
+            <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: var(--space-lg);"></div>
+            ${renderCardSkeletonList(2)}
+          </section>
+        </div>
+      </div>
+    `;
   }
 
   /**

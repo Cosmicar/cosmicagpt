@@ -3,48 +3,128 @@
  */
 
 /**
- * Renderiza un estado de carga
+ * Renderiza un estado de carga genérico con skeleton
  * @returns {string} HTML
  */
 export function renderLoadingState() {
   return `
-    <div class="card glass-card" style="text-align: center; padding: var(--space-xl);">
-      <div class="badge badge-cyan">Cargando</div>
-      <h2 class="card-title" style="margin-top: var(--space-md);">Cargando aplicación...</h2>
-      <p style="color: var(--text-muted); margin-top: var(--space-sm);">Por favor espera mientras verificamos tus credenciales.</p>
+    <div class="card glass-card" style="padding: var(--space-xl);">
+      <div class="skeleton" style="width: 80px; height: 20px; border-radius: 12px; margin-bottom: var(--space-md);"></div>
+      <div class="skeleton" style="width: 60%; height: 28px; margin-bottom: var(--space-sm);"></div>
+      <div class="skeleton" style="width: 100%; height: 16px; margin-bottom: var(--space-xs);"></div>
+      <div class="skeleton" style="width: 90%; height: 16px;"></div>
     </div>
   `;
 }
 
 /**
- * Renderiza un estado de error
- * @param {string} message 
+ * Renderiza skeletons para una lista de cards (Tickets o Clientes)
+ * @param {number} count 
  * @returns {string} HTML
  */
-export function renderErrorState(message) {
+export function renderCardSkeletonList(count = 3) {
+  let skeletons = '';
+  for (let i = 0; i < count; i++) {
+    skeletons += `
+      <div class="card glass-card" style="margin-bottom: var(--space-md);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
+          <div style="flex: 1;">
+            <div class="skeleton" style="width: 50%; height: 20px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 30%; height: 12px;"></div>
+          </div>
+          <div class="skeleton" style="width: 70px; height: 22px; border-radius: 12px;"></div>
+        </div>
+        <div class="skeleton" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="width: 80%; height: 14px; margin-bottom: var(--space-md);"></div>
+        <div style="display: flex; gap: 8px;">
+          <div class="skeleton" style="flex: 1; height: 32px; border-radius: var(--radius-sm);"></div>
+          <div class="skeleton" style="width: 40px; height: 32px; border-radius: var(--radius-sm);"></div>
+        </div>
+      </div>
+    `;
+  }
+  return skeletons;
+}
+
+/**
+ * Renderiza skeletons para los KPIs del Dashboard
+ * @returns {string} HTML
+ */
+export function renderKPISkeletons() {
   return `
-    <div class="card glass-card" style="text-align: center; padding: var(--space-xl); border-color: var(--accent-orange);">
-      <div class="badge badge-orange">Error</div>
-      <h2 class="card-title" style="margin-top: var(--space-md);">Algo salió mal</h2>
-      <p style="color: var(--text-muted); margin-top: var(--space-sm);">${message}</p>
-      <div style="margin-top: var(--space-lg);">
-        <button class="btn btn-primary" onclick="window.location.reload()">Reintentar</button>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+      ${Array(4).fill(`
+        <div class="card glass-card" style="height: 120px; display: flex; flex-direction: column; justify-content: center; gap: 12px; border-left: 4px solid rgba(255,255,255,0.05);">
+          <div style="display: flex; justify-content: space-between;">
+            <div class="skeleton" style="width: 60px; height: 10px;"></div>
+            <div class="skeleton" style="width: 20px; height: 20px; border-radius: 50%;"></div>
+          </div>
+          <div class="skeleton" style="width: 40px; height: 36px;"></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/**
+ * Renderiza skeleton para formularios
+ * @returns {string} HTML
+ */
+export function renderFormSkeleton() {
+  return `
+    <div class="card glass-card" style="padding: var(--space-xl);">
+      <div class="skeleton" style="width: 150px; height: 24px; margin-bottom: var(--space-xl);"></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+        ${Array(4).fill(`
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="skeleton" style="width: 40%; height: 12px;"></div>
+            <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md);">
+        <div class="skeleton" style="width: 120px; height: 40px; border-radius: 8px;"></div>
+        <div class="skeleton" style="width: 100px; height: 40px; border-radius: 8px;"></div>
       </div>
     </div>
   `;
 }
 
 /**
- * Renderiza un estado vacío (no hay datos)
+ * Renderiza un estado de error premium
  * @param {string} message 
  * @returns {string} HTML
  */
-export function renderEmptyState(message) {
+export function renderErrorState(message) {
   return `
-    <div class="card glass-card" style="text-align: center; padding: var(--space-xl);">
-      <div class="badge badge-cyan">Vacío</div>
-      <h2 class="card-title" style="margin-top: var(--space-md);">No hay datos</h2>
-      <p style="color: var(--text-muted); margin-top: var(--space-sm);">${message}</p>
+    <div class="card glass-card" style="text-align: center; padding: var(--space-xl); border: 1px solid rgba(255, 94, 0, 0.2);">
+      <div style="font-size: 48px; margin-bottom: var(--space-md);">📡</div>
+      <div class="badge badge-orange">Error de Conexión</div>
+      <h2 class="card-title" style="margin-top: var(--space-md); font-weight: 700;">Parece que hubo un problema</h2>
+      <p style="color: var(--text-muted); margin-top: var(--space-sm); max-width: 400px; margin-left: auto; margin-right: auto;">
+        ${message || 'No pudimos sincronizar los datos con el servidor en este momento.'}
+      </p>
+      <div style="margin-top: var(--space-lg);">
+        <button class="btn btn-primary" onclick="window.location.reload()">🔄 Reintentar Ahora</button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderiza un estado vacío premium
+ * @param {string} message 
+ * @param {string} icon 
+ * @returns {string} HTML
+ */
+export function renderEmptyState(message = 'No se encontraron registros.', icon = '🔍') {
+  return `
+    <div class="card glass-card" style="text-align: center; padding: var(--space-xl); border: 1px dashed var(--border);">
+      <div style="font-size: 48px; margin-bottom: var(--space-md); opacity: 0.5;">${icon}</div>
+      <h2 class="card-title" style="font-weight: 700; color: var(--text-primary);">Sin resultados</h2>
+      <p style="color: var(--text-muted); margin-top: var(--space-sm); max-width: 300px; margin-left: auto; margin-right: auto;">
+        ${message}
+      </p>
     </div>
   `;
 }

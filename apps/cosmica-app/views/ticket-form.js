@@ -7,6 +7,7 @@ import { getClientes } from '../services/clientes.js';
 import { createTicket, getTicket, updateTicket, updateTicketBudget } from '../services/tickets.js';
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
+import { renderFormSkeleton } from '../components/app-state.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -72,6 +73,18 @@ export class TicketFormView extends AsyncView {
     this.containerId = 'ticket-form-container';
     this.ticketId = this.params?.get('id');
     this.isEdit = !!this.ticketId;
+  }
+
+  /**
+   * Override para usar skeleton de formulario
+   */
+  renderLoading() {
+    return `
+      <div style="margin-top: var(--space-xl);">
+        <div class="skeleton" style="width: 250px; height: 32px; margin-bottom: var(--space-lg);"></div>
+        ${renderFormSkeleton()}
+      </div>
+    `;
   }
 
   async loadData() {
