@@ -23,7 +23,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Sesión confirmada: mostrar shell completo
+    if (!session.profile) {
+      // Usuario autenticado pero sin perfil en Firestore
+      // (documento faltante o error de lectura)
+      if (mainContent) {
+        mainContent.innerHTML = renderErrorState(
+          `Tu cuenta (${session.user.email}) no tiene un perfil configurado en el sistema. Contactá al administrador.`
+        );
+      }
+      return;
+    }
+
+    // Sesión confirmada con perfil válido: mostrar shell completo
     document.body.classList.add('session-ready');
     initPerfilButton(session, mainContent);
     initSidebarMobile();

@@ -24,9 +24,12 @@ export function initializeSession() {
           console.log("session initialized");
           resolve(currentSession);
         } catch (error) {
-          console.error("Error al inicializar sesión:", error);
+          // El perfil de Firestore falló, pero el usuario SÍ está autenticado.
+          // Resolver con profile: null permite que la app cargue en estado degradado
+          // en vez de mostrar la pantalla de error de autenticación.
+          console.error("Error al cargar perfil de usuario:", error);
           currentSession = { user, profile: null };
-          reject(error);
+          resolve(currentSession);
         }
       } else {
         currentSession = { user: null, profile: null };
