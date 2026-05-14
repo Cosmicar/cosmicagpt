@@ -109,7 +109,7 @@ export async function closeCajaSession(sessionId, saldoDeclarado) {
 }
 
 /**
- * Calcula ingresos y egresos de los movimientos de caja vinculados a una sesión.
+ * Calcula ingresos, egresos y breakdown por método de los movimientos de la sesión.
  */
 export async function getSessionTotals(sessionId) {
   try {
@@ -125,11 +125,40 @@ export async function getSessionTotals(sessionId) {
     const egresos = entries
       .filter(e => e.tipo === 'egreso')
       .reduce((s, e) => s + Number(e.monto || 0), 0);
-    return { ingresos, egresos };
+
+    // Breakdown de ingresos por método de pago
+    const byMethod = {};
+    for (const e of entries.filter(e => e.tipo === 'ingreso')) {
+      const m = e.metodoPago || 'efectivo';
+      byMethod[m] = (byMethod[m] || 0) + Number(e.monto || 0);
+    }
+
+    return { ingresos, egresos, byMethod };
   } catch (err) {
     console.error('Error calculando totales de sesión:', err);
-    return { ingresos: 0, egresos: 0 };
+    return { ingresos: 0, egresos: 0, byMethod: {} };
   }
+}
+
+/**
+ * Crea un movimiento de ajuste compensatorio en caja (solo admin override).
+ * Append-only — no modifica el movimiento original.
+ */
+export async function createAdjustmentEntry({ delta, ticketId, descripcion, sessionId }) {
+  if (!delta || delta === 0) return;
+  const session = getCurrentSession();
+  const entry = {
+    tipo:        delta > 0 ? 'ingreso' : 'egreso',
+    descripcion: descripcion || 'Ajuste financiero',
+    monto:       Math.abs(delta),
+    metodoPago:  'ajuste',
+    origen:      'ajuste_admin',
+    ticketId:    ticketId || null,
+    sessionId:   sessionId || null,
+    createdAt:   serverTimestamp(),
+    createdBy:   session?.user?.uid || '',
+  };
+  await addDoc(collection(db, COLLECTIONS.caja), entry);
 }
 
 /**
@@ -175,7 +204,7 @@ export async function registerTicketIngreso(ticket) {
       tipo:        'ingreso',
       descripcion: `Cobro ticket #${ticket.numeroOrden || ticket.id}`,
       monto:       Number(ticket.precio),
-      metodoPago:  'efectivo',
+      metodoPago:  ticket.metodoPago || 'efectivo',
       origen:      'ticket',
       ticketId:    ticket.id,
       numeroOrden: ticket.numeroOrden || '',

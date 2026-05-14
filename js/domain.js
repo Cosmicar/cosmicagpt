@@ -1,5 +1,21 @@
 export const APP_VERSION = "1.0-core-stable";
 
+export const METODO_PAGO = Object.freeze({
+  efectivo:      'efectivo',
+  transferencia: 'transferencia',
+  mercadopago:   'mercadopago',
+  debito:        'debito',
+  credito:       'credito',
+});
+
+export const METODO_PAGO_LABELS = Object.freeze({
+  efectivo:      '💵 Efectivo',
+  transferencia: '🏦 Transferencia',
+  mercadopago:   '📱 Mercado Pago',
+  debito:        '💳 Débito',
+  credito:       '💳 Crédito',
+});
+
 export const COLLECTIONS = Object.freeze({
 
   usuarios: "usuarios",

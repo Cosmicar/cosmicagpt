@@ -5,6 +5,7 @@ import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
 import { createTicket, getTicket, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
+import { getCurrentSession } from '../core/session.js';
 import { getInventario, filterInventario, batchAdjustStock } from '../services/inventario.js';
 import { canAccess } from '../core/session.js';
 import { showToast } from '../components/toast.js';
@@ -171,6 +172,12 @@ export class TicketFormView extends AsyncView {
   }
 
   renderContent({ clientes, ticket }) {
+    const session  = getCurrentSession();
+    const isAdmin  = session?.profile?.rol === 'admin';
+    const isEntregado = ticket?.estado === 'Entregado';
+    // Precio y método de pago bloqueados si entregado y no admin
+    const precioFrozen = isEntregado && !isAdmin;
+
     const clientOptions = clientes
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
       .map(c => ({
@@ -187,6 +194,14 @@ export class TicketFormView extends AsyncView {
       { value: 'estandar', label: 'Estándar' },
       { value: 'oro', label: 'Oro (Prioridad)' },
       { value: 'platinum', label: 'Platinum (Urgente)' }
+    ];
+
+    const metodoPagoOptions = [
+      { value: 'efectivo',      label: '💵 Efectivo'      },
+      { value: 'transferencia', label: '🏦 Transferencia' },
+      { value: 'mercadopago',   label: '📱 Mercado Pago'  },
+      { value: 'debito',        label: '💳 Débito'        },
+      { value: 'credito',       label: '💳 Crédito'       },
     ];
 
     const breadcrumbHtml = renderBreadcrumb([
@@ -220,6 +235,11 @@ export class TicketFormView extends AsyncView {
 
         <div class="card glass-card" style="max-width: 900px;">
           <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
+          ${precioFrozen ? `<div style="margin-bottom:var(--space-md);padding:var(--space-sm) var(--space-md);
+            background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.3);border-radius:var(--radius-sm);
+            font-size:var(--font-xs);color:var(--accent-orange);">
+            🔒 Precio y método de pago congelados — el ticket ya fue entregado. Solo un admin puede modificarlos.
+          </div>` : ''}
           
           <form id="ticket-form" class="stack-lg">
             <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
@@ -267,11 +287,21 @@ export class TicketFormView extends AsyncView {
               })}
 
               ${renderFormField({
-                label: 'Presupuesto Final ($)',
+                label: precioFrozen ? 'Precio Final ($) 🔒' : 'Precio Final ($)',
                 id: 'precio',
                 type: 'number',
                 placeholder: 'Ej: 5000',
-                value: ticket?.precio || ''
+                value: ticket?.precio || '',
+                disabled: precioFrozen,
+              })}
+
+              ${renderFormField({
+                label: precioFrozen ? 'Método de pago 🔒' : 'Método de pago',
+                id: 'metodoPago',
+                type: 'select',
+                options: metodoPagoOptions,
+                value: ticket?.metodoPago || 'efectivo',
+                disabled: precioFrozen,
               })}
 
               ${renderFormField({

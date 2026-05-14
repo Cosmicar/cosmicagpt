@@ -70,6 +70,17 @@ function buildHtml(ticket) {
   const presupuesto = fmtMoney(ticket.presupuesto);
   const precio      = fmtMoney(ticket.precio);
 
+  const METODO_PRINT_LABELS = {
+    efectivo:      'Efectivo',
+    transferencia: 'Transferencia',
+    mercadopago:   'Mercado Pago',
+    debito:        'Débito',
+    credito:       'Crédito',
+  };
+  const metodoPagoLabel = ticket.metodoPago
+    ? (METODO_PRINT_LABELS[ticket.metodoPago] || ticket.metodoPago)
+    : null;
+
   const trackingUrl = buildTrackingUrl(ticket);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(trackingUrl)}`;
 
@@ -78,6 +89,9 @@ function buildHtml(ticket) {
 
   const precioRow = precio ? `
       <div class="op-item"><span class="op-label">Total Final</span><span class="op-value money">${precio}</span></div>` : '';
+
+  const metodoPagoRow = precio && metodoPagoLabel ? `
+      <div class="op-item"><span class="op-label">Método de pago</span><span class="op-value">${esc(metodoPagoLabel)}</span></div>` : '';
 
   const garantia = Number(ticket.garantiaDias) || 90;
 
@@ -391,6 +405,7 @@ function buildHtml(ticket) {
       <div class="op-item"><span class="op-label">Garantía</span><span class="op-value">${garantia} días</span></div>
       ${presupuestoRow}
       ${precioRow}
+      ${metodoPagoRow}
     </div>
   </section>
 
@@ -586,6 +601,7 @@ function buildThermalHtml(ticket) {
     ${rows('Garantía', garantia + ' días')}
     ${presupuesto ? rows('Presupuesto', presupuesto) : ''}
     ${precio ? rows('Total Final', precio) : ''}
+    ${precio && metodoPagoLabel ? rows('Método de pago', metodoPagoLabel) : ''}
   </table>
 
   <hr>

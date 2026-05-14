@@ -15,6 +15,36 @@ import { canAccess } from '../core/session.js';
 const ars = n => '$' + Math.round(Number(n || 0)).toLocaleString('es-AR');
 const pct = n => (Number(n || 0)).toFixed(1) + '%';
 
+// ── Método de pago helpers ────────────────────────────────────────────────────
+
+const METODO_LABELS = {
+  efectivo:      '💵 Efectivo',
+  transferencia: '🏦 Transferencia',
+  mercadopago:   '📱 Mercado Pago',
+  debito:        '💳 Débito',
+  credito:       '💳 Crédito',
+  ajuste:        '⚖️ Ajuste',
+};
+
+const METODO_COLORS = {
+  efectivo:      'var(--accent-green)',
+  transferencia: '#3b82f6',
+  mercadopago:   'var(--accent-cyan)',
+  debito:        '#a855f7',
+  credito:       'var(--accent-orange)',
+  ajuste:        'var(--text-muted)',
+};
+
+function metodoBadge(metodoPago) {
+  const label = METODO_LABELS[metodoPago] || metodoPago || '—';
+  const color = METODO_COLORS[metodoPago] || 'var(--text-muted)';
+  return `<span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.3px;
+    padding:2px 7px;border-radius:10px;white-space:nowrap;
+    background:${color}22;border:1px solid ${color}55;color:${color};">
+    ${label}
+  </span>`;
+}
+
 function fmtTs(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -517,8 +547,6 @@ export class FinanzasView extends AsyncView {
                           border-radius:var(--radius-md);">Sin movimientos en este período.</div>`;
     }
 
-    const metodoLabel = { efectivo: '💵', transferencia: '🏦', tarjeta: '💳' };
-
     return entries.map(e => {
       const isIngreso = e.tipo === 'ingreso';
       const color     = isIngreso ? 'var(--accent-green)' : 'var(--accent-orange)';
@@ -527,7 +555,10 @@ export class FinanzasView extends AsyncView {
       const origenTag = e.origen === 'ticket'
         ? `<span style="font-size:8px;background:rgba(34,211,238,0.15);color:var(--accent-cyan);
                         padding:1px 5px;border-radius:3px;margin-left:4px;white-space:nowrap;">TICKET</span>`
-        : '';
+        : e.origen === 'ajuste_admin'
+          ? `<span style="font-size:8px;background:rgba(249,115,22,0.15);color:var(--accent-orange);
+                          padding:1px 5px;border-radius:3px;margin-left:4px;white-space:nowrap;">AJUSTE</span>`
+          : '';
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;
                     padding:var(--space-sm) 0;border-bottom:1px solid var(--border);gap:8px;">
@@ -538,8 +569,9 @@ export class FinanzasView extends AsyncView {
                           white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 ${e.descripcion}${origenTag}
               </div>
-              <div style="font-size:var(--font-xs);color:var(--text-muted);">
-                ${metodoLabel[e.metodoPago] || '—'} ${e.metodoPago || ''} · ${hora}
+              <div style="display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;">
+                ${metodoBadge(e.metodoPago)}
+                <span style="font-size:var(--font-xs);color:var(--text-muted);">${hora}</span>
               </div>
             </div>
           </div>
@@ -585,21 +617,32 @@ export class FinanzasView extends AsyncView {
   // ── Flujo cierre de caja ───────────────────────────────────────────────────
 
   renderCierreCajaModal(activeSession, sessionTotals) {
-    const { ingresos, egresos } = sessionTotals;
+    const { ingresos, egresos, byMethod = {} } = sessionTotals;
     const saldoSistema = (activeSession.saldoInicial || 0) + ingresos - egresos;
+
+    // Breakdown por método (solo métodos con monto > 0)
+    const methodRows = Object.entries(byMethod)
+      .filter(([, v]) => v > 0)
+      .map(([m, v]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+          <span style="font-size:var(--font-xs);">${metodoBadge(m)}</span>
+          <span style="font-size:var(--font-xs);font-weight:700;color:${METODO_COLORS[m] || 'var(--text-primary)'};">${ars(v)}</span>
+        </div>`).join('');
+
     return `
       <div id="cierre-overlay" style="
         position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;
-        display:flex;align-items:center;justify-content:center;padding:var(--space-md);">
+        display:flex;align-items:center;justify-content:center;padding:var(--space-md);overflow-y:auto;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
-                    padding:var(--space-xl);width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.5);">
+                    padding:var(--space-xl);width:100%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,0.5);
+                    margin:auto;max-height:90vh;overflow-y:auto;">
           <h3 style="margin:0 0 var(--space-md);font-size:var(--font-lg);font-weight:700;">
             🔒 Cierre de caja
           </h3>
 
           <!-- Resumen de la sesión -->
           <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);
-                      border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+                      border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-md);">
             <div style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;
                         margin-bottom:var(--space-sm);">RESUMEN DE SESIÓN</div>
             ${this.renderCierreRow('Saldo inicial',  ars(activeSession.saldoInicial || 0), 'var(--text-primary)')}
@@ -608,6 +651,15 @@ export class FinanzasView extends AsyncView {
             <div style="border-top:1px solid var(--border);margin:var(--space-sm) 0;"></div>
             ${this.renderCierreRow('Saldo esperado', ars(saldoSistema), 'var(--accent-cyan)', true)}
           </div>
+
+          <!-- Breakdown por método de pago -->
+          ${methodRows ? `
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);
+                      border-radius:var(--radius-md);padding:var(--space-md);margin-bottom:var(--space-lg);">
+            <div style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;
+                        margin-bottom:var(--space-sm);">INGRESOS POR MÉTODO</div>
+            ${methodRows}
+          </div>` : ''}
 
           <!-- Monto real contado -->
           <div style="margin-bottom:var(--space-md);">

@@ -17,6 +17,22 @@ const STATUS_OPTIONS = [
   WORK_STATUS.entregado,
 ];
 
+const METODO_LABELS = {
+  efectivo:      '💵 Efectivo',
+  transferencia: '🏦 Transferencia',
+  mercadopago:   '📱 Mercado Pago',
+  debito:        '💳 Débito',
+  credito:       '💳 Crédito',
+};
+
+const METODO_COLORS = {
+  efectivo:      'var(--accent-green)',
+  transferencia: '#3b82f6',
+  mercadopago:   'var(--accent-cyan)',
+  debito:        '#a855f7',
+  credito:       'var(--accent-orange)',
+};
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function badgeClass(estado) {
@@ -157,6 +173,13 @@ function renderBody(ticket) {
         <div class="qv-meta-label">Garantía</div>
         <div class="qv-meta-value">${ticket.garantiaDias ?? 90} días</div>
       </div>
+      ${ticket.precio && Number(ticket.precio) > 0 ? `
+      <div class="qv-meta-item">
+        <div class="qv-meta-label">Método de cobro</div>
+        <div class="qv-meta-value" style="color:${METODO_COLORS[ticket.metodoPago] || 'var(--text-primary)'};font-weight:600;">
+          ${METODO_LABELS[ticket.metodoPago] || '—'}
+        </div>
+      </div>` : ''}
     </div>
 
     <!-- Problema -->

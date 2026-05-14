@@ -4,7 +4,10 @@ import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
-import { registerTicketIngreso } from './caja-sesiones.js';
+import { registerTicketIngreso, getActiveCajaSession, createAdjustmentEntry } from './caja-sesiones.js';
+import { getCurrentSession } from '../core/session.js';
+
+const VALID_METODOS = ['efectivo','transferencia','mercadopago','debito','credito'];
 
 const CACHE_KEY = 'tickets:list';
 
@@ -58,6 +61,7 @@ export async function createTicket(data) {
       servicioRealizado: "",
       garantiaDias: Number(data.garantiaDias) || 90,
       precio: Number(data.precio || 0),
+      metodoPago: VALID_METODOS.includes(data.metodoPago) ? data.metodoPago : 'efectivo',
       presupuesto: 0,
       aprobadoCliente: false,
       planServicio: data.planServicio || "estandar",
@@ -115,6 +119,14 @@ export async function updateTicketStatus(id, newStatus) {
   try {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("Orden no encontrada.");
+
+    // Bloquear entrega si no hay caja abierta y el ticket tiene precio
+    if (newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0) {
+      const activeSession = await getActiveCajaSession();
+      if (!activeSession) {
+        throw new Error('Debe existir una caja abierta para registrar el cobro.');
+      }
+    }
 
     const updateData = {
       estado: newStatus,
@@ -178,37 +190,80 @@ export async function updateTicket(id, data) {
     const trabajoActual = await getTrabajo(id);
     if (!trabajoActual) throw new Error("Orden no encontrada.");
 
+    const session     = getCurrentSession();
+    const isAdmin     = session?.profile?.rol === 'admin';
+    const isEntregado = trabajoActual.estado === WORK_STATUS.entregado;
+
+    const newPrecio     = Number(data.precio || 0);
+    const newMetodoPago = VALID_METODOS.includes(data.metodoPago) ? data.metodoPago : (trabajoActual.metodoPago || 'efectivo');
+    const oldPrecio     = Number(trabajoActual.precio || 0);
+    const oldMetodoPago = trabajoActual.metodoPago || 'efectivo';
+
+    const precioChanged     = newPrecio !== oldPrecio;
+    const metodoPagoChanged = newMetodoPago !== oldMetodoPago;
+
+    // Freeze financiero para no-admin
+    if (isEntregado && !isAdmin && (precioChanged || metodoPagoChanged)) {
+      throw new Error('El precio y método de pago no se pueden modificar en un ticket ya entregado.');
+    }
+
     const updateData = {
-      clienteId: data.clienteId,
-      tipo: data.tipo,
-      equipo: data.equipo.trim(),
-      marca: data.marca ? data.marca.trim() : "",
-      modelo: data.modelo ? data.modelo.trim() : "",
-      problema: data.problema.trim(),
+      clienteId:         data.clienteId,
+      tipo:              data.tipo,
+      equipo:            data.equipo.trim(),
+      marca:             data.marca ? data.marca.trim() : "",
+      modelo:            data.modelo ? data.modelo.trim() : "",
+      problema:          data.problema.trim(),
       servicioRealizado: (data.servicioRealizado || '').trim(),
-      garantiaDias: Number(data.garantiaDias) || 90,
-      precio: Number(data.precio || 0),
-      planServicio: data.planServicio || "estandar",
-      updatedAt: serverTimestamp()
+      garantiaDias:      Number(data.garantiaDias) || 90,
+      precio:            newPrecio,
+      metodoPago:        newMetodoPago,
+      planServicio:      data.planServicio || "estandar",
+      updatedAt:         serverTimestamp()
     };
 
     const docRef = doc(db, COLLECTIONS.trabajos, id);
     await updateDoc(docRef, updateData);
 
-    // Sincronizar con seguimiento público
     await publishPublicOrder(id, { ...trabajoActual, ...updateData });
 
-    // Registrar evento en historial
-    await addTicketHistoryEvent(id, {
-      type:    TICKET_EVENT_TYPES.edited,
-      message: 'Ticket editado',
-      metadata: {
-        equipo:      updateData.equipo,
-        problema:    updateData.problema,
-        planServicio: updateData.planServicio,
-        precio:      updateData.precio,
-      },
-    });
+    // Admin override: registro financiero especial + movimiento compensatorio
+    if (isEntregado && isAdmin && (precioChanged || metodoPagoChanged)) {
+      const delta = newPrecio - oldPrecio;
+
+      await addTicketHistoryEvent(id, {
+        type:    TICKET_EVENT_TYPES.financialAdjustment,
+        message: `Ajuste financiero por admin: precio ${precioChanged ? `${oldPrecio} → ${newPrecio}` : 'sin cambio'}, método ${metodoPagoChanged ? `${oldMetodoPago} → ${newMetodoPago}` : 'sin cambio'}`,
+        metadata: {
+          oldPrice:      oldPrecio,
+          newPrice:      newPrecio,
+          oldMetodoPago,
+          newMetodoPago,
+          adjustedBy:    session?.user?.uid || '',
+        },
+      });
+
+      if (delta !== 0) {
+        const activeSession = await getActiveCajaSession();
+        createAdjustmentEntry({
+          delta,
+          ticketId:    id,
+          descripcion: `Ajuste admin ticket #${trabajoActual.numeroOrden || id} (precio ${oldPrecio} → ${newPrecio})`,
+          sessionId:   activeSession?.id || null,
+        }).catch(err => console.warn('Ajuste caja fallido:', err));
+      }
+    } else {
+      await addTicketHistoryEvent(id, {
+        type:    TICKET_EVENT_TYPES.edited,
+        message: 'Ticket editado',
+        metadata: {
+          equipo:       updateData.equipo,
+          problema:     updateData.problema,
+          planServicio: updateData.planServicio,
+          precio:       updateData.precio,
+        },
+      });
+    }
 
     invalidateTicketsCache();
     return { success: true };
