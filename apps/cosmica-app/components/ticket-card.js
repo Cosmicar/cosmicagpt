@@ -49,6 +49,9 @@ export function render(ticket) {
         <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 4px; outline: none;">
           ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
         </select>
+        <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 4px 8px; font-size: var(--font-xs);">
+          <i>📝</i>
+        </a>
       </div>
     </div>
   `;

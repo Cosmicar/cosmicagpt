@@ -4,24 +4,35 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
-import { createTicket } from '../services/tickets.js';
+import { createTicket, getTicket, updateTicket } from '../services/tickets.js';
 import { showToast } from '../components/toast.js';
 
 /**
- * Vista de Formulario para Nuevo Trabajo/Ticket
+ * Vista de Formulario de Ticket (Creación y Edición)
  */
 export class TicketFormView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId = 'ticket-form-container';
+    this.ticketId = this.params?.get('id');
+    this.isEdit = !!this.ticketId;
   }
 
   async loadData() {
-    // Necesitamos la lista de clientes para el selector
-    return await getClientes();
+    // Carga paralela de clientes y ticket (si es edición)
+    const [clientes, ticket] = await Promise.all([
+      getClientes(),
+      this.isEdit ? getTicket(this.ticketId) : Promise.resolve(null)
+    ]);
+
+    if (this.isEdit && !ticket) {
+      throw new Error("No se pudo encontrar el trabajo solicitado.");
+    }
+
+    return { clientes, ticket };
   }
 
-  renderContent(clientes) {
+  renderContent({ clientes, ticket }) {
     const clientOptions = clientes
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
       .map(c => ({
@@ -43,13 +54,17 @@ export class TicketFormView extends AsyncView {
     const breadcrumbHtml = renderBreadcrumb([
       { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
       { label: 'Trabajos', href: '#tickets', icon: '🛠️' },
-      { label: 'Nuevo Trabajo', href: '#ticket-nuevo', icon: '➕' }
+      { 
+        label: this.isEdit ? `Editar Orden ${ticket?.numeroOrden}` : 'Nuevo Trabajo', 
+        href: this.isEdit ? `#ticket-edit?id=${this.ticketId}` : '#ticket-nuevo', 
+        icon: this.isEdit ? '📝' : '➕' 
+      }
     ]);
 
     const headerHtml = renderSectionHeader(
-      'Nuevo Orden de Trabajo', 
-      'Registre un nuevo servicio técnico en el sistema.', 
-      '🛠️ Registro'
+      this.isEdit ? `Editar Orden: ${ticket?.numeroOrden}` : 'Nueva Orden de Trabajo', 
+      this.isEdit ? 'Modifique los detalles técnicos de la orden.' : 'Registre un nuevo servicio técnico en el sistema.', 
+      this.isEdit ? '📝 Edición' : '🛠️ Registro'
     );
 
     return `
@@ -68,6 +83,7 @@ export class TicketFormView extends AsyncView {
                 id: 'clienteId',
                 type: 'select',
                 options: [{ value: '', label: '-- Seleccione un cliente --' }, ...clientOptions],
+                value: ticket?.clienteId || '',
                 required: true
               })}
 
@@ -76,6 +92,7 @@ export class TicketFormView extends AsyncView {
                 id: 'tipo',
                 type: 'select',
                 options: typeOptions,
+                value: ticket?.tipo || 'taller',
                 required: true
               })}
 
@@ -83,13 +100,15 @@ export class TicketFormView extends AsyncView {
                 label: 'Equipo / Dispositivo',
                 id: 'equipo',
                 placeholder: 'Ej: Notebook HP Pavilion',
+                value: ticket?.equipo || '',
                 required: true
               })}
 
               ${renderFormField({
                 label: 'Marca / Modelo',
                 id: 'marca_modelo',
-                placeholder: 'Ej: Asus ROG - GL553'
+                placeholder: 'Ej: Asus ROG - GL553',
+                value: ticket?.marca || ticket?.modelo ? `${ticket.marca} ${ticket.modelo}`.trim() : ''
               })}
 
               ${renderFormField({
@@ -97,14 +116,16 @@ export class TicketFormView extends AsyncView {
                 id: 'planServicio',
                 type: 'select',
                 options: planOptions,
+                value: ticket?.planServicio || 'estandar',
                 required: true
               })}
 
               ${renderFormField({
-                label: 'Presupuesto Inicial ($)',
+                label: 'Presupuesto Final ($)',
                 id: 'precio',
                 type: 'number',
-                placeholder: 'Ej: 5000'
+                placeholder: 'Ej: 5000',
+                value: ticket?.precio || ''
               })}
 
             </div>
@@ -115,6 +136,7 @@ export class TicketFormView extends AsyncView {
                 id: 'problema',
                 placeholder: 'Describa el fallo o inconveniente...',
                 isTextArea: true,
+                value: ticket?.problema || '',
                 required: true
               })}
             </div>
@@ -125,7 +147,7 @@ export class TicketFormView extends AsyncView {
 
             <div id="form-actions-container">
               ${renderFormActions({
-                saveLabel: 'Crear Orden de Trabajo',
+                saveLabel: this.isEdit ? 'Guardar Cambios' : 'Crear Orden de Trabajo',
                 onCancelHref: '#tickets'
               })}
             </div>
@@ -150,7 +172,6 @@ export class TicketFormView extends AsyncView {
       const formData = new FormData(form);
       const rawData = Object.fromEntries(formData.entries());
       
-      // Separar marca y modelo si se ingresaron juntos (opcional, simplificado)
       const data = {
         ...rawData,
         marca: rawData.marca_modelo || '',
@@ -160,16 +181,21 @@ export class TicketFormView extends AsyncView {
       this.toggleFormLoading(true);
       this.hideError();
 
-      const result = await createTicket(data);
+      const result = this.isEdit
+        ? await updateTicket(this.ticketId, data)
+        : await createTicket(data);
 
       if (result.success) {
-        showToast(`Orden ${result.numeroOrden} creada con éxito`, 'success');
+        showToast(
+          this.isEdit ? 'Orden actualizada correctamente' : `Orden ${result.numeroOrden} creada con éxito`, 
+          'success'
+        );
         
         setTimeout(() => {
           window.location.hash = '#tickets';
         }, 1200);
       } else {
-        showToast(result.error || 'Error al crear la orden', 'error');
+        showToast(result.error || 'Error al procesar la orden', 'error');
         this.showError(result.error);
         this.toggleFormLoading(false);
       }
@@ -180,7 +206,7 @@ export class TicketFormView extends AsyncView {
     const actionsContainer = document.getElementById('form-actions-container');
     if (actionsContainer) {
       actionsContainer.innerHTML = renderFormActions({
-        saveLabel: 'Crear Orden de Trabajo',
+        saveLabel: this.isEdit ? 'Guardar Cambios' : 'Crear Orden de Trabajo',
         onCancelHref: '#tickets',
         isSubmitting: isLoading
       });

@@ -20,6 +20,7 @@ export class Router {
       'cliente-nuevo': 'Nuevo Cliente | Cosmica SaaS',
       'cliente-edit': 'Editar Cliente | Cosmica SaaS',
       'ticket-nuevo': 'Nuevo Trabajo | Cosmica SaaS',
+      'ticket-edit': 'Editar Trabajo | Cosmica SaaS',
       'inventario': 'Inventario | Cosmica SaaS',
       'configuracion': 'Configuración | Cosmica SaaS'
     };
@@ -32,6 +33,7 @@ export class Router {
       'cliente-nuevo': ClienteFormView,
       'cliente-edit': ClienteFormView,
       'ticket-nuevo': TicketFormView,
+      'ticket-edit': TicketFormView,
       // Fallback para módulos no implementados (pueden ser funciones que retornen HTML o clases simples)
       'inventario': class extends BaseView { render() { return renderEmptyState('El módulo de inventario aún no está implementado.'); } },
       'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }

@@ -119,3 +119,50 @@ export async function updateTicketStatus(id, newStatus) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Obtiene un ticket por su ID.
+ * 
+ * @param {string} id 
+ * @returns {Promise<Object>}
+ */
+export async function getTicket(id) {
+  return await getTrabajo(id);
+}
+
+/**
+ * Actualiza los datos de un ticket.
+ * 
+ * @param {string} id 
+ * @param {Object} data 
+ * @returns {Promise<Object>}
+ */
+export async function updateTicket(id, data) {
+  try {
+    const trabajoActual = await getTrabajo(id);
+    if (!trabajoActual) throw new Error("Orden no encontrada.");
+
+    const updateData = {
+      clienteId: data.clienteId,
+      tipo: data.tipo,
+      equipo: data.equipo.trim(),
+      marca: data.marca ? data.marca.trim() : "",
+      modelo: data.modelo ? data.modelo.trim() : "",
+      problema: data.problema.trim(),
+      precio: Number(data.precio || 0),
+      planServicio: data.planServicio || "estandar",
+      updatedAt: serverTimestamp()
+    };
+
+    const docRef = doc(db, COLLECTIONS.trabajos, id);
+    await updateDoc(docRef, updateData);
+
+    // Sincronizar con seguimiento público
+    await publishPublicOrder(id, { ...trabajoActual, ...updateData });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar ticket:", error);
+    return { success: false, error: error.message };
+  }
+}
