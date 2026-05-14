@@ -3,6 +3,8 @@ import { ClientesView } from '../views/clientes.js';
 import { TicketsView } from '../views/tickets.js';
 import { ClienteFormView } from '../views/cliente-form.js';
 import { TicketFormView } from '../views/ticket-form.js';
+import { InventarioView } from '../views/inventario.js';
+import { InventarioFormView } from '../views/inventario-form.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession } from './session.js';
@@ -22,8 +24,10 @@ export class Router {
       'cliente-edit': 'Editar Cliente | Cosmica SaaS',
       'ticket-nuevo': 'Nuevo Trabajo | Cosmica SaaS',
       'ticket-edit': 'Editar Trabajo | Cosmica SaaS',
-      'inventario': 'Inventario | Cosmica SaaS',
-      'configuracion': 'Configuración | Cosmica SaaS'
+      'inventario':       'Inventario | Cosmica SaaS',
+      'inventario-nuevo': 'Nuevo Repuesto | Cosmica SaaS',
+      'inventario-edit':  'Editar Repuesto | Cosmica SaaS',
+      'configuracion':    'Configuración | Cosmica SaaS'
     };
 
     // Mapeo de rutas a Clases de Vista
@@ -35,8 +39,9 @@ export class Router {
       'cliente-edit': ClienteFormView,
       'ticket-nuevo': TicketFormView,
       'ticket-edit': TicketFormView,
-      // Fallback para módulos no implementados (pueden ser funciones que retornen HTML o clases simples)
-      'inventario': class extends BaseView { render() { return renderEmptyState('El módulo de inventario aún no está implementado.'); } },
+      'inventario':      InventarioView,
+      'inventario-nuevo': InventarioFormView,
+      'inventario-edit':  InventarioFormView,
       'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
     };
     

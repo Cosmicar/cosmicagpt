@@ -121,7 +121,10 @@ export function canAccess(action) {
       return role === 'recepcion';
     case 'view-tickets':
     case 'view-clients':
+    case 'inventario-read':
       return true; // Todos los roles staff
+    case 'inventario-write': // consumir stock desde tickets
+      return role === 'tecnico';
     default:
       return false;
   }

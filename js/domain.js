@@ -9,7 +9,8 @@ export const COLLECTIONS = Object.freeze({
   config: "config",
   productos: "productos",
   ventas: "ventas",
-  movimientos_stock: "movimientos_stock"
+  movimientos_stock: "movimientos_stock",
+  inventario: "inventario"
 });
 
 export const TIPO_ITEM = Object.freeze({

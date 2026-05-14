@@ -285,3 +285,31 @@ export async function updateTicketBudget(id, data) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Guarda el array de repuestos consumidos en el ticket.
+ * No ajusta stock — eso lo hace el llamador (ticket-form).
+ *
+ * @param {string}   id              ID del ticket
+ * @param {Array}    repuestos       [{ inventarioId, nombre, sku, cantidad, costoUnitario, subtotal }]
+ * @param {number}   totalRepuestos  Suma de subtotales
+ * @returns {Promise<Object>}
+ */
+export async function updateTicketRepuestos(id, repuestos, totalRepuestos) {
+  try {
+    await updateDoc(doc(db, COLLECTIONS.trabajos, id), {
+      repuestos,
+      totalRepuestos: Number(totalRepuestos || 0),
+      updatedAt: serverTimestamp(),
+    });
+    await addTicketHistoryEvent(id, {
+      type:    TICKET_EVENT_TYPES.edited,
+      message: `Repuestos actualizados (${repuestos.length} ítem${repuestos.length !== 1 ? 's' : ''}, total $${Number(totalRepuestos || 0).toLocaleString('es-AR')})`,
+      metadata: { totalRepuestos, cantidad: repuestos.length },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error al guardar repuestos del ticket:", error);
+    return { success: false, error: error.message };
+  }
+}

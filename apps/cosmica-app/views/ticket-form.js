@@ -4,7 +4,9 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
-import { createTicket, getTicket, updateTicket, updateTicketBudget } from '../services/tickets.js';
+import { createTicket, getTicket, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
+import { getInventario, filterInventario, adjustStock } from '../services/inventario.js';
+import { canAccess } from '../core/session.js';
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 import { renderFormSkeleton } from '../components/app-state.js';
@@ -65,6 +67,70 @@ function renderBudgetSection(ticket) {
     </div>`;
 }
 
+// ─── Repuestos section HTML ───────────────────────────────────────────────────
+
+function renderRepuestosSection(ticket) {
+  const canConsume = canAccess('inventario-write') || canAccess('edit-ticket');
+  const repuestos  = ticket?.repuestos || [];
+  const total      = repuestos.reduce((s, r) => s + Number(r.subtotal || 0), 0);
+
+  return `
+    <div class="card glass-card" style="margin-top: var(--space-lg); max-width: 900px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);">
+        <div>
+          <h3 style="font-size:var(--font-md);font-weight:600;margin:0;">Repuestos utilizados</h3>
+          <p style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">
+            Asociá repuestos del inventario. El stock se ajusta al guardar.
+          </p>
+        </div>
+        ${total > 0 ? `
+          <div style="text-align:right;">
+            <div style="font-size:var(--font-xs);color:var(--text-muted);">Costo en repuestos</div>
+            <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-cyan);">
+              $${total.toLocaleString('es-AR')}
+            </div>
+          </div>` : ''}
+      </div>
+
+      <div id="repuestos-error" class="badge badge-danger"
+        style="display:none;width:100%;margin-bottom:var(--space-md);padding:var(--space-md);
+               text-align:center;background:rgba(255,0,127,0.1);border:1px solid var(--danger);">
+      </div>
+
+      ${canConsume ? `
+        <!-- Search box -->
+        <div style="position:relative;margin-bottom:var(--space-md);" id="repuesto-search-wrap">
+          <div id="repuesto-search-skeleton" style="display:none;">
+            <div class="skeleton" style="width:100%;height:42px;border-radius:8px;"></div>
+          </div>
+          <div id="repuesto-search-ready" style="display:none;position:relative;">
+            <input type="text" id="repuesto-search-input" class="input"
+              placeholder="Buscar repuesto por nombre, SKU o categoría..."
+              style="padding-left:40px;margin-bottom:0;" autocomplete="off">
+            <span style="position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:0.5;pointer-events:none;">🔍</span>
+            <div id="repuesto-suggestions"
+              style="position:absolute;z-index:200;top:calc(100% + 4px);left:0;right:0;
+                     background:var(--surface, #1a1a2e);border:1px solid var(--border);
+                     border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;">
+            </div>
+          </div>
+        </div>` : ''}
+
+      <!-- Items list -->
+      <div id="repuestos-list"></div>
+
+      <!-- Summary + Save -->
+      <div id="repuestos-summary"></div>
+
+      ${canConsume ? `
+        <div style="margin-top:var(--space-md);">
+          <button id="repuestos-save-btn" class="btn btn-primary" style="min-width:200px;">
+            💾 Guardar repuestos
+          </button>
+        </div>` : ''}
+    </div>`;
+}
+
 /**
  * Vista de Formulario de Ticket (Creación y Edición)
  */
@@ -99,7 +165,8 @@ export class TicketFormView extends AsyncView {
       throw new Error("No se pudo encontrar el trabajo solicitado.");
     }
 
-    this._ticket = ticket;
+    this._ticket         = ticket;
+    this._repuestosState = ticket ? [...(ticket.repuestos || [])] : [];
     return { clientes, ticket };
   }
 
@@ -235,6 +302,8 @@ export class TicketFormView extends AsyncView {
 
         ${this.isEdit ? renderBudgetSection(ticket) : ''}
 
+        ${this.isEdit ? renderRepuestosSection(ticket) : ''}
+
         ${this.isEdit ? renderTicketTimeline() : ''}
       </div>
     `;
@@ -244,6 +313,7 @@ export class TicketFormView extends AsyncView {
     this.initFormHandlers();
     if (this.isEdit) {
       this.initBudgetHandlers();
+      this.initRepuestosHandlers();
       mountTicketTimeline(this.ticketId);
 
       const printBtn = document.querySelector('.form-print-btn');
@@ -254,6 +324,240 @@ export class TicketFormView extends AsyncView {
         });
       }
     }
+  }
+
+  // ─── Repuestos section ──────────────────────────────────────────────────────
+
+  initRepuestosHandlers() {
+    this._inventarioCache = null;
+    this._renderRepuestosList();
+
+    const canConsume = canAccess('inventario-write') || canAccess('edit-ticket');
+    if (!canConsume) return;
+
+    // Load inventory lazily
+    const skeleton = document.getElementById('repuesto-search-skeleton');
+    const ready    = document.getElementById('repuesto-search-ready');
+    if (skeleton) skeleton.style.display = 'block';
+
+    getInventario().then(items => {
+      this._inventarioCache = items;
+      if (skeleton) skeleton.style.display = 'none';
+      if (ready)    ready.style.display    = 'block';
+      this._bindSearchInput();
+    }).catch(() => {
+      if (skeleton) skeleton.style.display = 'none';
+    });
+
+    // Save button
+    const saveBtn = document.getElementById('repuestos-save-btn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this._saveRepuestos(saveBtn));
+    }
+  }
+
+  _bindSearchInput() {
+    const input       = document.getElementById('repuesto-search-input');
+    const suggestions = document.getElementById('repuesto-suggestions');
+    if (!input || !suggestions) return;
+
+    input.addEventListener('input', () => {
+      const term = input.value.trim();
+      if (!term) { suggestions.style.display = 'none'; return; }
+      const matches = filterInventario(this._inventarioCache || [], term).slice(0, 8);
+      if (!matches.length) { suggestions.style.display = 'none'; return; }
+      suggestions.innerHTML = matches.map(item => {
+        const stock = Number(item.stock || 0);
+        const stockColor = stock === 0 ? 'var(--danger)' : stock <= (item.stockMinimo || 0) ? 'var(--accent-orange)' : 'var(--accent-green)';
+        return `
+          <div class="repuesto-suggestion-item" data-id="${item.id}" style="
+            padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
+            display:flex;justify-content:space-between;align-items:center;
+            transition:background 0.15s;">
+            <div>
+              <div style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${item.nombre}</div>
+              <div style="font-size:var(--font-xs);color:var(--text-muted);">${item.sku || ''} · ${item.categoria || ''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;margin-left:12px;">
+              <div style="font-size:var(--font-sm);font-weight:700;color:var(--accent-cyan);">$${Number(item.costo || 0).toLocaleString('es-AR')}</div>
+              <div style="font-size:var(--font-xs);color:${stockColor};">stock: ${stock}</div>
+            </div>
+          </div>`;
+      }).join('');
+      suggestions.style.display = 'block';
+
+      suggestions.querySelectorAll('.repuesto-suggestion-item').forEach(el => {
+        el.addEventListener('mouseenter', () => { el.style.background = 'rgba(255,255,255,0.06)'; });
+        el.addEventListener('mouseleave', () => { el.style.background = ''; });
+        el.addEventListener('click', () => {
+          const id   = el.dataset.id;
+          const item = (this._inventarioCache || []).find(i => i.id === id);
+          if (item) this._addRepuesto(item);
+          input.value = '';
+          suggestions.style.display = 'none';
+        });
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#repuesto-search-wrap')) suggestions.style.display = 'none';
+    }, { capture: true });
+  }
+
+  _addRepuesto(item) {
+    const existing = this._repuestosState.find(r => r.inventarioId === item.id);
+    if (existing) {
+      existing.cantidad++;
+      existing.subtotal = existing.cantidad * existing.costoUnitario;
+    } else {
+      this._repuestosState.push({
+        inventarioId:  item.id,
+        nombre:        item.nombre,
+        sku:           item.sku || '',
+        cantidad:      1,
+        costoUnitario: Number(item.costo || 0),
+        subtotal:      Number(item.costo || 0),
+      });
+    }
+    this._renderRepuestosList();
+  }
+
+  _removeRepuesto(inventarioId) {
+    this._repuestosState = this._repuestosState.filter(r => r.inventarioId !== inventarioId);
+    this._renderRepuestosList();
+  }
+
+  _updateQty(inventarioId, qty) {
+    const r = this._repuestosState.find(r => r.inventarioId === inventarioId);
+    if (!r) return;
+    r.cantidad = Math.max(1, Number(qty) || 1);
+    r.subtotal = r.cantidad * r.costoUnitario;
+    this._renderRepuestosList();
+  }
+
+  _renderRepuestosList() {
+    const listEl    = document.getElementById('repuestos-list');
+    const summaryEl = document.getElementById('repuestos-summary');
+    if (!listEl) return;
+
+    const items = this._repuestosState;
+    const total = items.reduce((s, r) => s + r.subtotal, 0);
+
+    if (items.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center;padding:var(--space-lg);color:var(--text-muted);
+                    font-size:var(--font-sm);border:1px dashed var(--border);
+                    border-radius:var(--radius-md);margin-bottom:var(--space-md);">
+          🔩 No hay repuestos asociados a esta orden todavía.
+        </div>`;
+      if (summaryEl) summaryEl.innerHTML = '';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div style="overflow-x:auto;margin-bottom:var(--space-md);">
+        <table style="width:100%;border-collapse:collapse;font-size:var(--font-sm);">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);color:var(--text-muted);">
+              <th style="text-align:left;padding:8px 6px;font-weight:600;">Repuesto</th>
+              <th style="text-align:left;padding:8px 6px;font-weight:600;">SKU</th>
+              <th style="text-align:center;padding:8px 6px;font-weight:600;width:80px;">Cant.</th>
+              <th style="text-align:right;padding:8px 6px;font-weight:600;">Costo unit.</th>
+              <th style="text-align:right;padding:8px 6px;font-weight:600;">Subtotal</th>
+              <th style="padding:8px 6px;width:36px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(r => `
+              <tr style="border-bottom:1px solid var(--border);" data-id="${r.inventarioId}">
+                <td style="padding:8px 6px;color:var(--text-primary);font-weight:500;">${r.nombre}</td>
+                <td style="padding:8px 6px;color:var(--text-muted);font-size:var(--font-xs);">${r.sku || '—'}</td>
+                <td style="padding:8px 6px;text-align:center;">
+                  <input type="number" class="repuesto-qty" data-id="${r.inventarioId}"
+                    value="${r.cantidad}" min="1"
+                    style="width:60px;text-align:center;background:rgba(255,255,255,0.05);
+                           border:1px solid var(--border);border-radius:var(--radius-sm);
+                           color:var(--text-primary);padding:4px 6px;font-size:var(--font-sm);">
+                </td>
+                <td style="padding:8px 6px;text-align:right;color:var(--text-muted);">$${r.costoUnitario.toLocaleString('es-AR')}</td>
+                <td style="padding:8px 6px;text-align:right;color:var(--accent-cyan);font-weight:700;">$${r.subtotal.toLocaleString('es-AR')}</td>
+                <td style="padding:8px 6px;">
+                  <button class="repuesto-remove" data-id="${r.inventarioId}"
+                    style="background:none;border:none;cursor:pointer;color:var(--danger);
+                           font-size:16px;line-height:1;padding:2px 4px;" title="Quitar">✕</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    // Wire qty + remove
+    listEl.querySelectorAll('.repuesto-qty').forEach(input => {
+      input.addEventListener('change', () => this._updateQty(input.dataset.id, input.value));
+    });
+    listEl.querySelectorAll('.repuesto-remove').forEach(btn => {
+      btn.addEventListener('click', () => this._removeRepuesto(btn.dataset.id));
+    });
+
+    if (summaryEl) {
+      summaryEl.innerHTML = `
+        <div style="display:flex;justify-content:flex-end;padding:var(--space-sm) 0;
+                    border-top:1px solid var(--border);gap:var(--space-xl);">
+          <div style="text-align:right;">
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-bottom:2px;">
+              Total repuestos (${items.length} ítem${items.length !== 1 ? 's' : ''})
+            </div>
+            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-cyan);">
+              $${total.toLocaleString('es-AR')}
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  async _saveRepuestos(btn) {
+    btn.disabled    = true;
+    btn.textContent = '⏳ Guardando...';
+
+    const errorEl = document.getElementById('repuestos-error');
+    if (errorEl) errorEl.style.display = 'none';
+
+    try {
+      const prevRepuestos = this._ticket?.repuestos || [];
+      const newRepuestos  = this._repuestosState;
+
+      // 1. Restore stock for previously saved repuestos
+      for (const prev of prevRepuestos) {
+        await adjustStock(prev.inventarioId, +Number(prev.cantidad));
+      }
+
+      // 2. Consume stock for newly saved repuestos
+      for (const next of newRepuestos) {
+        await adjustStock(next.inventarioId, -Number(next.cantidad));
+      }
+
+      // 3. Save repuestos array to ticket
+      const total = newRepuestos.reduce((s, r) => s + r.subtotal, 0);
+      const result = await updateTicketRepuestos(this.ticketId, newRepuestos, total);
+
+      if (!result.success) throw new Error(result.error || 'Error al guardar');
+
+      // 4. Sync local ticket reference
+      this._ticket.repuestos      = [...newRepuestos];
+      this._ticket.totalRepuestos = total;
+
+      showToast('Repuestos guardados correctamente', 'success');
+    } catch (err) {
+      console.error('[repuestos] save failed:', err);
+      if (errorEl) {
+        errorEl.textContent  = err.message || 'Error al guardar los repuestos';
+        errorEl.style.display = 'block';
+      }
+      showToast(err.message || 'Error al guardar repuestos', 'error');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = '💾 Guardar repuestos';
   }
 
   initFormHandlers() {

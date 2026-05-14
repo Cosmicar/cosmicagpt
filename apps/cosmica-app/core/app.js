@@ -120,7 +120,7 @@ function renderSidebar(profile) {
     { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin', 'tecnico', 'recepcion'] },
     { id: 'tickets', label: 'Trabajos', icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion'] },
     { id: 'clientes', label: 'Clientes', icon: '👥', roles: ['admin', 'recepcion'] },
-    { id: 'inventario', label: 'Inventario', icon: '📦', roles: ['admin'] },
+    { id: 'inventario', label: 'Inventario', icon: '📦', roles: ['admin', 'tecnico', 'recepcion'] },
     { id: 'configuracion', label: 'Configuración', icon: '⚙️', roles: ['admin'] }
   ];
 
