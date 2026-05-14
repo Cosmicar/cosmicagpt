@@ -28,7 +28,7 @@ export function render(ticket) {
   const canEdit = canAccess('edit-ticket');
 
   return `
-    <div class="card glass-card" id="ticket-card-${ticket.id}" style="display: flex; flex-direction: column;">
+    <div class="card glass-card" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" style="display: flex; flex-direction: column; cursor: pointer;">
       <div class="flex-between" style="align-items: flex-start; margin-bottom: var(--space-sm);">
         <div style="flex: 1; min-width: 0;">
           <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}" style="font-size: var(--font-md); margin: 0;">

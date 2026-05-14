@@ -7,6 +7,7 @@ import { renderEmptyState, renderCardSkeletonList } from '../components/app-stat
 import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
 import { canAccess } from '../core/session.js';
+import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
 
 /**
  * Vista de Tickets / Trabajos con Búsqueda y Filtros Rápidos
@@ -172,7 +173,33 @@ export class TicketsView extends AsyncView {
       });
     });
 
+    // Delegated click: open quick-view drawer for any card or table row
+    // Registered once on the persistent grid container — survives innerHTML swaps
+    grid.addEventListener('click', (e) => {
+      if (e.target.closest('select, .btn, a, button')) return;
+      const node = e.target.closest('[data-ticket-id]');
+      if (!node) return;
+      const ticket = this.allTickets.find(t => t.id === node.dataset.ticketId);
+      if (ticket) this.openTicketDrawer(ticket);
+    });
+
     this.initStatusSelectors();
+  }
+
+  openTicketDrawer(ticket) {
+    openTicketQuickView(ticket, {
+      onStatusChange: (id, newStatus) => {
+        // Sync badge in the current list (card or table row)
+        const badge = document.getElementById(`badge-${id}`);
+        if (badge) {
+          badge.textContent = newStatus;
+          badge.className = `badge ${badgeClass(newStatus)}`;
+        }
+        // Sync local cache so filters keep working correctly
+        const cached = this.allTickets.find(t => t.id === id);
+        if (cached) cached.estado = newStatus;
+      },
+    });
   }
 
   initStatusSelectors() {
@@ -279,12 +306,8 @@ export class TicketsView extends AsyncView {
   }
 
   renderTableRow(ticket, statusOptions) {
-    const estado = ticket.estado || WORK_STATUS.ingresado;
-    let badgeClass = 'badge-cyan';
-    if (estado === WORK_STATUS.enReparacion) badgeClass = 'badge-orange';
-    if (estado === WORK_STATUS.listo)        badgeClass = 'badge-green';
-    if (estado === WORK_STATUS.entregado)    badgeClass = 'badge-gray';
-
+    const estado  = ticket.estado || WORK_STATUS.ingresado;
+    const bc      = badgeClass(estado);
     const fecha   = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString('es-AR') : '—';
     const equipo  = [ticket.equipo, ticket.marca].filter(Boolean).join(' ') || '—';
     const cliente = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ') || 'Sin nombre';
@@ -294,10 +317,10 @@ export class TicketsView extends AsyncView {
     const canEdit = canAccess('edit-ticket');
 
     return `
-      <tr>
+      <tr data-ticket-id="${ticket.id}" style="cursor:pointer;">
         <td class="tt-orden">#${ticket.numeroOrden || '—'}</td>
         <td class="tt-cliente" title="${cliente}">${cliente}</td>
-        <td><span class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</span></td>
+        <td><span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span></td>
         <td class="tt-equipo">${equipo}</td>
         <td class="tt-fecha">${fecha}</td>
         <td class="tt-plan">${plan}</td>
