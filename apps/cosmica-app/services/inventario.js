@@ -5,20 +5,19 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
+import { cacheWrap, cacheInvalidate } from '../core/cache.js';
 
 const COL = COLLECTIONS.inventario;
+const CACHE_KEY = 'inventario:list';
 
 // ── Read ─────────────────────────────────────────────────────────────────────
 
-export async function getInventario() {
-  try {
+export function getInventario() {
+  return cacheWrap(CACHE_KEY, async () => {
     const q = query(collection(db, COL), orderBy('nombre', 'asc'));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (err) {
-    console.error('Error al obtener inventario:', err);
-    throw err;
-  }
+  });
 }
 
 export async function getInventarioItem(id) {
@@ -46,6 +45,7 @@ export async function createInventarioItem(data) {
       updatedAt:  serverTimestamp(),
     };
     const ref = await addDoc(collection(db, COL), item);
+    cacheInvalidate(CACHE_KEY);
     return { success: true, id: ref.id };
   } catch (err) {
     console.error('Error al crear repuesto:', err);
@@ -68,6 +68,7 @@ export async function updateInventarioItem(id, data) {
       proveedor:  data.proveedor?.trim() || '',
       updatedAt:  serverTimestamp(),
     });
+    cacheInvalidate(CACHE_KEY);
     return { success: true };
   } catch (err) {
     console.error('Error al actualizar repuesto:', err);
@@ -86,6 +87,7 @@ export async function adjustStock(id, delta) {
       stock:     increment(delta),
       updatedAt: serverTimestamp(),
     });
+    cacheInvalidate(CACHE_KEY);
     return { success: true };
   } catch (err) {
     console.error('Error al ajustar stock:', err);

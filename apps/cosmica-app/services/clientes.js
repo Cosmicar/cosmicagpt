@@ -1,6 +1,9 @@
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
+import { cacheWrap, cacheInvalidate } from '../core/cache.js';
+
+const CACHE_KEY = 'clientes:list';
 
 /**
  * Obtiene el listado de clientes desde Firestore.
@@ -8,20 +11,11 @@ import { COLLECTIONS } from "../../../js/domain.js";
  * 
  * @returns {Promise<Array>} Lista de clientes
  */
-export async function getClientes() {
-  try {
-    const querySnapshot = await getDocs(collection(db, COLLECTIONS.clientes));
-    const clientes = [];
-    
-    querySnapshot.forEach((doc) => {
-      clientes.push({ id: doc.id, ...doc.data() });
-    });
-    
-    return clientes;
-  } catch (error) {
-    console.error("Error al obtener clientes en el servicio:", error);
-    throw error; // Re-lanzar para que la vista lo maneje
-  }
+export function getClientes() {
+  return cacheWrap(CACHE_KEY, async () => {
+    const snap = await getDocs(collection(db, COLLECTIONS.clientes));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  });
 }
 
 /**
@@ -65,6 +59,7 @@ export async function createCliente(data) {
     // 3. Guardar en Firestore
     const docRef = await addDoc(collection(db, COLLECTIONS.clientes), newCliente);
     
+    cacheInvalidate(CACHE_KEY);
     return {
       success: true,
       id: docRef.id,
@@ -101,7 +96,7 @@ export async function updateCliente(id, data) {
     };
 
     await updateDoc(docRef, updateData);
-    
+    cacheInvalidate(CACHE_KEY);
     return {
       success: true,
       message: "Cliente actualizado correctamente."

@@ -1,28 +1,5 @@
 import { getTicketHistory } from '../services/ticket-history.js';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const EVENT_ICON = {
-  ticket_created:  '🟢',
-  status_changed:  '🟡',
-  ticket_edited:   '🔵',
-};
-
-function formatDate(ts) {
-  if (!ts) return '—';
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  const now  = new Date();
-  const diff = Math.floor((now - date) / 1000);
-
-  if (diff < 60)   return 'hace un momento';
-  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
-
-  return date.toLocaleDateString('es-AR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  });
-}
+import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 
 // ─── HTML builders ───────────────────────────────────────────────────────────
 
@@ -56,8 +33,8 @@ function renderTimelineError(msg) {
 }
 
 function renderEvent(event) {
-  const icon = EVENT_ICON[event.type] || '⚪';
-  const time = formatDate(event.createdAt);
+  const icon = TICKET_EVENT_ICONS[event.type] || '⚪';
+  const time = formatRelativeTs(event.createdAt);
   const user = event.user || 'sistema';
 
   return `

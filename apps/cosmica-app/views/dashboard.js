@@ -1,11 +1,13 @@
 import { AsyncView } from '../core/async-view.js';
 import { getDashboardData } from '../services/dashboard.js';
+import { updateTicketStatus } from '../services/tickets.js';
+import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { render as renderClientCard } from '../components/client-card.js';
 import { canAccess } from '../core/session.js';
-
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
 import { openTicketPrint } from '../components/ticket-print.js';
+import { showToast } from '../components/toast.js';
 
 /**
  * Vista de Dashboard Operacional
@@ -155,18 +157,18 @@ export class DashboardView extends AsyncView {
     }
 
     // Re-vincular eventos para cambios de estado rápidos
-    const selectors = document.querySelectorAll('.status-selector');
-    selectors.forEach(select => {
+    document.querySelectorAll('.status-selector').forEach(select => {
       select.addEventListener('change', async (e) => {
         const id = e.target.dataset.id;
         const newStatus = e.target.value;
-        try {
-          const { updateTicketStatus } = await import('../services/tickets.js');
-          await updateTicketStatus(id, newStatus);
+        e.target.disabled = true;
+        const result = await updateTicketStatus(id, newStatus);
+        if (result.success) {
+          showToast('Estado actualizado', 'success');
           this.fetchAndRender();
-        } catch (err) {
-          console.error(err);
-          alert('Error al actualizar estado: ' + err.message);
+        } else {
+          showToast(result.error || 'Error al actualizar estado', 'error');
+          e.target.disabled = false;
         }
       });
     });
@@ -186,15 +188,13 @@ export class DashboardView extends AsyncView {
         e.stopPropagation();
         btn.disabled = true;
         btn.textContent = '⏳ Procesando...';
-        try {
-          const id = btn.dataset.id;
-          const { updateTicketStatus } = await import('../services/tickets.js');
-          const { ensureBudgetApprovedEvent } = await import('../services/ticket-history.js');
-          await ensureBudgetApprovedEvent(id);
-          await updateTicketStatus(id, 'En reparación');
+        const id = btn.dataset.id;
+        await ensureBudgetApprovedEvent(id);
+        const result = await updateTicketStatus(id, 'En reparación');
+        if (result.success) {
           this.fetchAndRender();
-        } catch (err) {
-          console.error(err);
+        } else {
+          showToast(result.error || 'Error al actualizar', 'error');
           btn.disabled = false;
           btn.textContent = '🔧 Pasar a Reparación';
         }

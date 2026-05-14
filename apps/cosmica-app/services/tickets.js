@@ -3,6 +3,9 @@ import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
+import { cacheWrap, cacheInvalidate } from '../core/cache.js';
+
+const CACHE_KEY = 'tickets:list';
 
 /**
  * Obtiene el listado de tickets (trabajos) desde Firestore.
@@ -10,22 +13,17 @@ import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
  * 
  * @returns {Promise<Array>} Lista de tickets
  */
-export async function getTickets() {
-  try {
-    // Consultamos la colección de trabajos, ordenando por fecha de ingreso descendente
+export function getTickets() {
+  return cacheWrap(CACHE_KEY, async () => {
     const q = query(collection(db, COLLECTIONS.trabajos), orderBy("fechaIngreso", "desc"));
-    const querySnapshot = await getDocs(q);
-    const tickets = [];
-    
-    querySnapshot.forEach((doc) => {
-      tickets.push({ id: doc.id, ...doc.data() });
-    });
-    
-    return tickets;
-  } catch (error) {
-    console.error("Error al obtener tickets en el servicio:", error);
-    throw error;
-  }
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  });
+}
+
+/** Invalidates the ticket list cache. Call after any write that changes the list. */
+export function invalidateTicketsCache() {
+  cacheInvalidate(CACHE_KEY);
 }
 
 /**
@@ -86,6 +84,8 @@ export async function createTicket(data) {
       },
     });
 
+    invalidateTicketsCache();
+
     return {
       success: true,
       id: docRef.id,
@@ -139,6 +139,7 @@ export async function updateTicketStatus(id, newStatus) {
       },
     });
 
+    invalidateTicketsCache();
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar estado del ticket:", error);
@@ -198,6 +199,7 @@ export async function updateTicket(id, data) {
       },
     });
 
+    invalidateTicketsCache();
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar ticket:", error);
@@ -279,6 +281,7 @@ export async function updateTicketBudget(id, data) {
       },
     });
 
+    invalidateTicketsCache();
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar diagnóstico/presupuesto:", error);
@@ -307,6 +310,7 @@ export async function updateTicketRepuestos(id, repuestos, totalRepuestos) {
       message: `Repuestos actualizados (${repuestos.length} ítem${repuestos.length !== 1 ? 's' : ''}, total $${Number(totalRepuestos || 0).toLocaleString('es-AR')})`,
       metadata: { totalRepuestos, cantidad: repuestos.length },
     });
+    invalidateTicketsCache();
     return { success: true };
   } catch (error) {
     console.error("Error al guardar repuestos del ticket:", error);

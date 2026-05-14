@@ -70,9 +70,11 @@ function initPerfilButton(session, mainContent) {
       dropdown.classList.toggle('open');
     });
 
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', () => {
-      dropdown.classList.remove('open');
+    // Cerrar dropdown al hacer click fuera (no dentro del propio dropdown)
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== btnPerfil) {
+        dropdown.classList.remove('open');
+      }
     });
   }
 

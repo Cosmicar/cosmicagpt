@@ -254,11 +254,15 @@ export class TicketsView extends AsyncView {
     const filterButtons = document.querySelectorAll('.btn-filter');
     const grid          = document.getElementById('tickets-grid');
 
-    // Search input
+    // Search input — debounced to avoid re-rendering on every keystroke
     if (searchInput) {
+      let _searchDebounce = null;
       searchInput.addEventListener('input', (e) => {
-        this.currentTerm = e.target.value.toLowerCase().trim();
-        this.applyFilters(grid);
+        clearTimeout(_searchDebounce);
+        _searchDebounce = setTimeout(() => {
+          this.currentTerm = e.target.value.toLowerCase().trim();
+          this.applyFilters(grid);
+        }, 200);
       });
       searchInput.focus();
     }

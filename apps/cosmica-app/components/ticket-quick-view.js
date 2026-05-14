@@ -6,6 +6,8 @@ import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
 import { showToast } from './toast.js';
 
+import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS = [
@@ -15,12 +17,6 @@ const STATUS_OPTIONS = [
   WORK_STATUS.entregado,
 ];
 
-const EVENT_ICON = {
-  ticket_created: '🟢',
-  status_changed: '🟡',
-  ticket_edited:  '🔵',
-};
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function badgeClass(estado) {
@@ -28,20 +24,6 @@ export function badgeClass(estado) {
   if (estado === WORK_STATUS.listo)        return 'badge-green';
   if (estado === WORK_STATUS.entregado)    return 'badge-gray';
   return 'badge-cyan';
-}
-
-function formatTs(ts) {
-  if (!ts) return '—';
-  const d    = ts.toDate ? ts.toDate() : new Date(ts);
-  const now  = new Date();
-  const diff = Math.floor((now - d) / 1000);
-  if (diff < 60)    return 'hace un momento';
-  if (diff < 3600)  return `hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
-  return d.toLocaleDateString('es-AR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
 }
 
 // ─── Timeline (drawer-scoped ids, no conflict with ticket-form timeline) ─────
@@ -68,11 +50,11 @@ async function mountQvTimeline(ticketId) {
     }
     container.innerHTML = events.map(ev => `
       <div style="display:grid;grid-template-columns:28px 1fr;gap:var(--space-sm);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:1rem;line-height:1.5;padding-top:2px;">${EVENT_ICON[ev.type] || '⚪'}</span>
+        <span style="font-size:1rem;line-height:1.5;padding-top:2px;">${TICKET_EVENT_ICONS[ev.type] || '⚪'}</span>
         <div>
           <div style="font-size:var(--font-sm);color:var(--text-primary);font-weight:500;line-height:1.4;">${ev.message}</div>
           <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:3px;">
-            👤 ${ev.user || 'sistema'}&nbsp;•&nbsp;🕒 ${formatTs(ev.createdAt)}
+            👤 ${ev.user || 'sistema'}&nbsp;•&nbsp;🕒 ${formatRelativeTs(ev.createdAt)}
           </div>
         </div>
       </div>`).join('');
