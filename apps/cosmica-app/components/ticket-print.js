@@ -79,6 +79,14 @@ function buildHtml(ticket) {
   const precioRow = precio ? `
       <div class="op-item"><span class="op-label">Total Final</span><span class="op-value money">${precio}</span></div>` : '';
 
+  const garantia = Number(ticket.garantiaDias) || 90;
+
+  const servicioHtml = ticket.servicioRealizado ? `
+    <section class="section">
+      <div class="section-label">Servicio Realizado</div>
+      <p class="text-block">${esc(ticket.servicioRealizado)}</p>
+    </section>` : '';
+
   const diagHtml = ticket.diagnosticoTecnico ? `
     <section class="section">
       <div class="section-label">Diagnóstico Técnico</div>
@@ -380,11 +388,13 @@ function buildHtml(ticket) {
       <div class="op-item"><span class="op-label">Estado</span><span class="op-value"><span class="estado-badge">${estado}</span></span></div>
       <div class="op-item"><span class="op-label">Plan</span><span class="op-value">${plan}</span></div>
       <div class="op-item"><span class="op-label">Técnico</span><span class="op-value">${esc(tecnico)}</span></div>
-      <div class="op-item"><span class="op-label">Garantía</span><span class="op-value">90 días</span></div>
+      <div class="op-item"><span class="op-label">Garantía</span><span class="op-value">${garantia} días</span></div>
       ${presupuestoRow}
       ${precioRow}
     </div>
   </section>
+
+  ${servicioHtml}
 
   ${diagHtml}
 
@@ -398,7 +408,7 @@ function buildHtml(ticket) {
     <div class="footer-main">
       <div class="disclaimer">
         <strong>Garantía de Servicio:</strong> El trabajo realizado tiene una garantía de
-        <strong>90 días</strong> sobre mano de obra a partir de la fecha de entrega del equipo.
+        <strong>${garantia} días</strong> sobre mano de obra a partir de la fecha de entrega del equipo.
         Los repuestos están sujetos a la garantía del fabricante. La garantía no cubre daños
         por humedad, golpes o mal uso posterior a la entrega.
       </div>
@@ -437,24 +447,224 @@ function buildHtml(ticket) {
 </html>`;
 }
 
+// ── Thermal HTML builder (80mm roll) ─────────────────────────────────────────
+
+function buildThermalHtml(ticket) {
+  const orden        = esc(ticket.numeroOrden) || '—';
+  const fechaIngreso = fmtDate(ticket.fechaIngreso);
+  const fechaPrint   = new Date().toLocaleDateString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+  const clienteNombre = esc([ticket.nombre, ticket.apellido].filter(Boolean).join(' ')) || 'No especificado';
+  const clienteTel    = v(ticket.telefono);
+  const equipo        = v(ticket.equipo);
+  const marcaModelo   = esc([ticket.marca, ticket.modelo].filter(Boolean).join(' ')) || '';
+  const estado        = v(ticket.estado) || 'Ingresado';
+  const garantia      = Number(ticket.garantiaDias) || 90;
+  const trackingUrl   = buildTrackingUrl(ticket);
+  const qrUrl         = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+
+  const presupuesto = fmtMoney(ticket.presupuesto);
+  const precio      = fmtMoney(ticket.precio);
+
+  const rows = (label, val) => val
+    ? `<tr><td class="lbl">${label}</td><td class="val">${val}</td></tr>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket ${orden} — Cósmica</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: 80mm auto;
+      margin: 2mm;
+    }
+
+    html, body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      line-height: 1.4;
+      color: #000;
+      background: #fff;
+      width: 100%;
+    }
+
+    .doc {
+      max-width: 380px;
+      margin: 0 auto;
+      padding: 4px 2px;
+    }
+
+    .center { text-align: center; }
+    .bold   { font-weight: bold; }
+    .lg     { font-size: 14px; }
+    .xl     { font-size: 18px; }
+    .muted  { color: #555; }
+    .small  { font-size: 8px; }
+
+    hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 2px 0; vertical-align: top; }
+    td.lbl { color: #555; width: 38%; font-size: 9px; padding-right: 4px; }
+    td.val { font-weight: 600; }
+
+    .block-label {
+      font-size: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      margin-bottom: 2px;
+      margin-top: 6px;
+    }
+
+    .text-prose {
+      font-size: 9px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .qr-wrap { text-align: center; margin-top: 8px; }
+    .qr-wrap img { width: 100px; height: 100px; display: block; margin: 0 auto; }
+
+    .footer-note {
+      font-size: 8px;
+      color: #555;
+      text-align: center;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    @media print {
+      html, body { background: white !important; }
+    }
+
+    @media screen {
+      body { background: #ccc; padding: 16px; }
+      .doc {
+        background: white;
+        padding: 12px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="doc">
+
+  <div class="center bold xl">CÓSMICA</div>
+  <div class="center muted small">Servicio Técnico Profesional</div>
+
+  <hr>
+
+  <div class="center bold lg">ORDEN #${orden}</div>
+  <div class="center small muted">Ingreso: ${fechaIngreso} &nbsp;|&nbsp; Impreso: ${fechaPrint}</div>
+
+  <hr>
+
+  <div class="block-label">Cliente</div>
+  <table>
+    ${rows('Nombre', clienteNombre)}
+    ${rows('Teléfono', clienteTel)}
+  </table>
+
+  <div class="block-label">Equipo</div>
+  <table>
+    ${rows('Dispositivo', equipo)}
+    ${marcaModelo ? rows('Marca/Modelo', marcaModelo) : ''}
+  </table>
+
+  <div class="block-label">Estado</div>
+  <table>
+    ${rows('Estado', estado)}
+    ${rows('Garantía', garantia + ' días')}
+    ${presupuesto ? rows('Presupuesto', presupuesto) : ''}
+    ${precio ? rows('Total Final', precio) : ''}
+  </table>
+
+  <hr>
+
+  <div class="block-label">Problema Reportado</div>
+  <div class="text-prose">${esc(ticket.problema) || 'No especificado'}</div>
+
+  ${ticket.servicioRealizado ? `
+  <div class="block-label">Servicio Realizado</div>
+  <div class="text-prose">${esc(ticket.servicioRealizado)}</div>` : ''}
+
+  ${ticket.diagnosticoTecnico ? `
+  <div class="block-label">Diagnóstico Técnico</div>
+  <div class="text-prose">${esc(ticket.diagnosticoTecnico)}</div>` : ''}
+
+  <hr>
+
+  <div class="qr-wrap">
+    <img src="${qrUrl}" alt="QR Seguimiento">
+    <div class="small muted" style="margin-top:4px;">Escaneá para ver el estado</div>
+  </div>
+
+  <hr>
+
+  <div class="footer-note">
+    Garantía de servicio: <strong>${garantia} días</strong> sobre mano de obra.<br>
+    Repuestos sujetos a garantía del fabricante.<br>
+    No cubre daños por humedad, golpes o mal uso.
+  </div>
+
+  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div>
+      <div style="border-bottom:1px solid #000;height:24px;"></div>
+      <div class="small muted center" style="margin-top:2px;">Firma cliente</div>
+    </div>
+    <div>
+      <div style="border-bottom:1px solid #000;height:24px;"></div>
+      <div class="small muted center" style="margin-top:2px;">Firma técnico</div>
+    </div>
+  </div>
+
+</div>
+<script>
+  window.addEventListener('load', function () {
+    var img = document.querySelector('.qr-wrap img');
+    function doPrint() { window.focus(); window.print(); window.addEventListener('afterprint', function() { window.close(); }); }
+    if (img && !img.complete) {
+      img.addEventListener('load', doPrint);
+      img.addEventListener('error', doPrint);
+      setTimeout(doPrint, 3500);
+    } else {
+      setTimeout(doPrint, 200);
+    }
+  });
+</script>
+</body>
+</html>`;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Abre una ventana popup con el comprobante de la orden y dispara window.print().
  *
- * @param {Object} ticket  Objeto ticket completo del cache local — no hace fetch.
+ * @param {Object} ticket          Objeto ticket completo del cache local — no hace fetch.
+ * @param {'a4'|'thermal'} [mode]  Formato de impresión. Por defecto 'a4'.
  */
-export function openTicketPrint(ticket) {
-  const win = window.open(
-    '',
-    '_blank',
-    'width=820,height=1060,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes'
-  );
+export function openTicketPrint(ticket, mode = 'a4') {
+  const isThermal = mode === 'thermal';
+  const winSpec   = isThermal
+    ? 'width=420,height=800,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes'
+    : 'width=820,height=1060,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes';
+
+  const win = window.open('', '_blank', winSpec);
   if (!win) {
     alert('Habilitá las ventanas emergentes para imprimir. Luego intentá de nuevo.');
     return;
   }
   win.document.open();
-  win.document.write(buildHtml(ticket));
+  win.document.write(isThermal ? buildThermalHtml(ticket) : buildHtml(ticket));
   win.document.close();
 }

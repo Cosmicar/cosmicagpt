@@ -211,9 +211,10 @@ export class TicketFormView extends AsyncView {
         <div class="flex-between" style="align-items:flex-end;">
           <div style="flex:1;">${headerHtml}</div>
           ${this.isEdit ? `
-            <button class="btn btn-secondary form-print-btn" style="margin-left:var(--space-md);white-space:nowrap;font-size:var(--font-sm);" title="Imprimir orden">
-              🖨 Imprimir Orden
-            </button>
+            <div style="display:flex;gap:var(--space-xs);margin-left:var(--space-md);">
+              <button class="btn btn-secondary form-print-btn" data-mode="a4" style="white-space:nowrap;font-size:var(--font-sm);">🖨 A4</button>
+              <button class="btn btn-secondary form-print-btn" data-mode="thermal" style="white-space:nowrap;font-size:var(--font-sm);">🧾 Ticket</button>
+            </div>
           ` : ''}
         </div>
 
@@ -273,6 +274,14 @@ export class TicketFormView extends AsyncView {
                 value: ticket?.precio || ''
               })}
 
+              ${renderFormField({
+                label: 'Garantía (días)',
+                id: 'garantiaDias',
+                type: 'number',
+                placeholder: '90',
+                value: ticket?.garantiaDias ?? 90
+              })}
+
             </div>
 
             <div>
@@ -285,6 +294,16 @@ export class TicketFormView extends AsyncView {
                 required: true
               })}
             </div>
+
+            ${this.isEdit ? `<div>
+              ${renderFormField({
+                label: 'Servicio Realizado',
+                id: 'servicioRealizado',
+                placeholder: 'Describí el trabajo técnico ejecutado...',
+                isTextArea: true,
+                value: ticket?.servicioRealizado || '',
+              })}
+            </div>` : ''}
 
             <div style="display: flex; align-items: center; gap: var(--space-sm); color: var(--text-muted); font-size: var(--font-xs);">
               <span style="color: var(--danger);">*</span> Campos obligatorios
@@ -316,13 +335,14 @@ export class TicketFormView extends AsyncView {
       this.initRepuestosHandlers();
       mountTicketTimeline(this.ticketId);
 
-      const printBtn = document.querySelector('.form-print-btn');
-      if (printBtn && this._ticket) {
-        printBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openTicketPrint(this._ticket);
-        });
-      }
+      document.querySelectorAll('.form-print-btn').forEach(btn => {
+        if (this._ticket) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openTicketPrint(this._ticket, btn.dataset.mode || 'a4');
+          });
+        }
+      });
     }
   }
 

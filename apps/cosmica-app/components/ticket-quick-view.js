@@ -153,6 +153,10 @@ function renderBody(ticket) {
         <div class="qv-meta-label">Plan</div>
         <div class="qv-meta-value" style="text-transform:capitalize;">${plan}</div>
       </div>
+      <div class="qv-meta-item">
+        <div class="qv-meta-label">Garantía</div>
+        <div class="qv-meta-value">${ticket.garantiaDias ?? 90} días</div>
+      </div>
     </div>
 
     <!-- Problema -->
@@ -163,6 +167,15 @@ function renderBody(ticket) {
         ${ticket.problema || 'No especificado'}
       </p>
     </div>
+
+    ${ticket.servicioRealizado ? `
+    <div class="qv-separator"></div>
+    <div>
+      <div class="qv-section-label">Servicio Realizado</div>
+      <p style="font-size:var(--font-sm);color:var(--text-primary);line-height:1.6;margin:0;">
+        ${ticket.servicioRealizado}
+      </p>
+    </div>` : ''}
 
     ${budgetBlock}
     ${actionsBlock}
@@ -181,9 +194,10 @@ function renderBody(ticket) {
           ♻️ Generar Reingreso (Garantía)
         </button>
       ` : ''}
-      <button class="btn btn-secondary qv-print-btn" data-id="${ticket.id}" style="width:100%;">
-        🖨 Imprimir Orden
-      </button>
+      <div style="display:flex;gap:var(--space-xs);">
+        <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="flex:1;">🖨 A4</button>
+        <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="flex:1;">🧾 Ticket</button>
+      </div>
       <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">
         📝 Editar completo
       </a>
@@ -255,14 +269,13 @@ export function openTicketQuickView(ticket, { onStatusChange } = {}) {
         });
       }
 
-      // Print button
-      const printBtn = bodyEl.querySelector('.qv-print-btn');
-      if (printBtn) {
-        printBtn.addEventListener('click', (e) => {
+      // Print buttons (A4 + Thermal)
+      bodyEl.querySelectorAll('.qv-print-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          openTicketPrint(ticket);
+          openTicketPrint(ticket, btn.dataset.mode || 'a4');
         });
-      }
+      });
 
       // Status selector handler
       const select = bodyEl.querySelector('#qv-status-select');

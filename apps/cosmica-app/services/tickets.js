@@ -55,6 +55,7 @@ export async function createTicket(data) {
       diagnostico: "",
       diagnosticoTecnico: "",
       servicioRealizado: "",
+      garantiaDias: Number(data.garantiaDias) || 90,
       precio: Number(data.precio || 0),
       presupuesto: 0,
       aprobadoCliente: false,
@@ -176,6 +177,8 @@ export async function updateTicket(id, data) {
       marca: data.marca ? data.marca.trim() : "",
       modelo: data.modelo ? data.modelo.trim() : "",
       problema: data.problema.trim(),
+      servicioRealizado: (data.servicioRealizado || '').trim(),
+      garantiaDias: Number(data.garantiaDias) || 90,
       precio: Number(data.precio || 0),
       planServicio: data.planServicio || "estandar",
       updatedAt: serverTimestamp()
