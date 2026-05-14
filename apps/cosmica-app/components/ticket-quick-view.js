@@ -1,4 +1,5 @@
 import { openDrawer } from './drawer.js';
+import { openTicketPrint } from './ticket-print.js';
 import { updateTicketStatus } from '../services/tickets.js';
 import { getTicketHistory } from '../services/ticket-history.js';
 import { WORK_STATUS } from '../../../js/domain.js';
@@ -188,8 +189,11 @@ function renderBody(ticket) {
       <div id="qv-timeline-events">${renderTimelineSkeleton()}</div>
     </div>
 
-    <!-- Edit full -->
-    <div style="margin-top:var(--space-xl);">
+    <!-- Actions -->
+    <div style="margin-top:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-sm);">
+      <button class="btn btn-secondary qv-print-btn" data-id="${ticket.id}" style="width:100%;">
+        🖨 Imprimir Orden
+      </button>
       <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">
         📝 Editar completo
       </a>
@@ -215,6 +219,15 @@ export function openTicketQuickView(ticket, { onStatusChange } = {}) {
     (bodyEl) => {
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
+
+      // Print button
+      const printBtn = bodyEl.querySelector('.qv-print-btn');
+      if (printBtn) {
+        printBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openTicketPrint(ticket);
+        });
+      }
 
       // Status selector handler
       const select = bodyEl.querySelector('#qv-status-select');

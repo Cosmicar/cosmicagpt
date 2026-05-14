@@ -8,6 +8,7 @@ import { createTicket, getTicket, updateTicket, updateTicketBudget } from '../se
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 import { renderFormSkeleton } from '../components/app-state.js';
+import { openTicketPrint } from '../components/ticket-print.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -98,6 +99,7 @@ export class TicketFormView extends AsyncView {
       throw new Error("No se pudo encontrar el trabajo solicitado.");
     }
 
+    this._ticket = ticket;
     return { clientes, ticket };
   }
 
@@ -139,7 +141,14 @@ export class TicketFormView extends AsyncView {
     return `
       <div id="ticket-form-wrapper" class="animate-fade-in stack-lg">
         ${breadcrumbHtml}
-        ${headerHtml}
+        <div class="flex-between" style="align-items:flex-end;">
+          <div style="flex:1;">${headerHtml}</div>
+          ${this.isEdit ? `
+            <button class="btn btn-secondary form-print-btn" style="margin-left:var(--space-md);white-space:nowrap;font-size:var(--font-sm);" title="Imprimir orden">
+              🖨 Imprimir Orden
+            </button>
+          ` : ''}
+        </div>
 
         <div class="card glass-card" style="max-width: 900px;">
           <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
@@ -236,6 +245,14 @@ export class TicketFormView extends AsyncView {
     if (this.isEdit) {
       this.initBudgetHandlers();
       mountTicketTimeline(this.ticketId);
+
+      const printBtn = document.querySelector('.form-print-btn');
+      if (printBtn && this._ticket) {
+        printBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openTicketPrint(this._ticket);
+        });
+      }
     }
   }
 

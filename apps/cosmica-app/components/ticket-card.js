@@ -69,16 +69,15 @@ export function render(ticket, selected = false) {
       </div>
       ` : ''}
 
-      ${canEdit ? `
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">
-        <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 6px; outline: none;">
-          ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-        </select>
-        <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 6px 10px;">
-          <i>📝</i>
-        </a>
+        ${canEdit ? `
+          <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 6px; outline: none;">
+            ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+          </select>
+          <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 6px 10px;" title="Editar"><i>📝</i></a>
+        ` : '<div style="flex:1;"></div>'}
+        <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding: 6px 10px;" title="Imprimir orden">🖨</button>
       </div>
-      ` : ''}
     </div>
   `;
 }

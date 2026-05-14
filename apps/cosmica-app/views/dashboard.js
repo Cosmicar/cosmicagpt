@@ -5,6 +5,7 @@ import { render as renderClientCard } from '../components/client-card.js';
 import { canAccess } from '../core/session.js';
 
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
+import { openTicketPrint } from '../components/ticket-print.js';
 
 /**
  * Vista de Dashboard Operacional
@@ -61,6 +62,7 @@ export class DashboardView extends AsyncView {
    */
   renderContent(data) {
     const { metrics, recentTickets, recentClients } = data;
+    this._recentTickets = recentTickets;
     const canCreateTicket = canAccess('create-ticket');
 
     return `
@@ -166,6 +168,15 @@ export class DashboardView extends AsyncView {
           console.error(err);
           alert('Error al actualizar estado: ' + err.message);
         }
+      });
+    });
+
+    // Print buttons on dashboard ticket cards
+    document.querySelectorAll('.ticket-print-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ticket = (this._recentTickets || []).find(t => t.id === btn.dataset.id);
+        if (ticket) openTicketPrint(ticket);
       });
     });
 

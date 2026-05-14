@@ -9,6 +9,7 @@ import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
 import { canAccess } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
+import { openTicketPrint } from '../components/ticket-print.js';
 import { seedPaletteCache } from '../components/command-palette.js';
 
 const VIEW_MODES = [
@@ -227,18 +228,17 @@ export class TicketsView extends AsyncView {
         <td class="tt-fecha">${fecha}</td>
         <td class="tt-plan">${plan}</td>
         <td class="tt-acciones tt-cta" data-id="${ticket.id}">
-          ${showCTA ? `
-            <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="white-space:nowrap;font-size:var(--font-xs);">
-              🔧 Pasar a Reparación
-            </button>
-          ` : canEdit ? `
-            <div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${showCTA ? `
+              <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="white-space:nowrap;font-size:var(--font-xs);">🔧 Pasar a Reparación</button>
+            ` : canEdit ? `
               <select class="status-selector" data-id="${ticket.id}">
                 ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
               </select>
-              <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;">📝</a>
-            </div>
-          ` : '—'}
+              <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;" title="Editar">📝</a>
+            ` : ''}
+            <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding:4px 8px;" title="Imprimir orden">🖨</button>
+          </div>
         </td>
       </tr>`;
   }
@@ -311,6 +311,13 @@ export class TicketsView extends AsyncView {
       const qrBtn = e.target.closest('.quick-repair-btn');
       if (qrBtn) {
         this.handleQuickRepair(qrBtn.dataset.id, qrBtn);
+        return;
+      }
+      const printBtn = e.target.closest('.ticket-print-btn');
+      if (printBtn) {
+        e.stopPropagation();
+        const ticket = this.allTickets.find(t => t.id === printBtn.dataset.id);
+        if (ticket) openTicketPrint(ticket);
         return;
       }
       if (e.target.closest('select, .btn, a, button')) return;
