@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Sesión confirmada con perfil válido: mostrar shell completo
     document.body.classList.add('session-ready');
+    renderSidebar(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
 
@@ -92,12 +93,44 @@ function initSidebarMobile() {
       sidebar.classList.toggle('active');
     });
 
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-      link.addEventListener('click', () => {
+    // Delegación de eventos para links dinámicos
+    sidebar.addEventListener('click', (e) => {
+      if (e.target.closest('.sidebar-link')) {
         if (window.innerWidth <= 768) {
           sidebar.classList.remove('active');
         }
-      });
+      }
     });
   }
+}
+
+/**
+ * Renderiza el sidebar de forma dinámica según el rol
+ * @param {Object} profile 
+ */
+function renderSidebar(profile) {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
+  const role = profile?.rol || 'operador';
+  
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin', 'tecnico', 'recepcion'] },
+    { id: 'tickets', label: 'Trabajos', icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion'] },
+    { id: 'clientes', label: 'Clientes', icon: '👥', roles: ['admin', 'recepcion'] },
+    { id: 'inventario', label: 'Inventario', icon: '📦', roles: ['admin'] },
+    { id: 'configuracion', label: 'Configuración', icon: '⚙️', roles: ['admin'] }
+  ];
+
+  const filteredItems = menuItems.filter(item => item.roles.includes(role));
+
+  sidebar.innerHTML = `
+    <div class="sidebar-nav">
+      ${filteredItems.map(item => `
+        <a href="#${item.id}" class="sidebar-link ${window.location.hash === '#' + item.id || (item.id === 'dashboard' && !window.location.hash) ? 'active' : ''}">
+          <i>${item.icon}</i> ${item.label}
+        </a>
+      `).join('')}
+    </div>
+  `;
 }

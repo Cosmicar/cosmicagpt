@@ -1,3 +1,5 @@
+import { canAccess } from '../core/session.js';
+
 /**
  * Componente para renderizar una card de cliente
  * 
@@ -5,6 +7,8 @@
  * @returns {string} HTML
  */
 export function render(cliente) {
+  const canEdit = canAccess('create-client'); // Usamos create-client como permiso para recepcion/admin
+
   return `
     <div class="card glass-card">
       <h3 class="card-title" style="font-size: var(--font-md);">${cliente.nombre || 'Sin Nombre'} ${cliente.apellido || ''}</h3>
@@ -13,11 +17,14 @@ export function render(cliente) {
         <strong>Tel:</strong> ${cliente.telefono || 'N/A'}<br>
         <strong>Provincia:</strong> ${cliente.provincia || 'N/A'}
       </p>
+      
+      ${canEdit ? `
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; justify-content: flex-end;">
         <a href="#cliente-edit?id=${cliente.id}" class="btn btn-sm btn-secondary" style="font-size: var(--font-xs);">
           <i>📝</i> Editar
         </a>
       </div>
+      ` : ''}
     </div>
   `;
 }

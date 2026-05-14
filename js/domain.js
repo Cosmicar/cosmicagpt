@@ -36,6 +36,8 @@ export const ESTADO_RESERVA = Object.freeze({
 
 export const ROLES = Object.freeze({
   admin: "admin",
+  tecnico: "tecnico",
+  recepcion: "recepcion",
   operador: "operador",
   tester: "tester"
 });

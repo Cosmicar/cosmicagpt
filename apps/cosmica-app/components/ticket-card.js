@@ -1,4 +1,5 @@
 import { WORK_STATUS } from '../../../js/domain.js';
+import { canAccess } from '../core/session.js';
 
 /**
  * Componente para renderizar una card de ticket
@@ -24,6 +25,8 @@ export function render(ticket) {
     WORK_STATUS.entregado
   ];
 
+  const canEdit = canAccess('edit-ticket');
+
   return `
     <div class="card glass-card" id="ticket-card-${ticket.id}">
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -44,6 +47,7 @@ export function render(ticket) {
         <strong>Problema:</strong> ${ticket.problema || 'No especificado'}
       </div>
 
+      ${canEdit ? `
       <div style="margin-top: var(--space-md); display: flex; align-items: center; gap: var(--space-sm);">
         <label style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Estado:</label>
         <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 4px; outline: none;">
@@ -53,6 +57,7 @@ export function render(ticket) {
           <i>📝</i>
         </a>
       </div>
+      ` : ''}
     </div>
   `;
 }

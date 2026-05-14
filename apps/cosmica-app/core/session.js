@@ -64,3 +64,48 @@ export async function logout() {
   clearSession();
   window.location.reload();
 }
+
+/**
+ * Verifica si el usuario actual tiene un rol específico
+ * @param {string|Array} role - Rol o lista de roles permitidos
+ * @returns {boolean}
+ */
+export function hasRole(role) {
+  const profile = currentSession.profile;
+  if (!profile) return false;
+  
+  if (Array.isArray(role)) {
+    return role.includes(profile.rol);
+  }
+  return profile.rol === role;
+}
+
+/**
+ * Verifica si el usuario puede acceder a un recurso o acción
+ * @param {string} action - 'admin' | 'edit-ticket' | 'create-client' | etc.
+ * @returns {boolean}
+ */
+export function canAccess(action) {
+  const profile = currentSession.profile;
+  if (!profile) return false;
+  
+  const role = profile.rol;
+  
+  // Admin tiene acceso total
+  if (role === 'admin') return true;
+  
+  switch (action) {
+    case 'config':
+      return false; // Solo admin
+    case 'edit-ticket':
+      return role === 'tecnico';
+    case 'create-ticket':
+    case 'create-client':
+      return role === 'recepcion';
+    case 'view-tickets':
+    case 'view-clients':
+      return true; // Todos los roles staff
+    default:
+      return false;
+  }
+}

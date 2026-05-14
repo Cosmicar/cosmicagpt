@@ -2,6 +2,7 @@ import { AsyncView } from '../core/async-view.js';
 import { getDashboardData } from '../services/dashboard.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { render as renderClientCard } from '../components/client-card.js';
+import { canAccess } from '../core/session.js';
 
 /**
  * Vista de Dashboard Operacional
@@ -25,6 +26,7 @@ export class DashboardView extends AsyncView {
    */
   renderContent(data) {
     const { metrics, recentTickets, recentClients } = data;
+    const canCreateTicket = canAccess('create-ticket');
 
     return `
       <div class="dashboard-grid" style="display: flex; flex-direction: column; gap: var(--space-xl); animation: fadeIn 0.4s ease-out;">
@@ -38,7 +40,7 @@ export class DashboardView extends AsyncView {
           </div>
           <div style="display: flex; gap: var(--space-sm);">
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
-             <a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>
+             ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>' : ''}
           </div>
         </header>
 
