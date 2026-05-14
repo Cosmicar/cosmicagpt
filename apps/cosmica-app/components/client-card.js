@@ -26,10 +26,11 @@ export function render(cliente) {
       </div>
       
       ${canEdit ? `
-      <div class="vm-details" style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; justify-content: flex-end;">
-        <a href="#cliente-edit?id=${cliente.id}" class="btn btn-sm btn-secondary" style="width: 100%;">
-          <i>📝</i> Editar Perfil
+        <a href="#cliente-edit?id=${cliente.id}" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center;">
+          <i>📝</i> Editar
         </a>
+        <button class="btn btn-sm btn-secondary client-merge-btn" data-id="${cliente.id}" style="color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.2);" title="Fusionar con otro">🔗</button>
+        <button class="btn btn-sm btn-secondary client-delete-btn" data-id="${cliente.id}" style="color: var(--danger); border-color: rgba(255, 71, 87, 0.2);" title="Eliminar cliente">🗑</button>
       </div>
       ` : ''}
     </div>

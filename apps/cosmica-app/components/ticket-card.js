@@ -68,6 +68,14 @@ export function render(ticket, selected = false) {
         </button>
       </div>
       ` : ''}
+      
+      ${estado === WORK_STATUS.entregado ? `
+      <div class="reingreso-wrap" style="margin-top: var(--space-sm);">
+        <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="width: 100%; font-size: var(--font-xs); background: rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); color: var(--accent-cyan);">
+          ♻️ Generar Reingreso
+        </button>
+      </div>
+      ` : ''}
 
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">
         ${canEdit ? `

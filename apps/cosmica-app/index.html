@@ -216,26 +216,15 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="card glass-card">
-      <div class="badge badge-cyan">Nueva Plataforma</div>
-      <h2 class="card-title" style="margin-top: var(--space-md);">Bienvenido a Cosmica App</h2>
-      <p class="card-content" style="color: var(--text-muted); margin-top: var(--space-sm);">
-        Este es el entorno inicial para el nuevo sistema SaaS. La estructura de carpetas ha sido creada y el sistema está listo para la migración modular.
-      </p>
-      <div style="margin-top: var(--space-lg);">
-        <button class="btn btn-primary">Comenzar Migración</button>
+    <div id="app-loader" style="display:flex;flex-direction:column;gap:var(--space-xl);opacity:0.6;">
+      <div class="skeleton" style="width:250px;height:32px;border-radius:8px;"></div>
+      <div class="grid-stack" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+        <div class="skeleton" style="height:120px;border-radius:var(--radius-md);"></div>
+        <div class="skeleton" style="height:120px;border-radius:var(--radius-md);"></div>
+        <div class="skeleton" style="height:120px;border-radius:var(--radius-md);"></div>
+        <div class="skeleton" style="height:120px;border-radius:var(--radius-md);"></div>
       </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
-      <div class="card glass-card">
-        <h3 class="card-title" style="font-size: var(--font-md);">Estructura Creada</h3>
-        <p class="card-content" style="font-size: var(--font-sm); color: var(--text-muted);">Se crearon las carpetas core, modules, components, layouts, services, assets, styles y views.</p>
-      </div>
-      <div class="card glass-card">
-        <h3 class="card-title" style="font-size: var(--font-md);">Estilos Heredados</h3>
-        <p class="card-content" style="font-size: var(--font-sm); color: var(--text-muted);">Se utilizan los estilos de design-system.css y componentes UI existentes.</p>
-      </div>
+      <div class="skeleton" style="height:400px;border-radius:var(--radius-lg);"></div>
     </div>
   </main>
 

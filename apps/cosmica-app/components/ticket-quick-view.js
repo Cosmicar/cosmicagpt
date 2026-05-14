@@ -1,6 +1,6 @@
 import { openDrawer } from './drawer.js';
 import { openTicketPrint } from './ticket-print.js';
-import { updateTicketStatus } from '../services/tickets.js';
+import { updateTicketStatus, reingresoTicket, approveTicketBudget } from '../services/tickets.js';
 import { getTicketHistory } from '../services/ticket-history.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
@@ -104,7 +104,10 @@ function renderBody(ticket) {
              </span>
              ${ticket.aprobadoCliente
                ? `<span class="badge badge-green" style="font-size:var(--font-xs);">✓ Aprobado</span>`
-               : `<span class="badge badge-orange" style="font-size:var(--font-xs);">Pendiente aprobación</span>`}
+               : `<div style="display:flex;flex-direction:column;gap:var(--space-xs);">
+                    <span class="badge badge-orange" style="font-size:var(--font-xs);">Pendiente aprobación</span>
+                    ${canEdit ? `<button class="btn btn-sm btn-primary qv-approve-btn" data-id="${ticket.id}" style="font-size:10px;padding:4px 8px;">✅ Aprobar ahora</button>` : ''}
+                  </div>`}
            </div>`
         : ''}
     </div>` : '';
@@ -173,6 +176,11 @@ function renderBody(ticket) {
 
     <!-- Actions -->
     <div style="margin-top:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-sm);">
+      ${estado === WORK_STATUS.entregado ? `
+        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="width:100%; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2);">
+          ♻️ Generar Reingreso (Garantía)
+        </button>
+      ` : ''}
       <button class="btn btn-secondary qv-print-btn" data-id="${ticket.id}" style="width:100%;">
         🖨 Imprimir Orden
       </button>
@@ -201,6 +209,51 @@ export function openTicketQuickView(ticket, { onStatusChange } = {}) {
     (bodyEl) => {
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
+
+      // Approval button
+      const approveBtn = bodyEl.querySelector('.qv-approve-btn');
+      if (approveBtn) {
+        approveBtn.addEventListener('click', async () => {
+          approveBtn.disabled = true;
+          approveBtn.textContent = '⏳ Procesando...';
+          const res = await approveTicketBudget(ticket.id);
+          if (res.success) {
+            showToast('Presupuesto aprobado', 'success');
+            ticket.aprobadoCliente = true;
+            // Re-render body to show "Aprobado" badge
+            _bodyEl.innerHTML = renderBody(ticket);
+            // Re-mount events for the new body
+            mountQvTimeline(ticket.id);
+            // Since we re-rendered the whole body, we need to re-wire all buttons. 
+            // Better to just call openTicketQuickView again or refresh.
+            // For now, let's just refresh the whole drawer.
+            openTicketQuickView(ticket, { onStatusChange });
+          } else {
+            showToast(res.error || 'Error al aprobar', 'error');
+            approveBtn.disabled = false;
+            approveBtn.textContent = '✅ Aprobar ahora';
+          }
+        });
+      }
+
+      // Reingreso button
+      const reingresoBtn = bodyEl.querySelector('.qv-reingreso-btn');
+      if (reingresoBtn) {
+        reingresoBtn.addEventListener('click', async () => {
+          if (!confirm('¿Generar un reingreso para este equipo? Se creará una nueva orden.')) return;
+          reingresoBtn.disabled = true;
+          reingresoBtn.textContent = '⏳ Generando...';
+          const res = await reingresoTicket(ticket);
+          if (res.success) {
+            showToast('Reingreso generado con éxito', 'success');
+            window.location.hash = `#ticket-edit?id=${res.id}`;
+          } else {
+            showToast(res.error || 'Error al generar reingreso', 'error');
+            reingresoBtn.disabled = false;
+            reingresoBtn.textContent = '♻️ Generar Reingreso (Garantía)';
+          }
+        });
+      }
 
       // Print button
       const printBtn = bodyEl.querySelector('.qv-print-btn');

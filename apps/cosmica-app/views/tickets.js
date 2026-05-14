@@ -1,5 +1,5 @@
 import { AsyncView } from '../core/async-view.js';
-import { getTickets, updateTicketStatus, updateMultipleTicketStatus, isOverdue, isHighValue, needsApprovalCTA } from '../services/tickets.js';
+import { getTickets, updateTicketStatus, updateMultipleTicketStatus, isOverdue, isHighValue, needsApprovalCTA, reingresoTicket } from '../services/tickets.js';
 import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
@@ -317,6 +317,12 @@ export class TicketsView extends AsyncView {
         this.handleQuickRepair(qrBtn.dataset.id, qrBtn);
         return;
       }
+      const riBtn = e.target.closest('.reingreso-btn');
+      if (riBtn) {
+        e.stopPropagation();
+        this.handleReingreso(riBtn.dataset.id, riBtn);
+        return;
+      }
       const printBtn = e.target.closest('.ticket-print-btn');
       if (printBtn) {
         e.stopPropagation();
@@ -405,6 +411,28 @@ export class TicketsView extends AsyncView {
       showToast(result.error || 'Error al actualizar', 'error');
       btn.disabled = false;
       btn.textContent = '🔧 Pasar a Reparación';
+    }
+  }
+
+  // ── Reingreso ─────────────────────────────────────────────────────────────
+
+  async handleReingreso(id, btn) {
+    if (!confirm('¿Generar un reingreso para este equipo? Se creará una nueva orden.')) return;
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Generando...';
+    
+    const ticket = this.allTickets.find(t => t.id === id);
+    if (!ticket) return;
+
+    const res = await reingresoTicket(ticket);
+    if (res.success) {
+      showToast('Reingreso generado con éxito', 'success');
+      window.location.hash = `#ticket-edit?id=${res.id}`;
+    } else {
+      showToast(res.error || 'Error al generar reingreso', 'error');
+      btn.disabled = false;
+      btn.textContent = '♻️ Generar Reingreso';
     }
   }
 

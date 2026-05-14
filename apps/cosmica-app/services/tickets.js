@@ -317,3 +317,63 @@ export async function updateTicketRepuestos(id, repuestos, totalRepuestos) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Crea un nuevo ticket a partir de uno entregado (Garantía / Reingreso).
+ * Clona los datos básicos pero genera un nuevo número de orden y fecha.
+ *
+ * @param {Object} originalTicket
+ * @returns {Promise<Object>}
+ */
+export async function reingresoTicket(originalTicket) {
+  try {
+    const data = {
+      clienteId:    originalTicket.clienteId,
+      nombre:       originalTicket.nombre,
+      apellido:     originalTicket.apellido,
+      equipo:       originalTicket.equipo,
+      marca:        originalTicket.marca || '',
+      modelo:       originalTicket.modelo || '',
+      planServicio: originalTicket.planServicio || 'estandar',
+      tipo:         originalTicket.tipo || 'taller',
+      problema:     `[REINGRESO] — ${originalTicket.problema || ''}`,
+      precio:       0, // El reingreso suele ser garantía o presupuesto nuevo
+    };
+
+    const result = await createTicket(data);
+    if (!result.success) throw new Error(result.error);
+
+    // Registrar vínculo en el historial del nuevo
+    await addTicketHistoryEvent(result.id, {
+      type:    TICKET_EVENT_TYPES.edited,
+      message: `Reingreso de orden #${originalTicket.numeroOrden}`,
+      metadata: { originalOrderId: originalTicket.id, originalOrderNumber: originalTicket.numeroOrden },
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error en reingresoTicket:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Marca un ticket como aprobado por el cliente.
+ *
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+export async function approveTicketBudget(id) {
+  try {
+    await updateDoc(doc(db, COLLECTIONS.trabajos, id), {
+      aprobadoCliente: true,
+      updatedAt: serverTimestamp(),
+    });
+    await ensureBudgetApprovedEvent(id);
+    invalidateTicketsCache();
+    return { success: true };
+  } catch (error) {
+    console.error("Error al aprobar presupuesto:", error);
+    return { success: false, error: error.message };
+  }
+}

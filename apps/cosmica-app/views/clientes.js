@@ -1,10 +1,11 @@
 import { AsyncView } from '../core/async-view.js';
-import { getClientes } from '../services/clientes.js';
+import { getClientes, deleteCliente, mergeClientes } from '../services/clientes.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderClientCard } from '../components/client-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { seedPaletteCache } from '../components/command-palette.js';
+import { showToast } from '../components/toast.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -140,6 +141,46 @@ export class ClientesView extends AsyncView {
         btn.classList.add('active');
       });
     });
+
+    // Delegated actions on grid
+    grid.addEventListener('click', async (e) => {
+      const delBtn = e.target.closest('.client-delete-btn');
+      if (delBtn) {
+        this.handleDelete(delBtn.dataset.id);
+        return;
+      }
+      const mergeBtn = e.target.closest('.client-merge-btn');
+      if (mergeBtn) {
+        this.handleMerge(mergeBtn.dataset.id);
+        return;
+      }
+    });
+  }
+
+  async handleDelete(id) {
+    if (!confirm('¿Estás seguro de eliminar este cliente? Esta acción no se puede deshacer.')) return;
+    const res = await deleteCliente(id);
+    if (res.success) {
+      showToast('Cliente eliminado', 'success');
+      this.fetchAndRender();
+    } else {
+      showToast(res.error || 'Error al eliminar', 'error');
+    }
+  }
+
+  async handleMerge(sourceId) {
+    const targetId = prompt('Ingrese el ID del cliente principal (Donde se fusionará este registro):');
+    if (!targetId || targetId === sourceId) return;
+
+    if (!confirm('Esta acción eliminará el cliente actual y mantendrá el principal. ¿Continuar?')) return;
+
+    const res = await mergeClientes(targetId, sourceId);
+    if (res.success) {
+      showToast('Clientes fusionados correctamente', 'success');
+      this.fetchAndRender();
+    } else {
+      showToast(res.error || 'Error al fusionar', 'error');
+    }
   }
 
   filter(term, grid) {

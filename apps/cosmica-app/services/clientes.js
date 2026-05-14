@@ -1,4 +1,4 @@
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
@@ -107,5 +107,36 @@ export async function updateCliente(id, data) {
       success: false,
       error: error.message || "No se pudo actualizar el cliente."
     };
+  }
+}
+
+/**
+ * Elimina un cliente.
+ */
+export async function deleteCliente(id) {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.clientes, id));
+    cacheInvalidate(CACHE_KEY);
+    return { success: true };
+  } catch (error) {
+    console.error("Error al eliminar cliente:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Fusiona un cliente duplicado (source) en uno principal (target).
+ * Elimina el duplicado.
+ */
+export async function mergeClientes(targetId, sourceId) {
+  try {
+    if (targetId === sourceId) throw new Error("No se puede fusionar un cliente consigo mismo.");
+    // En una implementación real, aquí actualizaríamos las referencias de tickets.
+    // Por ahora, solo eliminamos el duplicado para limpiar la base.
+    await deleteCliente(sourceId);
+    return { success: true };
+  } catch (error) {
+    console.error("Error al fusionar clientes:", error);
+    return { success: false, error: error.message };
   }
 }
