@@ -1,5 +1,6 @@
 import { AsyncView } from '../core/async-view.js';
-import { getTickets, updateTicketStatus, updateMultipleTicketStatus } from '../services/tickets.js';
+import { getTickets, updateTicketStatus, updateMultipleTicketStatus, isOverdue, isHighValue, needsApprovalCTA } from '../services/tickets.js';
+import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
@@ -204,6 +205,9 @@ export class TicketsView extends AsyncView {
       ? ticket.planServicio.charAt(0).toUpperCase() + ticket.planServicio.slice(1)
       : '—';
     const canEdit    = canAccess('edit-ticket');
+    const overdue    = isOverdue(ticket);
+    const highValue  = isHighValue(ticket);
+    const showCTA    = needsApprovalCTA(ticket) && canEdit;
 
     return `
       <tr data-ticket-id="${ticket.id}" style="cursor:pointer;" class="${isSelected ? 'ticket-selected' : ''}">
@@ -212,12 +216,22 @@ export class TicketsView extends AsyncView {
         </td>
         <td class="tt-orden">#${ticket.numeroOrden || '—'}</td>
         <td class="tt-cliente" title="${cliente}">${cliente}</td>
-        <td><span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span></td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
+            <span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span>
+            ${overdue   ? '<span class="badge badge-orange rule-badge">⚠ DEMORADO</span>'  : ''}
+            ${highValue ? '<span class="badge badge-gold rule-badge">💎 ALTO VALOR</span>' : ''}
+          </div>
+        </td>
         <td class="tt-equipo">${equipo}</td>
         <td class="tt-fecha">${fecha}</td>
         <td class="tt-plan">${plan}</td>
-        <td class="tt-acciones">
-          ${canEdit ? `
+        <td class="tt-acciones tt-cta" data-id="${ticket.id}">
+          ${showCTA ? `
+            <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="white-space:nowrap;font-size:var(--font-xs);">
+              🔧 Pasar a Reparación
+            </button>
+          ` : canEdit ? `
             <div style="display:flex;align-items:center;gap:6px;">
               <select class="status-selector" data-id="${ticket.id}">
                 ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
@@ -294,6 +308,11 @@ export class TicketsView extends AsyncView {
         this.toggleTicketSelection(cb.dataset.id);
         return;
       }
+      const qrBtn = e.target.closest('.quick-repair-btn');
+      if (qrBtn) {
+        this.handleQuickRepair(qrBtn.dataset.id, qrBtn);
+        return;
+      }
       if (e.target.closest('select, .btn, a, button')) return;
       const node = e.target.closest('[data-ticket-id]');
       if (!node) return;
@@ -341,6 +360,41 @@ export class TicketsView extends AsyncView {
         if (cached) cached.estado = newStatus;
       },
     });
+  }
+
+  // ── Quick Repair CTA ─────────────────────────────────────────────────────
+
+  async handleQuickRepair(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Procesando...';
+
+    await ensureBudgetApprovedEvent(id);
+    const result = await updateTicketStatus(id, WORK_STATUS.enReparacion);
+
+    if (result.success) {
+      showToast('Pasado a En Reparación', 'success');
+
+      const ticket = this.allTickets.find(t => t.id === id);
+      if (ticket) ticket.estado = WORK_STATUS.enReparacion;
+
+      const badge = document.getElementById(`badge-${id}`);
+      if (badge) {
+        badge.textContent = WORK_STATUS.enReparacion;
+        badge.className   = 'badge badge-orange';
+      }
+
+      // Remove CTA wrapper (card mode)
+      const wrap = btn.closest('.quick-repair-wrap');
+      if (wrap) wrap.remove();
+
+      // Remove CTA cell (table mode)
+      const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
+      if (ctaCell) ctaCell.innerHTML = '';
+    } else {
+      showToast(result.error || 'Error al actualizar', 'error');
+      btn.disabled = false;
+      btn.textContent = '🔧 Pasar a Reparación';
+    }
   }
 
   // ── Status selectors ──────────────────────────────────────────────────────

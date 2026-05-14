@@ -80,11 +80,12 @@ export class DashboardView extends AsyncView {
         </header>
 
         <!-- KPIs Principales -->
-        <section class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <section class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
           ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
           ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
           ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
           ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
+          ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger, #ff4757)', '⚠️')}
         </section>
 
         <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
@@ -164,6 +165,27 @@ export class DashboardView extends AsyncView {
         } catch (err) {
           console.error(err);
           alert('Error al actualizar estado: ' + err.message);
+        }
+      });
+    });
+
+    // Quick Repair CTA — passes to En Reparación, records budget_approved if missing
+    document.querySelectorAll('.quick-repair-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        btn.disabled = true;
+        btn.textContent = '⏳ Procesando...';
+        try {
+          const id = btn.dataset.id;
+          const { updateTicketStatus } = await import('../services/tickets.js');
+          const { ensureBudgetApprovedEvent } = await import('../services/ticket-history.js');
+          await ensureBudgetApprovedEvent(id);
+          await updateTicketStatus(id, 'En reparación');
+          this.fetchAndRender();
+        } catch (err) {
+          console.error(err);
+          btn.disabled = false;
+          btn.textContent = '🔧 Pasar a Reparación';
         }
       });
     });

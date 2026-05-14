@@ -48,6 +48,26 @@ export async function addTicketHistoryEvent(ticketId, eventData) {
 }
 
 /**
+ * Registra el evento budget_approved solo si no existe ya.
+ * Idempotente — se puede llamar cada vez que aprobadoCliente sea true.
+ *
+ * @param {string} ticketId
+ */
+export async function ensureBudgetApprovedEvent(ticketId) {
+  try {
+    const events = await getTicketHistory(ticketId);
+    if (events.some(e => e.type === TICKET_EVENT_TYPES.budgetApproved)) return;
+    await addTicketHistoryEvent(ticketId, {
+      type:     TICKET_EVENT_TYPES.budgetApproved,
+      message:  'Presupuesto aprobado por el cliente',
+      metadata: {},
+    });
+  } catch (err) {
+    console.error('[ticket-history] ensureBudgetApprovedEvent failed:', err);
+  }
+}
+
+/**
  * Recupera el historial de un ticket ordenado por fecha descendente.
  *
  * @param {string} ticketId

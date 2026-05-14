@@ -1,5 +1,6 @@
 import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
+import { isOverdue, isHighValue, needsApprovalCTA } from '../services/tickets.js';
 
 /**
  * Componente para renderizar una card de ticket
@@ -26,6 +27,9 @@ export function render(ticket, selected = false) {
   ];
 
   const canEdit = canAccess('edit-ticket');
+  const overdue   = isOverdue(ticket);
+  const highValue = isHighValue(ticket);
+  const showCTA   = needsApprovalCTA(ticket) && canEdit;
 
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" style="display: flex; flex-direction: column; cursor: pointer;">
@@ -37,7 +41,11 @@ export function render(ticket, selected = false) {
           </h3>
           <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">#${ticket.numeroOrden || 'N/A'}</div>
         </div>
-        <div class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <div class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</div>
+          ${overdue   ? '<div class="badge badge-orange rule-badge">⚠ DEMORADO</div>'  : ''}
+          ${highValue ? '<div class="badge badge-gold rule-badge">💎 ALTO VALOR</div>' : ''}
+        </div>
       </div>
       
       <div style="flex: 1;">
@@ -52,6 +60,14 @@ export function render(ticket, selected = false) {
           <span class="vm-problema-text">${ticket.problema || 'No especificado'}</span>
         </div>
       </div>
+
+      ${showCTA ? `
+      <div class="quick-repair-wrap" style="margin-top: var(--space-sm);">
+        <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="width: 100%; font-size: var(--font-xs);">
+          🔧 Pasar a Reparación
+        </button>
+      </div>
+      ` : ''}
 
       ${canEdit ? `
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">

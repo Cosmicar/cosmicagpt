@@ -206,6 +206,24 @@ export async function updateTicket(id, data) {
 }
 
 /**
+ * Reglas derivadas — sin lectura a Firestore, sin efectos secundarios.
+ */
+
+export function isOverdue(ticket) {
+  if (ticket.estado !== WORK_STATUS.enReparacion) return false;
+  if (!ticket.fechaIngreso) return false;
+  return Date.now() - new Date(ticket.fechaIngreso).getTime() > 7 * 24 * 60 * 60 * 1000;
+}
+
+export function isHighValue(ticket) {
+  return Number(ticket.presupuesto || 0) >= 100_000;
+}
+
+export function needsApprovalCTA(ticket) {
+  return ticket.aprobadoCliente === true && ticket.estado === WORK_STATUS.ingresado;
+}
+
+/**
  * Actualiza el estado de múltiples tickets en paralelo.
  * No usa batch Firestore — cada ticket genera su propio historial.
  *

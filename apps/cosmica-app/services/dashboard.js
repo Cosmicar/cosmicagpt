@@ -1,4 +1,4 @@
-import { getTickets } from './tickets.js';
+import { getTickets, isOverdue } from './tickets.js';
 import { getClientes } from './clientes.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 
@@ -20,17 +20,15 @@ export async function getDashboardMetrics() {
     if (t.estado === WORK_STATUS.ingresado) acc.pending++;
     if (t.estado === WORK_STATUS.enReparacion) acc.inRepair++;
     if (t.estado === WORK_STATUS.listo) acc.ready++;
-    
-    // Chequear si fue entregado hoy
+    if (isOverdue(t)) acc.overdue++;
+
     if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
       const deliveredDate = t.fechaEntregado.split('T')[0];
-      if (deliveredDate === todayStr) {
-        acc.deliveredToday++;
-      }
+      if (deliveredDate === todayStr) acc.deliveredToday++;
     }
-    
+
     return acc;
-  }, { pending: 0, inRepair: 0, ready: 0, deliveredToday: 0 });
+  }, { pending: 0, inRepair: 0, ready: 0, deliveredToday: 0, overdue: 0 });
 }
 
 /**
