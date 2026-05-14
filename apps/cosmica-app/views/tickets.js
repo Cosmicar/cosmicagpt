@@ -6,6 +6,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
+import { canAccess } from '../core/session.js';
 
 /**
  * Vista de Tickets / Trabajos con Búsqueda y Filtros Rápidos
@@ -14,6 +15,7 @@ const VIEW_MODES = [
   { key: 'compact',     label: '⊟',  title: 'Compacto'  },
   { key: 'comfortable', label: '⊞',  title: 'Normal'    },
   { key: 'expanded',    label: '▦',  title: 'Expandido' },
+  { key: 'table',       label: '≡',  title: 'Tabla'     },
 ];
 const VM_STORAGE_KEY = 'ticketsViewMode';
 
@@ -24,7 +26,9 @@ export class TicketsView extends AsyncView {
     this.allTickets = [];
     this.currentFilter = 'all';
     this.currentTerm = '';
-    this.viewMode = localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
+    const saved = localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
+    const isMobile = window.innerWidth < 768;
+    this.viewMode = (saved === 'table' && isMobile) ? 'comfortable' : saved;
   }
 
   renderViewModeSelector() {
@@ -103,7 +107,7 @@ export class TicketsView extends AsyncView {
       </div>
       
       <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
-        ${this.renderCards(tickets)}
+        ${this.viewMode === 'table' ? this.renderTable(tickets) : this.renderCards(tickets)}
       </div>
     `;
     return html;
@@ -148,15 +152,23 @@ export class TicketsView extends AsyncView {
         const mode = btn.dataset.mode;
         if (mode === this.viewMode) return;
 
+        const wasTable = this.viewMode === 'table';
+        const isTable  = mode === 'table';
+
         this.viewMode = mode;
         localStorage.setItem(VM_STORAGE_KEY, mode);
 
-        // Swap class on the grid — no card re-render needed
-        grid.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded');
+        grid.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded', 'vm-table');
         grid.classList.add(`vm-${mode}`);
 
         document.querySelectorAll('.vm-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        if (wasTable || isTable) {
+          const filtered = this.getFilteredTickets();
+          grid.innerHTML = isTable ? this.renderTable(filtered) : this.renderCards(filtered);
+          this.initStatusSelectors();
+        }
       });
     });
 
@@ -204,10 +216,9 @@ export class TicketsView extends AsyncView {
     selectElement.disabled = false;
   }
 
-  applyFilters(grid) {
+  getFilteredTickets() {
     let filtered = this.allTickets;
 
-    // 1. Filtro por Estado
     if (this.currentFilter !== 'all') {
       filtered = filtered.filter(t => {
         const estado = t.estado;
@@ -218,20 +229,89 @@ export class TicketsView extends AsyncView {
       });
     }
 
-    // 2. Búsqueda por Texto
     if (this.currentTerm) {
-      filtered = filtered.filter(t => {
-        return (
-          (t.nombre && t.nombre.toLowerCase().includes(this.currentTerm)) ||
-          (t.apellido && t.apellido.toLowerCase().includes(this.currentTerm)) ||
-          (t.numeroOrden && String(t.numeroOrden).toLowerCase().includes(this.currentTerm)) ||
-          (t.problema && t.problema.toLowerCase().includes(this.currentTerm))
-        );
-      });
+      filtered = filtered.filter(t =>
+        (t.nombre && t.nombre.toLowerCase().includes(this.currentTerm)) ||
+        (t.apellido && t.apellido.toLowerCase().includes(this.currentTerm)) ||
+        (t.numeroOrden && String(t.numeroOrden).toLowerCase().includes(this.currentTerm)) ||
+        (t.problema && t.problema.toLowerCase().includes(this.currentTerm))
+      );
     }
 
-    grid.innerHTML = this.renderCards(filtered);
-    this.initStatusSelectors(); // Re-bindear tras filtrar
+    return filtered;
+  }
+
+  applyFilters(grid) {
+    const filtered = this.getFilteredTickets();
+    grid.innerHTML = this.viewMode === 'table' ? this.renderTable(filtered) : this.renderCards(filtered);
+    this.initStatusSelectors();
+  }
+
+  renderTable(tickets) {
+    if (tickets.length === 0) {
+      return `<div style="grid-column: 1 / -1;">${renderEmptyState('No se encontraron trabajos que coincidan con los filtros.')}</div>`;
+    }
+    const statusOptions = [
+      WORK_STATUS.ingresado,
+      WORK_STATUS.enReparacion,
+      WORK_STATUS.listo,
+      WORK_STATUS.entregado,
+    ];
+    return `
+      <div class="tickets-table-wrapper">
+        <table class="tickets-table">
+          <thead>
+            <tr>
+              <th>Orden</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th>Equipo</th>
+              <th>Fecha</th>
+              <th>Plan</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tickets.map(t => this.renderTableRow(t, statusOptions)).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  renderTableRow(ticket, statusOptions) {
+    const estado = ticket.estado || WORK_STATUS.ingresado;
+    let badgeClass = 'badge-cyan';
+    if (estado === WORK_STATUS.enReparacion) badgeClass = 'badge-orange';
+    if (estado === WORK_STATUS.listo)        badgeClass = 'badge-green';
+    if (estado === WORK_STATUS.entregado)    badgeClass = 'badge-gray';
+
+    const fecha   = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString('es-AR') : '—';
+    const equipo  = [ticket.equipo, ticket.marca].filter(Boolean).join(' ') || '—';
+    const cliente = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ') || 'Sin nombre';
+    const plan    = ticket.planServicio
+      ? ticket.planServicio.charAt(0).toUpperCase() + ticket.planServicio.slice(1)
+      : '—';
+    const canEdit = canAccess('edit-ticket');
+
+    return `
+      <tr>
+        <td class="tt-orden">#${ticket.numeroOrden || '—'}</td>
+        <td class="tt-cliente" title="${cliente}">${cliente}</td>
+        <td><span class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</span></td>
+        <td class="tt-equipo">${equipo}</td>
+        <td class="tt-fecha">${fecha}</td>
+        <td class="tt-plan">${plan}</td>
+        <td class="tt-acciones">
+          ${canEdit ? `
+            <div style="display:flex;align-items:center;gap:6px;">
+              <select class="status-selector" data-id="${ticket.id}">
+                ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+              </select>
+              <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;">📝</a>
+            </div>
+          ` : '—'}
+        </td>
+      </tr>`;
   }
 
   renderEmpty() {
