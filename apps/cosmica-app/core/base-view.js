@@ -3,6 +3,10 @@
  * Proporciona un ciclo de vida mínimo para evitar hacks temporales.
  */
 export class BaseView {
+  constructor(params = {}) {
+    this.params = params;
+  }
+
   /**
    * Genera el HTML de la vista.
    * @returns {string} HTML string

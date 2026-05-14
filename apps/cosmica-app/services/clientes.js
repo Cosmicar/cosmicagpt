@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
 
@@ -22,6 +22,19 @@ export async function getClientes() {
     console.error("Error al obtener clientes en el servicio:", error);
     throw error; // Re-lanzar para que la vista lo maneje
   }
+}
+
+/**
+ * Obtiene un cliente específico por ID.
+ * @param {string} id 
+ * @returns {Promise<Object>} Datos del cliente
+ */
+export async function getCliente(id) {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.clientes, id));
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() };
+  }
+  throw new Error("Cliente no encontrado.");
 }
 
 /**
@@ -63,6 +76,41 @@ export async function createCliente(data) {
     return {
       success: false,
       error: error.message || "No se pudo registrar el cliente. Intente nuevamente."
+    };
+  }
+}
+
+/**
+ * Actualiza un cliente existente.
+ * 
+ * @param {string} id 
+ * @param {Object} data 
+ * @returns {Promise<Object>} Resultado
+ */
+export async function updateCliente(id, data) {
+  try {
+    const docRef = doc(db, COLLECTIONS.clientes, id);
+    
+    const updateData = {
+      nombre: data.nombre.trim(),
+      dni: data.dni.trim(),
+      telefono: data.telefono.trim(),
+      provincia: data.provincia || 'no_definida',
+      observaciones: data.observaciones ? data.observaciones.trim() : '',
+      updatedAt: serverTimestamp()
+    };
+
+    await updateDoc(docRef, updateData);
+    
+    return {
+      success: true,
+      message: "Cliente actualizado correctamente."
+    };
+  } catch (error) {
+    console.error("Error al actualizar cliente en el servicio:", error);
+    return {
+      success: false,
+      error: error.message || "No se pudo actualizar el cliente."
     };
   }
 }

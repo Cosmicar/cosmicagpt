@@ -3,13 +3,19 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
-import { createCliente } from '../services/clientes.js';
+import { createCliente, getCliente, updateCliente } from '../services/clientes.js';
 import { showToast } from '../components/toast.js';
 
 /**
- * Vista de Formulario de Cliente (Persistencia Real)
+ * Vista de Formulario de Cliente (Creación y Edición)
  */
 export class ClienteFormView extends BaseView {
+  constructor(params) {
+    super(params);
+    this.clienteId = this.params.get('id');
+    this.isEdit = !!this.clienteId;
+  }
+
   render() {
     const provinces = [
       { value: 'buenos_aires', label: 'Buenos Aires' },
@@ -22,13 +28,13 @@ export class ClienteFormView extends BaseView {
     const breadcrumbHtml = renderBreadcrumb([
       { label: 'Administración', href: '#dashboard', icon: '📁' },
       { label: 'Clientes', href: '#clientes', icon: '👥' },
-      { label: 'Nuevo Cliente', href: '#cliente-nuevo', icon: '👤' }
+      { label: this.isEdit ? 'Editar Cliente' : 'Nuevo Cliente', href: this.isEdit ? `#cliente-edit?id=${this.clienteId}` : '#cliente-nuevo', icon: '👤' }
     ]);
 
     const headerHtml = renderSectionHeader(
-      'Nuevo Cliente', 
-      'Complete los datos para registrar un nuevo cliente en la plataforma.', 
-      '👤 Registro'
+      this.isEdit ? 'Editar Cliente' : 'Nuevo Cliente', 
+      this.isEdit ? 'Modifique los datos del cliente seleccionado.' : 'Complete los datos para registrar un nuevo cliente en la plataforma.', 
+      this.isEdit ? '📝 Edición' : '👤 Registro'
     );
 
     return `
@@ -88,7 +94,7 @@ export class ClienteFormView extends BaseView {
 
             <div id="form-actions-container">
               ${renderFormActions({
-                saveLabel: 'Registrar Cliente',
+                saveLabel: this.isEdit ? 'Actualizar Cliente' : 'Registrar Cliente',
                 onCancelHref: '#clientes'
               })}
             </div>
@@ -99,8 +105,30 @@ export class ClienteFormView extends BaseView {
     `;
   }
 
-  afterRender() {
+  async afterRender() {
     this.initFormHandlers();
+    if (this.isEdit) {
+      await this.loadClienteData();
+    }
+  }
+
+  async loadClienteData() {
+    this.toggleFormLoading(true);
+    try {
+      const cliente = await getCliente(this.clienteId);
+      const form = document.getElementById('cliente-form');
+      if (form && cliente) {
+        form.nombre.value = cliente.nombre || '';
+        form.dni.value = cliente.dni || '';
+        form.telefono.value = cliente.telefono || '';
+        form.provincia.value = cliente.provincia || 'buenos_aires';
+        form.observaciones.value = cliente.observaciones || '';
+      }
+    } catch (error) {
+      this.showError("Error al cargar datos del cliente: " + error.message);
+    } finally {
+      this.toggleFormLoading(false);
+    }
   }
 
   initFormHandlers() {
@@ -113,21 +141,22 @@ export class ClienteFormView extends BaseView {
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       
-      // Cambiar estado a loading
       this.toggleFormLoading(true);
       this.hideError();
 
-      const result = await createCliente(data);
+      const result = this.isEdit 
+        ? await updateCliente(this.clienteId, data)
+        : await createCliente(data);
 
       if (result.success) {
-        showToast('Cliente registrado con éxito', 'success');
-        form.reset();
-        // Redirigir después de un breve delay
+        showToast(this.isEdit ? 'Cliente actualizado con éxito' : 'Cliente registrado con éxito', 'success');
+        if (!this.isEdit) form.reset();
+        
         setTimeout(() => {
           window.location.hash = '#clientes';
         }, 1000);
       } else {
-        showToast(result.error || 'Error al registrar cliente', 'error');
+        showToast(result.error || 'Error al procesar la solicitud', 'error');
         this.showError(result.error);
         this.toggleFormLoading(false);
       }
@@ -138,7 +167,7 @@ export class ClienteFormView extends BaseView {
     const actionsContainer = document.getElementById('form-actions-container');
     if (actionsContainer) {
       actionsContainer.innerHTML = renderFormActions({
-        saveLabel: 'Registrar Cliente',
+        saveLabel: this.isEdit ? 'Actualizar Cliente' : 'Registrar Cliente',
         onCancelHref: '#clientes',
         isSubmitting: isLoading
       });

@@ -27,6 +27,7 @@ export class Router {
       'clientes': ClientesView,
       'tickets': TicketsView,
       'cliente-nuevo': ClienteFormView,
+      'cliente-edit': ClienteFormView,
       // Fallback para módulos no implementados (pueden ser funciones que retornen HTML o clases simples)
       'inventario': class extends BaseView { render() { return renderEmptyState('El módulo de inventario aún no está implementado.'); } },
       'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
@@ -43,13 +44,17 @@ export class Router {
   handleRoute() {
     if (!getCurrentSession().user) return;
 
-    const hash = window.location.hash.slice(1) || 'dashboard';
-    const ViewClass = this.routes[hash];
+    const fullHash = window.location.hash.slice(1) || 'dashboard';
+    // Extraer path y parámetros (ej: #cliente-edit?id=123)
+    const [path, queryString] = fullHash.split('?');
+    const params = new URLSearchParams(queryString);
+    
+    const ViewClass = this.routes[path];
     
     if (ViewClass) {
-      this.loadRoute(new ViewClass(), hash);
+      this.loadRoute(new ViewClass(params), path);
     } else {
-      console.warn(`Ruta no encontrada: ${hash}`);
+      console.warn(`Ruta no encontrada: ${path}`);
       this.loadRoute(new DashboardView(), 'dashboard'); // Fallback
     }
   }
