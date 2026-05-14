@@ -1,13 +1,11 @@
 import { AsyncView } from '../core/async-view.js';
-import { getTickets } from '../services/tickets.js';
-import { getClientes } from '../services/clientes.js';
-import { WORK_STATUS } from '../../../js/domain.js';
+import { getDashboardData } from '../services/dashboard.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { render as renderClientCard } from '../components/client-card.js';
 
 /**
  * Vista de Dashboard Operacional
- * Muestra KPIs reales, actividad reciente y clientes nuevos.
+ * Delegación de lógica a dashboard service.
  */
 export class DashboardView extends AsyncView {
   constructor() {
@@ -16,33 +14,17 @@ export class DashboardView extends AsyncView {
   }
 
   /**
-   * Carga los datos necesarios para el dashboard
+   * Carga los datos necesarios para el dashboard desde el servicio
    */
   async loadData() {
-    const [tickets, clientes] = await Promise.all([
-      getTickets(),
-      getClientes()
-    ]);
-
-    return { tickets, clientes };
+    return await getDashboardData();
   }
 
   /**
-   * Renderiza el contenido del dashboard con los datos reales
+   * Renderiza el contenido del dashboard con los datos procesados
    */
   renderContent(data) {
-    const { tickets, clientes } = data;
-    const kpis = this.calculateKPIs(tickets);
-    
-    // Tomamos los últimos 4 tickets y clientes para las listas de actividad
-    const recentTickets = tickets.slice(0, 5);
-    const recentClients = [...clientes]
-      .sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-        return dateB - dateA;
-      })
-      .slice(0, 5);
+    const { metrics, recentTickets, recentClients } = data;
 
     return `
       <div class="dashboard-grid" style="display: flex; flex-direction: column; gap: var(--space-xl); animation: fadeIn 0.4s ease-out;">
@@ -62,10 +44,10 @@ export class DashboardView extends AsyncView {
 
         <!-- KPIs Principales -->
         <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
-          ${this.renderKPI('PENDIENTES', kpis.pending, 'var(--accent-orange)', '⏳', 'badge-orange')}
-          ${this.renderKPI('EN REPARACIÓN', kpis.inRepair, 'var(--accent-cyan)', '🔧', 'badge-cyan')}
-          ${this.renderKPI('LISTOS', kpis.ready, 'var(--accent-green)', '✅', 'badge-green')}
-          ${this.renderKPI('ENTREGADOS HOY', kpis.deliveredToday, 'var(--text-muted)', '📦', 'badge-gray')}
+          ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
+          ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
+          ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
+          ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
         </section>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
@@ -106,33 +88,9 @@ export class DashboardView extends AsyncView {
   }
 
   /**
-   * Calcula las métricas clave desde el array de tickets
-   */
-  calculateKPIs(tickets) {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    return tickets.reduce((acc, t) => {
-      if (t.estado === WORK_STATUS.ingresado) acc.pending++;
-      if (t.estado === WORK_STATUS.enReparacion) acc.inRepair++;
-      if (t.estado === WORK_STATUS.listo) acc.ready++;
-      
-      // Chequear si fue entregado hoy
-      if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
-        const deliveredDate = t.fechaEntregado.split('T')[0];
-        if (deliveredDate === todayStr) {
-          acc.deliveredToday++;
-        }
-      }
-      
-      return acc;
-    }, { pending: 0, inRepair: 0, ready: 0, deliveredToday: 0 });
-  }
-
-  /**
    * Renderiza una card de KPI individual
    */
-  renderKPI(label, value, color, icon, badgeClass) {
+  renderKPI(label, value, color, icon) {
     return `
       <div class="card glass-card" style="display: flex; flex-direction: column; gap: var(--space-xs); border-left: 4px solid ${color}; transition: transform 0.2s;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -156,7 +114,7 @@ export class DashboardView extends AsyncView {
       btnRefresh.addEventListener('click', () => this.fetchAndRender());
     }
 
-    // Re-vincular eventos si las cards los necesitan (como los selects de estado)
+    // Re-vincular eventos para cambios de estado rápidos
     const selectors = document.querySelectorAll('.status-selector');
     selectors.forEach(select => {
       select.addEventListener('change', async (e) => {
@@ -165,7 +123,6 @@ export class DashboardView extends AsyncView {
         try {
           const { updateTicketStatus } = await import('../services/tickets.js');
           await updateTicketStatus(id, newStatus);
-          // Refrescamos el dashboard para actualizar KPIs
           this.fetchAndRender();
         } catch (err) {
           console.error(err);
