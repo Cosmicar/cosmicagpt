@@ -2,6 +2,7 @@ import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, serverTime
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
+import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
 
 /**
  * Obtiene el listado de tickets (trabajos) desde Firestore.
@@ -66,9 +67,21 @@ export async function createTicket(data) {
 
     // 4. Guardar en Firestore
     const docRef = await addDoc(collection(db, COLLECTIONS.trabajos), nuevoTrabajo);
-    
+
     // 5. Publicar para seguimiento público (legacy sync)
     await publishPublicOrder(docRef.id, nuevoTrabajo);
+
+    // 6. Registrar evento en historial
+    await addTicketHistoryEvent(docRef.id, {
+      type:    TICKET_EVENT_TYPES.created,
+      message: 'Ticket creado',
+      metadata: {
+        numeroOrden,
+        estado: WORK_STATUS.ingresado,
+        equipo: nuevoTrabajo.equipo,
+        planServicio: nuevoTrabajo.planServicio,
+      },
+    });
 
     return {
       success: true,
@@ -112,6 +125,16 @@ export async function updateTicketStatus(id, newStatus) {
 
     // Sincronizar con seguimiento público
     await publishPublicOrder(id, { ...trabajo, ...updateData });
+
+    // Registrar evento en historial
+    await addTicketHistoryEvent(id, {
+      type:    TICKET_EVENT_TYPES.statusChanged,
+      message: `Estado cambiado: ${trabajo.estado} → ${newStatus}`,
+      metadata: {
+        from: trabajo.estado,
+        to:   newStatus,
+      },
+    });
 
     return { success: true };
   } catch (error) {
@@ -159,6 +182,18 @@ export async function updateTicket(id, data) {
 
     // Sincronizar con seguimiento público
     await publishPublicOrder(id, { ...trabajoActual, ...updateData });
+
+    // Registrar evento en historial
+    await addTicketHistoryEvent(id, {
+      type:    TICKET_EVENT_TYPES.edited,
+      message: 'Ticket editado',
+      metadata: {
+        equipo:      updateData.equipo,
+        problema:    updateData.problema,
+        planServicio: updateData.planServicio,
+        precio:      updateData.precio,
+      },
+    });
 
     return { success: true };
   } catch (error) {
