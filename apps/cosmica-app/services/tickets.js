@@ -206,6 +206,29 @@ export async function updateTicket(id, data) {
 }
 
 /**
+ * Actualiza el estado de múltiples tickets en paralelo.
+ * No usa batch Firestore — cada ticket genera su propio historial.
+ *
+ * @param {string[]} ids
+ * @param {string}   status
+ * @returns {Promise<{ success: boolean, updated: number, error?: string }>}
+ */
+export async function updateMultipleTicketStatus(ids, status) {
+  if (!ids.length) return { success: true, updated: 0 };
+
+  const results = await Promise.all(ids.map(id => updateTicketStatus(id, status)));
+  const failed  = results.filter(r => !r.success);
+
+  if (!failed.length) return { success: true, updated: ids.length };
+
+  return {
+    success: failed.length < ids.length,
+    updated: ids.length - failed.length,
+    error:   `${failed.length} de ${ids.length} ticket(s) fallaron al actualizar.`,
+  };
+}
+
+/**
  * Actualiza el diagnóstico técnico y presupuesto al cliente.
  * Operación independiente del flujo principal de edición.
  *

@@ -592,3 +592,123 @@ body {
   }
   .cp-trigger-btn { display: none; }
 }
+
+/* ── Bulk Operations ─────────────────────────────────────────── */
+
+/* Checkbox on ticket cards */
+.ticket-checkbox {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity var(--transition-fast);
+  margin-top: 3px; /* align with first line of title */
+}
+.ticket-checkbox:hover,
+.ticket-checkbox:checked {
+  opacity: 1;
+}
+
+/* Selected card state */
+.card.glass-card.ticket-selected {
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 0 14px var(--accent-cyan-glow), 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Selected table row */
+.tickets-table tbody tr.ticket-selected {
+  background: rgba(0, 229, 255, 0.06);
+}
+.tickets-table tbody tr.ticket-selected:hover {
+  background: rgba(0, 229, 255, 0.1);
+}
+
+/* Checkbox column in table */
+.tt-check {
+  width: 36px;
+  text-align: center;
+  padding: 0 8px !important;
+}
+.tt-check .ticket-checkbox { margin: 0; }
+
+/* Floating bulk action bar */
+.bulk-bar {
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-w, 250px);
+  right: 0;
+  z-index: 150;
+  background: rgba(8, 15, 28, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--accent-cyan);
+  box-shadow: 0 -4px 24px rgba(0, 229, 255, 0.12);
+  padding: var(--space-md) var(--space-xl);
+  padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bulk-bar.is-visible {
+  transform: translateY(0);
+}
+
+.bulk-count {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bulk-action-btn {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: var(--accent-cyan);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.bulk-action-btn:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: var(--accent-cyan);
+}
+.bulk-action-btn:disabled,
+.bulk-clear-btn:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.bulk-clear-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.bulk-clear-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .bulk-bar {
+    left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+  .bulk-actions {
+    justify-content: stretch;
+  }
+  .bulk-action-btn { flex: 1; text-align: center; }
+}
