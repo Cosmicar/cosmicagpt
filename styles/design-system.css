@@ -142,7 +142,8 @@ body {
   padding: var(--space-sm) var(--space-md);
 }
 .grid-stack.vm-compact .vm-meta,
-.grid-stack.vm-compact .vm-problema {
+.grid-stack.vm-compact .vm-problema,
+.grid-stack.vm-compact .vm-details {
   display: none;
 }
 

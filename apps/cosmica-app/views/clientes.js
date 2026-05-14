@@ -8,11 +8,41 @@ import { renderEmptyState, renderCardSkeletonList } from '../components/app-stat
 /**
  * Vista de Clientes con Búsqueda Rápida Local
  */
+const VIEW_MODES = [
+  { key: 'compact',     label: '⊟',  title: 'Compacto'  },
+  { key: 'comfortable', label: '⊞',  title: 'Normal'    },
+  { key: 'expanded',    label: '▦',  title: 'Expandido' },
+];
+const VM_STORAGE_KEY = 'clientsViewMode';
+
 export class ClientesView extends AsyncView {
   constructor() {
     super();
     this.containerId = 'clientes-container';
     this.allClientes = [];
+    const saved = localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
+    const isMobile = window.innerWidth < 768;
+    this.viewMode = isMobile ? 'comfortable' : saved;
+  }
+
+  renderViewModeSelector() {
+    return `
+      <div class="vm-selector" style="
+        display: flex; gap: 3px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 4px;
+      ">
+        ${VIEW_MODES.map(m => `
+          <button
+            class="btn btn-sm vm-btn ${this.viewMode === m.key ? 'active' : ''}"
+            data-mode="${m.key}"
+            title="${m.title}"
+            style="min-width: 32px; font-size: 14px; padding: 4px 8px;"
+          >${m.label}</button>
+        `).join('')}
+      </div>`;
   }
 
   async loadData() {
@@ -49,12 +79,16 @@ export class ClientesView extends AsyncView {
           <input type="text" id="cliente-search" class="input" placeholder="Buscar por nombre, DNI o teléfono..." style="padding-left: 40px; margin-bottom: 0;">
           <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none;">🔍</span>
         </div>
-        <a href="#cliente-nuevo" class="btn btn-primary btn-sm">
-          <i>➕</i> Nuevo Cliente
-        </a>
+        
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          ${this.renderViewModeSelector()}
+          <a href="#cliente-nuevo" class="btn btn-primary btn-sm">
+            <i>➕</i> Nuevo Cliente
+          </a>
+        </div>
       </div>
       
-      <div id="clientes-grid" class="grid-stack" style="margin-top: var(--space-xl); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div id="clientes-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
         ${this.renderCards(clientes)}
       </div>
     `;
@@ -85,9 +119,25 @@ export class ClientesView extends AsyncView {
         this.filter(term, grid);
       });
       
-      // Auto-focus en búsqueda para mejor UX
       searchInput.focus();
     }
+
+    // Selector de modo de vista
+    document.querySelectorAll('.vm-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        if (mode === this.viewMode) return;
+
+        this.viewMode = mode;
+        localStorage.setItem(VM_STORAGE_KEY, mode);
+
+        grid.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded');
+        grid.classList.add(`vm-${mode}`);
+
+        document.querySelectorAll('.vm-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
   }
 
   filter(term, grid) {
