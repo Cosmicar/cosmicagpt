@@ -40,14 +40,15 @@ export function render(ticket) {
       </div>
       
       <div style="flex: 1;">
-        <p style="color: var(--text-muted); font-size: var(--font-sm); margin-bottom: var(--space-md);">
+        <p class="vm-meta" style="color: var(--text-muted); font-size: var(--font-sm); margin-bottom: var(--space-md);">
           <strong style="color: var(--text-primary);">Equipo:</strong> ${ticket.equipo || 'N/A'} ${ticket.marca || ''}<br>
           <strong style="color: var(--text-primary);">Fecha:</strong> ${fecha}<br>
           <strong style="color: var(--text-primary);">Prioridad:</strong> <span style="text-transform: capitalize;">${prioridad}</span>
         </p>
-        
-        <div style="border-top: 1px solid var(--border); padding-top: var(--space-sm); font-size: var(--font-sm); color: var(--text-muted); min-height: 3em;">
-          <strong style="color: var(--text-primary);">Problema:</strong> ${ticket.problema || 'No especificado'}
+
+        <div class="vm-problema" style="border-top: 1px solid var(--border); padding-top: var(--space-sm); font-size: var(--font-sm); color: var(--text-muted); min-height: 3em;">
+          <strong style="color: var(--text-primary);">Problema:</strong>
+          <span class="vm-problema-text">${ticket.problema || 'No especificado'}</span>
         </div>
       </div>
 

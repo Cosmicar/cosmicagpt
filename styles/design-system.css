@@ -121,3 +121,66 @@ body {
   flex-direction: column;
   gap: var(--space-lg);
 }
+
+/* ── Ticket View Modes ──────────────────────────────────────── */
+
+/* Each mode sets its own grid column min-width.
+   The inline style on #tickets-grid is removed so CSS owns this. */
+
+.grid-stack.vm-compact {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.grid-stack.vm-comfortable {
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+}
+.grid-stack.vm-expanded {
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+/* Compact: reduced padding, secondary content hidden */
+.grid-stack.vm-compact .card.glass-card {
+  padding: var(--space-sm) var(--space-md);
+}
+.grid-stack.vm-compact .vm-meta,
+.grid-stack.vm-compact .vm-problema {
+  display: none;
+}
+
+/* Expanded: more breathing room, full problem text */
+.grid-stack.vm-expanded .card.glass-card {
+  padding: var(--space-xl);
+}
+.grid-stack.vm-expanded .vm-meta {
+  line-height: 1.9;
+}
+.grid-stack.vm-expanded .vm-problema-text {
+  -webkit-line-clamp: unset !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Comfortable: clamp problem text to 2 lines */
+.vm-problema-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile: always render as comfortable regardless of saved mode */
+@media (max-width: 640px) {
+  .grid-stack.vm-compact,
+  .grid-stack.vm-expanded {
+    grid-template-columns: 1fr;
+  }
+  .grid-stack.vm-compact .vm-meta,
+  .grid-stack.vm-compact .vm-problema {
+    display: block;
+  }
+  .grid-stack.vm-compact .card.glass-card {
+    padding: var(--space-lg);
+  }
+  .vm-selector {
+    display: none !important;
+  }
+}

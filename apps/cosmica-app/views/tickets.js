@@ -10,6 +10,13 @@ import { showToast } from '../components/toast.js';
 /**
  * Vista de Tickets / Trabajos con Búsqueda y Filtros Rápidos
  */
+const VIEW_MODES = [
+  { key: 'compact',     label: '⊟',  title: 'Compacto'  },
+  { key: 'comfortable', label: '⊞',  title: 'Normal'    },
+  { key: 'expanded',    label: '▦',  title: 'Expandido' },
+];
+const VM_STORAGE_KEY = 'ticketsViewMode';
+
 export class TicketsView extends AsyncView {
   constructor() {
     super();
@@ -17,6 +24,27 @@ export class TicketsView extends AsyncView {
     this.allTickets = [];
     this.currentFilter = 'all';
     this.currentTerm = '';
+    this.viewMode = localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
+  }
+
+  renderViewModeSelector() {
+    return `
+      <div class="vm-selector" style="
+        display: flex; gap: 3px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 4px;
+      ">
+        ${VIEW_MODES.map(m => `
+          <button
+            class="btn btn-sm vm-btn ${this.viewMode === m.key ? 'active' : ''}"
+            data-mode="${m.key}"
+            title="${m.title}"
+            style="min-width: 32px; font-size: 14px; padding: 4px 8px;"
+          >${m.label}</button>
+        `).join('')}
+      </div>`;
   }
 
   async loadData() {
@@ -64,6 +92,8 @@ export class TicketsView extends AsyncView {
               <button class="btn btn-sm btn-filter" data-filter="finalizado">Finalizado</button>
             </div>
 
+            ${this.renderViewModeSelector()}
+
             <a href="#ticket-nuevo" class="btn btn-primary btn-sm">
               <i>➕</i> Nuevo Trabajo
             </a>
@@ -72,7 +102,7 @@ export class TicketsView extends AsyncView {
 
       </div>
       
-      <div id="tickets-grid" class="grid-stack" style="margin-top: var(--space-xl); grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+      <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
         ${this.renderCards(tickets)}
       </div>
     `;
@@ -109,6 +139,24 @@ export class TicketsView extends AsyncView {
         btn.classList.add('active');
         this.currentFilter = btn.dataset.filter;
         this.applyFilters(grid);
+      });
+    });
+
+    // View mode selector
+    document.querySelectorAll('.vm-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        if (mode === this.viewMode) return;
+
+        this.viewMode = mode;
+        localStorage.setItem(VM_STORAGE_KEY, mode);
+
+        // Swap class on the grid — no card re-render needed
+        grid.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded');
+        grid.classList.add(`vm-${mode}`);
+
+        document.querySelectorAll('.vm-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
       });
     });
 
