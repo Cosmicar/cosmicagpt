@@ -6,6 +6,11 @@ import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getCurrentSession } from "../core/session.js";
 import { getTickets } from "./tickets.js";
+import { getActiveCajaSession } from "./caja-sesiones.js";
+
+// Re-export session helpers so the view only needs one import
+export { getActiveCajaSession } from "./caja-sesiones.js";
+export { openCajaSession, closeCajaSession, getCajaSessionHistory, getSessionTotals } from "./caja-sesiones.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -31,9 +36,10 @@ function startOfWeek() {
 // ── Main data aggregation ─────────────────────────────────────────────────────
 
 export async function getFinanzasData() {
-  const [tickets, cajaEntries] = await Promise.all([
+  const [tickets, cajaEntries, activeSession] = await Promise.all([
     getTickets(),
     getCajaEntries(),
+    getActiveCajaSession(),
   ]);
 
   // ── Ticket segments ────────────────────────────────────────────────────────
@@ -78,6 +84,11 @@ export async function getFinanzasData() {
   const cajaHoy    = cajaEntries.filter(e => toDate(e.createdAt) >= todayStart);
   const cajaSemana = cajaEntries.filter(e => toDate(e.createdAt) >= weekStart);
 
+  // Movimientos de la sesión activa (por sessionId)
+  const cajaSession = activeSession
+    ? cajaEntries.filter(e => e.sessionId === activeSession.id)
+    : [];
+
   const calcCaja = (entries) => ({
     ingresos: entries.filter(e => e.tipo === 'ingreso').reduce((s, e) => s + Number(e.monto || 0), 0),
     egresos:  entries.filter(e => e.tipo === 'egreso').reduce((s, e) => s + Number(e.monto || 0), 0),
@@ -86,6 +97,7 @@ export async function getFinanzasData() {
 
   const cajaDia    = calcCaja(cajaHoy);
   const cajaSem    = calcCaja(cajaSemana);
+  const cajaActual = calcCaja(cajaSession);
 
   // ── Tickets delivered today ────────────────────────────────────────────────
   const todayStr = new Date().toISOString().split('T')[0];
@@ -113,9 +125,12 @@ export async function getFinanzasData() {
     cajaEntries,
     cajaHoy,
     cajaSemana,
+    cajaSession,
     cajaDia,
     cajaSem,
+    cajaActual,
     entregadosHoy,
+    activeSession,
   };
 }
 
@@ -138,6 +153,12 @@ export async function createCajaEntry(data) {
     const monto = Number(data.monto);
     if (!monto || monto <= 0) throw new Error('El monto debe ser mayor a cero.');
 
+    // Hardening: bloquear movimientos manuales sin caja abierta
+    const activeSession = await getActiveCajaSession();
+    if (!activeSession) {
+      throw new Error('No hay una caja abierta. Abrí la caja antes de registrar movimientos.');
+    }
+
     const session = getCurrentSession();
     const entry = {
       tipo:        data.tipo === 'egreso' ? 'egreso' : 'ingreso',
@@ -145,8 +166,11 @@ export async function createCajaEntry(data) {
       monto,
       metodoPago:  ['efectivo', 'transferencia', 'tarjeta'].includes(data.metodoPago)
         ? data.metodoPago : 'efectivo',
-      createdAt: serverTimestamp(),
-      createdBy: session?.user?.uid || '',
+      origen:      'manual',
+      ticketId:    null,
+      sessionId:   activeSession.id,
+      createdAt:   serverTimestamp(),
+      createdBy:   session?.user?.uid || '',
     };
 
     const ref = await addDoc(collection(db, COLLECTIONS.caja), entry);

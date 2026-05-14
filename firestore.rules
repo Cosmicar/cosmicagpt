@@ -172,6 +172,36 @@ service cloud.firestore {
     // Solo admin puede leer todos los tokens (para el backend de push).
     // El documento se identifica por el token FCM (string único por dispositivo).
     // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: caja
+    // Movimientos financieros. Staff puede leer y crear.
+    // No se permite editar ni borrar (append-only).
+    // ─────────────────────────────────────────────
+    match /caja/{docId} {
+      allow read, create: if isStaff();
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: cajaSesiones
+    // Sesiones de apertura/cierre. Staff lee.
+    // Solo staff crea (apertura) y actualiza (cierre).
+    // No se puede borrar un cierre histórico.
+    // ─────────────────────────────────────────────
+    match /cajaSesiones/{docId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update: if isStaff() && resource.data.status == 'open';
+      allow delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: inventario
+    // ─────────────────────────────────────────────
+    match /inventario/{docId} {
+      allow read, write: if isStaff();
+    }
+
     match /notification_tokens/{tokenId} {
       // Escritura: cualquier usuario autenticado puede crear/actualizar/eliminar su propio token
       allow write: if isAuthenticated();

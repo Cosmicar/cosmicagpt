@@ -4,6 +4,7 @@ import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
+import { registerTicketIngreso } from './caja-sesiones.js';
 
 const CACHE_KEY = 'tickets:list';
 
@@ -139,6 +140,13 @@ export async function updateTicketStatus(id, newStatus) {
         to:   newStatus,
       },
     });
+
+    // Auto-registrar ingreso en caja cuando el ticket se entrega con precio
+    if (newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0) {
+      registerTicketIngreso({ ...trabajo, id }).catch(err =>
+        console.warn('Auto-registro caja fallido (no crítico):', err)
+      );
+    }
 
     invalidateTicketsCache();
     return { success: true };
