@@ -4,6 +4,7 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderClientCard } from '../components/client-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
+import { seedPaletteCache } from '../components/command-palette.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -47,6 +48,7 @@ export class ClientesView extends AsyncView {
 
   async loadData() {
     this.allClientes = await getClientes();
+    seedPaletteCache({ clients: this.allClientes });
     return this.allClientes;
   }
 

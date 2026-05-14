@@ -2,6 +2,7 @@ import { Router } from './router.js';
 import { initializeSession, logout } from './session.js';
 import { LoginView } from '../views/login.js';
 import { renderLoadingState, renderErrorState } from '../components/app-state.js';
+import { initCommandPalette } from '../components/command-palette.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const mainContent = document.querySelector('.main-content');
@@ -39,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSidebar(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
+    initCommandPalette();
 
     const router = new Router();
 

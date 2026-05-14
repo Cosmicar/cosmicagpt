@@ -8,6 +8,7 @@ import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
 import { canAccess } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
+import { seedPaletteCache } from '../components/command-palette.js';
 
 /**
  * Vista de Tickets / Trabajos con Búsqueda y Filtros Rápidos
@@ -54,6 +55,7 @@ export class TicketsView extends AsyncView {
 
   async loadData() {
     this.allTickets = await getTickets();
+    seedPaletteCache({ tickets: this.allTickets });
     return this.allTickets;
   }
 
