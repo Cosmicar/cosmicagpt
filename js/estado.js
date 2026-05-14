@@ -1,79 +1,242 @@
 import { findPublicOrderByNumeroOrden, getPublicOrder } from "./work-repository.js";
-import { $, escapeHtml, formatDateTime } from "./utils.js";
+import { escapeHtml, formatDateTime } from "./utils.js";
 
-const STATUS_CLASS = {
-  "Listo": "listo",
-  "Entregado": "entregado"
+// ─── Status config ────────────────────────────────────────────────────────────
+
+const STATUS_ORDER = ["Ingresado", "En reparación", "Listo", "Entregado"];
+
+const STATUS_BADGE = {
+  "Ingresado":    { cls: "badge-ingresado",  label: "Ingresado" },
+  "En reparación":{ cls: "badge-reparacion", label: "En reparación" },
+  "Listo":        { cls: "badge-listo",      label: "Listo para retirar" },
+  "Entregado":    { cls: "badge-entregado",  label: "Entregado" },
+  "Reingresada":  { cls: "badge-reingresada",label: "Reingresada" },
 };
 
-function getOrderId() {
-  return new URLSearchParams(window.location.search).get("id") || "";
+const STATUS_MESSAGE = {
+  "Ingresado":    "<strong>Tu equipo fue recibido.</strong> Está en cola de diagnóstico. Te avisaremos cuando empiece la reparación.",
+  "En reparación":"<strong>Tu equipo está en reparación.</strong> Nuestro equipo técnico está trabajando en él. Te notificamos cuando esté listo.",
+  "Listo":        "<strong>¡Tu equipo está listo!</strong> Podés pasar a retirarlo en el local o coordinamos la entrega. Comunicate con nosotros.",
+  "Entregado":    "<strong>Equipo entregado.</strong> Gracias por confiar en Cosmica.ar. Recordá que tenés garantía por el servicio realizado.",
+  "Reingresada":  "<strong>Tu equipo fue reingresado.</strong> Estamos revisando el inconveniente. Nos comunicaremos a la brevedad.",
+};
+
+// ─── Stepper ──────────────────────────────────────────────────────────────────
+
+const STEPPER_STEPS = [
+  { key: "Ingresado",     label: "Recibido" },
+  { key: "En reparación", label: "En taller" },
+  { key: "Listo",         label: "Listo" },
+  { key: "Entregado",     label: "Entregado" },
+];
+
+function activeStepIndex(estado) {
+  // Reingresada visually maps to "En reparación" step
+  const normalized = estado === "Reingresada" ? "En reparación" : estado;
+  const idx = STATUS_ORDER.indexOf(normalized);
+  return idx === -1 ? 0 : idx;
 }
 
-function getOrderNumber() {
-  return new URLSearchParams(window.location.search).get("orden") || "";
+function renderStepper(estado) {
+  const active = activeStepIndex(estado);
+  return `
+    <div class="stepper">
+      ${STEPPER_STEPS.map((step, i) => {
+        const isDone   = i < active;
+        const isActive = i === active;
+        const cls = isDone ? "done" : isActive ? "active" : "";
+        const check = isDone ? "✓" : "";
+        return `
+          <div class="step ${cls}">
+            <div class="step-track">
+              <div class="step-line-left ${isDone || isActive ? "filled" : ""}"></div>
+              <div class="step-dot">${check}</div>
+              <div class="step-line-right ${isDone ? "filled" : ""}"></div>
+            </div>
+            <div class="step-label">${step.label}</div>
+          </div>`;
+      }).join("")}
+    </div>`;
 }
 
-function renderError(message) {
-  $("content").innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+// ─── Timeline ─────────────────────────────────────────────────────────────────
+
+function buildTimeline(order) {
+  const events = [];
+  const estado = order.estado || "Ingresado";
+
+  if (order.fechaIngreso) {
+    events.push({
+      cls:   "tl-created",
+      icon:  "📥",
+      label: "Orden ingresada",
+      meta:  formatDateTime(order.fechaIngreso),
+    });
+  }
+
+  const pastIngest = ["En reparación", "Listo", "Entregado", "Reingresada"].includes(estado);
+  if (pastIngest && !order.fechaReparado) {
+    events.push({
+      cls:   "tl-progress",
+      icon:  "🔧",
+      label: "En reparación",
+      meta:  "Trabajo en curso",
+    });
+  }
+
+  if (order.fechaReparado) {
+    events.push({
+      cls:   "tl-progress",
+      icon:  "🔧",
+      label: "Reparación completada",
+      meta:  formatDateTime(order.fechaReparado),
+    });
+  }
+
+  if (estado === "Reingresada") {
+    events.push({
+      cls:   "tl-reingest",
+      icon:  "🔄",
+      label: "Reingresado para revisión",
+      meta:  "En seguimiento",
+    });
+  }
+
+  if (["Listo", "Entregado"].includes(estado) && !order.fechaEntregado) {
+    events.push({
+      cls:   "tl-done",
+      icon:  "✅",
+      label: "Listo para retirar",
+      meta:  "Disponible en el local",
+    });
+  }
+
+  if (order.fechaEntregado) {
+    events.push({
+      cls:   "tl-delivered",
+      icon:  "🎉",
+      label: "Entregado al cliente",
+      meta:  formatDateTime(order.fechaEntregado),
+    });
+  }
+
+  return events;
 }
+
+function renderTimeline(order) {
+  const events = buildTimeline(order);
+  if (!events.length) return "";
+  return `
+    <div class="timeline-title">Historial</div>
+    <div class="timeline">
+      ${events.map(ev => `
+        <div class="tl-item ${ev.cls}">
+          <div class="tl-side">
+            <div class="tl-icon">${ev.icon}</div>
+            <div class="tl-line"></div>
+          </div>
+          <div class="tl-body">
+            <div class="tl-label">${ev.label}</div>
+            <div class="tl-meta">${ev.meta}</div>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// ─── Info rows ────────────────────────────────────────────────────────────────
+
+function infoRow(key, val) {
+  if (!val || val === "—") return "";
+  return `
+    <div class="info-row">
+      <span class="key">${key}</span>
+      <span class="val">${escapeHtml(String(val))}</span>
+    </div>`;
+}
+
+function renderInfoGrid(order) {
+  const equipoParts = [order.equipo, order.marca, order.modelo].filter(Boolean);
+  const equipo = equipoParts.join(" · ") || "—";
+
+  const rows = [
+    infoRow("Equipo",        equipo),
+    infoRow("Problema",      order.problema || order.diagnostico || ""),
+    infoRow("Servicio plan", order.planServicio ? capitalize(order.planServicio) : ""),
+    infoRow("Servicio realizado", order.servicioRealizado || ""),
+    infoRow("Garantía",      order.garantiaDias ? `${order.garantiaDias} días` : ""),
+  ].filter(Boolean).join("");
+
+  if (!rows) return "";
+  return `<div class="info-grid">${rows}</div>`;
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ─── Main render ──────────────────────────────────────────────────────────────
 
 function renderOrder(order) {
+  const estado  = order.estado || "Ingresado";
+  const badgeCfg = STATUS_BADGE[estado] || STATUS_BADGE["Ingresado"];
+  const msg      = STATUS_MESSAGE[estado] || STATUS_MESSAGE["Ingresado"];
+
   const equipoParts = [order.equipo, order.marca, order.modelo].filter(Boolean);
-  const equipoStr = equipoParts.join(" \u00b7 ");
+  const deviceStr   = equipoParts.join(" · ");
 
-  $("content").innerHTML = `
-    <div class="label">ORDEN</div>
-    <div class="order">${escapeHtml(order.numeroOrden || order.id || "\u2014")}</div>
-    <div class="badge ${STATUS_CLASS[order.estado] || ""}">
-      ${escapeHtml(order.estado || "Ingresado")}
+  document.getElementById("content").innerHTML = `
+    <div class="card-inner">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div>
+          <div class="hero-label">Orden de servicio</div>
+          <div class="hero-order">${escapeHtml(order.numeroOrden || order.id || "—")}</div>
+          ${deviceStr ? `<div class="hero-device">${escapeHtml(deviceStr)}</div>` : ""}
+        </div>
+        <div class="status-badge ${badgeCfg.cls}">
+          <span class="dot"></span>
+          ${badgeCfg.label}
+        </div>
+      </div>
+
+      <!-- Progress stepper -->
+      ${renderStepper(estado)}
+
+      <!-- Status message -->
+      <div class="status-msg">${msg}</div>
+
+      <!-- Info grid -->
+      ${renderInfoGrid(order)}
+
+      <!-- Timeline -->
+      ${renderTimeline(order)}
+
     </div>
 
-    <div class="info">
-      <div class="row">
-        <span>Equipo</span>
-        <b>${escapeHtml(equipoStr || "\u2014")}</b>
-      </div>
-      <div class="row">
-        <span>Ingreso</span>
-        <b>${formatDateTime(order.fechaIngreso)}</b>
-      </div>
-
-      ${order.diagnostico ? `
-      <div class="row">
-        <span>Diagn\u00f3stico t\u00e9cnico:</span>
-        <b>${escapeHtml(order.diagnostico)}</b>
-      </div>` : ""}
-
-      ${order.servicioRealizado ? `
-      <div class="row">
-        <span>Servicio realizado:</span>
-        <b>${escapeHtml(order.servicioRealizado)}</b>
-      </div>` : ""}
-
-      ${order.fechaReparado ? `
-      <div class="row">
-        <span>Reparado</span>
-        <b>${formatDateTime(order.fechaReparado)}</b>
-      </div>` : ""}
-
-      ${order.fechaEntregado ? `
-      <div class="row">
-        <span>Entregado</span>
-        <b>${formatDateTime(order.fechaEntregado)}</b>
-      </div>` : ""}
+    <div class="footer">
+      Esta página refleja el estado registrado por Cosmica.ar.<br>
+      ¿Dudas? <a href="https://wa.me/5493886165965" target="_blank" rel="noopener">Escribinos por WhatsApp</a>
     </div>
-
-    <p class="message">
-      Esta p\u00e1gina muestra el estado actual registrado por Cosmica.ar.
-      Ante cualquier duda, comun\u00edcate por WhatsApp.
-    </p>
   `;
 }
 
+// ─── Error / boot ─────────────────────────────────────────────────────────────
+
+function renderError(message) {
+  document.getElementById("content").innerHTML = `
+    <div class="state-box">
+      <div style="font-size:36px;margin-bottom:16px;">🔍</div>
+      <div class="state-title">No encontramos la orden</div>
+      <div class="state-sub">${escapeHtml(message)}</div>
+    </div>`;
+}
+
 async function boot() {
-  const id = getOrderId();
-  const orden = getOrderNumber();
+  const params = new URLSearchParams(window.location.search);
+  const id     = params.get("id")    || "";
+  const orden  = params.get("orden") || "";
+
   if (!id && !orden) {
     renderError("No se indicó una orden para consultar.");
     return;
@@ -83,14 +246,16 @@ async function boot() {
     const order = id
       ? await getPublicOrder(id)
       : await findPublicOrderByNumeroOrden(orden);
+
     if (!order) {
-      renderError("Todavía no hay información pública para esta orden.");
+      renderError("Todavía no hay información pública para esta orden. Verificá el número e intentá nuevamente.");
       return;
     }
+
     renderOrder(order);
-  } catch (error) {
-    console.error(error);
-    renderError("No se pudo consultar el estado de la orden.");
+  } catch (err) {
+    console.error(err);
+    renderError("No se pudo consultar el estado de la orden. Intentá más tarde.");
   }
 }
 
