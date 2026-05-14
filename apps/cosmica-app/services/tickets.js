@@ -55,8 +55,11 @@ export async function createTicket(data) {
       modelo: data.modelo ? data.modelo.trim() : "",
       problema: data.problema.trim(),
       diagnostico: "",
+      diagnosticoTecnico: "",
       servicioRealizado: "",
       precio: Number(data.precio || 0),
+      presupuesto: 0,
+      aprobadoCliente: false,
       planServicio: data.planServicio || "estandar",
       estado: WORK_STATUS.ingresado,
       fechaIngreso: new Date().toISOString(),
@@ -198,6 +201,46 @@ export async function updateTicket(id, data) {
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar ticket:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Actualiza el diagnóstico técnico y presupuesto al cliente.
+ * Operación independiente del flujo principal de edición.
+ *
+ * @param {string} id
+ * @param {{ diagnosticoTecnico: string, presupuesto: number }} data
+ * @returns {Promise<Object>}
+ */
+export async function updateTicketBudget(id, data) {
+  try {
+    const trabajoActual = await getTrabajo(id);
+    if (!trabajoActual) throw new Error("Orden no encontrada.");
+
+    const updateData = {
+      diagnosticoTecnico: (data.diagnosticoTecnico || '').trim(),
+      presupuesto:        Number(data.presupuesto || 0),
+      updatedAt:          serverTimestamp(),
+    };
+
+    await updateDoc(doc(db, COLLECTIONS.trabajos, id), updateData);
+
+    // Sincronizar campos de presupuesto al seguimiento público
+    await publishPublicOrder(id, { ...trabajoActual, ...updateData });
+
+    await addTicketHistoryEvent(id, {
+      type:    TICKET_EVENT_TYPES.edited,
+      message: `Diagnóstico y presupuesto actualizados ($${updateData.presupuesto})`,
+      metadata: {
+        diagnosticoTecnico: updateData.diagnosticoTecnico,
+        presupuesto:        updateData.presupuesto,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar diagnóstico/presupuesto:", error);
     return { success: false, error: error.message };
   }
 }

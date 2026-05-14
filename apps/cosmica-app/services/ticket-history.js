@@ -11,6 +11,7 @@ export const TICKET_EVENT_TYPES = {
   created:        'ticket_created',
   statusChanged:  'status_changed',
   edited:         'ticket_edited',
+  budgetApproved: 'budget_approved',
 };
 
 /**

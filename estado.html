@@ -284,6 +284,80 @@
     .state-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
+    /* ── Budget card ─────────────────────────────────────────── */
+    .budget-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .budget-card-header {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 8px;
+      margin-bottom: 14px;
+    }
+    .budget-card-title {
+      font-size: 12px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: .8px;
+    }
+    .budget-pill {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 50px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .budget-pill-approved { background: rgba(16,185,129,.12); color: var(--success); border: 1px solid rgba(16,185,129,.25); }
+    .budget-pill-pending  { background: rgba(245,158,11,.1);  color: var(--warning); border: 1px solid rgba(245,158,11,.2); }
+    .budget-diag { margin-bottom: 12px; }
+    .budget-diag-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .budget-diag-text {
+      font-size: 13px; color: var(--text); line-height: 1.55;
+      background: rgba(255,255,255,.03); border-radius: 8px;
+      padding: 10px 12px; border: 1px solid var(--border);
+    }
+    .budget-amount-row {
+      display: flex; align-items: baseline;
+      justify-content: space-between; gap: 8px;
+      margin-bottom: 16px; padding: 10px 0;
+      border-top: 1px solid var(--border);
+    }
+    .budget-amount-label { font-size: 13px; color: var(--muted); }
+    .budget-amount {
+      font-size: 26px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.5px; font-family: 'Rajdhani', sans-serif;
+    }
+    .btn-approve {
+      width: 100%; padding: 14px;
+      background: var(--accent); color: #fff;
+      font-size: 14px; font-weight: 700;
+      border: none; border-radius: 12px;
+      cursor: pointer; letter-spacing: .3px;
+      transition: opacity .2s, transform .1s;
+      box-shadow: 0 4px 20px rgba(255,94,0,.3);
+    }
+    .btn-approve:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btn-approve:active:not(:disabled) { transform: translateY(0); }
+    .btn-approve:disabled { opacity: .6; cursor: not-allowed; }
+    .budget-approve-note {
+      font-size: 11px; color: var(--muted);
+      text-align: center; margin-top: 8px; line-height: 1.5;
+    }
+    .budget-approved-badge {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 14px;
+      background: rgba(16,185,129,.08);
+      border: 1px solid rgba(16,185,129,.2);
+      border-radius: 12px;
+      font-size: 14px; font-weight: 600; color: var(--success);
+    }
+    .budget-approved-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--success); color: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .tl-approved .tl-icon { background: rgba(16,185,129,.1); color: var(--success); border-color: rgba(16,185,129,.2); }
+
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 400px) {
       .hero-order { font-size: 32px; }

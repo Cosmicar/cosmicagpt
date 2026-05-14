@@ -332,19 +332,22 @@ export async function findPublicOrderByNumeroOrden(numeroOrden) {
 
 export async function publishPublicOrder(id, trabajo) {
   await setDoc(doc(db, getPublicasCol(), id), {
-    numeroOrden: trabajo.numeroOrden || "",
-    estado: trabajo.estado || "",
-    tipo: trabajo.tipo || "",
-    equipo: trabajo.equipo || "",
-    marca: trabajo.marca || "",
-    modelo: trabajo.modelo || "",
-    diagnostico: trabajo.diagnostico || "",
+    numeroOrden:       trabajo.numeroOrden       || "",
+    estado:            trabajo.estado            || "",
+    tipo:              trabajo.tipo              || "",
+    equipo:            trabajo.equipo            || "",
+    marca:             trabajo.marca             || "",
+    modelo:            trabajo.modelo            || "",
+    diagnostico:       trabajo.diagnostico       || "",
+    diagnosticoTecnico:trabajo.diagnosticoTecnico|| "",
     servicioRealizado: trabajo.servicioRealizado || "",
-    fechaIngreso: trabajo.fechaIngreso || "",
-    fechaReparado: trabajo.fechaReparado || "",
-    fechaEntregado: trabajo.fechaEntregado || "",
-    garantiaDias: Number(trabajo.garantiaDias || 90),
-    actualizadoEn: new Date().toISOString()
+    fechaIngreso:      trabajo.fechaIngreso      || "",
+    fechaReparado:     trabajo.fechaReparado     || "",
+    fechaEntregado:    trabajo.fechaEntregado    || "",
+    garantiaDias:      Number(trabajo.garantiaDias || 90),
+    presupuesto:       Number(trabajo.presupuesto  || 0),
+    aprobadoCliente:   trabajo.aprobadoCliente   ?? false,
+    actualizadoEn:     new Date().toISOString(),
   }, { merge: true });
 }
 

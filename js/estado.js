@@ -1,5 +1,14 @@
-import { findPublicOrderByNumeroOrden, getPublicOrder } from "./work-repository.js";
+import {
+  findPublicOrderByNumeroOrden,
+  getPublicOrder,
+} from "./work-repository.js";
+import { db } from "./firebase.js";
+import { COLLECTIONS } from "./domain.js";
 import { escapeHtml, formatDateTime } from "./utils.js";
+import {
+  doc,
+  updateDoc,
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
@@ -31,7 +40,6 @@ const STEPPER_STEPS = [
 ];
 
 function activeStepIndex(estado) {
-  // Reingresada visually maps to "En reparación" step
   const normalized = estado === "Reingresada" ? "En reparación" : estado;
   const idx = STATUS_ORDER.indexOf(normalized);
   return idx === -1 ? 0 : idx;
@@ -56,6 +64,64 @@ function renderStepper(estado) {
             <div class="step-label">${step.label}</div>
           </div>`;
       }).join("")}
+    </div>`;
+}
+
+// ─── Budget section ───────────────────────────────────────────────────────────
+
+function formatMoney(value) {
+  return Number(value || 0).toLocaleString("es-AR");
+}
+
+function renderBudgetSection(order) {
+  const presupuesto    = Number(order.presupuesto || 0);
+  const aprobado       = order.aprobadoCliente === true;
+  const diagnostico    = (order.diagnosticoTecnico || "").trim();
+  const estadoFinal    = order.estado === "Entregado";
+
+  // No mostrar si no hay presupuesto ni diagnóstico
+  if (!presupuesto && !diagnostico) return "";
+
+  const diagHtml = diagnostico ? `
+    <div class="budget-diag">
+      <div class="budget-diag-label">Diagnóstico técnico</div>
+      <div class="budget-diag-text">${escapeHtml(diagnostico)}</div>
+    </div>` : "";
+
+  const presupuestoHtml = presupuesto ? `
+    <div class="budget-amount-row">
+      <span class="budget-amount-label">Presupuesto cotizado</span>
+      <span class="budget-amount">$${formatMoney(presupuesto)}</span>
+    </div>` : "";
+
+  let actionHtml = "";
+  if (aprobado) {
+    actionHtml = `
+      <div class="budget-approved-badge">
+        <span class="budget-approved-icon">✓</span>
+        Reparación aprobada por el cliente
+      </div>`;
+  } else if (presupuesto > 0 && !estadoFinal) {
+    actionHtml = `
+      <button id="approve-btn" class="btn-approve">
+        <span id="approve-btn-text">Aprobar reparación</span>
+      </button>
+      <p class="budget-approve-note">Al aprobar, autorizás al taller a proceder con la reparación por el monto cotizado.</p>`;
+  }
+
+  return `
+    <div class="budget-card">
+      <div class="budget-card-header">
+        <span class="budget-card-title">Presupuesto</span>
+        ${aprobado
+          ? `<span class="budget-pill budget-pill-approved">Aprobado</span>`
+          : presupuesto > 0
+            ? `<span class="budget-pill budget-pill-pending">Pendiente</span>`
+            : ""}
+      </div>
+      ${diagHtml}
+      ${presupuestoHtml}
+      ${actionHtml}
     </div>`;
 }
 
@@ -84,6 +150,15 @@ function buildTimeline(order) {
     });
   }
 
+  if (order.aprobadoCliente && order.fechaAprobacion) {
+    events.push({
+      cls:   "tl-approved",
+      icon:  "✅",
+      label: "Reparación aprobada por el cliente",
+      meta:  formatDateTime(order.fechaAprobacion),
+    });
+  }
+
   if (order.fechaReparado) {
     events.push({
       cls:   "tl-progress",
@@ -105,7 +180,7 @@ function buildTimeline(order) {
   if (["Listo", "Entregado"].includes(estado) && !order.fechaEntregado) {
     events.push({
       cls:   "tl-done",
-      icon:  "✅",
+      icon:  "⭐",
       label: "Listo para retirar",
       meta:  "Disponible en el local",
     });
@@ -159,11 +234,11 @@ function renderInfoGrid(order) {
   const equipo = equipoParts.join(" · ") || "—";
 
   const rows = [
-    infoRow("Equipo",        equipo),
-    infoRow("Problema",      order.problema || order.diagnostico || ""),
-    infoRow("Servicio plan", order.planServicio ? capitalize(order.planServicio) : ""),
+    infoRow("Equipo",             equipo),
+    infoRow("Problema",           order.problema || order.diagnostico || ""),
+    infoRow("Plan de servicio",   order.planServicio ? capitalize(order.planServicio) : ""),
     infoRow("Servicio realizado", order.servicioRealizado || ""),
-    infoRow("Garantía",      order.garantiaDias ? `${order.garantiaDias} días` : ""),
+    infoRow("Garantía",           order.garantiaDias ? `${order.garantiaDias} días` : ""),
   ].filter(Boolean).join("");
 
   if (!rows) return "";
@@ -174,10 +249,69 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// ─── Approval handler ─────────────────────────────────────────────────────────
+
+async function handleApproval(orderId) {
+  const btn     = document.getElementById("approve-btn");
+  const btnText = document.getElementById("approve-btn-text");
+  if (!btn) return;
+
+  btn.disabled = true;
+  if (btnText) btnText.textContent = "Procesando...";
+
+  const approvalData = {
+    aprobadoCliente: true,
+    fechaAprobacion: new Date().toISOString(),
+  };
+
+  try {
+    // Write to public collection (always works if rules allow public updates)
+    await updateDoc(doc(db, COLLECTIONS.ordenesPublicas, orderId), approvalData);
+
+    // Best-effort sync to internal collection (requires permissive Firestore rules)
+    try {
+      await updateDoc(doc(db, COLLECTIONS.trabajos, orderId), approvalData);
+    } catch {
+      // Firestore rules may restrict public writes to trabajos — expected
+    }
+
+    // Re-render the budget section with approved state
+    const budgetContainer = document.getElementById("budget-section-wrapper");
+    if (budgetContainer) {
+      budgetContainer.innerHTML = renderBudgetSection({
+        ...currentOrder,
+        aprobadoCliente: true,
+        fechaAprobacion: approvalData.fechaAprobacion,
+      });
+    }
+
+    // Update timeline entry
+    const timelineContainer = document.getElementById("timeline-wrapper");
+    if (timelineContainer) {
+      timelineContainer.innerHTML = renderTimeline({
+        ...currentOrder,
+        aprobadoCliente: true,
+        fechaAprobacion: approvalData.fechaAprobacion,
+      });
+    }
+
+  } catch (err) {
+    console.error("[approval] Error:", err);
+    btn.disabled = false;
+    if (btnText) btnText.textContent = "Aprobar reparación";
+    alert("No se pudo registrar la aprobación. Intentá de nuevo.");
+  }
+}
+
 // ─── Main render ──────────────────────────────────────────────────────────────
 
+// Reference kept for approval re-render
+let currentOrder = null;
+
 function renderOrder(order) {
-  const estado  = order.estado || "Ingresado";
+  currentOrder = order;
+
+  const estado   = order.estado || "Ingresado";
   const badgeCfg = STATUS_BADGE[estado] || STATUS_BADGE["Ingresado"];
   const msg      = STATUS_MESSAGE[estado] || STATUS_MESSAGE["Ingresado"];
 
@@ -209,8 +343,11 @@ function renderOrder(order) {
       <!-- Info grid -->
       ${renderInfoGrid(order)}
 
-      <!-- Timeline -->
-      ${renderTimeline(order)}
+      <!-- Budget section (wrapper for re-render on approval) -->
+      <div id="budget-section-wrapper">${renderBudgetSection(order)}</div>
+
+      <!-- Timeline (wrapper for re-render on approval) -->
+      <div id="timeline-wrapper">${renderTimeline(order)}</div>
 
     </div>
 
@@ -219,6 +356,10 @@ function renderOrder(order) {
       ¿Dudas? <a href="https://wa.me/5493886165965" target="_blank" rel="noopener">Escribinos por WhatsApp</a>
     </div>
   `;
+
+  // Bind approval button if present
+  const orderId = order.id;
+  document.getElementById("approve-btn")?.addEventListener("click", () => handleApproval(orderId));
 }
 
 // ─── Error / boot ─────────────────────────────────────────────────────────────

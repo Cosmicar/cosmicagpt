@@ -4,9 +4,64 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
-import { createTicket, getTicket, updateTicket } from '../services/tickets.js';
+import { createTicket, getTicket, updateTicket, updateTicketBudget } from '../services/tickets.js';
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
+
+// ─── Budget section helpers ───────────────────────────────────────────────────
+
+function renderApprovalBadge(aprobado) {
+  if (aprobado) {
+    return `<span class="badge badge-success" style="font-size: var(--font-xs); padding: var(--space-xs) var(--space-sm);">✓ Aprobado por el cliente</span>`;
+  }
+  return `<span class="badge" style="font-size: var(--font-xs); padding: var(--space-xs) var(--space-sm); background: rgba(255,255,255,0.05); color: var(--text-muted);">Pendiente de aprobación</span>`;
+}
+
+function renderBudgetSection(ticket) {
+  const aprobado = ticket?.aprobadoCliente ?? false;
+  return `
+    <div class="card glass-card" style="margin-top: var(--space-lg); max-width: 900px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); flex-wrap: wrap; gap: var(--space-sm);">
+        <div>
+          <h3 style="font-size: var(--font-md); font-weight: 600; margin: 0;">Diagnóstico y Presupuesto</h3>
+          <p style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px;">Visible para el cliente en el seguimiento público.</p>
+        </div>
+        ${renderApprovalBadge(aprobado)}
+      </div>
+
+      <div id="budget-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
+
+      <form id="budget-form">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+          ${renderFormField({
+            label: 'Presupuesto al Cliente ($)',
+            id: 'presupuesto',
+            type: 'number',
+            placeholder: 'Ej: 8500',
+            value: ticket?.presupuesto || '',
+          })}
+        </div>
+
+        <div style="margin-top: var(--space-lg);">
+          ${renderFormField({
+            label: 'Diagnóstico Técnico',
+            id: 'diagnosticoTecnico',
+            placeholder: 'Describe el diagnóstico realizado al equipo...',
+            isTextArea: true,
+            value: ticket?.diagnosticoTecnico || '',
+          })}
+        </div>
+
+        <div style="margin-top: var(--space-md);">
+          <div id="budget-actions-container">
+            <button type="submit" id="budget-submit-btn" class="btn btn-primary" style="min-width: 200px;">
+              Guardar diagnóstico y presupuesto
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+}
 
 /**
  * Vista de Formulario de Ticket (Creación y Edición)
@@ -157,13 +212,18 @@ export class TicketFormView extends AsyncView {
         </div>
       </div>
 
+      ${this.isEdit ? renderBudgetSection(ticket) : ''}
+
       ${this.isEdit ? renderTicketTimeline() : ''}
     `;
   }
 
   onContentReady() {
     this.initFormHandlers();
-    if (this.isEdit) mountTicketTimeline(this.ticketId);
+    if (this.isEdit) {
+      this.initBudgetHandlers();
+      mountTicketTimeline(this.ticketId);
+    }
   }
 
   initFormHandlers() {
@@ -203,6 +263,40 @@ export class TicketFormView extends AsyncView {
         this.showError(result.error);
         this.toggleFormLoading(false);
       }
+    });
+  }
+
+  initBudgetHandlers() {
+    const form = document.getElementById('budget-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('budget-submit-btn');
+      const errorEl = document.getElementById('budget-error-msg');
+      const originalText = btn?.textContent;
+
+      if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+      if (errorEl) errorEl.style.display = 'none';
+
+      const fd = new FormData(form);
+      const result = await updateTicketBudget(this.ticketId, {
+        diagnosticoTecnico: fd.get('diagnosticoTecnico') || '',
+        presupuesto:        fd.get('presupuesto')        || 0,
+      });
+
+      if (result.success) {
+        showToast('Diagnóstico y presupuesto guardados', 'success');
+      } else {
+        if (errorEl) {
+          errorEl.textContent = result.error || 'Error al guardar';
+          errorEl.style.display = 'block';
+        }
+        showToast(result.error || 'Error al guardar', 'error');
+      }
+
+      if (btn) { btn.disabled = false; btn.textContent = originalText; }
     });
   }
 
