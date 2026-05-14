@@ -41,11 +41,17 @@ export class TicketsView extends AsyncView {
             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
           </div>
           
-          <div class="filter-group" style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-            <button class="btn btn-sm btn-filter active" data-filter="all">Todos</button>
-            <button class="btn btn-sm btn-filter" data-filter="pendiente">Pendiente</button>
-            <button class="btn btn-sm btn-filter" data-filter="proceso">En proceso</button>
-            <button class="btn btn-sm btn-filter" data-filter="finalizado">Finalizado</button>
+          <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
+            <div class="filter-group" style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <button class="btn btn-sm btn-filter active" data-filter="all">Todos</button>
+              <button class="btn btn-sm btn-filter" data-filter="pendiente">Pendiente</button>
+              <button class="btn btn-sm btn-filter" data-filter="proceso">En proceso</button>
+              <button class="btn btn-sm btn-filter" data-filter="finalizado">Finalizado</button>
+            </div>
+
+            <a href="#ticket-nuevo" class="btn btn-primary">
+              <i>➕</i> Nuevo Trabajo
+            </a>
           </div>
         </div>
 

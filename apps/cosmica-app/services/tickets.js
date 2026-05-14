@@ -1,6 +1,7 @@
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
-import { COLLECTIONS } from "../../../js/domain.js";
+import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
+import { getNextOrderNumber, publishPublicOrder } from "../../../js/work-repository.js";
 
 /**
  * Obtiene el listado de tickets (trabajos) desde Firestore.
@@ -23,5 +24,64 @@ export async function getTickets() {
   } catch (error) {
     console.error("Error al obtener tickets en el servicio:", error);
     throw error;
+  }
+}
+
+/**
+ * Crea un nuevo ticket de trabajo.
+ * 
+ * @param {Object} data - Datos del ticket
+ * @returns {Promise<Object>} Resultado
+ */
+export async function createTicket(data) {
+  try {
+    // 1. Validaciones básicas
+    if (!data.clienteId || !data.equipo || !data.problema) {
+      throw new Error("Cliente, Equipo y Problema son campos obligatorios.");
+    }
+
+    // 2. Generar número de orden (reutilizando lógica legacy para consistencia)
+    const tipo = data.tipo || 'taller';
+    const numeroOrden = await getNextOrderNumber(tipo);
+
+    // 3. Preparar documento
+    const nuevoTrabajo = {
+      numeroOrden,
+      clienteId: data.clienteId,
+      tipo,
+      equipo: data.equipo.trim(),
+      marca: data.marca ? data.marca.trim() : "",
+      modelo: data.modelo ? data.modelo.trim() : "",
+      problema: data.problema.trim(),
+      diagnostico: "",
+      servicioRealizado: "",
+      precio: Number(data.precio || 0),
+      planServicio: data.planServicio || "estandar",
+      estado: WORK_STATUS.ingresado,
+      fechaIngreso: new Date().toISOString(),
+      updatedAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      source: 'cosmica-saas-v1'
+    };
+
+    // 4. Guardar en Firestore
+    const docRef = await addDoc(collection(db, COLLECTIONS.trabajos), nuevoTrabajo);
+    
+    // 5. Publicar para seguimiento público (legacy sync)
+    await publishPublicOrder(docRef.id, nuevoTrabajo);
+
+    return {
+      success: true,
+      id: docRef.id,
+      numeroOrden,
+      message: "Orden de trabajo creada correctamente."
+    };
+
+  } catch (error) {
+    console.error("Error al crear ticket en el servicio:", error);
+    return {
+      success: false,
+      error: error.message || "No se pudo crear la orden de trabajo."
+    };
   }
 }

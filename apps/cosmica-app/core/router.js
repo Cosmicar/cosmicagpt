@@ -2,6 +2,7 @@ import { DashboardView } from '../views/dashboard.js';
 import { ClientesView } from '../views/clientes.js';
 import { TicketsView } from '../views/tickets.js';
 import { ClienteFormView } from '../views/cliente-form.js';
+import { TicketFormView } from '../views/ticket-form.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession } from './session.js';
@@ -17,6 +18,8 @@ export class Router {
       'clientes': 'Clientes | Cosmica SaaS',
       'tickets': 'Trabajos | Cosmica SaaS',
       'cliente-nuevo': 'Nuevo Cliente | Cosmica SaaS',
+      'cliente-edit': 'Editar Cliente | Cosmica SaaS',
+      'ticket-nuevo': 'Nuevo Trabajo | Cosmica SaaS',
       'inventario': 'Inventario | Cosmica SaaS',
       'configuracion': 'Configuración | Cosmica SaaS'
     };
@@ -28,6 +31,7 @@ export class Router {
       'tickets': TicketsView,
       'cliente-nuevo': ClienteFormView,
       'cliente-edit': ClienteFormView,
+      'ticket-nuevo': TicketFormView,
       // Fallback para módulos no implementados (pueden ser funciones que retornen HTML o clases simples)
       'inventario': class extends BaseView { render() { return renderEmptyState('El módulo de inventario aún no está implementado.'); } },
       'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
