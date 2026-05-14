@@ -13,6 +13,7 @@ import { getCurrentSession } from './session.js';
 export class Router {
   constructor() {
     this.currentView = null;
+    this._navId = 0;          // Increments on every navigation; guards stale async renders
     this.routeTitles = {
       'dashboard': 'Dashboard | Cosmica SaaS',
       'clientes': 'Clientes | Cosmica SaaS',
@@ -65,7 +66,9 @@ export class Router {
     }
   }
   
-  loadRoute(viewInstance, routeName) {
+  async loadRoute(viewInstance, routeName) {
+    const navId = ++this._navId;
+
     // 1. Ejecutar destroy en la vista anterior si existe
     if (this.currentView && typeof this.currentView.destroy === 'function') {
       this.currentView.destroy();
@@ -74,18 +77,19 @@ export class Router {
     this.currentView = viewInstance;
 
     const mainContent = document.querySelector('.main-content');
-    if (mainContent && viewInstance) {
-      // 2. Renderizar HTML
-      mainContent.innerHTML = viewInstance.render();
-      
-      // 3. Ejecutar lifecycle afterRender (Bindeo de eventos)
-      if (typeof viewInstance.afterRender === 'function') {
-        viewInstance.afterRender();
-      }
+    if (!mainContent || !viewInstance) return;
 
-      // Scroll al inicio al cambiar de ruta
-      window.scrollTo(0, 0);
+    // 2. Renderizar HTML (estado de carga sincrónico)
+    mainContent.innerHTML = viewInstance.render();
+    window.scrollTo(0, 0);
+
+    // 3. Ejecutar lifecycle afterRender (async — puede tardar por fetch de datos)
+    if (typeof viewInstance.afterRender === 'function') {
+      await viewInstance.afterRender();
     }
+
+    // Si otra navegación ocurrió mientras cargábamos, no actualizar la UI de navegación
+    if (this._navId !== navId) return;
 
     this.updateActiveLink(routeName);
     this.updateDocumentTitle(routeName);

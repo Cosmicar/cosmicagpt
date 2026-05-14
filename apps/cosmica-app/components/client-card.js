@@ -4,7 +4,7 @@ export function render(cliente) {
   const canEdit = canAccess('create-client'); // Usamos create-client como permiso para recepcion/admin
 
   return `
-    <div class="card glass-card" style="display: flex; flex-direction: column; height: 100%;">
+    <div class="card glass-card" style="display: flex; flex-direction: column;">
       <div class="flex-between" style="align-items: flex-start; margin-bottom: var(--space-sm);">
         <div style="flex: 1; min-width: 0;">
           <h3 class="card-title text-truncate" title="${cliente.nombre || ''} ${cliente.apellido || ''}" style="font-size: var(--font-md); margin: 0;">

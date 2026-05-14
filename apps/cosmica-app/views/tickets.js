@@ -53,7 +53,7 @@ export class TicketsView extends AsyncView {
         <div class="flex-between">
           <div style="position: relative; flex: 1; min-width: 250px; max-width: 500px;">
             <input type="text" id="ticket-search" class="input" placeholder="Buscar por cliente, orden o problema..." style="padding-left: 40px; margin-bottom: 0;">
-            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none;">🔍</span>
           </div>
           
           <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">

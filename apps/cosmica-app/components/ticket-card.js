@@ -28,7 +28,7 @@ export function render(ticket) {
   const canEdit = canAccess('edit-ticket');
 
   return `
-    <div class="card glass-card" id="ticket-card-${ticket.id}" style="display: flex; flex-direction: column; height: 100%;">
+    <div class="card glass-card" id="ticket-card-${ticket.id}" style="display: flex; flex-direction: column;">
       <div class="flex-between" style="align-items: flex-start; margin-bottom: var(--space-sm);">
         <div style="flex: 1; min-width: 0;">
           <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}" style="font-size: var(--font-md); margin: 0;">
@@ -52,7 +52,7 @@ export function render(ticket) {
       </div>
 
       ${canEdit ? `
-      <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm);">
+      <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">
         <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 6px; outline: none;">
           ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
         </select>

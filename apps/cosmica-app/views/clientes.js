@@ -47,7 +47,7 @@ export class ClientesView extends AsyncView {
       <div class="flex-between animate-fade-in" style="margin-top: var(--space-lg);">
         <div style="position: relative; flex: 1; min-width: 250px; max-width: 450px;">
           <input type="text" id="cliente-search" class="input" placeholder="Buscar por nombre, DNI o teléfono..." style="padding-left: 40px; margin-bottom: 0;">
-          <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
+          <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none;">🔍</span>
         </div>
         <a href="#cliente-nuevo" class="btn btn-primary btn-sm">
           <i>➕</i> Nuevo Cliente
