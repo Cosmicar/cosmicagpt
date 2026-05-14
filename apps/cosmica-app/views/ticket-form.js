@@ -6,6 +6,7 @@ import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
 import { createTicket, getTicket, updateTicket } from '../services/tickets.js';
 import { showToast } from '../components/toast.js';
+import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 
 /**
  * Vista de Formulario de Ticket (Creación y Edición)
@@ -155,11 +156,14 @@ export class TicketFormView extends AsyncView {
           </form>
         </div>
       </div>
+
+      ${this.isEdit ? renderTicketTimeline() : ''}
     `;
   }
 
   onContentReady() {
     this.initFormHandlers();
+    if (this.isEdit) mountTicketTimeline(this.ticketId);
   }
 
   initFormHandlers() {
