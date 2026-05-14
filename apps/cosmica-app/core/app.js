@@ -121,6 +121,7 @@ function renderSidebar(profile) {
     { id: 'tickets', label: 'Trabajos', icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion'] },
     { id: 'clientes', label: 'Clientes', icon: '👥', roles: ['admin', 'recepcion'] },
     { id: 'inventario', label: 'Inventario', icon: '📦', roles: ['admin', 'tecnico', 'recepcion'] },
+    { id: 'finanzas',   label: 'Finanzas',   icon: '💰', roles: ['admin', 'recepcion', 'tecnico'] },
     { id: 'configuracion', label: 'Configuración', icon: '⚙️', roles: ['admin'] }
   ];
 

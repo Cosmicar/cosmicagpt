@@ -125,6 +125,10 @@ export function canAccess(action) {
       return true; // Todos los roles staff
     case 'inventario-write': // consumir stock desde tickets
       return role === 'tecnico';
+    case 'finanzas-read':
+      return true; // todos los roles staff
+    case 'finanzas-write': // registrar caja
+      return role === 'recepcion';
     default:
       return false;
   }

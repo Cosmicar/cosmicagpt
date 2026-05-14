@@ -5,6 +5,7 @@ import { ClienteFormView } from '../views/cliente-form.js';
 import { TicketFormView } from '../views/ticket-form.js';
 import { InventarioView } from '../views/inventario.js';
 import { InventarioFormView } from '../views/inventario-form.js';
+import { FinanzasView } from '../views/finanzas.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession } from './session.js';
@@ -25,6 +26,7 @@ export class Router {
       'ticket-nuevo': 'Nuevo Trabajo | Cosmica SaaS',
       'ticket-edit': 'Editar Trabajo | Cosmica SaaS',
       'inventario':       'Inventario | Cosmica SaaS',
+      'finanzas':         'Finanzas | Cosmica SaaS',
       'inventario-nuevo': 'Nuevo Repuesto | Cosmica SaaS',
       'inventario-edit':  'Editar Repuesto | Cosmica SaaS',
       'configuracion':    'Configuración | Cosmica SaaS'
@@ -42,6 +44,7 @@ export class Router {
       'inventario':      InventarioView,
       'inventario-nuevo': InventarioFormView,
       'inventario-edit':  InventarioFormView,
+      'finanzas':        FinanzasView,
       'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
     };
     
