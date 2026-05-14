@@ -21,7 +21,6 @@
     }
 
     .main-content {
-      margin-left: var(--sidebar-w);
       padding: var(--space-xl);
       padding-top: calc(var(--navbar-h) + 25px);
       min-height: 100vh;
@@ -97,6 +96,38 @@
       body.session-ready .main-content { margin-left: 0; }
       body.session-ready .sidebar { display: block; transform: translateX(-100%); }
       body.session-ready .sidebar.active { transform: translateX(0); }
+    }
+
+    /* M5 — Sidebar scroll en pantallas cortas */
+    .sidebar-nav {
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    /* C2 — Estado visual de botones de filtro */
+    .btn-filter { opacity: 0.5; }
+    .btn-filter.active {
+      opacity: 1;
+      background: rgba(0, 255, 255, 0.15);
+      border-color: var(--accent-cyan);
+    }
+
+    /* C4 — Filtros de tickets en mobile */
+    @media (max-width: 768px) {
+      .operational-controls-filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-group { flex-wrap: wrap; }
+    }
+
+    /* M1 — Search wrapper sin min-width en mobile */
+    @media (max-width: 768px) {
+      .search-wrapper-mobile {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        width: 100%;
+      }
     }
 
     /* Dropdown perfil */

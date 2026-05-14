@@ -40,7 +40,7 @@ export class ClientesView extends AsyncView {
         </a>
       </div>
       
-      <div id="clientes-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+      <div id="clientes-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
         ${this.renderCards(clientes)}
       </div>
     `;

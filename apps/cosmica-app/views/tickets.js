@@ -42,7 +42,7 @@ export class TicketsView extends AsyncView {
             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
           </div>
           
-          <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: space-between;">
+          <div class="operational-controls-filters" style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: space-between;">
             <div class="filter-group" style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
               <button class="btn btn-sm btn-filter active" data-filter="all">Todos</button>
               <button class="btn btn-sm btn-filter" data-filter="pendiente">Pendiente</button>
@@ -58,7 +58,7 @@ export class TicketsView extends AsyncView {
 
       </div>
       
-      <div id="tickets-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+      <div id="tickets-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
         ${this.renderCards(tickets)}
       </div>
     `;
