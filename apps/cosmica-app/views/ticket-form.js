@@ -137,15 +137,15 @@ export class TicketFormView extends AsyncView {
     );
 
     return `
-      <div id="ticket-form-wrapper" class="animate-fade-in">
+      <div id="ticket-form-wrapper" class="animate-fade-in stack-lg">
         ${breadcrumbHtml}
         ${headerHtml}
 
-        <div class="card glass-card" style="margin-top: var(--space-xl); max-width: 900px;">
+        <div class="card glass-card" style="max-width: 900px;">
           <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
           
-          <form id="ticket-form">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+          <form id="ticket-form" class="stack-lg">
+            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
               
               ${renderFormField({
                 label: 'Cliente',
@@ -199,18 +199,18 @@ export class TicketFormView extends AsyncView {
 
             </div>
 
-            <div style="margin-top: var(--space-lg);">
+            <div>
               ${renderFormField({
                 label: 'Problema Reportado',
                 id: 'problema',
-                placeholder: 'Describa el fallo o inconveniente...',
+                placeholder: 'Describí el fallo o inconveniente...',
                 isTextArea: true,
                 value: ticket?.problema || '',
                 required: true
               })}
             </div>
 
-            <div style="margin-top: var(--space-md); display: flex; align-items: center; gap: var(--space-sm); color: var(--text-muted); font-size: var(--font-xs);">
+            <div style="display: flex; align-items: center; gap: var(--space-sm); color: var(--text-muted); font-size: var(--font-xs);">
               <span style="color: var(--danger);">*</span> Campos obligatorios
             </div>
 
@@ -223,11 +223,11 @@ export class TicketFormView extends AsyncView {
 
           </form>
         </div>
+
+        ${this.isEdit ? renderBudgetSection(ticket) : ''}
+
+        ${this.isEdit ? renderTicketTimeline() : ''}
       </div>
-
-      ${this.isEdit ? renderBudgetSection(ticket) : ''}
-
-      ${this.isEdit ? renderTicketTimeline() : ''}
     `;
   }
 

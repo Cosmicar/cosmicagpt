@@ -49,3 +49,21 @@
   box-shadow: 0 0 20px rgba(255, 107, 0, 0.4), 0 5px 10px rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
 }
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: var(--font-xs);
+  height: 32px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn:focus {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}

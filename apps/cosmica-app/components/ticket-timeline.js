@@ -28,23 +28,30 @@ function formatDate(ts) {
 
 function renderTimelineLoading() {
   return `
-    <div style="display:flex; align-items:center; gap:var(--space-sm); color:var(--text-muted); font-size:var(--font-sm); padding:var(--space-md) 0;">
-      <span class="badge badge-cyan" style="font-size:var(--font-xs);">Cargando</span>
-      <span>Recuperando historial...</span>
+    <div style="display: flex; flex-direction: column; gap: var(--space-md); padding: var(--space-sm) 0;">
+      ${Array(3).fill(`
+        <div style="display: grid; grid-template-columns: 28px 1fr; gap: var(--space-sm);">
+          <div class="skeleton" style="width: 24px; height: 24px; border-radius: 50%;"></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="skeleton" style="width: 80%; height: 14px;"></div>
+            <div class="skeleton" style="width: 40%; height: 10px;"></div>
+          </div>
+        </div>
+      `).join('')}
     </div>`;
 }
 
 function renderTimelineEmpty() {
   return `
-    <div style="color:var(--text-muted); font-size:var(--font-sm); padding:var(--space-md) 0;">
-      Sin eventos registrados aún.
+    <div style="color:var(--text-muted); font-size:var(--font-sm); padding:var(--space-md) 0; text-align: center; opacity: 0.6;">
+      No hay eventos registrados en esta orden aún.
     </div>`;
 }
 
 function renderTimelineError(msg) {
   return `
-    <div style="color:var(--accent-orange); font-size:var(--font-sm); padding:var(--space-md) 0;">
-      No se pudo cargar el historial: ${msg}
+    <div style="color:var(--danger); font-size:var(--font-sm); padding:var(--space-md) 0; text-align: center; background: rgba(255,0,0,0.05); border-radius: var(--radius-sm);">
+      ⚠️ Error: ${msg}
     </div>`;
 }
 
@@ -58,16 +65,18 @@ function renderEvent(event) {
       display: grid;
       grid-template-columns: 28px 1fr;
       gap: var(--space-sm);
-      padding: var(--space-sm) 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border);
     ">
-      <span style="font-size: 1rem; line-height: 1.5; padding-top: 2px;">${icon}</span>
+      <span style="font-size: 1rem; line-height: 1.5; padding-top: 2px; filter: grayscale(0.2);">${icon}</span>
       <div>
-        <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.4;">
+        <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.4; font-weight: 500;">
           ${event.message}
         </div>
-        <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">
-          ${user} · ${time}
+        <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; display: flex; gap: 8px; align-items: center;">
+          <span style="opacity: 0.8;">👤 ${user}</span>
+          <span style="opacity: 0.4;">•</span>
+          <span style="opacity: 0.8;">🕒 ${time}</span>
         </div>
       </div>
     </div>`;

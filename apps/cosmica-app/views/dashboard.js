@@ -64,14 +64,14 @@ export class DashboardView extends AsyncView {
     const canCreateTicket = canAccess('create-ticket');
 
     return `
-      <div class="dashboard-grid" style="display: flex; flex-direction: column; gap: var(--space-xl); animation: fadeIn 0.4s ease-out;">
+      <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-xl);">
         
         <!-- Header del Dashboard -->
-        <header style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-md);">
+        <header class="flex-between">
           <div>
             <div class="badge badge-cyan" style="margin-bottom: var(--space-xs);">Vista General</div>
             <h1 style="font-size: var(--font-xl); font-weight: 800; letter-spacing: -0.5px;">Panel Operacional</h1>
-            <p style="color: var(--text-muted); font-size: var(--font-sm);">Resumen del estado actual del taller al ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+            <p style="color: var(--text-muted); font-size: var(--font-sm);">Estado del taller al ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
           </div>
           <div style="display: flex; gap: var(--space-sm);">
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
@@ -80,24 +80,24 @@ export class DashboardView extends AsyncView {
         </header>
 
         <!-- KPIs Principales -->
-        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+        <section class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
           ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
           ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
           ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
           ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
         </section>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
+        <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
           
           <!-- Actividad Reciente -->
           <section>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border); padding-bottom: var(--space-xs);">
+            <div class="section-divider flex-between">
               <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.7;">🛠️</span> Últimos Movimientos
               </h3>
               <a href="#tickets" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-md);">
+            <div class="grid-stack" style="grid-template-columns: 1fr;">
               ${recentTickets.length > 0 
                 ? recentTickets.map(t => renderTicketCard(t)).join('') 
                 : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay actividad reciente.</div>'}
@@ -106,13 +106,13 @@ export class DashboardView extends AsyncView {
 
           <!-- Clientes Recientes -->
           <section>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border); padding-bottom: var(--space-xs);">
+            <div class="section-divider flex-between">
               <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.7;">👥</span> Nuevos Clientes
               </h3>
               <a href="#clientes" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr; gap: var(--space-md);">
+            <div class="grid-stack" style="grid-template-columns: 1fr;">
               ${recentClients.length > 0 
                 ? recentClients.map(c => renderClientCard(c)).join('') 
                 : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay clientes registrados.</div>'}

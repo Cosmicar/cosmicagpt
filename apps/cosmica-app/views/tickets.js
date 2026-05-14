@@ -48,23 +48,23 @@ export class TicketsView extends AsyncView {
     
     // Controles de búsqueda y filtros
     html += `
-      <div style="margin-top: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="margin-top: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);" class="animate-fade-in">
         
-        <div class="operational-controls" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
-          <div class="search-wrapper-mobile" style="position: relative; flex: 1; min-width: 250px; max-width: 500px;">
-            <input type="text" id="ticket-search" class="input-field" placeholder="Buscar por cliente, orden o problema..." style="padding-left: 40px; margin-bottom: 0;">
+        <div class="flex-between">
+          <div style="position: relative; flex: 1; min-width: 250px; max-width: 500px;">
+            <input type="text" id="ticket-search" class="input" placeholder="Buscar por cliente, orden o problema..." style="padding-left: 40px; margin-bottom: 0;">
             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
           </div>
           
-          <div class="operational-controls-filters" style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: space-between;">
-            <div class="filter-group" style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
+          <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
               <button class="btn btn-sm btn-filter active" data-filter="all">Todos</button>
               <button class="btn btn-sm btn-filter" data-filter="pendiente">Pendiente</button>
               <button class="btn btn-sm btn-filter" data-filter="proceso">En proceso</button>
               <button class="btn btn-sm btn-filter" data-filter="finalizado">Finalizado</button>
             </div>
 
-            <a href="#ticket-nuevo" class="btn btn-primary">
+            <a href="#ticket-nuevo" class="btn btn-primary btn-sm">
               <i>➕</i> Nuevo Trabajo
             </a>
           </div>
@@ -72,7 +72,7 @@ export class TicketsView extends AsyncView {
 
       </div>
       
-      <div id="tickets-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+      <div id="tickets-grid" class="grid-stack" style="margin-top: var(--space-xl); grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
         ${this.renderCards(tickets)}
       </div>
     `;
