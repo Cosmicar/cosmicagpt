@@ -5,7 +5,7 @@ import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
 import { createTicket, getTicket, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
-import { getInventario, filterInventario, adjustStock } from '../services/inventario.js';
+import { getInventario, filterInventario, batchAdjustStock } from '../services/inventario.js';
 import { canAccess } from '../core/session.js';
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
@@ -526,21 +526,30 @@ export class TicketFormView extends AsyncView {
       const prevRepuestos = this._ticket?.repuestos || [];
       const newRepuestos  = this._repuestosState;
 
-      // 1. Restore stock for previously saved repuestos
+      // 1. Prepare batch adjustments
+      const adjustments = [];
+      
+      // Restore previous
       for (const prev of prevRepuestos) {
-        await adjustStock(prev.inventarioId, +Number(prev.cantidad));
+        adjustments.push({ id: prev.inventarioId, delta: +Number(prev.cantidad) });
+      }
+      
+      // Consume new
+      for (const next of newRepuestos) {
+        adjustments.push({ id: next.inventarioId, delta: -Number(next.cantidad) });
       }
 
-      // 2. Consume stock for newly saved repuestos
-      for (const next of newRepuestos) {
-        await adjustStock(next.inventarioId, -Number(next.cantidad));
+      // 2. Execute batch
+      if (adjustments.length > 0) {
+        const batchRes = await batchAdjustStock(adjustments);
+        if (!batchRes.success) throw new Error(batchRes.error || 'Error al ajustar stock');
       }
 
       // 3. Save repuestos array to ticket
       const total = newRepuestos.reduce((s, r) => s + r.subtotal, 0);
       const result = await updateTicketRepuestos(this.ticketId, newRepuestos, total);
 
-      if (!result.success) throw new Error(result.error || 'Error al guardar');
+      if (!result.success) throw new Error(result.error || 'Error al actualizar ticket');
 
       // 4. Sync local ticket reference
       this._ticket.repuestos      = [...newRepuestos];

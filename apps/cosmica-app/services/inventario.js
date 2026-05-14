@@ -1,6 +1,6 @@
 import {
   collection, getDocs, getDoc, doc,
-  addDoc, updateDoc,
+  addDoc, updateDoc, writeBatch,
   query, orderBy, serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
@@ -91,6 +91,32 @@ export async function adjustStock(id, delta) {
     return { success: true };
   } catch (err) {
     console.error('Error al ajustar stock:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Realiza múltiples ajustes de stock en una sola operación atómica.
+ * @param {Array} adjustments - Array de { id, delta }
+ */
+export async function batchAdjustStock(adjustments) {
+  if (!adjustments.length) return { success: true };
+  
+  try {
+    const batch = writeBatch(db);
+    for (const { id, delta } of adjustments) {
+      if (!id || delta === 0) continue;
+      const ref = doc(db, COL, id);
+      batch.update(ref, {
+        stock: increment(delta),
+        updatedAt: serverTimestamp()
+      });
+    }
+    await batch.commit();
+    cacheInvalidate(CACHE_KEY);
+    return { success: true };
+  } catch (err) {
+    console.error('Error en batchAdjustStock:', err);
     return { success: false, error: err.message };
   }
 }

@@ -147,7 +147,8 @@ export class FinanzasView extends AsyncView {
   // ── Top tickets ───────────────────────────────────────────────────────────
 
   renderTopTickets(tickets) {
-    const maxPrecio = tickets.length ? Math.max(...tickets.map(t => Number(t.precio || 0))) : 1;
+    const prices = tickets.map(t => Number(t.precio || 0));
+    const maxPrecio = prices.length ? Math.max(...prices) : 0;
 
     return `
       <section class="card glass-card" style="padding:var(--space-lg);">

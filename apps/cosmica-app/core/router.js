@@ -64,6 +64,23 @@ export class Router {
     const [path, queryString] = fullHash.split('?');
     const params = new URLSearchParams(queryString);
     
+    // ── RBAC Guard ──────────────────────────────────────────────────────────
+    const routePermissions = {
+      'inventario':      'inventario-read',
+      'inventario-nuevo': 'inventario-write',
+      'inventario-edit':  'inventario-write',
+      'finanzas':        'finanzas-read',
+      'configuracion':    'config'
+    };
+
+    const requiredAction = routePermissions[path];
+    if (requiredAction && !canAccess(requiredAction)) {
+      console.warn(`Acceso denegado a ruta: ${path}. Redirigiendo a dashboard.`);
+      window.location.hash = '#dashboard';
+      return;
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     const ViewClass = this.routes[path];
     
     if (ViewClass) {

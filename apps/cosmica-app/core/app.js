@@ -81,6 +81,8 @@ function initPerfilButton(session, mainContent) {
   const btnLogout = document.getElementById('btnLogout');
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
+      if (!confirm('¿Estás seguro que deseas cerrar sesión?')) return;
+      
       btnLogout.disabled = true;
       btnLogout.textContent = 'Saliendo...';
       await logout();
