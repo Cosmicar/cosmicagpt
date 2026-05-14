@@ -8,28 +8,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* Ajustes de Layout para el SaaS */
+    :root {
+      --navbar-h: 65px;
+      --sidebar-w: 250px;
+    }
+
     .sidebar {
-      top: 65px; /* Ajuste para no solapar con la navbar */
-      height: calc(100vh - 65px);
-      background: rgba(5, 11, 20, 0.8); /* Un poco más oscuro para el panel */
+      top: var(--navbar-h);
+      height: calc(100vh - var(--navbar-h));
+      background: rgba(5, 11, 20, 0.8);
+      width: var(--sidebar-w);
     }
+
     .main-content {
-      margin-left: 250px;
+      margin-left: var(--sidebar-w);
       padding: var(--space-xl);
-      padding-top: 90px; /* Espacio para la navbar fija */
+      padding-top: calc(var(--navbar-h) + 25px);
       min-height: 100vh;
+      transition: all var(--transition-normal);
     }
+
+    /* Mobile Overrides (Operational Pass) */
     @media (max-width: 768px) {
+      :root {
+        --navbar-h: 55px; /* Navbar más delgada en mobile */
+      }
+      
+      .navbar {
+        padding: 0 var(--space-md);
+        height: var(--navbar-h);
+      }
+
       .sidebar {
+        top: var(--navbar-h);
+        height: calc(100vh - var(--navbar-h));
         transform: translateX(-100%);
         transition: transform 0.3s ease;
+        width: 280px; /* Un poco más ancho para touch */
       }
+
       .sidebar.active {
         transform: translateX(0);
       }
+
       .main-content {
         margin-left: 0;
-        padding-top: 80px;
+        padding: var(--space-md); /* Menos padding lateral */
+        padding-top: calc(var(--navbar-h) + 15px);
+      }
+
+      /* Densidad operacional en cards */
+      .glass-card {
+        padding: var(--space-md) !important;
+      }
+
+      /* Ajuste de gaps en grids */
+      .grid-stack-mobile {
+        gap: var(--space-md) !important;
+      }
+
+      /* Buscadores y filtros */
+      .operational-controls {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: var(--space-sm) !important;
+      }
+
+      .search-wrapper-mobile {
+        max-width: 100% !important;
+      }
+
+      /* Formularios más compactos */
+      .form-group {
+        margin-bottom: var(--space-md) !important;
       }
     }
 
@@ -41,7 +92,7 @@
     /* Shell visible cuando sesión confirmada */
     body.session-ready .sidebar { display: block; }
     body.session-ready .navbar-actions { display: flex; gap: var(--space-sm); align-items: center; }
-    body.session-ready .main-content { margin-left: 250px; }
+    body.session-ready .main-content { margin-left: var(--sidebar-w); }
     @media (max-width: 768px) {
       body.session-ready .main-content { margin-left: 0; }
       body.session-ready .sidebar { display: block; transform: translateX(-100%); }
@@ -51,7 +102,7 @@
     /* Dropdown perfil */
     .perfil-dropdown {
       position: absolute;
-      top: 60px;
+      top: calc(var(--navbar-h) - 5px);
       right: var(--space-lg);
       background: rgba(5, 11, 20, 0.95);
       border: 1px solid rgba(255,255,255,0.1);
@@ -62,12 +113,6 @@
       display: none;
     }
     .perfil-dropdown.open { display: block; }
-    .perfil-email {
-      font-size: var(--font-sm);
-      color: var(--text-muted);
-      margin-bottom: var(--space-md);
-      word-break: break-all;
-    }
   </style>
 </head>
 <body>

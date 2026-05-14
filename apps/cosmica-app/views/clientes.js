@@ -30,8 +30,8 @@ export class ClientesView extends AsyncView {
     
     // Controles de búsqueda y acción
     html += `
-      <div style="margin-top: var(--space-lg); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
-        <div style="position: relative; flex: 1; min-width: 250px; max-width: 450px;">
+      <div class="operational-controls" style="margin-top: var(--space-lg); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+        <div class="search-wrapper-mobile" style="position: relative; flex: 1; min-width: 250px; max-width: 450px;">
           <input type="text" id="cliente-search" class="input-field" placeholder="Buscar por nombre, DNI o teléfono..." style="padding-left: 40px; margin-bottom: 0;">
           <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;">🔍</span>
         </div>
@@ -40,7 +40,7 @@ export class ClientesView extends AsyncView {
         </a>
       </div>
       
-      <div id="clientes-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
+      <div id="clientes-grid" class="grid-stack-mobile" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl);">
         ${this.renderCards(clientes)}
       </div>
     `;
