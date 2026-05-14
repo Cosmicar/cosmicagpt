@@ -1,7 +1,7 @@
-import { collection, getDocs, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
-import { getNextOrderNumber, publishPublicOrder } from "../../../js/work-repository.js";
+import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 
 /**
  * Obtiene el listado de tickets (trabajos) desde Firestore.
@@ -83,5 +83,39 @@ export async function createTicket(data) {
       success: false,
       error: error.message || "No se pudo crear la orden de trabajo."
     };
+  }
+}
+
+/**
+ * Actualiza el estado de un ticket.
+ * 
+ * @param {string} id 
+ * @param {string} newStatus 
+ * @returns {Promise<Object>} Resultado
+ */
+export async function updateTicketStatus(id, newStatus) {
+  try {
+    const trabajo = await getTrabajo(id);
+    if (!trabajo) throw new Error("Orden no encontrada.");
+
+    const updateData = {
+      estado: newStatus,
+      updatedAt: serverTimestamp()
+    };
+
+    const now = new Date().toISOString();
+    if (newStatus === WORK_STATUS.listo) updateData.fechaReparado = now;
+    if (newStatus === WORK_STATUS.entregado) updateData.fechaEntregado = now;
+
+    const docRef = doc(db, COLLECTIONS.trabajos, id);
+    await updateDoc(docRef, updateData);
+
+    // Sincronizar con seguimiento público
+    await publishPublicOrder(id, { ...trabajo, ...updateData });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error al actualizar estado del ticket:", error);
+    return { success: false, error: error.message };
   }
 }

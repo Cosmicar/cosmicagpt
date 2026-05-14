@@ -1,10 +1,11 @@
 import { AsyncView } from '../core/async-view.js';
-import { getTickets } from '../services/tickets.js';
+import { getTickets, updateTicketStatus } from '../services/tickets.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { WORK_STATUS } from '../../../js/domain.js';
+import { showToast } from '../components/toast.js';
 
 /**
  * Vista de Tickets / Trabajos con Búsqueda y Filtros Rápidos
@@ -96,6 +97,49 @@ export class TicketsView extends AsyncView {
         this.applyFilters(grid);
       });
     });
+
+    this.initStatusSelectors();
+  }
+
+  initStatusSelectors() {
+    const statusSelectors = document.querySelectorAll('.status-selector');
+    statusSelectors.forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        const newStatus = e.target.value;
+        await this.handleStatusChange(id, newStatus, e.target);
+      });
+    });
+  }
+
+  async handleStatusChange(id, newStatus, selectElement) {
+    selectElement.disabled = true;
+    const result = await updateTicketStatus(id, newStatus);
+    
+    if (result.success) {
+      showToast('Estado actualizado', 'success');
+      
+      // Actualizar el badge visualmente sin recargar
+      const badge = document.getElementById(`badge-${id}`);
+      if (badge) {
+        badge.textContent = newStatus;
+        badge.classList.remove('badge-cyan', 'badge-orange', 'badge-green', 'badge-gray');
+        
+        if (newStatus === WORK_STATUS.ingresado) badge.classList.add('badge-cyan');
+        if (newStatus === WORK_STATUS.enReparacion) badge.classList.add('badge-orange');
+        if (newStatus === WORK_STATUS.listo) badge.classList.add('badge-green');
+        if (newStatus === WORK_STATUS.entregado) badge.classList.add('badge-gray');
+      }
+
+      // Actualizar cache local para que los filtros sigan funcionando correctamente
+      const ticket = this.allTickets.find(t => t.id === id);
+      if (ticket) ticket.estado = newStatus;
+
+    } else {
+      showToast(result.error || 'Error al cambiar estado', 'error');
+      // Se podría restaurar el valor previo si fuera necesario
+    }
+    selectElement.disabled = false;
   }
 
   applyFilters(grid) {
@@ -125,6 +169,7 @@ export class TicketsView extends AsyncView {
     }
 
     grid.innerHTML = this.renderCards(filtered);
+    this.initStatusSelectors(); // Re-bindear tras filtrar
   }
 
   renderEmpty() {
