@@ -16,27 +16,44 @@ let currentSession = {
  */
 export function initializeSession() {
   return new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const profile = await getUserProfile(user.uid);
-          currentSession = { user, profile };
-          console.log("session initialized");
-          resolve(currentSession);
-        } catch (error) {
-          // El perfil de Firestore falló, pero el usuario SÍ está autenticado.
-          // Resolver con profile: null permite que la app cargue en estado degradado
-          // en vez de mostrar la pantalla de error de autenticación.
-          console.error("Error al cargar perfil de usuario:", error);
-          currentSession = { user, profile: null };
-          resolve(currentSession);
+    const TIMEOUT_MS = 12_000;
+    const timer = setTimeout(() => {
+      reject(new Error('Tiempo de espera agotado al conectar con Firebase Auth'));
+    }, TIMEOUT_MS);
+
+    const done = (sessionValue) => { clearTimeout(timer); resolve(sessionValue); };
+    const fail = (err)          => { clearTimeout(timer); reject(err); };
+
+    try {
+      onAuthStateChanged(
+        auth,
+        async (user) => {
+          if (user) {
+            try {
+              const profile = await getUserProfile(user.uid);
+              currentSession = { user, profile };
+              console.log("session initialized");
+              done(currentSession);
+            } catch (error) {
+              // Firestore profile failed — resolve degraded rather than error screen
+              console.error("Error al cargar perfil de usuario:", error);
+              currentSession = { user, profile: null };
+              done(currentSession);
+            }
+          } else {
+            currentSession = { user: null, profile: null };
+            console.log("no active session");
+            done(currentSession);
+          }
+        },
+        (authError) => {
+          console.error("Firebase Auth error:", authError);
+          fail(authError);
         }
-      } else {
-        currentSession = { user: null, profile: null };
-        console.log("no active session");
-        resolve(currentSession);
-      }
-    });
+      );
+    } catch (syncErr) {
+      fail(syncErr);
+    }
   });
 }
 
