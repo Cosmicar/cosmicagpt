@@ -35,6 +35,9 @@ export class Router {
     // Escuchar cambios de ruta
     window.addEventListener('hashchange', () => this.handleRoute());
     window.addEventListener('load', () => this.handleRoute());
+
+    // Ejecución inicial para manejar el hash actual (útil en refresh)
+    this.handleRoute();
   }
   
   handleRoute() {
