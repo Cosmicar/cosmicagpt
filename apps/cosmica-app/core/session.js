@@ -57,9 +57,13 @@ export function initializeSession() {
 
 /**
  * Obtiene la sesión actual en memoria.
+ * Also mirrors to window.__cosmicaCurrentSession__ so chaos-guard.js can read
+ * session info without creating a circular import dependency.
  * @returns {Object} { user, profile }
  */
 export function getCurrentSession() {
+  // Keep the window mirror in sync — zero-cost after the first read
+  try { window.__cosmicaCurrentSession__ = currentSession; } catch {}
   return currentSession;
 }
 

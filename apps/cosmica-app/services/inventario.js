@@ -97,19 +97,50 @@ export async function adjustStock(id, delta) {
 
 /**
  * Realiza múltiples ajustes de stock en una sola operación atómica.
+ * Valida que ningún item quede con stock negativo ANTES de commitear.
+ * Si alguno falla la validación, aborta TODA la operación (sin commits parciales).
+ *
  * @param {Array} adjustments - Array de { id, delta }
+ * @returns {Promise<{success: boolean, error?: string, code?: string, itemNombre?: string}>}
  */
 export async function batchAdjustStock(adjustments) {
   if (!adjustments.length) return { success: true };
-  
+
   try {
+    // ── Pre-validation: read current stock for every consuming item ──────────
+    const consuming = adjustments.filter(a => a.id && a.delta < 0);
+    if (consuming.length > 0) {
+      const snaps = await Promise.all(consuming.map(a => getDoc(doc(db, COL, a.id))));
+
+      for (let i = 0; i < consuming.length; i++) {
+        const { id, delta } = consuming[i];
+        const snap = snaps[i];
+        if (!snap.exists()) {
+          return { success: false, error: `Repuesto no encontrado (${id})`, code: 'NOT_FOUND' };
+        }
+        const currentStock = Number(snap.data().stock || 0);
+        if (currentStock + delta < 0) {
+          const nombre = snap.data().nombre || id;
+          console.warn('[inventario] batchAdjustStock aborted — insufficient stock:', {
+            id, nombre, currentStock, delta, wouldBe: currentStock + delta,
+          });
+          return {
+            success:    false,
+            error:      `Stock insuficiente para ${nombre}`,
+            code:       'INSUFFICIENT_STOCK',
+            itemNombre: nombre,
+          };
+        }
+      }
+    }
+
+    // ── All validations passed — commit in one batch ──────────────────────────
     const batch = writeBatch(db);
     for (const { id, delta } of adjustments) {
       if (!id || delta === 0) continue;
-      const ref = doc(db, COL, id);
-      batch.update(ref, {
-        stock: increment(delta),
-        updatedAt: serverTimestamp()
+      batch.update(doc(db, COL, id), {
+        stock:     increment(delta),
+        updatedAt: serverTimestamp(),
       });
     }
     await batch.commit();

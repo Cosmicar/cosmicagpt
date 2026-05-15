@@ -1,12 +1,12 @@
 import { AsyncView } from '../core/async-view.js';
 import { getTickets, updateTicketStatus, updateMultipleTicketStatus, isOverdue, isHighValue, needsApprovalCTA, reingresoTicket } from '../services/tickets.js';
-import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
+import { ensureBudgetApprovedEvent, addTicketHistoryEvent, TICKET_EVENT_TYPES } from '../services/ticket-history.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { WORK_STATUS } from '../../../js/domain.js';
-import { showToast } from '../components/toast.js';
+import { showToast, showActionToast } from '../components/toast.js';
 import { canAccess, getCurrentSession } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
 import { openTicketPrint } from '../components/ticket-print.js';
@@ -44,6 +44,9 @@ export class TicketsView extends AsyncView {
     this._pageSize        = 50;
     this._hasMoreFirestore = false; // hay tickets más antiguos en Firestore
     this._clientMap        = {};   // clienteId → cliente, reutilizado en load-more
+
+    // Stale data detection: trigger "⟳ Actualizar datos" button after 5 min
+    this._staleTimerMs = 5 * 60 * 1000;
 
     // Load persisted state
     const persisted = JSON.parse(sessionStorage.getItem('ticketsViewState') || '{}');
@@ -121,6 +124,8 @@ export class TicketsView extends AsyncView {
 
   destroy() {
     this.saveState();
+    clearTimeout(this._staleTimerId);
+    this._multitabCleanup?.();
     if (this._onEsc) {
       document.removeEventListener('keydown', this._onEsc);
       this._onEsc = null;
@@ -544,76 +549,93 @@ export class TicketsView extends AsyncView {
   }
 
   async handleQuickRepair(id, btn) {
+    if (btn.disabled) return;
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = '⏳...';
 
-    await ensureBudgetApprovedEvent(id);
-    const result = await updateTicketStatus(id, WORK_STATUS.enReparacion);
-
-    if (result.success) {
-      showToast('Pasado a Reparación', 'success');
+    try {
+      await ensureBudgetApprovedEvent(id);
       const ticket = this.allTickets.find(t => t.id === id);
-      if (ticket) ticket.estado = WORK_STATUS.enReparacion;
-      const badge = document.getElementById(`badge-${id}`);
-      if (badge) {
-        badge.textContent = WORK_STATUS.enReparacion;
-        badge.className   = 'badge badge-orange';
-      }
-      const wrap = btn.closest('.quick-repair-wrap');
-      if (wrap) wrap.remove();
-      const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
-      if (ctaCell) ctaCell.innerHTML = '';
+      const previousStatus = ticket?.estado;
+      const result = await updateTicketStatus(id, WORK_STATUS.enReparacion);
 
-      const gridQR = document.getElementById('tickets-grid');
-      if (gridQR) this.applyFilters(gridQR);
-    } else {
-      showToast(result.error || 'Error', 'error');
+      if (result.success) {
+        showToast('Pasado a Reparación', 'success');
+        if (ticket) ticket.estado = WORK_STATUS.enReparacion;
+        const badge = document.getElementById(`badge-${id}`);
+        if (badge) {
+          badge.textContent = WORK_STATUS.enReparacion;
+          badge.className   = 'badge badge-orange';
+        }
+        const wrap = btn.closest('.quick-repair-wrap');
+        if (wrap) wrap.remove();
+        const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
+        if (ctaCell) ctaCell.innerHTML = '';
+
+        const gridQR = document.getElementById('tickets-grid');
+        if (gridQR) this.applyFilters(gridQR);
+        this._showUndoToast(id, WORK_STATUS.enReparacion, previousStatus);
+      } else {
+        showToast(result.error || 'Error', 'error');
+      }
+    } finally {
       btn.disabled = false;
       btn.textContent = originalText;
     }
   }
 
   async handleTomarTicket(id, btn) {
+    if (btn.disabled) return;
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = '⏳...';
 
-    const { assignTechnician } = await import('../services/tickets.js');
-    const session = getCurrentSession();
-    const result = await assignTechnician(id, { 
-      id: session.user.uid, 
-      nombre: session.profile.nombre || session.user.email 
-    });
+    try {
+      const { assignTechnician } = await import('../services/tickets.js');
+      const session = getCurrentSession();
+      const result = await assignTechnician(id, {
+        id: session.user.uid,
+        nombre: session.profile.nombre || session.user.email
+      });
 
-    if (result.success) {
-      showToast('Ticket asignado a ti', 'success');
-      const ticket = this.allTickets.find(t => t.id === id);
-      if (ticket) {
-        ticket.tecnicoAsignadoId = session.user.uid;
-        ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+      if (result.success) {
+        showToast('Ticket asignado a ti', 'success');
+        const ticket = this.allTickets.find(t => t.id === id);
+        if (ticket) {
+          ticket.tecnicoAsignadoId = session.user.uid;
+          ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+        }
+        const grid = document.getElementById('tickets-grid');
+        if (grid) this.applyFilters(grid);
+      } else {
+        showToast(result.error || 'Error', 'error');
       }
-      const grid = document.getElementById('tickets-grid');
-      if (grid) this.applyFilters(grid);
-    } else {
-      showToast(result.error || 'Error', 'error');
+    } finally {
       btn.disabled = false;
       btn.textContent = originalText;
     }
   }
 
   async handleReingreso(id, btn) {
+    if (btn.disabled) return;
     if (!confirm('¿Generar un reingreso para este equipo?')) return;
     btn.disabled = true;
-    const ticket = this.allTickets.find(t => t.id === id);
-    if (!ticket) return;
-    const res = await reingresoTicket(ticket);
-    if (res.success) {
-      showToast('Reingreso generado', 'success');
-      window.location.hash = `#ticket-edit?id=${res.id}`;
-    } else {
-      showToast(res.error || 'Error', 'error');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳...';
+    try {
+      const ticket = this.allTickets.find(t => t.id === id);
+      if (!ticket) return;
+      const res = await reingresoTicket(ticket);
+      if (res.success) {
+        showToast('Reingreso generado', 'success');
+        window.location.hash = `#ticket-edit?id=${res.id}`;
+      } else {
+        showToast(res.error || 'Error', 'error');
+      }
+    } finally {
       btn.disabled = false;
+      btn.textContent = originalText;
     }
   }
 
@@ -627,6 +649,11 @@ export class TicketsView extends AsyncView {
 
   async handleStatusChange(id, newStatus, selectElement) {
     if (selectElement) selectElement.disabled = true;
+
+    // Capture previousStatus BEFORE the update so the undo can revert it
+    const ticket = this.allTickets.find(t => t.id === id);
+    const previousStatus = ticket?.estado;
+
     const result = await updateTicketStatus(id, newStatus);
     if (result.success) {
       showToast('Estado actualizado', 'success');
@@ -639,27 +666,76 @@ export class TicketsView extends AsyncView {
         if (newStatus === WORK_STATUS.listo)        badge.classList.add('badge-green');
         if (newStatus === WORK_STATUS.entregado)    badge.classList.add('badge-gray');
       }
-      const ticket = this.allTickets.find(t => t.id === id);
       if (ticket) ticket.estado = newStatus;
       const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
       if (ctaCell && newStatus === WORK_STATUS.enReparacion) ctaCell.innerHTML = '';
+
+      // Offer undo only when there is a meaningful previous state to return to
+      if (previousStatus && previousStatus !== newStatus) {
+        this._showUndoToast(id, newStatus, previousStatus);
+      }
     } else {
       showToast(result.error || 'Error', 'error');
       if (selectElement && selectElement.tagName === 'SELECT') {
-        const ticket = this.allTickets.find(t => t.id === id);
         if (ticket) selectElement.value = ticket.estado;
       }
     }
     if (selectElement) selectElement.disabled = false;
   }
 
+  /**
+   * Muestra un toast con botón "Deshacer" que revierte el cambio de estado.
+   * Valida que el estado actual coincida antes de revertir para evitar sobreescribir
+   * cambios que ocurrieron mientras el toast estaba visible (undo token pattern).
+   */
+  async _showUndoToast(id, currentStatus, previousStatus) {
+    if (!previousStatus || previousStatus === currentStatus) return;
+
+    showActionToast(
+      `Estado → "${currentStatus}"`,
+      'Deshacer',
+      async () => {
+        // Guard: verify state hasn't changed since we showed the toast
+        const ticket = this.allTickets.find(t => t.id === id);
+        if (!ticket || ticket.estado !== currentStatus) {
+          showToast('El ticket ya fue actualizado. No se puede deshacer.', 'warning');
+          // Log rejected undo to history (fire-and-forget)
+          addTicketHistoryEvent(id, TICKET_EVENT_TYPES.undoRejected, {
+            attemptedRevert: previousStatus,
+            currentState: ticket?.estado ?? 'unknown',
+          }).catch(() => {});
+          return;
+        }
+
+        const result = await updateTicketStatus(id, previousStatus);
+        if (result.success) {
+          ticket.estado = previousStatus;
+          const badge = document.getElementById(`badge-${id}`);
+          if (badge) {
+            badge.textContent = previousStatus;
+            badge.className   = `badge ${badgeClass(previousStatus)}`;
+          }
+          showToast('Cambio revertido', 'info');
+          addTicketHistoryEvent(id, TICKET_EVENT_TYPES.undoSuccess, {
+            revertedFrom: currentStatus,
+            revertedTo:   previousStatus,
+          }).catch(() => {});
+        } else {
+          showToast(result.error || 'Error al deshacer', 'error');
+        }
+      },
+      5000, // 5 s window to undo
+    );
+  }
+
   saveState() {
+    this.savedScroll = window.scrollY;
     sessionStorage.setItem('ticketsViewState', JSON.stringify({
-      filter: this.currentFilter,
-      term: this.currentTerm,
+      filter:   this.currentFilter,
+      term:     this.currentTerm,
       viewMode: this.viewMode,
-      scroll: window.scrollY,
-      page: this._page,
+      scroll:   this.savedScroll,
+      page:     this._page,
     }));
   }
 

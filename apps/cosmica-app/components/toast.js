@@ -70,6 +70,20 @@ function createContainer() {
 
     .toast-icon { font-size: 1.3em; flex-shrink: 0; }
     .toast-message { flex: 1; font-weight: 600; }
+    .toast-action-btn {
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      color: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .toast-action-btn:hover { background: rgba(255,255,255,0.4); }
   `;
   document.head.appendChild(style);
 }
@@ -104,4 +118,46 @@ export function showToast(message, type = 'info', duration = 3500) {
       if (toast.parentNode === toastContainer) toastContainer.removeChild(toast);
     }, 400);
   }, duration);
+}
+
+/**
+ * Muestra un toast con un botón de acción inline (usado por el mecanismo de undo).
+ * El botón llama a onAction() y cierra el toast inmediatamente.
+ *
+ * @param {string}   message      Texto del toast
+ * @param {string}   actionLabel  Etiqueta del botón (ej. 'Deshacer')
+ * @param {Function} onAction     Callback invocado al hacer clic en el botón
+ * @param {number}   duration     Duración en ms antes de auto-cerrar (default: 5000)
+ */
+export function showActionToast(message, actionLabel, onAction, duration = 5000) {
+  createContainer();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification toast-info';
+
+  toast.innerHTML = `
+    <span class="toast-icon">↩️</span>
+    <span class="toast-message">${message}</span>
+    <button class="toast-action-btn">${actionLabel}</button>
+  `;
+
+  const dismiss = () => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toast.parentNode === toastContainer) toastContainer.removeChild(toast);
+    }, 400);
+  };
+
+  toast.querySelector('.toast-action-btn').addEventListener('click', () => {
+    dismiss();
+    try { onAction(); } catch (e) { console.error('[toast] showActionToast onAction error:', e); }
+  });
+
+  toastContainer.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+
+  const timerId = setTimeout(dismiss, duration);
+
+  // Allow external cancellation via the returned dismiss function
+  return () => { clearTimeout(timerId); dismiss(); };
 }

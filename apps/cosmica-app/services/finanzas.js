@@ -11,6 +11,11 @@ import { cacheInvalidate } from '../core/cache.js';
 const CACHE_CAJA      = 'finanzas:caja';
 const CACHE_HISTORIAL = 'finanzas:historial';
 
+// ── Race-condition guard for autoRegistrarIngresoTicket ───────────────────────
+// In-memory Set prevents two simultaneous async calls from both passing the
+// Firestore dedup check and inserting duplicate income entries.
+const _cajaInFlight = new Set();
+
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 function toDate(ts) {
@@ -248,14 +253,32 @@ export async function createCajaEntry(data, sesionId = null) {
  * Auto-registers income from a delivered ticket.
  * Idempotent: skips silently if already registered for this ticket.
  * Non-fatal: errors are swallowed so ticket flow is never blocked.
+ *
+ * Race-condition protection:
+ *   - In-memory _cajaInFlight Set prevents two simultaneous calls for the same
+ *     ticket from both passing the Firestore dedup check.
+ *   - Firestore dedup query is scoped to tipo=='ingreso' so it doesn't match
+ *     admin adjustment entries with the same ticketRef.
  */
 export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
-  try {
-    if (!ticket?.id || !Number(ticket.precio || 0)) return;
+  if (!ticket?.id || !Number(ticket.precio || 0)) return;
 
-    // Dedup check — use ticketRef field
+  // In-memory guard: intercept concurrent duplicate calls in the same JS process
+  const eventKey = `${ticket.id}_ingreso`;
+  if (_cajaInFlight.has(eventKey)) {
+    console.warn('[finanzas] autoRegistrarIngresoTicket: concurrent call intercepted for', ticket.id);
+    return;
+  }
+  _cajaInFlight.add(eventKey);
+
+  try {
+    // Firestore dedup — scoped to tipo=='ingreso' so admin adjustments don't mask this check
     const dedupSnap = await getDocs(
-      query(collection(db, COLLECTIONS.caja), where('ticketRef', '==', ticket.id))
+      query(
+        collection(db, COLLECTIONS.caja),
+        where('ticketRef', '==', ticket.id),
+        where('tipo', '==', 'ingreso'),
+      )
     );
     if (!dedupSnap.empty) return; // already registered
 
@@ -281,6 +304,8 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
     cacheInvalidate(CACHE_CAJA);
   } catch (err) {
     console.warn('[finanzas] autoRegistrarIngresoTicket (silently failed):', err);
+  } finally {
+    _cajaInFlight.delete(eventKey);
   }
 }
 

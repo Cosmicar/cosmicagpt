@@ -8,14 +8,17 @@ import { getCurrentSession } from "../core/session.js";
  * Usar estas constantes al llamar addTicketHistoryEvent().
  */
 export const TICKET_EVENT_TYPES = {
-  created:              'ticket_created',
-  statusChanged:        'status_changed',
-  edited:               'ticket_edited',
-  budgetApproved:       'budget_approved',
-  financialAdjustment:  'financial_adjustment',
-  paymentMethodChanged: 'payment_method_changed',
-  technicianAssigned:   'technician_assigned',
-  technicianUnassigned: 'technician_unassigned',
+  created:               'ticket_created',
+  statusChanged:         'status_changed',
+  edited:                'ticket_edited',
+  budgetApproved:        'budget_approved',
+  financialAdjustment:   'financial_adjustment',
+  paymentMethodChanged:  'payment_method_changed',
+  inventoryAdjustFailed: 'inventory_adjust_failed',
+  undoSuccess:           'undo_success',
+  undoRejected:          'undo_rejected',
+  technicianAssigned:    'technician_assigned',
+  technicianUnassigned:  'technician_unassigned',
 };
 
 /**

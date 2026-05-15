@@ -3,6 +3,7 @@ import { initializeSession, logout } from './session.js';
 import { LoginView } from '../views/login.js';
 import { renderLoadingState, renderErrorState } from '../components/app-state.js';
 import { initCommandPalette } from '../components/command-palette.js';
+import { cleanupExpiredDrafts } from './chaos-guard.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const mainContent = document.querySelector('.main-content');
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Sesión confirmada con perfil válido: mostrar shell completo
+    cleanupExpiredDrafts(); // Sweep stale cosmica_draft_* keys before the session starts
     document.body.classList.add('session-ready');
     renderSidebar(session.profile);
     initPerfilButton(session, mainContent);

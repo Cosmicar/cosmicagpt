@@ -18,6 +18,7 @@ import {
   guardBtn, setDirty, initUnsavedChangesGuard,
   saveDraft, loadDraft, clearDraft, initMultitabCheck
 } from '../core/chaos-guard.js';
+import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from '../services/ticket-history.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -469,9 +470,9 @@ export class TicketFormView extends AsyncView {
     // Chaos Guard: Unsaved Changes
     initUnsavedChangesGuard();
     
-    // Chaos Guard: Multitab
+    // Chaos Guard: Multitab — store cleanup so destroy() can release the lock
     if (this.isEdit) {
-      initMultitabCheck(this.ticketId, () => {
+      this._multitabCleanup = initMultitabCheck(this.ticketId, () => {
         showToast('Esta orden se está editando en otra pestaña', 'warning');
       });
     }
@@ -894,7 +895,16 @@ export class TicketFormView extends AsyncView {
         // 2. Execute batch
         if (adjustments.length > 0) {
           const batchRes = await batchAdjustStock(adjustments);
-          if (!batchRes.success) throw new Error(batchRes.error || 'Error al ajustar stock');
+          if (!batchRes.success) {
+            // Log the failure to the ticket's history audit trail (fire-and-forget)
+            if (batchRes.code === 'INSUFFICIENT_STOCK') {
+              addTicketHistoryEvent(this.ticketId, TICKET_EVENT_TYPES.inventoryAdjustFailed, {
+                itemNombre: batchRes.itemNombre,
+                error:      batchRes.error,
+              }).catch(() => {});
+            }
+            throw new Error(batchRes.error || 'Error al ajustar stock');
+          }
         }
 
         // 3. Save repuestos array to ticket
@@ -1026,9 +1036,15 @@ export class TicketFormView extends AsyncView {
     if (!form) return;
 
     const draftKey = this.isEdit ? `ticket_${this.ticketId}` : 'new_ticket';
-    
-    // Load draft
-    const draft = loadDraft(draftKey);
+
+    // Snapshot ticket.updatedAt as a string — used to detect stale drafts
+    // (if the ticket was saved by another user/tab while this draft sat around)
+    const ticketUpdatedAt = this._ticket?.updatedAt
+      ? String(this._ticket.updatedAt?.toMillis?.() ?? this._ticket.updatedAt)
+      : null;
+
+    // Load draft — skip silently if ticket was modified after draft was saved
+    const draft = loadDraft(draftKey, ticketUpdatedAt);
     if (draft) {
       if (confirm('Se encontró un borrador sin guardar. ¿Deseas restaurarlo?')) {
         Object.entries(draft).forEach(([key, val]) => {
@@ -1041,13 +1057,18 @@ export class TicketFormView extends AsyncView {
       }
     }
 
-    // Save draft on change
+    // Save draft on change — include updatedAt snapshot for future staleness checks
     form.addEventListener('input', () => {
       setDirty(true);
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
-      saveDraft(draftKey, data);
+      saveDraft(draftKey, data, ticketUpdatedAt);
     });
+  }
+
+  destroy() {
+    // Release multitab edit-lock so other tabs can take over
+    this._multitabCleanup?.();
   }
 
   toggleFormLoading(isLoading) {
