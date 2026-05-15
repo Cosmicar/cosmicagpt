@@ -156,8 +156,13 @@ body {
 }
 .grid-stack.vm-compact .vm-meta,
 .grid-stack.vm-compact .vm-problema,
-.grid-stack.vm-compact .vm-details {
+.grid-stack.vm-compact .vm-details,
+.grid-stack.vm-compact .quick-actions-wrap {
   display: none;
+}
+.grid-stack.vm-compact .card.glass-card {
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Expanded: more breathing room, full problem text */
@@ -227,8 +232,8 @@ body {
 /* Sticky header */
 .tickets-table thead {
   position: sticky;
-  top: 0;
-  z-index: 2;
+  top: calc(var(--navbar-h, 65px) - 1px);
+  z-index: 10; /* Above rows, below dropdowns */
 }
 .tickets-table thead th {
   padding: 10px 14px;
@@ -293,6 +298,8 @@ body {
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
+  position: relative;
+  z-index: 5;
 }
 
 /* Mobile: hide table button; JS handles the render fallback */
@@ -671,6 +678,7 @@ body {
   transform: translateY(100%);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* Ensure bulk bar doesn't overlap navbar on tiny screens if they meet */
 .bulk-bar.is-visible {
   transform: translateY(0);
 }

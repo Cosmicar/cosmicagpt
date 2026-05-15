@@ -39,14 +39,14 @@ export class TicketsView extends AsyncView {
     this._onEsc          = null;       // stored for cleanup in destroy()
 
     // Load persisted state
-    const persisted = JSON.parse(sessionStorage.getItem(PERSISTENCE_KEY) || '{}');
+    const persisted = JSON.parse(sessionStorage.getItem('ticketsViewState') || '{}');
     this.currentFilter = persisted.filter || 'all';
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
+    this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
 
-    const savedMode   = localStorage.getItem(VM_STORAGE_KEY) || persisted.viewMode || 'comfortable';
     const isMobile = window.innerWidth < 768;
-    this.viewMode = (savedMode === 'table' && isMobile) ? 'comfortable' : savedMode;
+    if (this.viewMode === 'table' && isMobile) this.viewMode = 'comfortable';
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -282,10 +282,15 @@ export class TicketsView extends AsyncView {
           this.currentTerm = e.target.value.toLowerCase().trim();
           this.saveState();
           this.applyFilters(grid);
-        }, 150); // Faster debounce as requested
+        }, 200); // 200ms debounce as requested
       });
       searchInput.value = this.currentTerm;
-      setTimeout(() => searchInput.focus(), 50); // Small delay to ensure focus works after render
+      
+      // Autofocus (except mobile)
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
     // Scroll tracking
@@ -499,7 +504,7 @@ export class TicketsView extends AsyncView {
   }
 
   saveState() {
-    sessionStorage.setItem(PERSISTENCE_KEY, JSON.stringify({
+    sessionStorage.setItem('ticketsViewState', JSON.stringify({
       filter: this.currentFilter,
       term: this.currentTerm,
       viewMode: this.viewMode,
@@ -519,18 +524,23 @@ export class TicketsView extends AsyncView {
       });
     }
     if (this.currentTerm) {
-      const q = this.currentTerm;
-      filtered = filtered.filter(t =>
-        (t.nombre     && t.nombre.toLowerCase().includes(q))    ||
-        (t.apellido   && t.apellido.toLowerCase().includes(q))  ||
-        (t.numeroOrden && String(t.numeroOrden).toLowerCase().includes(q)) ||
-        (t.equipo     && t.equipo.toLowerCase().includes(q))    ||
-        (t.marca      && t.marca.toLowerCase().includes(q))     ||
-        (t.modelo     && t.modelo.toLowerCase().includes(q))    ||
-        (t.telefono   && String(t.telefono).includes(q))        ||
-        (t.dni        && String(t.dni).includes(q))             ||
-        (t.problema   && t.problema.toLowerCase().includes(q))
-      );
+      const q = this.currentTerm.toLowerCase();
+      filtered = filtered.filter(t => {
+        // Smart search searchable string
+        const searchable = [
+          t.numeroOrden || '',
+          t.nombre || '',
+          t.apellido || '',
+          t.telefono || '',
+          t.dni || '',
+          t.equipo || '',
+          t.marca || '',
+          t.modelo || '',
+          t.problema || ''
+        ].join(' ').toLowerCase();
+        
+        return searchable.includes(q);
+      });
     }
     return filtered;
   }
