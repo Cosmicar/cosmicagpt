@@ -100,24 +100,40 @@ export function hasRole(role) {
 }
 
 /**
- * Verifica si el usuario puede acceder a un recurso o acción
+ * Verifica si el usuario puede acceder a un recurso o acción.
+ *
+ * Degraded-profile safety: when the Firestore profile fetch fails (network error,
+ * permission denied on /usuarios), `profile` is null but the user IS authenticated.
+ * In that case we grant read-only actions and deny destructive ones — this prevents
+ * the entire card/drawer action bar from going blank due to a transient profile load
+ * failure.  The user sees print / WA / view buttons; edit / status-change stay hidden.
+ *
  * @param {string} action - 'admin' | 'edit-ticket' | 'create-client' | etc.
  * @returns {boolean}
  */
 export function canAccess(action) {
-  const profile = currentSession.profile;
-  if (!profile) return false;
-  
+  const { user, profile } = currentSession;
+
+  // Not authenticated at all → deny everything
+  if (!user) return false;
+
+  // Profile failed to load (Firestore error) → degraded read-only mode
+  if (!profile) {
+    // Allow safe read-only and contact actions; block all writes
+    const readOnlyAllowed = ['view-tickets', 'view-clients', 'inventario-read', 'finanzas-read'];
+    return readOnlyAllowed.includes(action);
+  }
+
   const role = profile.rol;
-  
-  // Admin tiene acceso total
+
+  // Admin has full access
   if (role === 'admin') return true;
-  
+
   switch (action) {
     case 'config':
-      return false; // Solo admin
+      return false; // Admin-only
     case 'edit-ticket':
-      // tecnico: reparaciones técnicas; operador: órdenes taller; recepcion: puede editar al crear
+      // tecnico: technical repairs; operador: workshop orders; recepcion: at creation
       return ['tecnico', 'operador', 'recepcion'].includes(role);
     case 'create-ticket':
       return ['recepcion', 'operador'].includes(role);
@@ -126,12 +142,12 @@ export function canAccess(action) {
     case 'view-tickets':
     case 'view-clients':
     case 'inventario-read':
-      return true; // Todos los roles staff
-    case 'inventario-write': // consumir stock desde tickets
+      return true; // All staff roles
+    case 'inventario-write': // consume stock from tickets
       return ['tecnico', 'operador'].includes(role);
     case 'finanzas-read':
-      return true; // todos los roles staff
-    case 'finanzas-write': // registrar caja
+      return true; // All staff roles
+    case 'finanzas-write': // register cash movements
       return ['recepcion', 'operador'].includes(role);
     default:
       return false;

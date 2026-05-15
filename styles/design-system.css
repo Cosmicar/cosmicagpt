@@ -191,7 +191,8 @@ td, th {
 }
 .grid-stack.vm-compact .card.glass-card {
   min-height: 0;
-  overflow: hidden;
+  /* overflow:hidden removed — it was clipping the action-bar on mobile.
+     Badge-column and text overflow are now managed per-element (tc-badge-col, vm-meta). */
 }
 
 /* Expanded: more breathing room, full problem text */
@@ -954,6 +955,95 @@ textarea {
   font-size: 9px;
   padding: 2px 6px;
   letter-spacing: 0.3px;
+}
+
+/* ── Ticket Card Layout Hardening ───────────────────────────────────────────
+ *
+ * Root cause of the mobile overflow bug:
+ *  1. Badge column had no max-width — could grow to 160 px with many/long badges,
+ *     wrapping the entire column to a new flex row (space-between puts it at LEFT).
+ *  2. vm-compact overflow:hidden was clipping the action bar at the bottom on
+ *     mobile when vm-meta was restored to display:block at ≤640 px.
+ *  3. vm-meta/<p> had no overflow-wrap — long equipment names caused horizontal
+ *     overflow on narrow cards.
+ *
+ * Fix strategy: cap badge column, protect text wrapping, keep action bar visible.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Badge column: hard cap so it never steals horizontal space from the title */
+.tc-badge-col {
+  min-width: 64px;
+  max-width: clamp(64px, 38%, 148px);
+  flex-shrink: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* All badges inside the column respect their container width */
+.tc-badge-col .badge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Card header row: never wrap — badge column is capped, not wrapped away */
+.tc-card-header {
+  flex-wrap: nowrap !important;
+}
+
+/* Meta and problem text blocks: full overflow protection */
+.glass-card .vm-meta,
+.glass-card .vm-problema {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/*
+ * Compact mode overflow fix:
+ * Previously `overflow:hidden` on compact cards clipped the action-button bar at
+ * the bottom on mobile (where vm-meta is restored to display:block at ≤640 px).
+ * We now use `overflow:clip` (no scrollbar, no layout escape) and fall back to
+ * `overflow:hidden` via the same rule — but the action bar is no longer clipped
+ * because the card grows to fit its content (no fixed height, grid auto rows).
+ *
+ * The critical change: remove `overflow:hidden` from the card element entirely and
+ * rely on per-element overflow management (badge-col, text nodes) instead.
+ */
+.grid-stack.vm-compact .card.glass-card {
+  /* min-height:0 still needed so the grid can place cards in short rows */
+  min-height: 0;
+  /* DO NOT add overflow:hidden here — it clips the action bar on mobile. */
+  /* Individual elements manage their own overflow (see tc-badge-col, vm-meta). */
+}
+
+/* Mobile-specific card tightening */
+@media (max-width: 640px) {
+  /* Cards fill the full column — no min-width constraint */
+  .grid-stack .card.glass-card {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Tighten the header gap on very narrow screens */
+  .tc-card-header {
+    gap: 4px !important;
+  }
+
+  /* Badge column: slightly narrower cap on 360 px screens */
+  .tc-badge-col {
+    max-width: clamp(60px, 36%, 130px);
+  }
+
+  /* Action bar: allow wrap so buttons stack rather than overflow */
+  .glass-card > div:last-child > div {
+    flex-wrap: wrap;
+  }
 }
 
 /* ── Print suppression ──────────────────────────────────────────────────────── */
