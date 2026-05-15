@@ -82,22 +82,26 @@ export function render(ticket, selected = false) {
       </div>
       ` : ''}
       
-      ${estado === WORK_STATUS.entregado ? `
-      <div class="reingreso-wrap" style="margin-top: var(--space-sm);">
-        <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="width: 100%; font-size: var(--font-xs); background: rgba(0, 229, 255, 0.1); border-color: rgba(0, 229, 255, 0.2); color: var(--accent-cyan);">
-          ♻️ Generar Reingreso
-        </button>
-      </div>
-      ` : ''}
-
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">
-        ${canEdit ? `
-          <select class="status-selector" data-id="${ticket.id}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-xs); padding: 6px; outline: none;">
-            ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-          </select>
-          <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 6px 10px;" title="Editar"><i>📝</i></a>
-        ` : '<div style="flex:1;"></div>'}
-        <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding: 6px 10px;" title="Imprimir orden">🖨</button>
+        <div style="display: flex; gap: 4px; flex: 1;">
+          ${canEdit && estado === WORK_STATUS.listo ? `
+            <button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" title="Cobrar y Finalizar" style="padding: 6px 8px; flex: 1; font-size: 10px; font-weight: 700;">
+              💵 COBRAR
+            </button>
+          ` : ''}
+          ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
+            <button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}" title="Marcar como Listo" style="padding: 6px 8px; flex: 1; font-size: 10px; font-weight: 700;">
+              ✅ LISTO
+            </button>
+          ` : ''}
+          ${estado === WORK_STATUS.entregado ? `
+            <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" title="Generar Reingreso" style="padding: 6px 8px; flex: 1; font-size: 10px; background: rgba(0, 229, 255, 0.1); color: var(--accent-cyan);">
+              ♻️ REINGRESO
+            </button>
+          ` : ''}
+          <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding: 6px 10px;" title="Imprimir orden">🖨</button>
+          ${canEdit ? `<a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 6px 10px;" title="Editar">📝</a>` : ''}
+        </div>
       </div>
     </div>
   `;

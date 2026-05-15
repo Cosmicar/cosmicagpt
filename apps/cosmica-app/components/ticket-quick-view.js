@@ -193,6 +193,16 @@ function renderBody(ticket) {
 
     <!-- Actions -->
     <div style="margin-top:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-sm);">
+      ${canEdit && estado === WORK_STATUS.listo ? `
+        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="width:100%; font-weight:700;">
+          💵 COBRAR Y FINALIZAR
+        </button>
+      ` : ''}
+      ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
+        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="width:100%; font-weight:700;">
+          ✅ MARCAR COMO LISTO
+        </button>
+      ` : ''}
       ${estado === WORK_STATUS.entregado ? `
         <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="width:100%; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2);">
           ♻️ Generar Reingreso (Garantía)
@@ -250,6 +260,46 @@ export function openTicketQuickView(ticket, { onStatusChange } = {}) {
             showToast(res.error || 'Error al aprobar', 'error');
             approveBtn.disabled = false;
             approveBtn.textContent = '✅ Aprobar ahora';
+          }
+        });
+      }
+
+      // Entregar button
+      const entregarBtn = bodyEl.querySelector('.qv-entregar-btn');
+      if (entregarBtn) {
+        entregarBtn.addEventListener('click', async () => {
+          entregarBtn.disabled = true;
+          entregarBtn.textContent = '⏳ Procesando...';
+          const result = await updateTicketStatus(ticket.id, WORK_STATUS.entregado);
+          if (result.success) {
+            showToast('Orden entregada', 'success');
+            ticket.estado = WORK_STATUS.entregado;
+            if (onStatusChange) onStatusChange(ticket.id, WORK_STATUS.entregado);
+            openTicketQuickView(ticket, { onStatusChange });
+          } else {
+            showToast(result.error || 'Error al entregar', 'error');
+            entregarBtn.disabled = false;
+            entregarBtn.textContent = '💵 COBRAR Y FINALIZAR';
+          }
+        });
+      }
+
+      // Listo button
+      const listoBtn = bodyEl.querySelector('.qv-listo-btn');
+      if (listoBtn) {
+        listoBtn.addEventListener('click', async () => {
+          listoBtn.disabled = true;
+          listoBtn.textContent = '⏳ Procesando...';
+          const result = await updateTicketStatus(ticket.id, WORK_STATUS.listo);
+          if (result.success) {
+            showToast('Orden lista', 'success');
+            ticket.estado = WORK_STATUS.listo;
+            if (onStatusChange) onStatusChange(ticket.id, WORK_STATUS.listo);
+            openTicketQuickView(ticket, { onStatusChange });
+          } else {
+            showToast(result.error || 'Error al actualizar', 'error');
+            listoBtn.disabled = false;
+            listoBtn.textContent = '✅ MARCAR COMO LISTO';
           }
         });
       }

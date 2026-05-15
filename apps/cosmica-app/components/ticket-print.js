@@ -483,22 +483,22 @@ function buildThermalHtml(ticket) {
 
     @page {
       size: 80mm auto;
-      margin: 2mm;
+      margin: 0;
     }
 
     html, body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 10px;
-      line-height: 1.4;
+      font-size: 11px;
+      line-height: 1.3;
       color: #000;
       background: #fff;
       width: 100%;
     }
 
     .doc {
-      max-width: 380px;
+      width: 74mm;
       margin: 0 auto;
-      padding: 4px 2px;
+      padding: 4mm 2mm;
     }
 
     .center { text-align: center; }

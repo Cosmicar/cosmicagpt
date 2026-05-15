@@ -232,14 +232,23 @@ export class TicketFormView extends AsyncView {
           <form id="ticket-form" class="stack-lg">
             <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
               
-              ${renderFormField({
-                label: 'Cliente',
-                id: 'clienteId',
-                type: 'select',
-                options: [{ value: '', label: '-- Seleccione un cliente --' }, ...clientOptions],
-                value: ticket?.clienteId || '',
-                required: true
-              })}
+              <div style="position:relative;" id="cliente-autocomplete-wrap">
+                ${renderFormField({
+                  label: 'Cliente (Buscar por nombre, DNI o Teléfono)',
+                  id: 'cliente_search',
+                  placeholder: 'Ej: Juan Pérez o 20-...',
+                  value: ticket ? `${ticket.nombre} ${ticket.apellido}` : '',
+                  required: !this.isEdit,
+                  autocomplete: 'off'
+                })}
+                <input type="hidden" name="clienteId" id="clienteId" value="${ticket?.clienteId || ''}">
+                <div id="cliente-suggestions" 
+                     style="position:absolute;z-index:200;top:calc(100% - 15px);left:0;right:0;
+                            background:var(--surface);border:1px solid var(--border);
+                            border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;
+                            box-shadow: var(--shadow-lg);">
+                </div>
+              </div>
 
               ${renderFormField({
                 label: 'Tipo de Servicio',
@@ -352,8 +361,11 @@ export class TicketFormView extends AsyncView {
     `;
   }
 
-  onContentReady() {
+  onContentReady({ clientes }) {
+    this._clientesCache = clientes;
     this.initFormHandlers();
+    this.initClienteAutocomplete();
+    
     if (this.isEdit) {
       this.initBudgetHandlers();
       this.initRepuestosHandlers();
@@ -368,6 +380,101 @@ export class TicketFormView extends AsyncView {
         }
       });
     }
+
+    // Autofocus
+    const firstInput = document.getElementById(this.isEdit ? 'precio' : 'cliente_search');
+    if (firstInput) firstInput.focus();
+  }
+
+  // ─── Cliente Autocomplete ───────────────────────────────────────────────────
+
+  initClienteAutocomplete() {
+    const input = document.getElementById('cliente_search');
+    const hidden = document.getElementById('clienteId');
+    const suggestions = document.getElementById('cliente-suggestions');
+    if (!input || !suggestions || !hidden) return;
+
+    let _autocompleteDebounce = null;
+    input.addEventListener('input', () => {
+      clearTimeout(_autocompleteDebounce);
+      _autocompleteDebounce = setTimeout(() => {
+        const term = input.value.toLowerCase().trim();
+        if (!term) { suggestions.style.display = 'none'; hidden.value = ''; return; }
+
+        const matches = this._clientesCache.filter(c => 
+          (c.nombre && c.nombre.toLowerCase().includes(term)) ||
+          (c.apellido && c.apellido.toLowerCase().includes(term)) ||
+          (c.dni && c.dni.includes(term)) ||
+          (c.telefono && c.telefono.includes(term))
+        ).slice(0, 8);
+
+        this._currentSuggestions = matches;
+        this._suggestionIndex = -1;
+
+        if (!matches.length) { 
+          suggestions.innerHTML = `<div style="padding:10px;color:var(--text-muted);font-size:var(--font-sm);">No se encontraron clientes. <a href="#cliente-nuevo" style="color:var(--accent-cyan);">Crear nuevo?</a></div>`;
+        } else {
+          suggestions.innerHTML = matches.map((c, i) => `
+            <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${c.nombre} ${c.apellido}" data-index="${i}" style="
+              padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
+              transition:background 0.15s;">
+              <div style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${c.nombre} ${c.apellido}</div>
+              <div style="font-size:var(--font-xs);color:var(--text-muted);">DNI: ${c.dni || 'S/D'} · Tel: ${c.telefono || 'S/D'}</div>
+            </div>
+          `).join('');
+        }
+        suggestions.style.display = 'block';
+
+        suggestions.querySelectorAll('.cliente-suggestion-item').forEach(el => {
+          el.addEventListener('mouseenter', () => { 
+            this._suggestionIndex = parseInt(el.dataset.index);
+            this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item'); 
+          });
+          el.addEventListener('click', () => {
+            this._selectCliente(el.dataset.id, el.dataset.name);
+          });
+        });
+      }, 150);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (suggestions.style.display === 'none') return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this._suggestionIndex = Math.min(this._suggestionIndex + 1, this._currentSuggestions.length - 1);
+        this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item');
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this._suggestionIndex = Math.max(this._suggestionIndex - 1, -1);
+        this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item');
+      } else if (e.key === 'Enter' && this._suggestionIndex >= 0) {
+        e.preventDefault();
+        const item = this._currentSuggestions[this._suggestionIndex];
+        this._selectCliente(item.id, `${item.nombre} ${item.apellido}`);
+      } else if (e.key === 'Escape') {
+        suggestions.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#cliente-autocomplete-wrap')) suggestions.style.display = 'none';
+    }, { capture: true });
+  }
+
+  _updateSuggestionHighlight(container, className) {
+    container.querySelectorAll(`.${className}`).forEach((el, i) => {
+      el.style.background = (i === this._suggestionIndex) ? 'rgba(255,255,255,0.1)' : '';
+    });
+  }
+
+  _selectCliente(id, name) {
+    const input = document.getElementById('cliente_search');
+    const hidden = document.getElementById('clienteId');
+    const suggestions = document.getElementById('cliente-suggestions');
+    if (input) input.value = name;
+    if (hidden) hidden.value = id;
+    if (suggestions) suggestions.style.display = 'none';
   }
 
   // ─── Repuestos section ──────────────────────────────────────────────────────
@@ -409,12 +516,16 @@ export class TicketFormView extends AsyncView {
       const term = input.value.trim();
       if (!term) { suggestions.style.display = 'none'; return; }
       const matches = filterInventario(this._inventarioCache || [], term).slice(0, 8);
+      
+      this._currentRepSuggestions = matches;
+      this._repSuggestionIndex = -1;
+
       if (!matches.length) { suggestions.style.display = 'none'; return; }
-      suggestions.innerHTML = matches.map(item => {
+      suggestions.innerHTML = matches.map((item, i) => {
         const stock = Number(item.stock || 0);
         const stockColor = stock === 0 ? 'var(--danger)' : stock <= (item.stockMinimo || 0) ? 'var(--accent-orange)' : 'var(--accent-green)';
         return `
-          <div class="repuesto-suggestion-item" data-id="${item.id}" style="
+          <div class="repuesto-suggestion-item" data-id="${item.id}" data-index="${i}" style="
             padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
             display:flex;justify-content:space-between;align-items:center;
             transition:background 0.15s;">
@@ -431,8 +542,10 @@ export class TicketFormView extends AsyncView {
       suggestions.style.display = 'block';
 
       suggestions.querySelectorAll('.repuesto-suggestion-item').forEach(el => {
-        el.addEventListener('mouseenter', () => { el.style.background = 'rgba(255,255,255,0.06)'; });
-        el.addEventListener('mouseleave', () => { el.style.background = ''; });
+        el.addEventListener('mouseenter', () => { 
+          this._repSuggestionIndex = parseInt(el.dataset.index);
+          this._updateSuggestionHighlight(suggestions, 'repuesto-suggestion-item');
+        });
         el.addEventListener('click', () => {
           const id   = el.dataset.id;
           const item = (this._inventarioCache || []).find(i => i.id === id);
@@ -441,6 +554,28 @@ export class TicketFormView extends AsyncView {
           suggestions.style.display = 'none';
         });
       });
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (suggestions.style.display === 'none') return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this._repSuggestionIndex = Math.min(this._repSuggestionIndex + 1, this._currentRepSuggestions.length - 1);
+        this._updateSuggestionHighlight(suggestions, 'repuesto-suggestion-item');
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this._repSuggestionIndex = Math.max(this._repSuggestionIndex - 1, -1);
+        this._updateSuggestionHighlight(suggestions, 'repuesto-suggestion-item');
+      } else if (e.key === 'Enter' && this._repSuggestionIndex >= 0) {
+        e.preventDefault();
+        const item = this._currentRepSuggestions[this._repSuggestionIndex];
+        this._addRepuesto(item);
+        input.value = '';
+        suggestions.style.display = 'none';
+      } else if (e.key === 'Escape') {
+        suggestions.style.display = 'none';
+      }
     });
 
     document.addEventListener('click', (e) => {

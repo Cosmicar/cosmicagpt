@@ -181,6 +181,9 @@ export class InventarioFormView extends AsyncView {
         this.setLoading(false);
       }
     });
+
+    const firstInput = document.getElementById('nombre');
+    if (firstInput) firstInput.focus();
   }
 
   setLoading(on) {

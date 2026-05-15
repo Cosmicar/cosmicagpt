@@ -110,6 +110,8 @@ export class ClienteFormView extends BaseView {
     if (this.isEdit) {
       await this.loadClienteData();
     }
+    const firstInput = document.getElementById('nombre');
+    if (firstInput) firstInput.focus();
   }
 
   async loadClienteData() {

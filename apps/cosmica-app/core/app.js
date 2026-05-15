@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSidebarMobile();
     initCommandPalette();
     updateCajaStatusIndicator();
+    initGlobalShortcuts();
 
     const router = new Router();
 
@@ -166,4 +167,64 @@ export async function updateCajaStatusIndicator() {
   } catch (err) {
     console.warn('[app] updateCajaStatusIndicator failed:', err);
   }
+}
+
+/**
+ * Initializes global operational keyboard shortcuts.
+ */
+function initGlobalShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable;
+    const key = e.key.toLowerCase();
+    const ctrlOrMeta = e.ctrlKey || e.metaKey;
+    
+    // Global Navigation (only if not in input)
+    if (!isInput) {
+      if (key === 'n') { e.preventDefault(); window.location.hash = '#ticket-nuevo'; }
+      if (key === 'c') { e.preventDefault(); window.location.hash = '#cliente-nuevo'; }
+      if (key === 'i') { e.preventDefault(); window.location.hash = '#inventario'; }
+      if (key === 'f') { e.preventDefault(); window.location.hash = '#finanzas'; }
+      if (key === '/') { 
+        e.preventDefault(); 
+        const searchInput = document.querySelector('#ticket-search, #cliente-search, #inv-search, input[type="text"]:not([readonly])');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    }
+
+    // Global ESC
+    if (e.key === 'Escape') {
+      // 1. Close Drawer
+      const overlay = document.querySelector('.drawer-overlay.is-open');
+      if (overlay) {
+        import('../components/drawer.js').then(m => m.closeDrawer());
+      }
+      // 2. Close Command Palette
+      const cp = document.getElementById('command-palette');
+      if (cp && cp.style.display !== 'none') {
+        const closeBtn = cp.querySelector('.cp-close');
+        if (closeBtn) closeBtn.click();
+      }
+    }
+
+    // Ctrl + Enter (Save forms)
+    if (e.key === 'Enter' && ctrlOrMeta) {
+      const submitBtn = document.querySelector('form button[type="submit"], .btn-primary[id*="save"], .btn-primary[id*="submit"]');
+      if (submitBtn && !submitBtn.disabled) {
+        e.preventDefault();
+        submitBtn.click();
+      }
+    }
+
+    // Ctrl + P (Print ticket)
+    if (key === 'p' && ctrlOrMeta) {
+      const printBtn = document.querySelector('.ticket-print-btn, .qv-print-btn, .form-print-btn');
+      if (printBtn) {
+        e.preventDefault();
+        printBtn.click();
+      }
+    }
+  });
 }
