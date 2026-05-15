@@ -5,6 +5,10 @@ import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { createCliente, getCliente, updateCliente } from '../services/clientes.js';
 import { showToast } from '../components/toast.js';
+import { 
+  guardBtn, setDirty, initUnsavedChangesGuard, 
+  saveDraft, loadDraft, clearDraft 
+} from '../core/chaos-guard.js';
 
 /**
  * Vista de Formulario de Cliente (Creación y Edición)
@@ -107,11 +111,34 @@ export class ClienteFormView extends BaseView {
 
   async afterRender() {
     this.initFormHandlers();
+    this._initAutoRecovery();
+    initUnsavedChangesGuard();
+
     if (this.isEdit) {
       await this.loadClienteData();
     }
     const firstInput = document.getElementById('nombre');
     if (firstInput) firstInput.focus();
+  }
+
+  _initAutoRecovery() {
+    const form = document.getElementById('cliente-form');
+    if (!form) return;
+    const draftKey = this.isEdit ? `cliente_${this.clienteId}` : 'new_cliente';
+    
+    const draft = loadDraft(draftKey);
+    if (draft && confirm('Se encontró un borrador sin guardar. ¿Deseas restaurarlo?')) {
+      Object.entries(draft).forEach(([key, val]) => {
+        if (form.elements[key]) form.elements[key].value = val;
+      });
+      setDirty(true);
+    }
+
+    form.addEventListener('input', () => {
+      setDirty(true);
+      const data = Object.fromEntries(new FormData(form).entries());
+      saveDraft(draftKey, data);
+    });
   }
 
   async loadClienteData() {
@@ -139,30 +166,35 @@ export class ClienteFormView extends BaseView {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = form.querySelector('button[type="submit"]');
       
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-      
-      this.toggleFormLoading(true);
-      this.hideError();
-
-      const result = this.isEdit 
-        ? await updateCliente(this.clienteId, data)
-        : await createCliente(data);
-
-      if (result.success) {
-        showToast(this.isEdit ? 'Cliente actualizado con éxito' : 'Cliente registrado con éxito', 'success');
-        if (!this.isEdit) form.reset();
+      await guardBtn(submitBtn, async () => {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
         
-        setTimeout(() => {
-          window.location.hash = '#clientes';
-        }, 1000);
-      } else {
-        showToast(result.error || 'Error al procesar la solicitud', 'error');
-        this.showError(result.error);
-        this.toggleFormLoading(false);
-      }
+        this.toggleFormLoading(true);
+        this.hideError();
+
+        const result = this.isEdit 
+          ? await updateCliente(this.clienteId, data)
+          : await createCliente(data);
+
+        if (result.success) {
+          clearDraft(this.isEdit ? `cliente_${this.clienteId}` : 'new_cliente');
+          showToast(this.isEdit ? 'Cliente actualizado con éxito' : 'Cliente registrado con éxito', 'success');
+          if (!this.isEdit) form.reset();
+          
+          setTimeout(() => {
+            window.location.hash = '#clientes';
+          }, 1000);
+        } else {
+          showToast(result.error || 'Error al procesar la solicitud', 'error');
+          this.showError(result.error);
+          this.toggleFormLoading(false);
+        }
+      });
     });
+  }
   }
 
   toggleFormLoading(isLoading) {

@@ -8,6 +8,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
 import { showToast } from '../components/toast.js';
 import { canAccess } from '../core/session.js';
+import { guardBtn, initUnsavedChangesGuard, setDirty } from '../core/chaos-guard.js';
 
 // ── Format helpers ────────────────────────────────────────────────────────────
 
@@ -770,6 +771,9 @@ export class FinanzasView extends AsyncView {
   // ── Events ────────────────────────────────────────────────────────────────
 
   onContentReady(data) {
+    // Chaos Guard
+    initUnsavedChangesGuard();
+
     // Refresh
     document.getElementById('fin-refresh')?.addEventListener('click', () => this.fetchAndRender());
 
@@ -837,23 +841,23 @@ export class FinanzasView extends AsyncView {
   _initAperturaForm(form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd   = new FormData(form);
-      const btn  = form.querySelector('[type=submit]');
-      const errEl = document.getElementById('apertura-error');
+      const btn = form.querySelector('button[type="submit"]');
+      
+      await guardBtn(btn, async () => {
+        const errorEl = document.getElementById('apertura-error');
+        if (errorEl) errorEl.style.display = 'none';
 
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Abriendo...'; }
-      if (errEl) errEl.style.display = 'none';
+        const fd = new FormData(form);
+        const res = await abrirCaja(fd.get('saldoInicial'));
 
-      try {
-        const result = await abrirCaja(fd.get('saldoInicial') || 0);
-        if (!result.success) throw new Error(result.error || 'Error al abrir caja');
-        showToast('Caja abierta ✅', 'success');
-        await this.fetchAndRender();
-      } catch (err) {
-        showToast(err.message || 'Error al abrir caja', 'error');
-        if (errEl) { errEl.textContent = err.message; errEl.style.display = 'block'; }
-        if (btn) { btn.disabled = false; btn.textContent = '✅ Confirmar Apertura'; }
-      }
+        if (res.success) {
+          showToast('Caja abierta correctamente', 'success');
+          this.fetchAndRender();
+        } else {
+          if (errorEl) { errorEl.textContent = res.error; errorEl.style.display = 'block'; }
+          showToast(res.error || 'Error al abrir caja', 'error');
+        }
+      });
     });
   }
 
@@ -878,22 +882,24 @@ export class FinanzasView extends AsyncView {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd    = new FormData(form);
-      const btn   = document.getElementById('cierre-submit-btn');
-      const errEl = document.getElementById('cierre-error');
+      const btn = document.getElementById('cierre-submit-btn');
 
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Cerrando...'; }
-      if (errEl) errEl.style.display = 'none';
+      await guardBtn(btn, async () => {
+        const errorEl = document.getElementById('cierre-error');
+        if (errorEl) errorEl.style.display = 'none';
 
-      try {
-        const result = await cerrarCaja(fd.get('sesionId'), fd.get('saldoDeclarado'));
-        showToast('Caja cerrada correctamente 🔒', 'success');
-        await this.fetchAndRender();
-      } catch (err) {
-        showToast(err.message || 'Error al cerrar caja', 'error');
-        if (errEl) { errEl.textContent = err.message; errEl.style.display = 'block'; }
-        if (btn) { btn.disabled = false; btn.textContent = '🔒 Confirmar Cierre'; }
-      }
+        const fd = new FormData(form);
+        const res = await cerrarCaja(fd.get('sesionId'), fd.get('saldoDeclarado'));
+
+        if (res.success) {
+          showToast('Caja cerrada correctamente', 'success');
+          this._showCierre = false;
+          this.fetchAndRender();
+        } else {
+          if (errorEl) { errorEl.textContent = res.error; errorEl.style.display = 'block'; }
+          showToast(res.error || 'Error al cerrar caja', 'error');
+        }
+      });
     });
   }
 
@@ -903,27 +909,27 @@ export class FinanzasView extends AsyncView {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd    = new FormData(form);
-      const data  = Object.fromEntries(fd.entries());
-      const btn   = document.getElementById('caja-submit-btn');
-      const errEl = document.getElementById('caja-form-error');
+      const btn = document.getElementById('caja-submit-btn');
 
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
-      if (errEl) errEl.style.display = 'none';
+      await guardBtn(btn, async () => {
+        const fd    = new FormData(form);
+        const data  = Object.fromEntries(fd.entries());
+        const errEl = document.getElementById('caja-form-error');
 
-      const result = await createCajaEntry(data, data.sesionId || null);
+        if (errEl) errEl.style.display = 'none';
 
-      if (result.success) {
-        showToast('Movimiento registrado', 'success');
-        form.reset();
-        // Preserve sesionId hidden field after reset
-        if (form.elements['sesionId']) form.elements['sesionId'].value = data.sesionId;
-        await this.fetchAndRender();
-      } else {
-        showToast(result.error || 'Error al registrar', 'error');
-        if (errEl) { errEl.textContent = result.error || 'Error al registrar'; errEl.style.display = 'block'; }
-        if (btn) { btn.disabled = false; btn.textContent = '＋ Registrar'; }
-      }
+        const result = await createCajaEntry(data, data.sesionId || null);
+
+        if (result.success) {
+          showToast('Movimiento registrado', 'success');
+          form.reset();
+          if (form.elements['sesionId']) form.elements['sesionId'].value = data.sesionId;
+          await this.fetchAndRender();
+        } else {
+          showToast(result.error || 'Error al registrar', 'error');
+          if (errEl) { errEl.textContent = result.error || 'Error al registrar'; errEl.style.display = 'block'; }
+        }
+      });
     });
   }
 }

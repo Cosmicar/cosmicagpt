@@ -3,16 +3,20 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
+import { renderFormSkeleton } from '../components/app-state.js';
+import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 import { getClientes } from '../services/clientes.js';
-import { getTicket, createTicket, updateTicket, updateTicketBudget, updateTicketRepuestos, getTickets } from '../services/tickets.js';
+import { createTicket, getTicket, getTickets, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
 import { getInventario, filterInventario, batchAdjustStock } from '../services/inventario.js';
 import { canAccess, getCurrentSession } from '../core/session.js';
 import { WORK_STATUS, isAdmin } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
-import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
-import { renderFormSkeleton } from '../components/app-state.js';
 import { openTicketPrint } from '../components/ticket-print.js';
 import { getClientBadge, suggestBudget } from '../core/intelligence.js';
+import {
+  guardBtn, setDirty, initUnsavedChangesGuard,
+  saveDraft, loadDraft, clearDraft, initMultitabCheck
+} from '../core/chaos-guard.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -401,16 +405,25 @@ export class TicketFormView extends AsyncView {
       this.initBudgetHandlers();
       this.initRepuestosHandlers();
       mountTicketTimeline(this.ticketId);
-
       document.querySelectorAll('.form-print-btn').forEach(btn => {
-        if (this._ticket) {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openTicketPrint(this._ticket, btn.dataset.mode || 'a4');
-          });
-        }
+        btn.addEventListener('click', () => {
+          openTicketPrint(this._ticket, btn.dataset.mode || 'a4');
+        });
       });
     }
+
+    // Chaos Guard: Unsaved Changes
+    initUnsavedChangesGuard();
+    
+    // Chaos Guard: Multitab
+    if (this.isEdit) {
+      initMultitabCheck(this.ticketId, () => {
+        showToast('Esta orden se está editando en otra pestaña', 'warning');
+      });
+    }
+
+    // Chaos Guard: Auto Recovery
+    this._initAutoRecovery();
 
     // Autofocus
     const firstInput = document.getElementById(this.isEdit ? 'precio' : 'cliente_search');
@@ -803,57 +816,53 @@ export class TicketFormView extends AsyncView {
   }
 
   async _saveRepuestos(btn) {
-    btn.disabled    = true;
-    btn.textContent = '⏳ Guardando...';
+    await guardBtn(btn, async () => {
+      const errorEl = document.getElementById('repuestos-error');
+      if (errorEl) errorEl.style.display = 'none';
 
-    const errorEl = document.getElementById('repuestos-error');
-    if (errorEl) errorEl.style.display = 'none';
+      try {
+        const prevRepuestos = this._ticket?.repuestos || [];
+        const newRepuestos  = this._repuestosState;
 
-    try {
-      const prevRepuestos = this._ticket?.repuestos || [];
-      const newRepuestos  = this._repuestosState;
+        // 1. Prepare batch adjustments
+        const adjustments = [];
+        
+        // Restore previous
+        for (const prev of prevRepuestos) {
+          adjustments.push({ id: prev.inventarioId, delta: +Number(prev.cantidad) });
+        }
+        
+        // Consume new
+        for (const next of newRepuestos) {
+          adjustments.push({ id: next.inventarioId, delta: -Number(next.cantidad) });
+        }
 
-      // 1. Prepare batch adjustments
-      const adjustments = [];
-      
-      // Restore previous
-      for (const prev of prevRepuestos) {
-        adjustments.push({ id: prev.inventarioId, delta: +Number(prev.cantidad) });
+        // 2. Execute batch
+        if (adjustments.length > 0) {
+          const batchRes = await batchAdjustStock(adjustments);
+          if (!batchRes.success) throw new Error(batchRes.error || 'Error al ajustar stock');
+        }
+
+        // 3. Save repuestos array to ticket
+        const total = newRepuestos.reduce((s, r) => s + r.subtotal, 0);
+        const result = await updateTicketRepuestos(this.ticketId, newRepuestos, total);
+
+        if (!result.success) throw new Error(result.error || 'Error al actualizar ticket');
+
+        // 4. Sync local ticket reference
+        this._ticket.repuestos      = [...newRepuestos];
+        this._ticket.totalRepuestos = total;
+
+        showToast('Repuestos guardados correctamente', 'success');
+      } catch (err) {
+        console.error('[repuestos] save failed:', err);
+        if (errorEl) {
+          errorEl.textContent  = err.message || 'Error al guardar los repuestos';
+          errorEl.style.display = 'block';
+        }
+        showToast(err.message || 'Error al guardar repuestos', 'error');
       }
-      
-      // Consume new
-      for (const next of newRepuestos) {
-        adjustments.push({ id: next.inventarioId, delta: -Number(next.cantidad) });
-      }
-
-      // 2. Execute batch
-      if (adjustments.length > 0) {
-        const batchRes = await batchAdjustStock(adjustments);
-        if (!batchRes.success) throw new Error(batchRes.error || 'Error al ajustar stock');
-      }
-
-      // 3. Save repuestos array to ticket
-      const total = newRepuestos.reduce((s, r) => s + r.subtotal, 0);
-      const result = await updateTicketRepuestos(this.ticketId, newRepuestos, total);
-
-      if (!result.success) throw new Error(result.error || 'Error al actualizar ticket');
-
-      // 4. Sync local ticket reference
-      this._ticket.repuestos      = [...newRepuestos];
-      this._ticket.totalRepuestos = total;
-
-      showToast('Repuestos guardados correctamente', 'success');
-    } catch (err) {
-      console.error('[repuestos] save failed:', err);
-      if (errorEl) {
-        errorEl.textContent  = err.message || 'Error al guardar los repuestos';
-        errorEl.style.display = 'block';
-      }
-      showToast(err.message || 'Error al guardar repuestos', 'error');
-    }
-
-    btn.disabled    = false;
-    btn.textContent = '💾 Guardar repuestos';
+    });
   }
 
   initFormHandlers() {
@@ -881,36 +890,40 @@ export class TicketFormView extends AsyncView {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const formData = new FormData(form);
-      const rawData = Object.fromEntries(formData.entries());
-      
-      const data = {
-        ...rawData,
-        marca: rawData.marca_modelo || '',
-        modelo: ''
-      };
-
-      this.toggleFormLoading(true);
-      this.hideError();
-
-      const result = this.isEdit
-        ? await updateTicket(this.ticketId, data)
-        : await createTicket(data);
-
-      if (result.success) {
-        showToast(
-          this.isEdit ? 'Orden actualizada correctamente' : `Orden ${result.numeroOrden} creada con éxito`, 
-          'success'
-        );
+      const submitBtn = form.querySelector('button[type="submit"]');
+      await guardBtn(submitBtn, async () => {
+        const formData = new FormData(form);
+        const rawData = Object.fromEntries(formData.entries());
         
-        setTimeout(() => {
-          window.location.hash = '#tickets';
-        }, 1200);
-      } else {
-        showToast(result.error || 'Error al procesar la orden', 'error');
-        this.showError(result.error);
-        this.toggleFormLoading(false);
-      }
+        const data = {
+          ...rawData,
+          marca: rawData.marca_modelo || '',
+          modelo: ''
+        };
+
+        this.toggleFormLoading(true);
+        this.hideError();
+
+        const result = this.isEdit
+          ? await updateTicket(this.ticketId, data)
+          : await createTicket(data);
+
+        if (result.success) {
+          clearDraft(this.isEdit ? `ticket_${this.ticketId}` : 'new_ticket');
+          showToast(
+            this.isEdit ? 'Orden actualizada correctamente' : `Orden ${result.numeroOrden} creada con éxito`, 
+            'success'
+          );
+          
+          setTimeout(() => {
+            window.location.hash = '#tickets';
+          }, 1200);
+        } else {
+          showToast(result.error || 'Error al procesar la orden', 'error');
+          this.showError(result.error);
+          this.toggleFormLoading(false);
+        }
+      });
     });
   }
 
@@ -922,29 +935,55 @@ export class TicketFormView extends AsyncView {
       e.preventDefault();
 
       const btn = document.getElementById('budget-submit-btn');
-      const errorEl = document.getElementById('budget-error-msg');
-      const originalText = btn?.textContent;
+      await guardBtn(btn, async () => {
+        const errorEl = document.getElementById('budget-error-msg');
+        if (errorEl) errorEl.style.display = 'none';
 
-      if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
-      if (errorEl) errorEl.style.display = 'none';
+        const fd = new FormData(form);
+        const result = await updateTicketBudget(this.ticketId, {
+          diagnosticoTecnico: fd.get('diagnosticoTecnico') || '',
+          presupuesto:        fd.get('presupuesto')        || 0,
+        });
 
-      const fd = new FormData(form);
-      const result = await updateTicketBudget(this.ticketId, {
-        diagnosticoTecnico: fd.get('diagnosticoTecnico') || '',
-        presupuesto:        fd.get('presupuesto')        || 0,
-      });
-
-      if (result.success) {
-        showToast('Diagnóstico y presupuesto guardados', 'success');
-      } else {
-        if (errorEl) {
-          errorEl.textContent = result.error || 'Error al guardar';
-          errorEl.style.display = 'block';
+        if (result.success) {
+          showToast('Diagnóstico y presupuesto guardados', 'success');
+        } else {
+          if (errorEl) {
+            errorEl.textContent = result.error || 'Error al guardar';
+            errorEl.style.display = 'block';
+          }
+          showToast(result.error || 'Error al guardar', 'error');
         }
-        showToast(result.error || 'Error al guardar', 'error');
-      }
+      });
+    });
+  }
 
-      if (btn) { btn.disabled = false; btn.textContent = originalText; }
+  _initAutoRecovery() {
+    const form = document.getElementById('ticket-form');
+    if (!form) return;
+
+    const draftKey = this.isEdit ? `ticket_${this.ticketId}` : 'new_ticket';
+    
+    // Load draft
+    const draft = loadDraft(draftKey);
+    if (draft) {
+      if (confirm('Se encontró un borrador sin guardar. ¿Deseas restaurarlo?')) {
+        Object.entries(draft).forEach(([key, val]) => {
+          const input = form.elements[key];
+          if (input) input.value = val;
+        });
+        setDirty(true);
+      } else {
+        clearDraft(draftKey);
+      }
+    }
+
+    // Save draft on change
+    form.addEventListener('input', () => {
+      setDirty(true);
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      saveDraft(draftKey, data);
     });
   }
 

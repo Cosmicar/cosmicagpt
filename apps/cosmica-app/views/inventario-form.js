@@ -10,6 +10,10 @@ import {
   updateInventarioItem,
 } from '../services/inventario.js';
 import { showToast } from '../components/toast.js';
+import { 
+  guardBtn, setDirty, initUnsavedChangesGuard, 
+  saveDraft, loadDraft, clearDraft 
+} from '../core/chaos-guard.js';
 
 const CATEGORIAS = [
   'Pantalla / Display', 'Batería', 'Cargador / Cable', 'Conector',
@@ -158,32 +162,60 @@ export class InventarioFormView extends AsyncView {
     const form = document.getElementById('inv-form');
     if (!form) return;
 
+    this._initAutoRecovery();
+    initUnsavedChangesGuard();
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd   = new FormData(form);
-      const data = Object.fromEntries(fd.entries());
-      this.setLoading(true);
-      this.hideError();
+      const submitBtn = form.querySelector('button[type="submit"]');
 
-      const result = this.isEdit
-        ? await updateInventarioItem(this.itemId, data)
-        : await createInventarioItem(data);
+      await guardBtn(submitBtn, async () => {
+        const fd   = new FormData(form);
+        const data = Object.fromEntries(fd.entries());
+        this.setLoading(true);
+        this.hideError();
 
-      if (result.success) {
-        showToast(
-          this.isEdit ? 'Repuesto actualizado' : 'Repuesto creado correctamente',
-          'success'
-        );
-        setTimeout(() => { window.location.hash = '#inventario'; }, 1100);
-      } else {
-        this.showError(result.error || 'Error al guardar');
-        showToast(result.error || 'Error al guardar', 'error');
-        this.setLoading(false);
-      }
+        const result = this.isEdit
+          ? await updateInventarioItem(this.itemId, data)
+          : await createInventarioItem(data);
+
+        if (result.success) {
+          clearDraft(this.isEdit ? `inv_${this.itemId}` : 'new_inv');
+          showToast(
+            this.isEdit ? 'Repuesto actualizado' : 'Repuesto creado correctamente',
+            'success'
+          );
+          setTimeout(() => { window.location.hash = '#inventario'; }, 1100);
+        } else {
+          this.showError(result.error || 'Error al guardar');
+          showToast(result.error || 'Error al guardar', 'error');
+          this.setLoading(false);
+        }
+      });
     });
 
     const firstInput = document.getElementById('nombre');
     if (firstInput) firstInput.focus();
+  }
+
+  _initAutoRecovery() {
+    const form = document.getElementById('inv-form');
+    if (!form) return;
+    const draftKey = this.isEdit ? `inv_${this.itemId}` : 'new_inv';
+    
+    const draft = loadDraft(draftKey);
+    if (draft && confirm('Se encontró un borrador sin guardar. ¿Deseas restaurarlo?')) {
+      Object.entries(draft).forEach(([key, val]) => {
+        if (form.elements[key]) form.elements[key].value = val;
+      });
+      setDirty(true);
+    }
+
+    form.addEventListener('input', () => {
+      setDirty(true);
+      const data = Object.fromEntries(new FormData(form).entries());
+      saveDraft(draftKey, data);
+    });
   }
 
   setLoading(on) {

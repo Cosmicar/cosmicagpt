@@ -25,6 +25,26 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.5;
+  word-break: break-word; /* Huge text guard */
+  overflow-wrap: break-word;
+}
+
+/* 0. GLOBAL DATA HARDENING */
+.text-prose {
+  max-width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+table {
+  table-layout: auto;
+}
+
+td, th {
+  max-width: 300px; /* Prevent huge cell overflow */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Glassmorphism utilities */
@@ -272,7 +292,12 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.tickets-table-wrapper::-webkit-scrollbar {
+  height: 6px;
 }
 
 /* Body rows */
