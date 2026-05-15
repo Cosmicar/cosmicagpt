@@ -172,6 +172,18 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ─────────────────────────────────────────────
+    // collectionGroup: history
+    // Necesario para queries tipo collectionGroup(db, 'history')
+    // usadas en dashboard.js (Activity Feed global).
+    // Sin esta regla, el query retorna permission-denied silencioso.
+    // ─────────────────────────────────────────────
+    match /{path=**}/history/{histId} {
+      allow read:          if isStaff();
+      allow create:        if isStaff();
+      allow update, delete: if false;
+    }
+
     match /system_logs/{docId} {
       allow create: if isStaff();
       allow read: if isAdmin();

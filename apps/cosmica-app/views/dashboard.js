@@ -8,6 +8,7 @@ import { canAccess } from '../core/session.js';
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
 import { openTicketPrint } from '../components/ticket-print.js';
 import { showToast } from '../components/toast.js';
+import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 
 /**
  * Vista de Dashboard Operacional
@@ -258,8 +259,8 @@ export class DashboardView extends AsyncView {
     const exportCajaBtn = document.getElementById('export-caja-btn');
     if (exportCajaBtn) {
       exportCajaBtn.addEventListener('click', async () => {
-        const { getCajaMovimientos } = await import('../services/finanzas.js');
-        const movs = await getCajaMovimientos();
+        const { getCajaEntries } = await import('../services/finanzas.js');
+        const movs = await getCajaEntries();
         this.exportToCSV('caja', movs);
       });
     }

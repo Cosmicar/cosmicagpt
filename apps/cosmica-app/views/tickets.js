@@ -7,7 +7,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
-import { canAccess } from '../core/session.js';
+import { canAccess, getCurrentSession } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
 import { openTicketPrint } from '../components/ticket-print.js';
 import { seedPaletteCache } from '../components/command-palette.js';

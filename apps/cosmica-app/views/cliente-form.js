@@ -195,7 +195,6 @@ export class ClienteFormView extends BaseView {
       });
     });
   }
-  }
 
   toggleFormLoading(isLoading) {
     const actionsContainer = document.getElementById('form-actions-container');

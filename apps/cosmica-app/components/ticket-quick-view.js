@@ -412,7 +412,7 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
             showToast('Presupuesto aprobado', 'success');
             ticket.aprobadoCliente = true;
             // Re-render body to show "Aprobado" badge
-            _bodyEl.innerHTML = renderBody(ticket);
+            bodyEl.innerHTML = renderBody(ticket);
             // Re-mount events for the new body
             mountQvTimeline(ticket.id);
             // Since we re-rendered the whole body, we need to re-wire all buttons. 
