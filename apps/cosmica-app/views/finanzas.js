@@ -85,6 +85,7 @@ export class FinanzasView extends AsyncView {
       kpis, ticketsMasRentables, ultimosCobrados, distribucionPlanes,
       cajaHoy, cajaSemana, cajaDia, cajaSem, entregadosHoy,
       cajaSession, cajaSessionEntries, cajaSessionData, cajaHistorial,
+      ajustes,
     } = data;
     const canWrite = canAccess('finanzas-write');
 
@@ -143,6 +144,9 @@ export class FinanzasView extends AsyncView {
 
         <!-- ══ CAJA SECTION ══ -->
         ${this.renderCajaSection(cajaSession, cajaSessionEntries, cajaSessionData, cajaHoy, cajaSemana, cajaDia, cajaSem, canWrite)}
+
+        <!-- ══ AJUSTES CONTABLES ══ -->
+        ${ajustes?.movimientos?.length > 0 ? this.renderAjustesSection(ajustes) : ''}
 
         <!-- ══ HISTORIAL DE CIERRES ══ -->
         ${this.renderHistorialCierres(cajaHistorial)}
@@ -684,6 +688,100 @@ export class FinanzasView extends AsyncView {
           </div>
         </div>`;
     }).join('');
+  }
+
+  // ── Ajustes contables (admin overrides on delivered tickets) ─────────────
+
+  renderAjustesSection(ajustes) {
+    const { movimientos, positivos, negativos, neto, ticketsAfectados, pendientes } = ajustes;
+    const hasPending = pendientes?.length > 0;
+    const metodoLabel = { efectivo: '💵', transferencia: '🏦', mercadopago: '📱', debito: '💳', credito: '💳' };
+
+    return `
+      <section class="card glass-card" style="padding:var(--space-lg);
+        border:1px solid rgba(249,115,22,0.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);">
+          <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;margin:0;">
+            <span style="opacity:0.8;">⚖️</span> Ajustes Contables
+            ${hasPending ? `<span class="badge badge-orange" style="font-size:10px;">
+              ⚠ ${pendientes.length} pendiente${pendientes.length > 1 ? 's' : ''} de conciliación
+            </span>` : ''}
+          </h3>
+          <span style="font-size:var(--font-xs);color:var(--text-muted);">
+            ${movimientos.length} ajuste${movimientos.length !== 1 ? 's' : ''} · ${ticketsAfectados} ticket${ticketsAfectados !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <!-- KPIs de ajustes -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg);">
+          <div style="padding:var(--space-md);background:rgba(34,197,94,0.07);
+                      border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">POSITIVOS</div>
+            <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-green);">
+              ${ars(positivos.reduce((s, e) => s + Number(e.monto || 0), 0))}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">${positivos.length} mov.</div>
+          </div>
+          <div style="padding:var(--space-md);background:rgba(249,115,22,0.07);
+                      border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">NEGATIVOS</div>
+            <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-orange);">
+              ${ars(negativos.reduce((s, e) => s + Number(e.monto || 0), 0))}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">${negativos.length} mov.</div>
+          </div>
+          <div style="padding:var(--space-md);background:rgba(255,255,255,0.04);
+                      border:1px solid var(--border);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">NETO</div>
+            <div style="font-size:var(--font-lg);font-weight:800;
+                        color:${neto >= 0 ? 'var(--accent-cyan)' : 'var(--danger)'};">
+              ${neto >= 0 ? '+' : ''}${ars(neto)}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">${ticketsAfectados} ticket${ticketsAfectados !== 1 ? 's' : ''}</div>
+          </div>
+          ${hasPending ? `
+          <div style="padding:var(--space-md);background:rgba(249,115,22,0.1);
+                      border:1px solid rgba(249,115,22,0.3);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:9px;color:var(--accent-orange);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">⚠ PENDIENTES</div>
+            <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-orange);">${pendientes.length}</div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">sin sesión de caja</div>
+          </div>` : ''}
+        </div>
+
+        <!-- Lista de movimientos -->
+        <div style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;
+                    margin-bottom:var(--space-md);">MOVIMIENTOS DE AJUSTE</div>
+        <div style="max-height:320px;overflow-y:auto;">
+          ${movimientos.slice(0, 50).map(e => {
+            const isPos = Number(e.monto || 0) > 0;
+            const color = isPos ? 'var(--accent-green)' : 'var(--accent-orange)';
+            const pendTag = e.pendingReconciliation
+              ? `<span style="font-size:9px;background:rgba(249,115,22,0.15);color:var(--accent-orange);
+                              border-radius:3px;padding:1px 5px;margin-left:4px;">⚠ SIN SESIÓN</span>`
+              : '';
+            return `
+              <div style="display:flex;justify-content:space-between;align-items:center;
+                          padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                  <span style="font-size:10px;font-weight:900;color:${color};flex-shrink:0;">${isPos ? '▲' : '▼'}</span>
+                  <div style="min-width:0;">
+                    <div style="font-size:var(--font-sm);color:var(--text-primary);font-weight:500;
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      ${e.descripcion}${pendTag}
+                    </div>
+                    <div style="font-size:var(--font-xs);color:var(--text-muted);">
+                      ${metodoLabel[e.metodoPago] || '—'} ${e.metodoPago || ''} · ${fmtTs(e.createdAt)}
+                    </div>
+                  </div>
+                </div>
+                <div style="font-size:var(--font-md);font-weight:700;color:${color};flex-shrink:0;margin-left:12px;">
+                  ${isPos ? '+' : ''}${ars(e.monto)}
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </section>`;
   }
 
   // ── Historial de cierres ──────────────────────────────────────────────────

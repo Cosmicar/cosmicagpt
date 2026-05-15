@@ -267,54 +267,75 @@ export async function updateTicket(id, data) {
     if (trabajoActual.estado === WORK_STATUS.entregado && (oldPrice !== newPrice || oldMetodo !== newMetodo)) {
       const session = getCurrentSession();
       if (!isAdmin(session?.profile)) {
-        throw new Error("Solo un administrador puede editar el precio o método de pago de un ticket entregado.");
+        throw new Error("El ticket ya impactó en caja. Requiere ajuste financiero.");
       }
-      
+
       const { createCajaEntry, getCajaSession } = await import('./finanzas.js');
       const cajaSession = await getCajaSession();
-      if (!cajaSession) {
-        throw new Error("Debe existir una caja abierta para registrar el ajuste financiero.");
-      }
+      // Si no hay caja abierta, se registra con pendingReconciliation = true (conciliación pendiente)
+      const sesionId             = cajaSession?.id ?? null;
+      const pendingReconciliation = sesionId === null;
 
-      const delta = newPrice - oldPrice;
+      const orderRef = trabajoActual.numeroOrden || id;
+      const delta    = newPrice - oldPrice;
+      const operador = session?.user?.email || 'admin';
 
+      // ── Audit trail ──────────────────────────────────────────────────────
       await addTicketHistoryEvent(id, {
         type: TICKET_EVENT_TYPES.financialAdjustment,
-        message: `Ajuste financiero post-entrega (Admin)`,
+        message: `Ajuste financiero post-entrega (Admin)${pendingReconciliation ? ' — sin caja abierta' : ''}`,
         metadata: {
           oldPrice,
           newPrice,
           oldMetodoPago: oldMetodo,
           newMetodoPago: newMetodo,
-          adjustedBy: session?.user?.email || 'admin'
+          adjustedBy: operador,
+          pendingReconciliation,
         }
       });
 
+      // ── Separate event when payment method changed ────────────────────────
+      if (oldMetodo !== newMetodo) {
+        await addTicketHistoryEvent(id, {
+          type: TICKET_EVENT_TYPES.paymentMethodChanged,
+          message: `Método de pago cambiado: ${oldMetodo} → ${newMetodo} (Admin)`,
+          metadata: { oldMetodoPago: oldMetodo, newMetodoPago: newMetodo, adjustedBy: operador }
+        });
+      }
+
+      // ── Caja append-only entries ─────────────────────────────────────────
+      const baseEntry = { origen: 'admin_adjustment', ticketRef: id, pendingReconciliation };
+
       if (oldMetodo === newMetodo) {
+        // Same method: single net-delta entry
         if (delta !== 0) {
           await createCajaEntry({
+            ...baseEntry,
             tipo: 'ajuste',
-            descripcion: `Ajuste Ticket #${trabajoActual.numeroOrden || id} (Admin Override)`,
+            descripcion: `${delta > 0 ? 'AJUSTE_POSITIVO' : 'AJUSTE_NEGATIVO'} · Ticket #${orderRef} (Admin Override)`,
             monto: delta,
-            metodoPago: newMetodo
-          }, cajaSession.id);
+            metodoPago: newMetodo,
+          }, sesionId);
         }
       } else {
+        // Method changed: reversal of old + compensatory entry for new
         if (oldPrice > 0) {
           await createCajaEntry({
+            ...baseEntry,
             tipo: 'ajuste',
-            descripcion: `Reversión Ticket #${trabajoActual.numeroOrden || id} (Admin Cambio M.Pago)`,
+            descripcion: `REVERSAL · Ticket #${orderRef} (Admin Cambio M.Pago)`,
             monto: -oldPrice,
-            metodoPago: oldMetodo
-          }, cajaSession.id);
+            metodoPago: oldMetodo,
+          }, sesionId);
         }
         if (newPrice > 0) {
           await createCajaEntry({
+            ...baseEntry,
             tipo: 'ajuste',
-            descripcion: `Registro Ticket #${trabajoActual.numeroOrden || id} (Admin Cambio M.Pago)`,
+            descripcion: `COMPENSACIÓN · Ticket #${orderRef} (Admin Cambio M.Pago)`,
             monto: newPrice,
-            metodoPago: newMetodo
-          }, cajaSession.id);
+            metodoPago: newMetodo,
+          }, sesionId);
         }
       }
     }

@@ -214,7 +214,11 @@ export async function createCajaEntry(data, sesionId = null) {
     if (!data.descripcion?.trim()) throw new Error('La descripción es obligatoria.');
     const monto = Number(data.monto);
     if (isNaN(monto) || monto === 0) throw new Error('El monto es inválido.');
-    if (!sesionId) throw new Error('No hay caja abierta. Abrí la caja antes de registrar movimientos.');
+    // Admin adjustments on delivered tickets are allowed without an open session
+    // (they carry pendingReconciliation: true for later reconciliation).
+    if (!sesionId && !data.pendingReconciliation) {
+      throw new Error('No hay caja abierta. Abrí la caja antes de registrar movimientos.');
+    }
 
     const tipo = ['ingreso', 'egreso', 'ajuste'].includes(data.tipo) ? data.tipo : 'ingreso';
 
@@ -224,8 +228,9 @@ export async function createCajaEntry(data, sesionId = null) {
       monto,
       metodoPago:  ['efectivo', 'transferencia', 'mercadopago', 'debito', 'credito'].includes(data.metodoPago)
         ? data.metodoPago : 'efectivo',
-      origen:    data.origen || 'manual',
-      ticketRef: data.ticketRef || null,
+      origen:               data.origen || 'manual',
+      ticketRef:            data.ticketRef || null,
+      pendingReconciliation: data.pendingReconciliation ?? false,
       sesionId,
       createdAt: serverTimestamp(),
       createdBy: sessionUid(),
@@ -351,6 +356,22 @@ export async function getFinanzasData() {
   const todayStr = new Date().toISOString().split('T')[0];
   const entregadosHoy = delivered.filter(t => (t.fechaEntregado || '').startsWith(todayStr));
 
+  // ── Ajustes contables (admin adjustments on delivered tickets) ────────────
+  const ajusteMovimientos = cajaEntries.filter(e => e.origen === 'admin_adjustment');
+  const ajustePositivos   = ajusteMovimientos.filter(e => Number(e.monto || 0) > 0);
+  const ajusteNegativos   = ajusteMovimientos.filter(e => Number(e.monto || 0) < 0);
+  const ajusteNeto        = ajusteMovimientos.reduce((s, e) => s + Number(e.monto || 0), 0);
+  const ajusteTicketRefs  = [...new Set(ajusteMovimientos.map(e => e.ticketRef).filter(Boolean))];
+  const ajustePendientes  = ajusteMovimientos.filter(e => e.pendingReconciliation === true);
+  const ajustes = {
+    movimientos:      ajusteMovimientos,
+    positivos:        ajustePositivos,
+    negativos:        ajusteNegativos,
+    neto:             ajusteNeto,
+    ticketsAfectados: ajusteTicketRefs.length,
+    pendientes:       ajustePendientes,
+  };
+
   return {
     kpis: {
       facturacionConcretada,
@@ -378,5 +399,6 @@ export async function getFinanzasData() {
     cajaSessionEntries,
     cajaSessionData,
     cajaHistorial,
+    ajustes,
   };
 }

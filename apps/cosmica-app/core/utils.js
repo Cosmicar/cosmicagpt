@@ -27,9 +27,10 @@ export function formatRelativeTs(ts) {
  * Used in ticket-timeline.js and ticket-quick-view.js.
  */
 export const TICKET_EVENT_ICONS = {
-  ticket_created: '🟢',
-  status_changed: '🟡',
-  ticket_edited:  '🔵',
-  budget_approved: '💎',
+  ticket_created:       '🟢',
+  status_changed:       '🟡',
+  ticket_edited:        '🔵',
+  budget_approved:      '💎',
   financial_adjustment: '💰',
+  payment_method_changed: '⚖️',
 };

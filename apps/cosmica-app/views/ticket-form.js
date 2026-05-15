@@ -319,6 +319,22 @@ export class TicketFormView extends AsyncView {
                 required: true
               })}
 
+              ${isEntregado && Number(ticket?.precio || 0) > 0 ? `
+              <div style="grid-column:1/-1;
+                padding:var(--space-sm) var(--space-md);
+                background:rgba(${admin ? '249,115,22' : '0,229,255'},0.07);
+                border:1px solid rgba(${admin ? '249,115,22' : '0,229,255'},0.2);
+                border-radius:var(--radius-md);
+                display:flex;align-items:center;gap:var(--space-sm);">
+                <span>🔒</span>
+                <span style="font-size:var(--font-sm);font-weight:600;
+                  color:${admin ? 'var(--accent-orange)' : 'var(--accent-cyan)'};">
+                  ${admin
+                    ? '⚠️ Impactado en caja — La edición generará un ajuste contable automático'
+                    : 'Impactado en caja — Solo administrador puede modificar precio o método de pago'}
+                </span>
+              </div>` : ''}
+
               ${renderFormField({
                 label: 'Presupuesto Final ($)',
                 id: 'precio',
