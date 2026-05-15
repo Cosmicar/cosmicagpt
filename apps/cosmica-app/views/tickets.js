@@ -43,8 +43,9 @@ export class TicketsView extends AsyncView {
     const persisted = JSON.parse(sessionStorage.getItem('ticketsViewState') || '{}');
     const session = getCurrentSession();
     const isTecnico = session?.profile?.rol === 'tecnico';
+    const isOperador = session?.profile?.rol === 'operador';
     
-    this.currentFilter = persisted.filter || (isTecnico ? 'mis-tickets' : 'all');
+    this.currentFilter = persisted.filter || (isTecnico ? 'mis-tickets' : (isOperador ? 'activos' : 'all'));
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
     this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
@@ -174,12 +175,13 @@ export class TicketsView extends AsyncView {
 
           <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
             <div style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
-              <button class="btn btn-sm btn-filter ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todos</button>
+              <button class="btn btn-sm btn-filter ${this.currentFilter === 'activos' ? 'active' : ''}" data-filter="activos">Activos</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'mis-tickets' ? 'active' : ''}" data-filter="mis-tickets">Mis tickets</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'sin-asignar' ? 'active' : ''}" data-filter="sin-asignar">Sin asignar</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'pendiente' ? 'active' : ''}" data-filter="pendiente">Ingresado</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'proceso' ? 'active' : ''}" data-filter="proceso">En proceso</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'finalizado' ? 'active' : ''}" data-filter="finalizado">Finalizado</button>
+              <button class="btn btn-sm btn-filter ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todos</button>
             </div>
 
             ${this.renderViewModeSelector()}
@@ -190,6 +192,13 @@ export class TicketsView extends AsyncView {
           </div>
         </div>
 
+      </div>
+
+      <div class="sticky-ops-bar" style="position: sticky; top: 0; z-index: 100; background: var(--surface); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-md); margin: var(--space-md) -var(--space-md) 0; overflow-x: auto; font-size: var(--font-xs); font-weight: 600;">
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-cyan);">●</span> Activos: ${tickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-orange);">●</span> Esperando Repuesto: ${tickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-green);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--danger);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
       <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
@@ -396,6 +405,12 @@ export class TicketsView extends AsyncView {
         this.handleStatusChange(qlBtn.dataset.id, WORK_STATUS.listo, qlBtn);
         return;
       }
+      const qtBtn = e.target.closest('.quick-tomar-btn');
+      if (qtBtn) {
+        e.stopPropagation();
+        this.handleTomarTicket(qtBtn.dataset.id, qtBtn);
+        return;
+      }
       const qeBtn = e.target.closest('.quick-entregar-btn');
       if (qeBtn) {
         e.stopPropagation();
@@ -509,6 +524,35 @@ export class TicketsView extends AsyncView {
       if (wrap) wrap.remove();
       const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
       if (ctaCell) ctaCell.innerHTML = '';
+      
+      this.applyFilters(document.getElementById('tickets-grid'));
+    } else {
+      showToast(result.error || 'Error', 'error');
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
+  async handleTomarTicket(id, btn) {
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = '⏳...';
+
+    const { assignTechnician } = await import('../services/tickets.js');
+    const session = getCurrentSession();
+    const result = await assignTechnician(id, { 
+      id: session.user.uid, 
+      nombre: session.profile.nombre || session.user.email 
+    });
+
+    if (result.success) {
+      showToast('Ticket asignado a ti', 'success');
+      const ticket = this.allTickets.find(t => t.id === id);
+      if (ticket) {
+        ticket.tecnicoAsignadoId = session.user.uid;
+        ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+      }
+      this.applyFilters(document.getElementById('tickets-grid'));
     } else {
       showToast(result.error || 'Error', 'error');
       btn.disabled = false;
@@ -582,8 +626,9 @@ export class TicketsView extends AsyncView {
       filtered = filtered.filter(t => {
         const estado = t.estado;
         const session = getCurrentSession();
-        if (this.currentFilter === 'mis-tickets') return t.tecnicoAsignadoId === session?.user?.uid;
-        if (this.currentFilter === 'sin-asignar') return !t.tecnicoAsignadoId;
+        if (this.currentFilter === 'mis-tickets') return t.tecnicoAsignadoId === session?.user?.uid && estado !== WORK_STATUS.entregado;
+        if (this.currentFilter === 'activos') return estado !== WORK_STATUS.entregado;
+        if (this.currentFilter === 'sin-asignar') return !t.tecnicoAsignadoId && estado !== WORK_STATUS.entregado;
         if (this.currentFilter === 'pendiente')  return estado === WORK_STATUS.ingresado;
         if (this.currentFilter === 'proceso')    return estado === WORK_STATUS.enReparacion;
         if (this.currentFilter === 'finalizado') return [WORK_STATUS.listo, WORK_STATUS.entregado].includes(estado);
@@ -609,6 +654,30 @@ export class TicketsView extends AsyncView {
         return searchable.includes(q);
       });
     }
+
+    // Orden inteligente:
+    // Prioridad: críticos, esperando repuesto, listos, reparación, ingresados
+    // Dentro: más antiguos arriba
+    filtered.sort((a, b) => {
+      const getPriority = (t) => {
+        if (t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)) return 0;
+        if (t.estado === WORK_STATUS.esperandoRepuesto) return 1;
+        if (t.estado === WORK_STATUS.listo) return 2;
+        if (t.estado === WORK_STATUS.enReparacion) return 3;
+        if (t.estado === WORK_STATUS.ingresado) return 4;
+        return 5; // entregado u otros
+      };
+
+      const pA = getPriority(a);
+      const pB = getPriority(b);
+      
+      if (pA !== pB) return pA - pB;
+
+      const dateA = new Date(a.fechaIngreso || 0).getTime();
+      const dateB = new Date(b.fechaIngreso || 0).getTime();
+      return dateA - dateB;
+    });
+
     return filtered;
   }
 

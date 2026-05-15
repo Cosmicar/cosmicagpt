@@ -43,6 +43,19 @@ export function render(ticket, selected = false) {
   const highValue = isHighValue(ticket);
   const showCTA   = needsApprovalCTA(ticket) && canEdit;
 
+  // Aging visual
+  let agingBadge = '';
+  if (ticket.fechaIngreso && estado !== WORK_STATUS.entregado && estado !== WORK_STATUS.listo) {
+    const days = Math.floor((Date.now() - new Date(ticket.fechaIngreso).getTime()) / (1000 * 60 * 60 * 24));
+    if (days >= 30) {
+      agingBadge = '<div class="badge badge-danger" style="white-space: nowrap; font-size: 10px;">🔴 +30 DÍAS</div>';
+    } else if (days >= 15) {
+      agingBadge = '<div class="badge badge-orange" style="white-space: nowrap; font-size: 10px;">🟠 +15 DÍAS</div>';
+    } else if (days >= 7) {
+      agingBadge = '<div class="badge" style="white-space: nowrap; font-size: 10px; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);">🟡 +7 DÍAS</div>';
+    }
+  }
+
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" style="display: flex; flex-direction: column; cursor: pointer;">
       <div class="flex-between" style="align-items: flex-start; margin-bottom: var(--space-sm);">
@@ -59,6 +72,7 @@ export function render(ticket, selected = false) {
           ${ticket.clientBadge ? `<div class="badge ${ticket.clientBadge.class}" style="white-space: nowrap; font-size: 10px;">${ticket.clientBadge.label}</div>` : ''}
           ${metodoBadge ? `<div class="badge ${metodoBadge.class}" style="white-space: nowrap; font-size: 10px;">${metodoBadge.label}</div>` : ''}
           ${overdue   ? '<div class="badge badge-orange rule-badge" style="white-space: nowrap; font-size: 10px;">⚠ DEMORADO</div>'  : ''}
+          ${agingBadge}
           ${highValue ? '<div class="badge badge-gold rule-badge" style="white-space: nowrap; font-size: 10px;">💎 ALTO VALOR</div>' : ''}
           ${ticket.tecnicoAsignadoId ? `<div class="badge badge-blue" style="white-space: nowrap; font-size: 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd;">👨‍🔧 ${ticket.tecnicoAsignadoNombre || 'Asignado'}</div>` : ''}
           ${ticket.isOverloaded ? '<div class="badge badge-danger" style="white-space: nowrap; font-size: 10px; animation: pulse 2s infinite;">🔥 SOBRECARGADO</div>' : ''}
@@ -88,6 +102,11 @@ export function render(ticket, selected = false) {
       
       <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); position: relative; z-index: 10; overflow: visible;">
         <div style="display: flex; gap: 4px; flex: 1;">
+          ${!ticket.tecnicoAsignadoId && canEdit && estado !== WORK_STATUS.entregado ? `
+            <button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" title="Tomar Ticket" style="padding: 6px 8px; flex: 1; font-size: 10px; font-weight: 700; background: var(--accent-blue); color: #fff;">
+              🙋 TOMAR
+            </button>
+          ` : ''}
           ${canEdit && estado === WORK_STATUS.listo ? `
             <button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" title="Cobrar y Finalizar" style="padding: 6px 8px; flex: 1; font-size: 10px; font-weight: 700;">
               💵 COBRAR

@@ -215,18 +215,23 @@ td, th {
   overflow: hidden;
 }
 
-/* Mobile: always render as comfortable regardless of saved mode */
+/* Mobile: technician mode */
 @media (max-width: 640px) {
   .grid-stack.vm-compact,
   .grid-stack.vm-expanded {
     grid-template-columns: 1fr;
   }
+  .grid-stack .card.glass-card {
+    padding: var(--space-md) !important;
+  }
+  .grid-stack .card.glass-card .btn {
+    padding: 12px 8px !important;
+    font-size: 12px !important;
+    min-height: 44px !important;
+  }
   .grid-stack.vm-compact .vm-meta,
   .grid-stack.vm-compact .vm-problema {
     display: block;
-  }
-  .grid-stack.vm-compact .card.glass-card {
-    padding: var(--space-lg);
   }
   .vm-selector {
     display: none !important;
