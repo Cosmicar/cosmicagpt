@@ -140,6 +140,19 @@ export async function updateTicketStatus(id, newStatus) {
       },
     });
 
+    // Auto-registrar ingreso en caja cuando un ticket es entregado con precio
+    if (newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0) {
+      (async () => {
+        try {
+          const { autoRegistrarIngresoTicket, getCajaSession } = await import('./finanzas.js');
+          const session = await getCajaSession();
+          await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id ?? null);
+        } catch (e) {
+          console.warn('[tickets] auto-income registration failed silently:', e);
+        }
+      })();
+    }
+
     invalidateTicketsCache();
     return { success: true };
   } catch (error) {
