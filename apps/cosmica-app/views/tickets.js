@@ -72,6 +72,13 @@ export class TicketsView extends AsyncView {
       }
     });
 
+    // Pre-agrupa tickets por clienteId — O(n) en vez de O(n²) por ticket
+    const clientTicketMap = new Map();
+    tickets.forEach(t => {
+      if (!clientTicketMap.has(t.clienteId)) clientTicketMap.set(t.clienteId, []);
+      clientTicketMap.get(t.clienteId).push(t);
+    });
+
     this.allTickets = tickets.map(t => {
       const enriched = {
         ...t,
@@ -81,11 +88,10 @@ export class TicketsView extends AsyncView {
         dni: t.dni || clientMap[t.clienteId]?.dni || '',
         isOverloaded: t.tecnicoAsignadoId && techLoad[t.tecnicoAsignadoId] > 15
       };
-      
-      // Reentry Risk
-      const clientTickets = tickets.filter(allT => allT.clienteId === enriched.clienteId);
-      enriched.reentryRisk = getReentryRisk(clientTickets);
-      
+
+      // Reentry Risk — lookup O(1) con mapa pre-construido
+      enriched.reentryRisk = getReentryRisk(clientTicketMap.get(enriched.clienteId) || []);
+
       return enriched;
     });
 
@@ -102,6 +108,10 @@ export class TicketsView extends AsyncView {
     if (this._scrollListener) {
       window.removeEventListener('scroll', this._scrollListener);
       this._scrollListener = null;
+    }
+    if (this._searchDebounce) {
+      clearTimeout(this._searchDebounce);
+      this._searchDebounce = null;
     }
     this.selectedTickets.clear();
   }
@@ -312,14 +322,15 @@ export class TicketsView extends AsyncView {
     const grid          = document.getElementById('tickets-grid');
 
     if (searchInput) {
-      let _searchDebounce = null;
       searchInput.addEventListener('input', (e) => {
-        clearTimeout(_searchDebounce);
-        _searchDebounce = setTimeout(() => {
+        clearTimeout(this._searchDebounce);
+        this._searchDebounce = setTimeout(() => {
+          this._searchDebounce = null;
           this.currentTerm = e.target.value.toLowerCase().trim();
           this.saveState();
-          this.applyFilters(grid);
-        }, 200); // 200ms debounce as requested
+          const g = document.getElementById('tickets-grid');
+          if (g) this.applyFilters(g);
+        }, 200); // 200ms debounce
       });
       searchInput.value = this.currentTerm;
       
@@ -524,8 +535,9 @@ export class TicketsView extends AsyncView {
       if (wrap) wrap.remove();
       const ctaCell = document.querySelector(`td.tt-cta[data-id="${id}"]`);
       if (ctaCell) ctaCell.innerHTML = '';
-      
-      this.applyFilters(document.getElementById('tickets-grid'));
+
+      const gridQR = document.getElementById('tickets-grid');
+      if (gridQR) this.applyFilters(gridQR);
     } else {
       showToast(result.error || 'Error', 'error');
       btn.disabled = false;
@@ -552,7 +564,8 @@ export class TicketsView extends AsyncView {
         ticket.tecnicoAsignadoId = session.user.uid;
         ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
       }
-      this.applyFilters(document.getElementById('tickets-grid'));
+      const grid = document.getElementById('tickets-grid');
+      if (grid) this.applyFilters(grid);
     } else {
       showToast(result.error || 'Error', 'error');
       btn.disabled = false;
@@ -682,6 +695,7 @@ export class TicketsView extends AsyncView {
   }
 
   applyFilters(grid) {
+    if (!grid) return; // Guard: vista puede haber sido desmontada
     const filtered = this.getFilteredTickets();
     grid.innerHTML  = this.viewMode === 'table' ? this.renderTable(filtered) : this.renderCards(filtered);
     this.initStatusSelectors();
@@ -767,7 +781,10 @@ export class TicketsView extends AsyncView {
         }
       });
       this.clearSelection();
-      if (this.currentFilter !== 'all') this.applyFilters(document.getElementById('tickets-grid'));
+      if (this.currentFilter !== 'all') {
+        const gridBulk = document.getElementById('tickets-grid');
+        if (gridBulk) this.applyFilters(gridBulk);
+      }
     } else {
       showToast(result.error || 'Error', 'error');
     }

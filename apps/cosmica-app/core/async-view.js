@@ -39,6 +39,10 @@ export class AsyncView extends BaseView {
     try {
       const data = await this.loadData();
 
+      // Guard: si la ruta cambió mientras cargábamos, el container ya fue
+      // desmontado del DOM. Escribir sobre él contaminaría la vista nueva.
+      if (!container.isConnected) return;
+
       if (!data || (Array.isArray(data) && data.length === 0)) {
         container.innerHTML = this.renderEmpty();
       } else {
@@ -47,6 +51,7 @@ export class AsyncView extends BaseView {
         this.onContentReady(data);
       }
     } catch (error) {
+      if (!container.isConnected) return; // Navegación ocurrió durante el fetch
       console.error(`Error en AsyncView (${this.constructor.name}):`, error);
       container.innerHTML = this.renderError(error.message);
     }

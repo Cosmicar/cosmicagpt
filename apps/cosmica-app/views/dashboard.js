@@ -290,6 +290,8 @@ export class DashboardView extends AsyncView {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    // Liberar blob URL después de que el navegador inicia la descarga
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Exportación iniciada', 'success');
   }
 }

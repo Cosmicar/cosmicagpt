@@ -213,6 +213,6 @@ export class ClientesView extends AsyncView {
   }
 
   renderEmpty() {
-    return super.renderEmpty('No hay clientes registrados en el sistema.');
+    return renderEmptyState('No hay clientes registrados en el sistema.');
   }
 }

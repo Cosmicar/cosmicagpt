@@ -852,6 +852,8 @@ export class FinanzasView extends AsyncView {
 
         if (res.success) {
           showToast('Caja abierta correctamente', 'success');
+          // Forzar refresco inmediato del indicador de caja en el navbar
+          import('../core/app.js').then(m => { m.invalidateCajaStatusCache(); m.updateCajaStatusIndicator(); });
           this.fetchAndRender();
         } else {
           if (errorEl) { errorEl.textContent = res.error; errorEl.style.display = 'block'; }
@@ -894,6 +896,8 @@ export class FinanzasView extends AsyncView {
         if (res.success) {
           showToast('Caja cerrada correctamente', 'success');
           this._showCierre = false;
+          // Forzar refresco inmediato del indicador de caja en el navbar
+          import('../core/app.js').then(m => { m.invalidateCajaStatusCache(); m.updateCajaStatusIndicator(); });
           this.fetchAndRender();
         } else {
           if (errorEl) { errorEl.textContent = res.error; errorEl.style.display = 'block'; }

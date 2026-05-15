@@ -32,7 +32,6 @@ export function initializeSession() {
             try {
               const profile = await getUserProfile(user.uid);
               currentSession = { user, profile };
-              console.log("session initialized");
               done(currentSession);
             } catch (error) {
               // Firestore profile failed — resolve degraded rather than error screen
@@ -42,7 +41,6 @@ export function initializeSession() {
             }
           } else {
             currentSession = { user: null, profile: null };
-            console.log("no active session");
             done(currentSession);
           }
         },

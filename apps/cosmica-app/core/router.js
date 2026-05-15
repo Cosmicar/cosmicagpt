@@ -51,9 +51,11 @@ export class Router {
     
     // Escuchar cambios de ruta
     window.addEventListener('hashchange', () => this.handleRoute());
-    window.addEventListener('load', () => this.handleRoute());
 
-    // Ejecución inicial para manejar el hash actual (útil en refresh)
+    // Ejecución inicial para manejar el hash actual.
+    // El listener 'load' fue removido: el router se instancia desde DOMContentLoaded
+    // (después de que initializeSession resuelve), por lo que el hash ya es accesible.
+    // Agregar 'load' causaba un segundo handleRoute() innecesario.
     this.handleRoute();
   }
   

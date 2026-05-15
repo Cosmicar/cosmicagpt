@@ -144,6 +144,17 @@ function renderSidebar(profile) {
   `;
 }
 
+// Throttle: máximo 1 lectura Firestore de caja cada 30 s para no consumir lecturas
+// innecesarias en navegaciones rápidas entre vistas.
+let _lastCajaCheck = 0;
+let _lastCajaResult = null;
+
+/** Llama esto tras abrir o cerrar la caja para forzar refresco inmediato del indicador. */
+export function invalidateCajaStatusCache() {
+  _lastCajaCheck = 0;
+  _lastCajaResult = null;
+}
+
 /**
  * Updates the persistent caja status indicator in the navbar.
  */
@@ -153,7 +164,15 @@ export async function updateCajaStatusIndicator() {
 
   try {
     const { getCajaSession } = await import('../services/finanzas.js');
-    const session = await getCajaSession();
+    const now = Date.now();
+    let session;
+    if (now - _lastCajaCheck < 30_000) {
+      session = _lastCajaResult; // Usa resultado cacheado en módulo
+    } else {
+      session = await getCajaSession();
+      _lastCajaCheck = now;
+      _lastCajaResult = session;
+    }
 
     if (session) {
       el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
@@ -194,20 +213,8 @@ function initGlobalShortcuts() {
       }
     }
 
-    // Global ESC
-    if (e.key === 'Escape') {
-      // 1. Close Drawer
-      const overlay = document.querySelector('.drawer-overlay.is-open');
-      if (overlay) {
-        import('../components/drawer.js').then(m => m.closeDrawer());
-      }
-      // 2. Close Command Palette
-      const cp = document.getElementById('command-palette');
-      if (cp && cp.style.display !== 'none') {
-        const closeBtn = cp.querySelector('.cp-close');
-        if (closeBtn) closeBtn.click();
-      }
-    }
+    // Global ESC — cada componente (drawer, command-palette) ya registra su propio
+    // listener de ESC cuando está abierto; no necesitamos duplicarlo aquí.
 
     // Ctrl + Enter (Save forms)
     if (e.key === 'Enter' && ctrlOrMeta) {

@@ -100,8 +100,15 @@ async function getGlobalActivity(limitCount = 15) {
 export async function getDashboardData() {
   const [tickets, clientes] = await Promise.all([getTickets(), getClientes()]);
 
+  // Pre-agrupa tickets por clienteId — O(n) en vez de O(n²) por ticket enriquecido
+  const clientTicketMap = new Map();
+  tickets.forEach(t => {
+    if (!clientTicketMap.has(t.clienteId)) clientTicketMap.set(t.clienteId, []);
+    clientTicketMap.get(t.clienteId).push(t);
+  });
+
   const enrichTicket = (t) => {
-    const clientTickets = tickets.filter(allT => allT.clienteId === t.clienteId);
+    const clientTickets = clientTicketMap.get(t.clienteId) || [];
     return {
       ...t,
       clientBadge: getClientBadge(clientTickets.length),
