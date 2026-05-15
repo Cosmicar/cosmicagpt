@@ -115,20 +115,22 @@ export function canAccess(action) {
     case 'config':
       return false; // Solo admin
     case 'edit-ticket':
-      return role === 'tecnico';
+      // tecnico: reparaciones técnicas; operador: órdenes taller; recepcion: puede editar al crear
+      return ['tecnico', 'operador', 'recepcion'].includes(role);
     case 'create-ticket':
+      return ['recepcion', 'operador'].includes(role);
     case 'create-client':
-      return role === 'recepcion';
+      return ['recepcion', 'operador'].includes(role);
     case 'view-tickets':
     case 'view-clients':
     case 'inventario-read':
       return true; // Todos los roles staff
     case 'inventario-write': // consumir stock desde tickets
-      return role === 'tecnico';
+      return ['tecnico', 'operador'].includes(role);
     case 'finanzas-read':
       return true; // todos los roles staff
     case 'finanzas-write': // registrar caja
-      return role === 'recepcion';
+      return ['recepcion', 'operador'].includes(role);
     default:
       return false;
   }

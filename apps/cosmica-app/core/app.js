@@ -123,12 +123,12 @@ function renderSidebar(profile) {
   const role = profile?.rol || 'operador';
   
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊', roles: ['admin', 'tecnico', 'recepcion'] },
-    { id: 'tickets', label: 'Trabajos', icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion'] },
-    { id: 'clientes', label: 'Clientes', icon: '👥', roles: ['admin', 'recepcion'] },
-    { id: 'inventario', label: 'Inventario', icon: '📦', roles: ['admin', 'tecnico', 'recepcion'] },
-    { id: 'finanzas',   label: 'Finanzas',   icon: '💰', roles: ['admin', 'recepcion', 'tecnico'] },
-    { id: 'configuracion', label: 'Configuración', icon: '⚙️', roles: ['admin'] }
+    { id: 'dashboard',     label: 'Dashboard',     icon: '📊', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'tickets',       label: 'Trabajos',       icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'clientes',      label: 'Clientes',       icon: '👥', roles: ['admin', 'recepcion', 'operador'] },
+    { id: 'inventario',    label: 'Inventario',     icon: '📦', roles: ['admin', 'tecnico', 'recepcion', 'operador'] },
+    { id: 'finanzas',      label: 'Finanzas',       icon: '💰', roles: ['admin', 'recepcion', 'tecnico', 'operador'] },
+    { id: 'configuracion', label: 'Configuración',  icon: '⚙️', roles: ['admin'] }
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));

@@ -8,7 +8,7 @@ import { InventarioFormView } from '../views/inventario-form.js';
 import { FinanzasView } from '../views/finanzas.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
-import { getCurrentSession } from './session.js';
+import { getCurrentSession, canAccess } from './session.js';
 import { updateCajaStatusIndicator } from './app.js';
 
 /**

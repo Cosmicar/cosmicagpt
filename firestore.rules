@@ -38,7 +38,7 @@ service cloud.firestore {
     }
 
     function isStaff() {
-      return userProfileExists() && getUserRole() in ['admin', 'operador', 'tester'];
+      return userProfileExists() && getUserRole() in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
     }
 
     // ─────────────────────────────────────────────
@@ -123,6 +123,53 @@ service cloud.firestore {
 
     match /movimientos_stock/{docId} {
       allow read, write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: inventario
+    // Todo el staff puede leer.
+    // Admin y técnico pueden escribir (ajustar stock, crear repuestos).
+    // ─────────────────────────────────────────────
+    match /inventario/{docId} {
+      allow read: if isStaff();
+      allow write: if isStaff();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: caja
+    // Append-only: staff puede leer y crear.
+    // Nunca se editan ni eliminan movimientos de caja.
+    // ─────────────────────────────────────────────
+    match /caja/{docId} {
+      allow read:          if isStaff();
+      allow create:        if isStaff();
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: cajaSesiones
+    // Staff puede abrir (create) y cerrar (update open→closed).
+    // Las sesiones cerradas son inmutables.
+    // ─────────────────────────────────────────────
+    match /cajaSesiones/{docId} {
+      allow read:   if isStaff();
+      allow create: if isStaff();
+      // Solo se puede actualizar para cerrar (open → closed). Nunca re-abrir.
+      allow update: if isStaff()
+        && resource.data.status == 'open'
+        && request.resource.data.status == 'closed';
+      allow delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // SUBCOLECCIÓN: trabajos/{id}/history
+    // Append-only: staff puede leer y crear eventos.
+    // El historial no se modifica nunca.
+    // ─────────────────────────────────────────────
+    match /trabajos/{trabajoId}/history/{histId} {
+      allow read:          if isStaff();
+      allow create:        if isStaff();
+      allow update, delete: if false;
     }
 
     match /system_logs/{docId} {
