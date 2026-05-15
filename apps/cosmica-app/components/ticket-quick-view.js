@@ -235,20 +235,30 @@ function renderBody(ticket) {
     ${ticket.telefono ? `
     <div class="qv-separator"></div>
     <div class="qv-section-label">📞 Contacto rápido</div>
-    <div style="display:flex;flex-direction:column;gap:6px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-md);padding:10px;">
+    <div style="display:flex;flex-direction:column;gap:8px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-md);padding:10px;">
+      <!-- Phone + quick actions row -->
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${ticket.telefono}</span>
-        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" style="padding:2px 6px;font-size:10px;" title="Copiar teléfono">📋</button>
-        <a href="tel:${ticket.telefono}" class="btn btn-sm" style="padding:2px 6px;font-size:10px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);" title="Llamar">📱 Llamar</a>
+        <span style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ticket.telefono}</span>
+        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}"
+          style="min-width:44px;min-height:44px;padding:4px 10px;font-size:13px;flex-shrink:0;" title="Copiar teléfono">📋</button>
+        <a href="tel:${ticket.telefono}" class="btn btn-sm"
+          style="min-width:44px;min-height:44px;padding:4px 10px;font-size:12px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);display:inline-flex;align-items:center;gap:4px;flex-shrink:0;" title="Llamar">📱 Llamar</a>
       </div>
       ${ticket.dni ? `<div style="font-size:var(--font-xs);color:var(--text-muted);">DNI: ${ticket.dni}</div>` : ''}
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
-        <button class="btn btn-sm qv-wa-btn" data-action="listo"        style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📲 Avisar listo</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="presupuesto"  style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">💰 Presupuesto</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="aprobacion"   style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🛠 Aprobación</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="repuesto"     style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📦 Repuesto</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="recordatorio" style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🔔 Recordar</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"  style="font-size:10px;padding:4px 8px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">⚠ Último aviso</button>
+      <!-- WhatsApp action grid: 2 columns on mobile, wrap on desktop -->
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+        <button class="btn btn-sm qv-wa-btn" data-action="listo"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">📲 Avisar listo</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="presupuesto"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">💰 Presupuesto</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="aprobacion"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">🛠 Aprobación</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="repuesto"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">📦 Repuesto</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="recordatorio"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">🔔 Recordar</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"
+          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);white-space:nowrap;">⚠ Último aviso</button>
       </div>
     </div>` : ''}
 
@@ -272,25 +282,30 @@ function renderBody(ticket) {
     <!-- Actions -->
     <div class="drawer-footer" style="display:flex;flex-direction:column;gap:var(--space-sm);">
       ${canEdit && estado === WORK_STATUS.listo ? `
-        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="width:100%; font-weight:700;">
+        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="width:100%; font-weight:700; min-height:44px;">
           💵 COBRAR Y FINALIZAR
         </button>
       ` : ''}
       ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
-        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="width:100%; font-weight:700;">
+        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="width:100%; font-weight:700; min-height:44px;">
           ✅ MARCAR COMO LISTO
         </button>
       ` : ''}
+      ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.esperandoRepuesto) ? `
+        <button class="btn btn-secondary qv-reparacion-btn" data-id="${ticket.id}" style="width:100%; min-height:44px; background:rgba(251,146,60,0.1); color:#fb923c; border-color:rgba(251,146,60,0.35); font-weight:600;">
+          🔧 Enviar a Reparación
+        </button>
+      ` : ''}
       ${estado === WORK_STATUS.entregado ? `
-        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="width:100%; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2);">
+        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="width:100%; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2); min-height:44px;">
           ♻️ Generar Reingreso (Garantía)
         </button>
       ` : ''}
       <div style="display:flex;gap:var(--space-xs);">
-        <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="flex:1;">🖨 A4</button>
-        <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="flex:1;">🧾 Ticket</button>
+        <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="flex:1;min-height:44px;">🖨 A4</button>
+        <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="flex:1;min-height:44px;">🧾 Ticket</button>
       </div>
-      <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">
+      <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;min-height:44px;line-height:44px;padding:0 16px;">
         📝 Editar completo
       </a>
       <div id="qv-undo-container" style="margin-top: var(--space-sm);"></div>
@@ -324,18 +339,24 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
 
-      // Check for Undo possibility
-      const history = await getTicketHistory(ticket.id);
-      const lastEvent = history[0];
-      const undoContainer = bodyEl.querySelector('#qv-undo-container');
-      
-      if (lastEvent && canUndo(lastEvent) && undoContainer) {
-        undoContainer.innerHTML = `
-          <button class="btn btn-sm btn-secondary qv-undo-btn" style="width:100%; border-style: dashed; font-size: 11px; color: var(--text-muted);">
-            ↩ Deshacer último cambio (${lastEvent.message})
-          </button>
-        `;
-        undoContainer.querySelector('.qv-undo-btn').addEventListener('click', () => handleUndo(ticket, lastEvent, onStatusChange));
+      // Check for Undo possibility — wrapped so a permission error doesn't crash the callback
+      try {
+        const history = await getTicketHistory(ticket.id);
+        const lastEvent = history[0];
+        const undoContainer = bodyEl.querySelector('#qv-undo-container');
+
+        if (lastEvent && canUndo(lastEvent) && undoContainer) {
+          undoContainer.innerHTML = `
+            <button class="btn btn-sm btn-secondary qv-undo-btn" style="width:100%; border-style: dashed; font-size: 11px; color: var(--text-muted);">
+              ↩ Deshacer último cambio (${lastEvent.message})
+            </button>
+          `;
+          undoContainer.querySelector('.qv-undo-btn').addEventListener('click', () => handleUndo(ticket, lastEvent, onStatusChange));
+        }
+      } catch (histErr) {
+        // Undo feature is non-critical — permission errors are silenced here;
+        // mountQvTimeline (below) will display the error in the timeline section.
+        console.warn('[quick-view] undo history fetch failed (non-fatal):', histErr.code || histErr.message);
       }
 
       const refreshQuickView = () => openTicketQuickView(ticket, { onStatusChange });
@@ -523,37 +544,58 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
         });
       });
 
-      // Status selector handler
+      // ── Status selector handler — guard scoped to THIS block only ──────────
+      // WARNING: do NOT add an early return here; handlers below must always run.
       const select = bodyEl.querySelector('#qv-status-select');
-      if (!select) return;
+      if (select) {
+        select.addEventListener('change', async (e) => {
+          const newStatus = e.target.value;
+          select.disabled = true;
 
-      select.addEventListener('change', async (e) => {
-        const newStatus = e.target.value;
-        select.disabled = true;
+          const result = await updateTicketStatus(ticket.id, newStatus);
 
-        const result = await updateTicketStatus(ticket.id, newStatus);
+          if (result.success) {
+            showToast('Estado actualizado', 'success');
 
-        if (result.success) {
-          showToast('Estado actualizado', 'success');
+            // Mutate local reference so re-opens of the same ticket are consistent
+            ticket.estado = newStatus;
 
-          // Mutate local reference so re-opens of the same ticket are consistent
-          ticket.estado = newStatus;
+            // Update drawer header badge
+            const titleEl = document.getElementById('drawer-title');
+            if (titleEl) titleEl.innerHTML = renderHeader(ticket);
 
-          // Update drawer header badge
-          const titleEl = document.getElementById('drawer-title');
-          if (titleEl) titleEl.innerHTML = renderHeader(ticket);
+            // Notify parent view to sync the list badge + cache
+            if (onStatusChange) onStatusChange(ticket.id, newStatus);
+          } else {
+            showToast(result.error || 'Error al cambiar estado', 'error');
+            e.target.value = ticket.estado; // revert selector
+          }
 
-          // Notify parent view to sync the list badge + cache
-          if (onStatusChange) onStatusChange(ticket.id, newStatus);
-        } else {
-          showToast(result.error || 'Error al cambiar estado', 'error');
-          e.target.value = ticket.estado; // revert selector
-        }
+          select.disabled = false;
+        });
+      }
 
-        select.disabled = false;
-      });
+      // ── Reparación quick action button ─────────────────────────────────────
+      const reparacionBtn = bodyEl.querySelector('.qv-reparacion-btn');
+      if (reparacionBtn) {
+        reparacionBtn.addEventListener('click', async () => {
+          reparacionBtn.disabled = true;
+          reparacionBtn.textContent = '⏳ Enviando...';
+          const result = await updateTicketStatus(ticket.id, WORK_STATUS.enReparacion);
+          if (result.success) {
+            showToast('🛠 Ticket enviado a reparación', 'success');
+            ticket.estado = WORK_STATUS.enReparacion;
+            if (onStatusChange) onStatusChange(ticket.id, WORK_STATUS.enReparacion);
+            openTicketQuickView(ticket, { onStatusChange });
+          } else {
+            showToast(result.error || 'Error al actualizar estado', 'error');
+            reparacionBtn.disabled = false;
+            reparacionBtn.textContent = '🔧 Enviar a Reparación';
+          }
+        });
+      }
 
-      // WhatsApp quick action buttons
+      // ── WhatsApp quick action buttons — always wired regardless of canEdit ─
       bodyEl.querySelectorAll('.qv-wa-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -571,16 +613,29 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
         });
       });
 
-      // Copy buttons handler
+      // ── Copy buttons — always wired; clipboard with execCommand fallback ───
+      const _copyToClipboard = async (text) => {
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          // Fallback for non-HTTPS or older browsers
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          try { document.execCommand('copy'); } catch { /* silent */ }
+          document.body.removeChild(ta);
+        }
+        showToast('✅ Copiado al portapapeles', 'success');
+      };
+
       bodyEl.querySelectorAll('.qv-copy-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const text = btn.dataset.text;
-          if (text) {
-            navigator.clipboard.writeText(text).then(() => {
-              showToast('Copiado', 'success');
-            });
-          }
+          if (text) _copyToClipboard(text);
         });
       });
     }
