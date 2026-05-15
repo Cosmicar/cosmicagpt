@@ -41,19 +41,19 @@ function renderEvent(event) {
     <div style="
       display: grid;
       grid-template-columns: 28px 1fr;
-      gap: var(--space-sm);
-      padding: var(--space-md) 0;
+      gap: var(--space-md);
+      padding: var(--space-lg) 0;
       border-bottom: 1px solid var(--border);
     ">
-      <span style="font-size: 1rem; line-height: 1.5; padding-top: 2px; filter: grayscale(0.2);">${icon}</span>
+      <span style="font-size: 1.1rem; line-height: 1.5; padding-top: 2px; filter: grayscale(0.2);">${icon}</span>
       <div>
-        <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.4; font-weight: 500;">
+        <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.5; font-weight: 500;">
           ${event.message}
         </div>
-        <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; display: flex; gap: 8px; align-items: center;">
-          <span style="opacity: 0.8;">👤 ${user}</span>
-          <span style="opacity: 0.4;">•</span>
-          <span style="opacity: 0.8;">🕒 ${time}</span>
+        <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 6px; display: flex; gap: 12px; align-items: center;">
+          <span style="opacity: 0.8; display: flex; align-items: center; gap: 4px;">👤 ${user}</span>
+          <span style="opacity: 0.3;">•</span>
+          <span style="opacity: 0.8; display: flex; align-items: center; gap: 4px;">🕒 ${time}</span>
         </div>
       </div>
     </div>`;

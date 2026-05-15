@@ -12,7 +12,10 @@ export function render(cliente) {
           </h3>
           <div class="vm-meta" style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">DNI: ${cliente.dni || 'N/A'}</div>
         </div>
-        <div class="badge badge-gray vm-meta">Cliente</div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <div class="badge badge-gray vm-meta">Cliente</div>
+          ${cliente.badge ? `<div class="badge ${cliente.badge.class}" style="font-size: 10px; white-space: nowrap;">${cliente.badge.label}</div>` : ''}
+        </div>
       </div>
       
       <div style="flex: 1;">

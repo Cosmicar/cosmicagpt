@@ -7,6 +7,8 @@ import { canAccess } from '../core/session.js';
 import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
+import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot } from '../core/intelligence.js';
+import { getTickets } from '../services/tickets.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -75,6 +77,7 @@ function renderHeader(ticket) {
         #${ticket.numeroOrden || '—'}
       </span>
       <span class="badge ${badgeClass(estado)}">${estado}</span>
+      ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
       <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.numeroOrden}" title="Copiar orden" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
     </div>`;
 }
@@ -142,9 +145,10 @@ function renderBody(ticket) {
     <div class="qv-meta-grid">
       <div class="qv-meta-item">
         <div class="qv-meta-label">Cliente</div>
-        <div class="qv-meta-value" style="display:flex;align-items:center;gap:6px;">
+        <div class="qv-meta-value" style="display:flex;align-items:center;gap:6px; flex-wrap: wrap;">
           ${cliente}
           ${ticket.telefono ? `<button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" title="Copiar teléfono" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>` : ''}
+          ${ticket.clientBadge ? `<span class="badge ${ticket.clientBadge.class}" style="font-size:9px;">${ticket.clientBadge.label}</span>` : ''}
         </div>
       </div>
       <div class="qv-meta-item">
@@ -166,6 +170,10 @@ function renderBody(ticket) {
       <div class="qv-meta-item">
         <div class="qv-meta-label">Método Pago</div>
         <div class="qv-meta-value" style="text-transform:capitalize;">${ticket.metodoPago || 'Efectivo'}</div>
+      </div>
+      <div class="qv-meta-item">
+        <div class="qv-meta-label">⏱ Estimado</div>
+        <div class="qv-meta-value" style="color: var(--accent-cyan); font-weight: 700;">${estimateRepairTime(ticket)}</div>
       </div>
     </div>
 
@@ -191,6 +199,9 @@ function renderBody(ticket) {
 
     ${budgetBlock}
     ${actionsBlock}
+
+    <!-- Client Snapshot -->
+    <div id="qv-client-snapshot" style="margin-top: var(--space-lg);"></div>
 
     <!-- Timeline (lazy loaded) -->
     <div class="qv-separator"></div>
@@ -238,13 +249,47 @@ function renderBody(ticket) {
  *                                             successful status update so the parent
  *                                             view can sync its badge and local cache.
  */
-export function openTicketQuickView(ticket, { onStatusChange } = {}) {
+export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
+  // Enrich ticket with intelligence before rendering
+  const allTickets = await getTickets();
+  const clientTickets = allTickets.filter(t => t.clienteId === ticket.clienteId);
+  ticket.clientBadge = getClientBadge(clientTickets.length);
+  ticket.reentryRisk = getReentryRisk(clientTickets);
+
   openDrawer(
     renderHeader(ticket),
     renderBody(ticket),
     (bodyEl) => {
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
+
+      // Render snapshot
+      const snapshot = getClientSnapshot(ticket.clienteId, allTickets);
+      const snapshotContainer = bodyEl.querySelector('#qv-client-snapshot');
+      if (snapshot && snapshotContainer) {
+        snapshotContainer.innerHTML = `
+          <div class="qv-separator"></div>
+          <div class="qv-section-label">👤 Historial rápido</div>
+          <div class="qv-meta-grid" style="grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div class="qv-meta-item">
+              <div class="qv-meta-label">Total tickets</div>
+              <div class="qv-meta-value">${snapshot.totalTickets}</div>
+            </div>
+            <div class="qv-meta-item">
+              <div class="qv-meta-label">Total gastado</div>
+              <div class="qv-meta-value">$${snapshot.totalSpent.toLocaleString('es-AR')}</div>
+            </div>
+            <div class="qv-meta-item">
+              <div class="qv-meta-label">Reingresos</div>
+              <div class="qv-meta-value" style="color: ${snapshot.reentries > 0 ? 'var(--danger)' : 'inherit'}">${snapshot.reentries}</div>
+            </div>
+            <div class="qv-meta-item">
+              <div class="qv-meta-label">Pago más usado</div>
+              <div class="qv-meta-value" style="text-transform: capitalize;">${snapshot.topPayment}</div>
+            </div>
+          </div>
+        `;
+      }
 
       // Approval button
       const approveBtn = bodyEl.querySelector('.qv-approve-btn');

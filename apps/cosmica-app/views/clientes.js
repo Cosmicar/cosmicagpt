@@ -6,6 +6,8 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { seedPaletteCache } from '../components/command-palette.js';
 import { showToast } from '../components/toast.js';
+import { getTickets } from '../services/tickets.js';
+import { getClientBadge } from '../core/intelligence.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -48,7 +50,17 @@ export class ClientesView extends AsyncView {
   }
 
   async loadData() {
-    this.allClientes = await getClientes();
+    const [clientes, tickets] = await Promise.all([getClientes(), getTickets()]);
+    
+    this.allClientes = clientes.map(c => {
+      const ticketCount = tickets.filter(t => t.clienteId === c.id).length;
+      return {
+        ...c,
+        ticketCount,
+        badge: getClientBadge(ticketCount)
+      };
+    });
+
     seedPaletteCache({ clients: this.allClientes });
     return this.allClientes;
   }

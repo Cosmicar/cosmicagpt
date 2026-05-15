@@ -63,8 +63,9 @@ export class DashboardView extends AsyncView {
    * Renderiza el contenido del dashboard con los datos procesados
    */
   renderContent(data) {
-    const { metrics, recentTickets, recentClients } = data;
+    const { metrics, recentTickets, recentClients, attentionRequired } = data;
     this._recentTickets = recentTickets;
+    this._attentionTickets = attentionRequired;
     const canCreateTicket = canAccess('create-ticket');
 
     return `
@@ -91,6 +92,21 @@ export class DashboardView extends AsyncView {
           ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
           ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger, #ff4757)', '⚠️')}
         </section>
+        
+        <!-- Atención Requerida -->
+        ${attentionRequired && attentionRequired.length > 0 ? `
+        <section style="background: rgba(255, 71, 87, 0.05); padding: var(--space-lg); border-radius: var(--radius-lg); border: 1px solid rgba(255, 71, 87, 0.1);">
+          <div class="section-divider flex-between">
+            <h3 style="font-size: var(--font-md); font-weight: 700; color: #ff4757; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Atención Requerida
+            </h3>
+            <span style="font-size: var(--font-xs); color: var(--text-muted);">Tickets demorados o estancados</span>
+          </div>
+          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-md);">
+            ${attentionRequired.map(t => renderTicketCard(t)).join('')}
+          </div>
+        </section>
+        ` : ''}
 
         <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
           
@@ -177,7 +193,8 @@ export class DashboardView extends AsyncView {
     document.querySelectorAll('.ticket-print-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const ticket = (this._recentTickets || []).find(t => t.id === btn.dataset.id);
+        const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
+        const ticket = allTickets.find(t => t.id === btn.dataset.id);
         if (ticket) openTicketPrint(ticket);
       });
     });

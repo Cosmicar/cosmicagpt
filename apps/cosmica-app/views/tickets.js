@@ -11,6 +11,7 @@ import { canAccess } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
 import { openTicketPrint } from '../components/ticket-print.js';
 import { seedPaletteCache } from '../components/command-palette.js';
+import { getReentryRisk } from '../core/intelligence.js';
 
 const VIEW_MODES = [
   { key: 'compact',     label: '⊟',  title: 'Compacto'  },
@@ -57,13 +58,21 @@ export class TicketsView extends AsyncView {
     
     // Join client data for smart search (Phone, DNI)
     const clientMap = clients.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
-    this.allTickets = tickets.map(t => ({
-      ...t,
-      nombre: t.nombre || clientMap[t.clienteId]?.nombre || '',
-      apellido: t.apellido || clientMap[t.clienteId]?.apellido || '',
-      telefono: t.telefono || clientMap[t.clienteId]?.telefono || '',
-      dni: t.dni || clientMap[t.clienteId]?.dni || ''
-    }));
+    this.allTickets = tickets.map(t => {
+      const enriched = {
+        ...t,
+        nombre: t.nombre || clientMap[t.clienteId]?.nombre || '',
+        apellido: t.apellido || clientMap[t.clienteId]?.apellido || '',
+        telefono: t.telefono || clientMap[t.clienteId]?.telefono || '',
+        dni: t.dni || clientMap[t.clienteId]?.dni || ''
+      };
+      
+      // Reentry Risk
+      const clientTickets = tickets.filter(allT => allT.clienteId === enriched.clienteId);
+      enriched.reentryRisk = getReentryRisk(clientTickets);
+      
+      return enriched;
+    });
 
     seedPaletteCache({ tickets: this.allTickets });
     return this.allTickets;
@@ -244,6 +253,7 @@ export class TicketsView extends AsyncView {
         <td>
           <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
             <span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span>
+            ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
             ${overdue   ? '<span class="badge badge-orange rule-badge">⚠ DEMORADO</span>'  : ''}
             ${highValue ? '<span class="badge badge-gold rule-badge">💎 ALTO VALOR</span>' : ''}
           </div>

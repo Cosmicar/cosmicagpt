@@ -150,6 +150,14 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
+@media (max-width: 768px) {
+  .grid-stack.vm-compact,
+  .grid-stack.vm-comfortable,
+  .grid-stack.vm-expanded {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Compact: reduced padding, secondary content hidden */
 .grid-stack.vm-compact .card.glass-card {
   padding: var(--space-sm) var(--space-md);
@@ -232,21 +240,38 @@ body {
 /* Sticky header */
 .tickets-table thead {
   position: sticky;
-  top: calc(var(--navbar-h, 65px) - 1px);
+  top: calc(var(--navbar-h, 64px) - 1px);
   z-index: 10; /* Above rows, below dropdowns */
 }
-.tickets-table thead th {
-  padding: 10px 14px;
-  text-align: left;
-  font-size: var(--font-xs);
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  background: rgba(5, 11, 20, 0.92);
-  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
   white-space: nowrap;
-  user-select: none;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.tickets-table thead th {
+  background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: var(--font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
 }
 
 /* Body rows */

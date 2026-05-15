@@ -198,6 +198,23 @@ function buildTimeline(order) {
   return events;
 }
 
+// ─── Intelligence helpers ─────────────────────────────────────────────────────
+function estimateRepairTime(order) {
+  const plan = (order.planServicio || "").toLowerCase();
+  let hours = 24; 
+  if (plan === "oro") hours = 8;
+  if (plan === "platinum") hours = 3;
+  
+  const prob = (order.problema || order.diagnosticoTecnico || "").toLowerCase();
+  if (prob.includes("pantalla") || prob.includes("módulo")) hours += 2;
+  if (prob.includes("placa") || prob.includes("corto") || prob.includes("agua")) hours += 48;
+  if (prob.includes("formateo") || prob.includes("soft")) hours = Math.min(hours, 4);
+
+  if (hours < 24) return `${hours} hs`;
+  const days = Math.round(hours / 24);
+  return `${days} ${days === 1 ? "día" : "días"}`;
+}
+
 function renderTimeline(order) {
   const events = buildTimeline(order);
   if (!events.length) return "";
@@ -237,6 +254,7 @@ function renderInfoGrid(order) {
     infoRow("Equipo",             equipo),
     infoRow("Problema",           order.problema || order.diagnostico || ""),
     infoRow("Plan de servicio",   order.planServicio ? capitalize(order.planServicio) : ""),
+    infoRow("⏱ Est. Reparación",  order.estado === 'Entregado' ? 'Finalizado' : estimateRepairTime(order)),
     infoRow("Servicio realizado", order.servicioRealizado || ""),
     infoRow("Garantía",           order.garantiaDias ? `${order.garantiaDias} días` : ""),
   ].filter(Boolean).join("");

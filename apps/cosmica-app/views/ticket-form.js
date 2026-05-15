@@ -4,7 +4,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderFormField } from '../components/form-field.js';
 import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
-import { createTicket, getTicket, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
+import { getTicket, createTicket, updateTicket, updateTicketBudget, updateTicketRepuestos, getTickets } from '../services/tickets.js';
 import { getInventario, filterInventario, batchAdjustStock } from '../services/inventario.js';
 import { canAccess, getCurrentSession } from '../core/session.js';
 import { WORK_STATUS, isAdmin } from '../../../js/domain.js';
@@ -12,6 +12,7 @@ import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 import { renderFormSkeleton } from '../components/app-state.js';
 import { openTicketPrint } from '../components/ticket-print.js';
+import { getClientBadge, suggestBudget } from '../core/intelligence.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -331,6 +332,12 @@ export class TicketFormView extends AsyncView {
                 value: ticket?.problema || '',
                 required: true
               })}
+              <div id="budget-suggestion" style="grid-column: 1 / -1; display: none; margin-top: -10px; margin-bottom: var(--space-md);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: var(--font-xs); color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); padding: 8px; border-radius: var(--radius-sm); border: 1px solid rgba(0, 229, 255, 0.1);">
+                  <span>💡</span>
+                  <span id="budget-suggestion-text"></span>
+                </div>
+              </div>
             </div>
 
             ${this.isEdit ? `<div>
@@ -366,12 +373,30 @@ export class TicketFormView extends AsyncView {
     `;
   }
 
-  onContentReady({ clientes }) {
+  async onContentReady({ clientes }) {
     this._clientesCache = clientes;
+    this._allTicketsCache = await getTickets();
     this.initFormHandlers();
     this.initClienteAutocomplete();
     this.initFormShortcuts();
     
+    // Budget Intelligence
+    const probInput = document.getElementById('problema');
+    const budgetSugg = document.getElementById('budget-suggestion');
+    const budgetText = document.getElementById('budget-suggestion-text');
+    if (probInput) {
+      probInput.addEventListener('blur', () => {
+        const val = probInput.value.trim();
+        if (val.length > 10) {
+          const suggestion = suggestBudget(val, this._allTicketsCache);
+          if (suggestion) {
+            budgetText.textContent = `Sugerencia basada en casos similares: $${suggestion}`;
+            budgetSugg.style.display = 'block';
+          }
+        }
+      });
+    }
+
     if (this.isEdit) {
       this.initBudgetHandlers();
       this.initRepuestosHandlers();
@@ -420,42 +445,46 @@ export class TicketFormView extends AsyncView {
     input.addEventListener('input', () => {
       clearTimeout(_autocompleteDebounce);
       _autocompleteDebounce = setTimeout(() => {
-        const term = input.value.toLowerCase().trim();
-        if (!term) { suggestions.style.display = 'none'; hidden.value = ''; return; }
+        const val = input.value.toLowerCase().trim();
+        if (!val) { suggestions.style.display = 'none'; hidden.value = ''; return; }
 
-        const matches = this._clientesCache.filter(c => 
-          (c.nombre && c.nombre.toLowerCase().includes(term)) ||
-          (c.apellido && c.apellido.toLowerCase().includes(term)) ||
-          (c.dni && c.dni.includes(term)) ||
-          (c.telefono && c.telefono.includes(term))
-        ).slice(0, 8);
+        const filtered = this._clientesCache.filter(c => {
+          const full = `${c.nombre} ${c.apellido} ${c.dni} ${c.telefono}`.toLowerCase();
+          return full.includes(val);
+        }).slice(0, 5);
 
-        this._currentSuggestions = matches;
+        this._currentSuggestions = filtered;
         this._suggestionIndex = -1;
 
-        if (!matches.length) { 
-          suggestions.innerHTML = `<div style="padding:10px;color:var(--text-muted);font-size:var(--font-sm);">No se encontraron clientes. <a href="#cliente-nuevo" style="color:var(--accent-cyan);">Crear nuevo?</a></div>`;
-        } else {
-          suggestions.innerHTML = matches.map((c, i) => `
-            <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${c.nombre} ${c.apellido}" data-index="${i}" style="
-              padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);
-              transition:background 0.15s;">
-              <div style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${c.nombre} ${c.apellido}</div>
-              <div style="font-size:var(--font-xs);color:var(--text-muted);">DNI: ${c.dni || 'S/D'} · Tel: ${c.telefono || 'S/D'}</div>
-            </div>
-          `).join('');
-        }
-        suggestions.style.display = 'block';
+        if (filtered.length > 0) {
+          suggestions.innerHTML = filtered.map((c, i) => {
+            const ticketCount = this._allTicketsCache.filter(t => t.clienteId === c.id).length;
+            const badge = getClientBadge(ticketCount);
+            return `
+            <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${c.nombre} ${c.apellido}" data-index="${i}" 
+                 style="padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);">
+              <div>
+                <div style="font-weight:600;font-size:var(--font-sm);color:var(--text-primary);">${c.nombre} ${c.apellido}</div>
+                <div style="font-size:var(--font-xs);color:var(--text-muted);">${c.telefono || ''} ${c.dni ? `• DNI: ${c.dni}` : ''}</div>
+              </div>
+              ${badge ? `<span class="badge ${badge.class}" style="font-size:10px;">${badge.label}</span>` : ''}
+            </div>`;
+          }).join('');
+          suggestions.style.display = 'block';
 
-        suggestions.querySelectorAll('.cliente-suggestion-item').forEach(el => {
-          el.addEventListener('mouseenter', () => { 
-            this._suggestionIndex = parseInt(el.dataset.index);
-            this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item'); 
+          suggestions.querySelectorAll('.cliente-suggestion-item').forEach(el => {
+            el.addEventListener('mouseenter', () => { 
+              this._suggestionIndex = parseInt(el.dataset.index);
+              this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item'); 
+            });
+            el.addEventListener('click', () => {
+              this._selectCliente(el.dataset.id, el.dataset.name);
+            });
           });
-          el.addEventListener('click', () => {
-            this._selectCliente(el.dataset.id, el.dataset.name);
-          });
-        });
+        } else {
+          suggestions.innerHTML = `<div style="padding:10px;color:var(--text-muted);font-size:var(--font-sm);">No se encontraron clientes. <a href="#cliente-nuevo" style="color:var(--accent-cyan);">Crear nuevo?</a></div>`;
+          suggestions.style.display = 'block';
+        }
       }, 150);
     });
 
@@ -830,6 +859,24 @@ export class TicketFormView extends AsyncView {
   initFormHandlers() {
     const form = document.getElementById('ticket-form');
     if (!form) return;
+
+    // Budget suggestions listener
+    const problemaInput = document.getElementById('problema');
+    const budgetSug = document.getElementById('budget-suggestion');
+    const budgetText = document.getElementById('budget-suggestion-text');
+
+    if (problemaInput) {
+      problemaInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const suggestion = suggestBudget(val, this._allTicketsCache);
+        if (suggestion) {
+          budgetText.textContent = `Sugerencia por "${suggestion.keyword}": Último promedio $${suggestion.average.toLocaleString('es-AR')} (basado en ${suggestion.count} servicios)`;
+          budgetSug.style.display = 'block';
+        } else {
+          budgetSug.style.display = 'none';
+        }
+      });
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

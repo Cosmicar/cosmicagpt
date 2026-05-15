@@ -55,6 +55,8 @@ export function render(ticket, selected = false) {
         </div>
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 80px;">
           <div class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size: 10px;">${estado}</div>
+          ${ticket.reentryRisk ? `<div class="badge ${ticket.reentryRisk.class}" style="white-space: nowrap; font-size: 10px;">${ticket.reentryRisk.label}</div>` : ''}
+          ${ticket.clientBadge ? `<div class="badge ${ticket.clientBadge.class}" style="white-space: nowrap; font-size: 10px;">${ticket.clientBadge.label}</div>` : ''}
           ${metodoBadge ? `<div class="badge ${metodoBadge.class}" style="white-space: nowrap; font-size: 10px;">${metodoBadge.label}</div>` : ''}
           ${overdue   ? '<div class="badge badge-orange rule-badge" style="white-space: nowrap; font-size: 10px;">⚠ DEMORADO</div>'  : ''}
           ${highValue ? '<div class="badge badge-gold rule-badge" style="white-space: nowrap; font-size: 10px;">💎 ALTO VALOR</div>' : ''}

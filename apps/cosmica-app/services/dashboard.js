@@ -1,6 +1,7 @@
 import { getTickets, isOverdue } from './tickets.js';
 import { getClientes } from './clientes.js';
 import { WORK_STATUS } from '../../../js/domain.js';
+import { getClientBadge, getReentryRisk } from '../core/intelligence.js';
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -16,6 +17,30 @@ function computeMetrics(tickets) {
     }
     return acc;
   }, { pending: 0, inRepair: 0, ready: 0, deliveredToday: 0, overdue: 0 });
+}
+
+function computeAttentionRequired(tickets) {
+  const now = new Date();
+  
+  return tickets.filter(t => {
+    const updatedAt = new Date(t.updatedAt || t.createdAt);
+    const daysSinceUpdate = (now - updatedAt) / (1000 * 60 * 60 * 24);
+    
+    // - en reparación > 7 días
+    if (t.estado === WORK_STATUS.enReparacion && daysSinceUpdate > 7) return true;
+    
+    // - esperando repuesto > 15 días
+    if (t.estado === WORK_STATUS.esperandoRepuesto && daysSinceUpdate > 15) return true;
+    
+    // - listos > 5 días sin entregar
+    if (t.estado === WORK_STATUS.listo && daysSinceUpdate > 5) return true;
+    
+    return false;
+  }).sort((a,b) => {
+    const dateA = new Date(a.updatedAt || a.createdAt);
+    const dateB = new Date(b.updatedAt || b.createdAt);
+    return dateA - dateB; // Oldest first
+  }).slice(0, 5);
 }
 
 function computeRecentClients(clientes, limit = 5) {
@@ -37,10 +62,20 @@ function computeRecentClients(clientes, limit = 5) {
 export async function getDashboardData() {
   const [tickets, clientes] = await Promise.all([getTickets(), getClientes()]);
 
+  const enrichTicket = (t) => {
+    const clientTickets = tickets.filter(allT => allT.clienteId === t.clienteId);
+    return {
+      ...t,
+      clientBadge: getClientBadge(clientTickets.length),
+      reentryRisk: getReentryRisk(clientTickets)
+    };
+  };
+
   return {
-    metrics:       computeMetrics(tickets),
-    recentTickets: tickets.slice(0, 5),
-    recentClients: computeRecentClients(clientes, 5),
+    metrics:           computeMetrics(tickets),
+    recentTickets:     tickets.slice(0, 5).map(enrichTicket),
+    recentClients:     computeRecentClients(clientes, 5),
+    attentionRequired: computeAttentionRequired(tickets).map(enrichTicket)
   };
 }
 
