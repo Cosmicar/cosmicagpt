@@ -150,11 +150,22 @@ service cloud.firestore {
     // COLECCIÓN: cajaSesiones
     // Staff puede abrir (create) y cerrar (update open→closed).
     // Las sesiones cerradas son inmutables.
+    //
+    // HOTFIX: allow read usa get() directo con .get('rol','') en vez de
+    // isStaff() (que encadena exists()+get()) para evitar permission-denied
+    // intermitente en list queries (getDocs con where). La evaluación de
+    // exists()+get() en reglas para list operations puede fallar cuando el
+    // campo .rol no existe o retorna null; .get('rol','') previene ese caso.
+    // create/update siguen usando isStaff() porque operan sobre documentos
+    // concretos donde resource está disponible y el patrón es estable.
     // ─────────────────────────────────────────────
     match /cajaSesiones/{docId} {
-      allow read:   if isStaff();
+      // Un único get() con fallback seguro — sin exists() previo, sin .rol directo.
+      allow read:   if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       allow create: if isStaff();
       // Solo se puede actualizar para cerrar (open → closed). Nunca re-abrir.
+      // resource.data.status == 'open' aplica SOLO a update, no afecta read.
       allow update: if isStaff()
         && resource.data.status == 'open'
         && request.resource.data.status == 'closed';
