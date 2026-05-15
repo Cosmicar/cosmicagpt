@@ -241,7 +241,7 @@ function renderBody(ticket) {
     </div>
 
     <!-- Actions -->
-    <div style="margin-top:var(--space-xl);display:flex;flex-direction:column;gap:var(--space-sm);">
+    <div class="drawer-footer" style="display:flex;flex-direction:column;gap:var(--space-sm);">
       ${canEdit && estado === WORK_STATUS.listo ? `
         <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="width:100%; font-weight:700;">
           💵 COBRAR Y FINALIZAR

@@ -6,6 +6,30 @@ let _bodyEl  = null;
 let _isOpen  = false;
 let _offEsc  = null;
 let _offHash = null;
+let _scrollPos = 0;
+let _prevActiveElement = null;
+
+function _lockBody() {
+  const n = parseInt(document.body.dataset.scrollLocks || '0', 10) + 1;
+  document.body.dataset.scrollLocks = n;
+  if (n > 1) return; // Ya bloqueado por otro overlay — no sobreescribir scrollPos
+  _scrollPos = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollPos}px`;
+  document.body.style.width = '100%';
+  document.body.style.overflowY = 'scroll'; // Prevent scrollbar jump
+}
+
+function _unlockBody() {
+  const n = Math.max(0, parseInt(document.body.dataset.scrollLocks || '1', 10) - 1);
+  document.body.dataset.scrollLocks = n;
+  if (n > 0) return; // Todavía retenido por otro overlay
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.overflowY = '';
+  window.scrollTo(0, _scrollPos);
+}
 
 function ensureDom() {
   if (_overlay) return;
@@ -87,10 +111,11 @@ export function openDrawer(titleHtml, contentHtml, onMounted) {
     return;
   }
 
+  _prevActiveElement = document.activeElement;
   _panel.querySelector('#drawer-title').innerHTML = titleHtml;
   _bodyEl.innerHTML = contentHtml;
 
-  document.body.style.overflow = 'hidden';
+  _lockBody();
 
   requestAnimationFrame(() => {
     _overlay.classList.add('is-open');
@@ -119,14 +144,21 @@ export function closeDrawer() {
 
   _overlay.classList.remove('is-open');
   _panel.classList.remove('is-open');
-  document.body.style.overflow = '';
   _teardownListeners();
 
-  // Clear content after the CSS transition finishes
+  if (_prevActiveElement && typeof _prevActiveElement.focus === 'function') {
+    _prevActiveElement.focus();
+    _prevActiveElement = null;
+  }
+
+  // _unlockBody() DESPUÉS de que termine la transición CSS (~300ms)
+  // para evitar el scroll-jump visible mientras el panel aún está animándose.
+  // También limpiamos el contenido aquí para no hacerlo en dos timers separados.
   setTimeout(() => {
-    if (!_isOpen && _bodyEl) {
-      _bodyEl.innerHTML = '';
-      if (_panel) _panel.querySelector('#drawer-title').innerHTML = '';
+    if (!_isOpen) {
+      _unlockBody();
+      if (_bodyEl)  _bodyEl.innerHTML = '';
+      if (_panel)   _panel.querySelector('#drawer-title').innerHTML = '';
     }
-  }, 300);
+  }, 320);
 }

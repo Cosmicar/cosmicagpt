@@ -18,6 +18,30 @@ let _results    = [];   // flat ordered array — index matches rendered .cp-ite
 let _activeIdx  = 0;
 let _debTimer   = null;
 let _offEsc     = null;
+let _scrollPos  = 0;
+let _prevActiveElement = null;
+
+function _lockBody() {
+  const n = parseInt(document.body.dataset.scrollLocks || '0', 10) + 1;
+  document.body.dataset.scrollLocks = n;
+  if (n > 1) return; // Ya bloqueado por otro overlay — no sobreescribir scrollPos
+  _scrollPos = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollPos}px`;
+  document.body.style.width = '100%';
+  document.body.style.overflowY = 'scroll';
+}
+
+function _unlockBody() {
+  const n = Math.max(0, parseInt(document.body.dataset.scrollLocks || '1', 10) - 1);
+  document.body.dataset.scrollLocks = n;
+  if (n > 0) return; // Todavía retenido por otro overlay
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.overflowY = '';
+  window.scrollTo(0, _scrollPos);
+}
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -267,8 +291,9 @@ export async function openPalette() {
 
   _isOpen    = true;
   _activeIdx = 0;
+  _prevActiveElement = document.activeElement;
 
-  document.body.style.overflow = 'hidden';
+  _lockBody();
   _overlay.removeAttribute('aria-hidden');
   _overlay.classList.add('is-open');
 
@@ -297,7 +322,12 @@ export function closePalette() {
 
   _overlay.classList.remove('is-open');
   _overlay.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
+  _unlockBody();
+  
+  if (_prevActiveElement && typeof _prevActiveElement.focus === 'function') {
+    _prevActiveElement.focus();
+    _prevActiveElement = null;
+  }
 
   if (_offEsc) { document.removeEventListener('keydown', _offEsc); _offEsc = null; }
   if (_modal)  { _modal.removeEventListener('keydown', _onModalKey); }

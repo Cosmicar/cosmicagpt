@@ -552,6 +552,10 @@ function buildThermalHtml(ticket) {
 
     @media print {
       html, body { background: white !important; }
+      table, .text-prose, .qr-wrap, .footer-note, .signatures { 
+        page-break-inside: avoid; 
+        break-inside: avoid; 
+      }
     }
 
     @media screen {
@@ -627,7 +631,7 @@ function buildThermalHtml(ticket) {
     No cubre daños por humedad, golpes o mal uso.
   </div>
 
-  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="signatures" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
     <div>
       <div style="border-bottom:1px solid #000;height:24px;"></div>
       <div class="small muted center" style="margin-top:2px;">Firma cliente</div>
