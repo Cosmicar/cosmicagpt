@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPerfilButton(session, mainContent);
     initSidebarMobile();
     initCommandPalette();
+    updateCajaStatusIndicator();
 
     const router = new Router();
 
@@ -140,4 +141,29 @@ function renderSidebar(profile) {
       `).join('')}
     </div>
   `;
+}
+
+/**
+ * Updates the persistent caja status indicator in the navbar.
+ */
+export async function updateCajaStatusIndicator() {
+  const el = document.getElementById('caja-status-indicator');
+  if (!el) return;
+
+  try {
+    const { getCajaSession } = await import('../services/finanzas.js');
+    const session = await getCajaSession();
+
+    if (session) {
+      el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
+      el.style.display = 'flex';
+      el.title = `Abierta por ${session.openedByName || 'alguien'}`;
+    } else {
+      el.innerHTML = `<span style="color:var(--danger);">●</span> Caja Cerrada`;
+      el.style.display = 'flex';
+      el.title = 'No hay una sesión de caja activa';
+    }
+  } catch (err) {
+    console.warn('[app] updateCajaStatusIndicator failed:', err);
+  }
 }

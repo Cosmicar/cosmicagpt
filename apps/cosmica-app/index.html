@@ -160,6 +160,21 @@
       display: none;
     }
     .perfil-dropdown.open { display: block; }
+
+    /* Fix navbar email overflow */
+    .navbar-email {
+      font-size: var(--font-sm);
+      color: var(--text-muted);
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      .navbar-email { display: none; }
+      .cp-trigger-btn kbd { display: none; }
+      .navbar-actions { gap: var(--space-xs) !important; }
+    }
   </style>
 </head>
 <body>
@@ -178,11 +193,12 @@
     </div>
     <button class="menu-toggle" aria-label="Abrir menú">☰</button>
     <div class="navbar-actions">
+      <div id="caja-status-indicator" style="display: none; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 0.05em;"></div>
       <button id="cp-trigger-btn" class="cp-trigger-btn" title="Búsqueda global (Ctrl+K)">
         <span>🔍</span>
         <kbd>Ctrl K</kbd>
       </button>
-      <span id="userEmail" style="font-size: var(--font-sm); color: var(--text-muted);"></span>
+      <span id="userEmail" class="navbar-email"></span>
       <button class="btn btn-primary" id="btnPerfil">Perfil</button>
     </div>
   </nav>

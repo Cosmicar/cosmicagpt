@@ -47,17 +47,17 @@ export function render(ticket, selected = false) {
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" style="display: flex; flex-direction: column; cursor: pointer;">
       <div class="flex-between" style="align-items: flex-start; margin-bottom: var(--space-sm);">
         <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''}>
-        <div style="flex: 1; min-width: 0;">
+        <div style="flex: 1; min-width: 0; padding: 0 8px;">
           <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}" style="font-size: var(--font-md); margin: 0;">
             ${ticket.nombre || 'Sin Nombre'} ${ticket.apellido || ''}
           </h3>
           <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">#${ticket.numeroOrden || 'N/A'}</div>
         </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-wrap: wrap;">
-          <div class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</div>
-          ${metodoBadge ? `<div class="badge ${metodoBadge.class}">${metodoBadge.label}</div>` : ''}
-          ${overdue   ? '<div class="badge badge-orange rule-badge">⚠ DEMORADO</div>'  : ''}
-          ${highValue ? '<div class="badge badge-gold rule-badge">💎 ALTO VALOR</div>' : ''}
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 80px;">
+          <div class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size: 10px;">${estado}</div>
+          ${metodoBadge ? `<div class="badge ${metodoBadge.class}" style="white-space: nowrap; font-size: 10px;">${metodoBadge.label}</div>` : ''}
+          ${overdue   ? '<div class="badge badge-orange rule-badge" style="white-space: nowrap; font-size: 10px;">⚠ DEMORADO</div>'  : ''}
+          ${highValue ? '<div class="badge badge-gold rule-badge" style="white-space: nowrap; font-size: 10px;">💎 ALTO VALOR</div>' : ''}
         </div>
       </div>
       

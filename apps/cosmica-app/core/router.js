@@ -9,6 +9,7 @@ import { FinanzasView } from '../views/finanzas.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession } from './session.js';
+import { updateCajaStatusIndicator } from './app.js';
 
 /**
  * Router minimalista para el sistema SaaS Cosmica
@@ -118,6 +119,7 @@ export class Router {
 
     this.updateActiveLink(routeName);
     this.updateDocumentTitle(routeName);
+    updateCajaStatusIndicator();
   }
 
   updateDocumentTitle(route) {

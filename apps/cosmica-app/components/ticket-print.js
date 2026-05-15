@@ -508,10 +508,10 @@ function buildThermalHtml(ticket) {
     .muted  { color: #555; }
     .small  { font-size: 8px; }
 
-    hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+    hr { border: none; border-top: 1px dashed #000; margin: 10px 0; }
 
-    table { width: 100%; border-collapse: collapse; }
-    td { padding: 2px 0; vertical-align: top; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+    td { padding: 3px 0; vertical-align: top; }
     td.lbl { color: #555; width: 42%; font-size: 9px; padding-right: 4px; }
     td.val { font-weight: 600; }
 
