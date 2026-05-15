@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado de tu reparación — Cósmica</title>
+  <meta name="description" content="Consultá el estado de tu equipo en tiempo real.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a14;
+      --surface:  #111125;
+      --border:   rgba(255,255,255,0.08);
+      --text:     #e2e2f0;
+      --muted:    #7a7a9d;
+      --cyan:     #00e5ff;
+      --green:    #10b981;
+      --orange:   #f97316;
+      --danger:   #ef4444;
+      --gold:     #fbbf24;
+      --radius:   12px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* ── Brand header ── */
+    .brand {
+      text-align: center;
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .brand-name {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: var(--cyan);
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      margin: 20px 0 8px;
+    }
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 0; right: 0;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .progress-fill {
+      position: absolute;
+      top: 14px;
+      left: 0;
+      height: 2px;
+      background: var(--cyan);
+      z-index: 1;
+      transition: width 0.6s ease;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+      flex: 1;
+    }
+    .step-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    .step.done .step-dot  { background: var(--green);  border-color: var(--green);  color: #fff; }
+    .step.active .step-dot { background: var(--cyan);   border-color: var(--cyan);   color: #000; }
+    .step-label {
+      font-size: 9px;
+      color: var(--muted);
+      text-align: center;
+      max-width: 56px;
+      line-height: 1.2;
+    }
+    .step.done .step-label, .step.active .step-label { color: var(--text); }
+
+    /* ── Data rows ── */
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: var(--muted); flex-shrink: 0; }
+    .row-value { color: var(--text); font-weight: 600; text-align: right; }
+
+    /* ── Status badge ── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-cyan    { background: rgba(0,229,255,0.15);  color: var(--cyan);   border: 1px solid rgba(0,229,255,0.3); }
+    .badge-orange  { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+    .badge-green   { background: rgba(16,185,129,0.15); color: var(--green);  border: 1px solid rgba(16,185,129,0.3); }
+    .badge-gray    { background: rgba(255,255,255,0.07); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Timeline ── */
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .tl-icon { font-size: 16px; padding-top: 2px; }
+    .tl-msg  { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.4; }
+    .tl-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ── States ── */
+    .state-loading, .state-error, .state-not-found {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .state-loading .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-error { color: var(--danger); }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding-top: 24px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .page-footer a { color: var(--cyan); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="brand">
+    <div class="brand-name">CÓSMICA</div>
+    <div class="brand-sub">Servicio Técnico Profesional</div>
+  </div>
+
+  <div id="app">
+    <div class="state-loading">
+      <div class="spinner"></div>
+      <div>Consultando estado de tu equipo…</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="https://cosmica.ar">cosmica.ar</a> &nbsp;·&nbsp; +54 9 11 0000-0000
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp }    from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
+  import { getFirestore, doc, getDoc, collection, query, orderBy, getDocs }
+    from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
+
+  // ── Firebase config (same project) ──────────────────────────────────────────
+  // Inline config so estado.html is fully self-contained (no module imports from parent dir).
+  // Pull these values from the project's firebase.js if you have a build step.
+  const firebaseConfig = {
+    // TODO: replace with actual config values from cosmicagpt/js/firebase.js
+    apiKey:            window.__FIREBASE_API_KEY__            || '',
+    authDomain:        window.__FIREBASE_AUTH_DOMAIN__        || '',
+    projectId:         window.__FIREBASE_PROJECT_ID__         || '',
+    storageBucket:     window.__FIREBASE_STORAGE_BUCKET__     || '',
+    messagingSenderId: window.__FIREBASE_MESSAGING_SENDER_ID__|| '',
+    appId:             window.__FIREBASE_APP_ID__             || '',
+  };
+
+  const app = initializeApp(firebaseConfig, 'estado-page');
+  const db  = getFirestore(app);
+
+  // ── Status constants (must match domain.js WORK_STATUS) ─────────────────────
+  const STEPS = [
+    { key: 'Ingresado',          label: 'Ingresado',   icon: '📥' },
+    { key: 'En reparación',      label: 'Reparación',  icon: '🔧' },
+    { key: 'Esperando repuesto', label: 'Repuesto',    icon: '📦' },
+    { key: 'Listo',              label: 'Listo',       icon: '✅' },
+    { key: 'Entregado',          label: 'Entregado',   icon: '🎉' },
+  ];
+
+  function badgeClass(estado) {
+    if (estado === 'En reparación' || estado === 'Esperando repuesto') return 'badge-orange';
+    if (estado === 'Listo')     return 'badge-green';
+    if (estado === 'Entregado') return 'badge-gray';
+    return 'badge-cyan';
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' }); }
+    catch { return '—'; }
+  }
+
+  function fmtTs(ts) {
+    if (!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 60)    return 'hace un momento';
+    if (diff < 3600)  return `hace ${Math.floor(diff/60)} min`;
+    if (diff < 86400) return `hace ${Math.floor(diff/3600)} h`;
+    return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function getStepIndex(estado) {
+    const idx = STEPS.findIndex(s => s.key === estado);
+    // Esperando repuesto sits at index 2, but visually we keep repair ordering
+    return idx === -1 ? 0 : idx;
+  }
+
+  function renderProgress(estado) {
+    const currentIdx = getStepIndex(estado);
+    // For progress bar, collapse "Esperando repuesto" into repair step
+    const displaySteps = [STEPS[0], STEPS[1], STEPS[3], STEPS[4]]; // skip step 2
+    let displayIdx = currentIdx;
+    if (currentIdx === 2) displayIdx = 1; // show as "en reparación"
+    else if (currentIdx > 2) displayIdx = currentIdx - 1;
+
+    const pct = displaySteps.length > 1
+      ? Math.round((displayIdx / (displaySteps.length - 1)) * 100)
+      : 0;
+
+    return `
+      <div class="progress-wrap">
+        <div class="progress-steps">
+          <div class="progress-fill" style="width:${pct}%"></div>
+          ${displaySteps.map((s, i) => `
+            <div class="step ${i < displayIdx ? 'done' : i === displayIdx ? 'active' : ''}">
+              <div class="step-dot">${i < displayIdx ? '✓' : s.icon}</div>
+              <div class="step-label">${s.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  function renderTicket(ticket, history) {
+    const estado   = ticket.estado || 'Ingresado';
+    const nombre   = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ') || 'Cliente';
+    const equipo   = [ticket.equipo, ticket.marca, ticket.modelo].filter(Boolean).join(' ') || '—';
+    const garantia = Number(ticket.garantiaDias) || 90;
+    const precio   = Number(ticket.precio || 0);
+    const presupuesto = Number(ticket.presupuesto || 0);
+
+    // Timestamps lifecycle
+    const tsRows = [
+      ticket.fechaIngreso     ? { l: 'Ingresado',       v: fmtDate(ticket.fechaIngreso) } : null,
+      ticket.fechaPresupuesto ? { l: 'Presupuestado',   v: fmtDate(ticket.fechaPresupuesto) } : null,
+      ticket.fechaReparacion  ? { l: 'Reparación inicio', v: fmtDate(ticket.fechaReparacion) } : null,
+      ticket.fechaListo || ticket.fechaReparado
+                              ? { l: 'Listo para retiro', v: fmtDate(ticket.fechaListo || ticket.fechaReparado) } : null,
+      ticket.fechaEntregado   ? { l: 'Entregado',       v: fmtDate(ticket.fechaEntregado) } : null,
+    ].filter(Boolean);
+
+    // History events (show max 8, already sorted desc)
+    const iconMap = {
+      ticket_created: '🟢', status_changed: '🟡', ticket_edited: '🔵',
+      budget_approved: '💎', financial_adjustment: '💰', customer_notified: '📲',
+      reminder_sent: '🔔', delivery_warning: '⚠️', abandoned_flagged: '🔴',
+    };
+
+    const historyHtml = history.length > 0
+      ? history.slice(0, 8).map(ev => `
+          <div class="timeline-item">
+            <div class="tl-icon">${iconMap[ev.type] || '⚪'}</div>
+            <div>
+              <div class="tl-msg">${ev.message || ev.type}</div>
+              <div class="tl-meta">${fmtTs(ev.createdAt)}</div>
+            </div>
+          </div>`)
+        .join('')
+      : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0;">Sin movimientos registrados aún.</div>';
+
+    return `
+      <div class="card">
+        <div class="section-title">Orden de Servicio</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <span style="font-size:24px;font-weight:900;color:var(--cyan);">#${ticket.numeroOrden || '—'}</span>
+          <span class="badge ${badgeClass(estado)}">${estado}</span>
+        </div>
+
+        ${renderProgress(estado)}
+
+        <div style="margin-top:20px;">
+          <div class="row"><span class="row-label">Cliente</span>  <span class="row-value">${nombre}</span></div>
+          <div class="row"><span class="row-label">Equipo</span>   <span class="row-value">${equipo}</span></div>
+          <div class="row"><span class="row-label">Problema</span> <span class="row-value" style="text-align:right;max-width:220px;">${ticket.problema || '—'}</span></div>
+          ${ticket.tecnicoAsignadoNombre ? `<div class="row"><span class="row-label">🛠 Técnico</span><span class="row-value">${ticket.tecnicoAsignadoNombre}</span></div>` : ''}
+          ${presupuesto > 0 ? `<div class="row"><span class="row-label">Presupuesto</span><span class="row-value" style="color:var(--cyan);">$${presupuesto.toLocaleString('es-AR')}</span></div>` : ''}
+          ${precio > 0      ? `<div class="row"><span class="row-label">Total Final</span><span class="row-value" style="color:var(--green);font-size:18px;">$${precio.toLocaleString('es-AR')}</span></div>` : ''}
+          <div class="row"><span class="row-label">Garantía</span><span class="row-value">${garantia} días</span></div>
+        </div>
+      </div>
+
+      ${tsRows.length > 0 ? `
+      <div class="card">
+        <div class="section-title">⏱ Cronología</div>
+        ${tsRows.map(r => `<div class="row"><span class="row-label">${r.l}</span><span class="row-value">${r.v}</span></div>`).join('')}
+      </div>` : ''}
+
+      <div class="card">
+        <div class="section-title">📋 Historial de movimientos</div>
+        ${historyHtml}
+      </div>
+
+      <div class="card" style="text-align:center;background:rgba(0,229,255,0.04);border-color:rgba(0,229,255,0.2);">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">¿Consultas? Contactanos por WhatsApp</div>
+        <a href="https://wa.me/5491100000000?text=Hola%2C+consulto+por+la+orden+%23${encodeURIComponent(ticket.numeroOrden || '')}"
+           target="_blank" rel="noopener"
+           style="display:inline-block;padding:10px 24px;background:rgba(37,211,102,0.2);color:#25D366;border:1px solid rgba(37,211,102,0.4);border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
+          📲 WhatsApp
+        </a>
+      </div>
+    `;
+  }
+
+  // ── Main ─────────────────────────────────────────────────────────────────────
+
+  async function main() {
+    const app = document.getElementById('app');
+    const params = new URLSearchParams(window.location.search);
+    const ticketId = params.get('id');
+
+    if (!ticketId) {
+      app.innerHTML = `<div class="state-error">
+        <div style="font-size:32px;margin-bottom:12px;">🔍</div>
+        <div style="font-size:16px;">No se proporcionó un ID de orden.</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--muted);">Verificá el link que te enviamos por WhatsApp.</div>
+      </div>`;
+      return;
+    }
+
+    try {
+      // Fetch ticket
+      const ticketSnap = await getDoc(doc(db, 'trabajos', ticketId));
+      if (!ticketSnap.exists()) {
+        app.innerHTML = `<div class="state-not-found">
+          <div style="font-size:32px;margin-bottom:12px;">📭</div>
+          <div style="font-size:16px;">No se encontró la orden solicitada.</div>
+          <div style="margin-top:8px;font-size:13px;color:var(--muted);">Verificá el link o consultá directamente al taller.</div>
+        </div>`;
+        return;
+      }
+
+      const ticket  = { id: ticketSnap.id, ...ticketSnap.data() };
+
+      // Fetch history (subcollection)
+      let history = [];
+      try {
+        const histSnap = await getDocs(
+          query(collection(db, 'trabajos', ticketId, 'history'), orderBy('createdAt', 'desc'))
+        );
+        history = histSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch { /* history is optional */ }
+
+      app.innerHTML = renderTicket(ticket, history);
+    } catch (err) {
+      console.error('[estado] error:', err);
+      app.innerHTML = `<div class="state-error">
+        <div style="font-size:32px;margin-bottom:12px;">⚠️</div>
+        <div>Error al consultar el estado. Intentá de nuevo en unos minutos.</div>
+        <div style="margin-top:8px;font-size:12px;opacity:0.6;">${err.message || ''}</div>
+      </div>`;
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>

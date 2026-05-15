@@ -8,7 +8,8 @@ import { canAccess, getCurrentSession } from '../core/session.js';
 import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
-import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot, getCriticalAlert } from '../core/intelligence.js';
+import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot, getCriticalAlert, getDaysInStatus, getLifecycleStage, getAgingBadge } from '../core/intelligence.js';
+import { openWhatsApp, buildReadyMessage, buildBudgetMessage, buildApprovalMessage, buildWaitingPartsMessage, buildReminderMessage, buildLastWarningMessage } from '../core/message-templates.js';
 import { getTickets } from '../services/tickets.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -229,6 +230,34 @@ function renderBody(ticket) {
     ${budgetBlock}
     ${techBlock}
     ${actionsBlock}
+
+    <!-- Contact Quick Block -->
+    ${ticket.telefono ? `
+    <div class="qv-separator"></div>
+    <div class="qv-section-label">📞 Contacto rápido</div>
+    <div style="display:flex;flex-direction:column;gap:6px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-md);padding:10px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${ticket.telefono}</span>
+        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" style="padding:2px 6px;font-size:10px;" title="Copiar teléfono">📋</button>
+        <a href="tel:${ticket.telefono}" class="btn btn-sm" style="padding:2px 6px;font-size:10px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);" title="Llamar">📱 Llamar</a>
+      </div>
+      ${ticket.dni ? `<div style="font-size:var(--font-xs);color:var(--text-muted);">DNI: ${ticket.dni}</div>` : ''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        <button class="btn btn-sm qv-wa-btn" data-action="listo"        style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📲 Avisar listo</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="presupuesto"  style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">💰 Presupuesto</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="aprobacion"   style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🛠 Aprobación</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="repuesto"     style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📦 Repuesto</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="recordatorio" style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🔔 Recordar</button>
+        <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"  style="font-size:10px;padding:4px 8px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">⚠ Último aviso</button>
+      </div>
+    </div>` : ''}
+
+    <!-- Lifecycle info -->
+    <div id="qv-lifecycle-info" style="margin-top:var(--space-sm);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:var(--font-xs);color:var(--text-muted);">Etapa: <strong style="color:var(--text-primary);">${getLifecycleStage(ticket)}</strong></span>
+      <span style="font-size:var(--font-xs);color:var(--text-muted);">en este estado hace <strong style="color:var(--accent-cyan);">${getDaysInStatus(ticket)}d</strong></span>
+      ${getAgingBadge(ticket)}
+    </div>
 
     <!-- Client Snapshot -->
     <div id="qv-client-snapshot" style="margin-top: var(--space-lg);"></div>
@@ -522,6 +551,24 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
         }
 
         select.disabled = false;
+      });
+
+      // WhatsApp quick action buttons
+      bodyEl.querySelectorAll('.qv-wa-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          const msgMap = {
+            listo:        () => buildReadyMessage(ticket),
+            presupuesto:  () => buildBudgetMessage(ticket),
+            aprobacion:   () => buildApprovalMessage(ticket),
+            repuesto:     () => buildWaitingPartsMessage(ticket),
+            recordatorio: () => buildReminderMessage(ticket),
+            ultimoaviso:  () => buildLastWarningMessage(ticket),
+          };
+          const build = msgMap[action];
+          if (build) openWhatsApp(ticket.telefono, build());
+        });
       });
 
       // Copy buttons handler

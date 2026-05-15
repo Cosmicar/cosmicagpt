@@ -180,8 +180,15 @@ export async function updateTicketStatus(id, newStatus) {
     };
 
     const now = new Date().toISOString();
-    if (newStatus === WORK_STATUS.listo) updateData.fechaReparado = now;
-    if (newStatus === WORK_STATUS.entregado) updateData.fechaEntregado = now;
+    // Lifecycle timestamps — only set once (first transition wins; undo can revert via previous state)
+    if (newStatus === WORK_STATUS.enReparacion && !trabajo.fechaReparacion)
+      updateData.fechaReparacion = now;
+    if (newStatus === WORK_STATUS.listo && !trabajo.fechaListo) {
+      updateData.fechaListo    = now;
+      updateData.fechaReparado = now; // keep legacy field in sync
+    }
+    if (newStatus === WORK_STATUS.entregado && !trabajo.fechaEntregado)
+      updateData.fechaEntregado = now;
 
     const docRef = doc(db, COLLECTIONS.trabajos, id);
     await updateDoc(docRef, updateData);
@@ -438,6 +445,10 @@ export async function updateTicketBudget(id, data) {
       presupuesto:        Number(data.presupuesto || 0),
       updatedAt:          serverTimestamp(),
     };
+    // Stamp fechaPresupuesto only the first time a non-zero presupuesto is set
+    if (updateData.presupuesto > 0 && !trabajoActual.fechaPresupuesto) {
+      updateData.fechaPresupuesto = new Date().toISOString();
+    }
 
     await updateDoc(doc(db, COLLECTIONS.trabajos, id), updateData);
 

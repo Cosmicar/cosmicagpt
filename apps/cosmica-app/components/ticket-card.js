@@ -1,6 +1,7 @@
 import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
 import { isOverdue, isHighValue, needsApprovalCTA } from '../services/tickets.js';
+import { getAgingBadge } from '../core/intelligence.js';
 
 /**
  * Componente para renderizar una card de ticket
@@ -43,18 +44,8 @@ export function render(ticket, selected = false) {
   const highValue = isHighValue(ticket);
   const showCTA   = needsApprovalCTA(ticket) && canEdit;
 
-  // Aging visual
-  let agingBadge = '';
-  if (ticket.fechaIngreso && estado !== WORK_STATUS.entregado && estado !== WORK_STATUS.listo) {
-    const days = Math.floor((Date.now() - new Date(ticket.fechaIngreso).getTime()) / (1000 * 60 * 60 * 24));
-    if (days >= 30) {
-      agingBadge = '<div class="badge badge-danger" style="white-space: nowrap; font-size: 10px;">🔴 +30 DÍAS</div>';
-    } else if (days >= 15) {
-      agingBadge = '<div class="badge badge-orange" style="white-space: nowrap; font-size: 10px;">🟠 +15 DÍAS</div>';
-    } else if (days >= 7) {
-      agingBadge = '<div class="badge" style="white-space: nowrap; font-size: 10px; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);">🟡 +7 DÍAS</div>';
-    }
-  }
+  // Aging visual — uses centralized helper from intelligence.js
+  const agingBadge = getAgingBadge(ticket);
 
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" style="display: flex; flex-direction: column; cursor: pointer;">
@@ -124,6 +115,7 @@ export function render(ticket, selected = false) {
           ` : ''}
           <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding: 6px 10px;" title="Imprimir orden">🖨</button>
           ${canEdit ? `<a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding: 6px 10px;" title="Editar">📝</a>` : ''}
+          ${ticket.telefono ? `<button class="btn btn-sm ticket-whatsapp-btn" data-id="${ticket.id}" style="padding:6px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);" title="WhatsApp rápido">📲</button>` : ''}
         </div>
       </div>
     </div>

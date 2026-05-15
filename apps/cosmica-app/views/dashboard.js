@@ -9,6 +9,8 @@ import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-st
 import { openTicketPrint } from '../components/ticket-print.js';
 import { showToast } from '../components/toast.js';
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
+import { getDaysInStatus, isAbandoned, getAgingBadge } from '../core/intelligence.js';
+import { openWhatsApp, buildReadyMessage, buildApprovalMessage, buildReminderMessage, buildLastWarningMessage } from '../core/message-templates.js';
 
 /**
  * Vista de Dashboard Operacional
@@ -63,11 +65,52 @@ export class DashboardView extends AsyncView {
   /**
    * Renderiza el contenido del dashboard con los datos procesados
    */
+  /**
+   * Computes the follow-up pending list from the full ticket dataset.
+   * Returns items sorted by criticality (abandoned → listo largo → approval → repuesto).
+   */
+  _buildFollowUpList(allTickets) {
+    const now = Date.now();
+    const msDay = 1000 * 60 * 60 * 24;
+    const followUp = [];
+
+    for (const t of allTickets) {
+      if (t.estado === 'Entregado') continue;
+      const daysInStatus = getDaysInStatus(t);
+      const ref = t.updatedAt?.toDate ? t.updatedAt.toDate() : new Date(t.updatedAt || t.fechaIngreso);
+      const daysSince = Math.floor((now - ref.getTime()) / msDay);
+
+      // Abandoned > 30 days
+      if (isAbandoned(t)) {
+        followUp.push({ ticket: t, reason: '🔴 Abandonado', days: daysSince, priority: 0 });
+        continue;
+      }
+      // Listo > 5 days
+      if (t.estado === 'Listo' && daysInStatus >= 5) {
+        followUp.push({ ticket: t, reason: '📲 Listo sin retirar', days: daysInStatus, priority: 1 });
+        continue;
+      }
+      // Waiting approval > 3 days
+      if (t.presupuesto > 0 && !t.aprobadoCliente && daysInStatus >= 3) {
+        followUp.push({ ticket: t, reason: '🛠 Sin aprobación', days: daysInStatus, priority: 2 });
+        continue;
+      }
+      // Waiting parts > 7 days
+      if (t.estado === 'Esperando repuesto' && daysInStatus >= 7) {
+        followUp.push({ ticket: t, reason: '📦 Repuesto > 7d', days: daysInStatus, priority: 3 });
+        continue;
+      }
+    }
+
+    return followUp.sort((a, b) => a.priority - b.priority || b.days - a.days);
+  }
+
   renderContent(data) {
     const { metrics, recentTickets, recentClients, attentionRequired, activityFeed } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
     this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
+    this._followUpItems = this._buildFollowUpList([...(recentTickets || []), ...(attentionRequired || [])]);
     const canCreateTicket = canAccess('create-ticket');
 
     return `
@@ -114,8 +157,37 @@ export class DashboardView extends AsyncView {
         </section>
         ` : ''}
 
+        <!-- Follow-up Alerts -->
+        ${this._followUpItems.length > 0 ? `
+        <section style="background:rgba(37,211,102,0.04);padding:var(--space-lg);border-radius:var(--radius-lg);border:1px solid rgba(37,211,102,0.15);">
+          <div class="section-divider flex-between" style="margin-bottom:var(--space-md);">
+            <h3 style="font-size:var(--font-md);font-weight:700;color:#25D366;display:flex;align-items:center;gap:8px;">
+              <span>📲</span> Seguimientos pendientes
+            </h3>
+            <span style="font-size:var(--font-xs);color:var(--text-muted);">${this._followUpItems.length} ticket${this._followUpItems.length !== 1 ? 's' : ''} requieren contacto</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${this._followUpItems.slice(0, 10).map(({ ticket: t, reason, days }) => `
+              <div class="glass-card" style="padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;" data-followup-id="${t.id}">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${[t.nombre, t.apellido].filter(Boolean).join(' ') || 'Sin nombre'} · #${t.numeroOrden || '—'}</div>
+                  <div style="font-size:var(--font-xs);color:var(--text-muted);">${[t.equipo, t.marca].filter(Boolean).join(' ') || '—'} · <span style="color:var(--accent-orange);">${reason}</span> · ${days}d</div>
+                </div>
+                ${getAgingBadge(t)}
+                ${t.telefono ? `
+                  <button class="btn btn-sm followup-wa-btn" data-id="${t.id}" data-reason="${reason}" style="padding:4px 10px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);font-size:10px;white-space:nowrap;">
+                    📲 WhatsApp
+                  </button>
+                ` : '<span style="font-size:10px;color:var(--text-muted);">Sin teléfono</span>'}
+                <a href="#ticket-edit?id=${t.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:10px;">📝</a>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+        ` : ''}
+
         <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
-          
+
           <!-- Satélite de Actividad Global -->
           <section>
             <div class="section-divider flex-between">
@@ -203,6 +275,25 @@ export class DashboardView extends AsyncView {
     if (btnRefresh) {
       btnRefresh.addEventListener('click', () => this.fetchAndRender());
     }
+
+    // Follow-up WhatsApp buttons
+    document.querySelectorAll('.followup-wa-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const reason = btn.dataset.reason || '';
+        const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
+        const ticket = allTickets.find(t => t.id === id);
+        if (!ticket) return;
+
+        let message;
+        if (reason.includes('Abandonado') || reason.includes('Último'))    message = buildLastWarningMessage(ticket);
+        else if (reason.includes('Listo'))                                  message = buildReadyMessage(ticket);
+        else if (reason.includes('aprobación'))                             message = buildApprovalMessage(ticket);
+        else                                                                message = buildReminderMessage(ticket);
+        openWhatsApp(ticket.telefono, message);
+      });
+    });
 
     // Re-vincular eventos para cambios de estado rápidos
     document.querySelectorAll('.status-selector').forEach(select => {

@@ -7,6 +7,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 import { showToast, showActionToast } from '../components/toast.js';
+import { openWhatsApp, getDefaultWhatsAppAction, buildReadyMessage, buildReminderMessage } from '../core/message-templates.js';
 import { canAccess, getCurrentSession } from '../core/session.js';
 import { openTicketQuickView, badgeClass } from '../components/ticket-quick-view.js';
 import { openTicketPrint } from '../components/ticket-print.js';
@@ -470,6 +471,16 @@ export class TicketsView extends AsyncView {
         e.stopPropagation();
         const ticket = this.allTickets.find(t => t.id === printBtn.dataset.id);
         if (ticket) openTicketPrint(ticket);
+        return;
+      }
+      const waBtn = e.target.closest('.ticket-whatsapp-btn');
+      if (waBtn) {
+        e.stopPropagation();
+        const ticket = this.allTickets.find(t => t.id === waBtn.dataset.id);
+        if (!ticket) return;
+        const action = getDefaultWhatsAppAction(ticket);
+        const message = action ? action.build(ticket) : buildReminderMessage(ticket);
+        openWhatsApp(ticket.telefono, message);
         return;
       }
       if (e.target.closest('select, .btn, a, button')) return;

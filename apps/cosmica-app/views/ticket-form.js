@@ -19,6 +19,7 @@ import {
   saveDraft, loadDraft, clearDraft, initMultitabCheck
 } from '../core/chaos-guard.js';
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from '../services/ticket-history.js';
+import { openWhatsApp, buildReadyMessage, buildBudgetMessage, buildApprovalMessage, buildWaitingPartsMessage, buildReminderMessage, buildLastWarningMessage } from '../core/message-templates.js';
 
 // ─── Budget section helpers ───────────────────────────────────────────────────
 
@@ -258,6 +259,18 @@ export class TicketFormView extends AsyncView {
           ` : ''}
         </div>
 
+        ${this.isEdit && ticket?.telefono ? `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-md);max-width:900px;">
+          <span style="font-size:var(--font-xs);color:var(--text-muted);align-self:center;">📲 WhatsApp:</span>
+          <button class="btn btn-sm form-wa-btn" data-action="listo"        style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📲 Avisar listo</button>
+          <button class="btn btn-sm form-wa-btn" data-action="presupuesto"  style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">💰 Enviar presupuesto</button>
+          <button class="btn btn-sm form-wa-btn" data-action="aprobacion"   style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🛠 Solicitar aprobación</button>
+          <button class="btn btn-sm form-wa-btn" data-action="repuesto"     style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">📦 Esperando repuesto</button>
+          <button class="btn btn-sm form-wa-btn" data-action="recordatorio" style="font-size:10px;padding:4px 8px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);">🔔 Recordatorio</button>
+          <button class="btn btn-sm form-wa-btn" data-action="ultimoaviso"  style="font-size:10px;padding:4px 8px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">⚠ Último aviso</button>
+        </div>
+        ` : ''}
+
         <div class="card glass-card" style="max-width: 900px;">
           <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
           
@@ -463,6 +476,24 @@ export class TicketFormView extends AsyncView {
       document.querySelectorAll('.form-print-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           openTicketPrint(this._ticket, btn.dataset.mode || 'a4');
+        });
+      });
+    }
+
+    // WhatsApp quick actions (edit mode only)
+    if (this.isEdit && this._ticket?.telefono) {
+      const waBuilders = {
+        listo:        () => buildReadyMessage(this._ticket),
+        presupuesto:  () => buildBudgetMessage(this._ticket),
+        aprobacion:   () => buildApprovalMessage(this._ticket),
+        repuesto:     () => buildWaitingPartsMessage(this._ticket),
+        recordatorio: () => buildReminderMessage(this._ticket),
+        ultimoaviso:  () => buildLastWarningMessage(this._ticket),
+      };
+      document.querySelectorAll('.form-wa-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const build = waBuilders[btn.dataset.action];
+          if (build) openWhatsApp(this._ticket.telefono, build());
         });
       });
     }

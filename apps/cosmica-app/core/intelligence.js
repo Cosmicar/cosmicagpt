@@ -111,6 +111,71 @@ export function getClientSnapshot(clienteId, allTickets) {
   };
 }
 
+// ─── Lifecycle / Aging Helpers ────────────────────────────────────────────────
+
+/**
+ * Returns the number of days the ticket has been in its CURRENT status.
+ * Uses updatedAt as the reference point (best proxy for "last state change").
+ *
+ * @param {Object} ticket
+ * @returns {number}
+ */
+export function getDaysInStatus(ticket) {
+  const ref = ticket.updatedAt || ticket.fechaIngreso || ticket.createdAt;
+  if (!ref) return 0;
+  const d = ref.toDate ? ref.toDate() : new Date(ref);
+  return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Returns a human-readable lifecycle stage label.
+ *
+ * @param {Object} ticket
+ * @returns {string}
+ */
+export function getLifecycleStage(ticket) {
+  const estado = ticket?.estado || '';
+  if (estado === WORK_STATUS.entregado) return 'Entregado';
+  if (estado === WORK_STATUS.listo)     return 'Listo para retirar';
+  if (estado === WORK_STATUS.esperandoRepuesto) return 'Esperando repuesto';
+  if (estado === WORK_STATUS.enReparacion)      return 'En reparación';
+  if (ticket?.aprobadoCliente)          return 'Aprobado — sin comenzar';
+  if (ticket?.presupuesto > 0)          return 'Esperando aprobación';
+  return 'Ingresado — sin presupuesto';
+}
+
+/**
+ * Returns true when a non-delivered ticket hasn't been touched in 30+ days.
+ *
+ * @param {Object} ticket
+ * @returns {boolean}
+ */
+export function isAbandoned(ticket) {
+  if (ticket?.estado === WORK_STATUS.entregado) return false;
+  const ref = ticket.updatedAt || ticket.fechaIngreso || ticket.createdAt;
+  if (!ref) return false;
+  const d = ref.toDate ? ref.toDate() : new Date(ref);
+  return (Date.now() - d.getTime()) > 30 * 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Returns an HTML badge string showing how long the ticket has been open.
+ * Returns '' for delivered tickets or tickets open < 3 days.
+ *
+ * @param {Object} ticket
+ * @returns {string} HTML badge or empty string
+ */
+export function getAgingBadge(ticket) {
+  if (ticket?.estado === WORK_STATUS.entregado) return '';
+  if (!ticket?.fechaIngreso) return '';
+  const days = Math.floor((Date.now() - new Date(ticket.fechaIngreso).getTime()) / (1000 * 60 * 60 * 24));
+  if (days >= 30) return `<span class="badge badge-danger"  style="font-size:10px;white-space:nowrap;">🔴 ${days}d</span>`;
+  if (days >= 15) return `<span class="badge badge-orange"  style="font-size:10px;white-space:nowrap;">🟠 ${days}d</span>`;
+  if (days >= 7)  return `<span class="badge" style="font-size:10px;white-space:nowrap;background:rgba(234,179,8,0.2);color:#fde047;border:1px solid rgba(234,179,8,0.4);">🟡 ${days}d</span>`;
+  if (days >= 3)  return `<span class="badge" style="font-size:10px;white-space:nowrap;background:rgba(255,255,255,0.06);color:var(--text-muted);">⏳ ${days}d</span>`;
+  return '';
+}
+
 /**
  * DETECCIÓN DE TICKET CRÍTICO
  */

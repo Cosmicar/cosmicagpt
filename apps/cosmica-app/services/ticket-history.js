@@ -19,6 +19,10 @@ export const TICKET_EVENT_TYPES = {
   undoRejected:          'undo_rejected',
   technicianAssigned:    'technician_assigned',
   technicianUnassigned:  'technician_unassigned',
+  customerNotified:      'customer_notified',
+  reminderSent:          'reminder_sent',
+  deliveryWarning:       'delivery_warning',
+  abandonedFlagged:      'abandoned_flagged',
 };
 
 /**

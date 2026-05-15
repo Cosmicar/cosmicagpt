@@ -469,7 +469,7 @@ function buildThermalHtml(ticket) {
   const tecnicoAsignado = ticket.tecnicoAsignadoNombre || 'No asignado';
   const garantia      = Number(ticket.garantiaDias) || 90;
   const trackingUrl   = buildTrackingUrl(ticket);
-  const qrUrl         = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+  const qrUrl         = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(trackingUrl)}`;
 
   const presupuesto = fmtMoney(ticket.presupuesto);
   const precio      = fmtMoney(ticket.precio);
@@ -619,27 +619,36 @@ function buildThermalHtml(ticket) {
   <hr>
 
   <div class="qr-wrap">
-    <img src="${qrUrl}" alt="QR Seguimiento">
-    <div class="small muted" style="margin-top:4px;">Escaneá para ver el estado</div>
+    <img src="${qrUrl}" alt="QR Seguimiento" style="width:72px;height:72px;">
+    <div class="small muted" style="margin-top:3px;">Estado en línea</div>
+    <div class="small muted" style="font-size:7px;word-break:break-all;max-width:70mm;line-height:1.3;">${esc(trackingUrl)}</div>
   </div>
 
   <hr>
 
   <div class="footer-note">
-    Garantía de servicio: <strong>${garantia} días</strong> sobre mano de obra.<br>
+    Garantía: <strong>${garantia} días</strong> mano de obra desde entrega.<br>
     Repuestos sujetos a garantía del fabricante.<br>
-    No cubre daños por humedad, golpes o mal uso.
+    No cubre daños por humedad, golpes o mal uso.<br>
+    <strong>Cósmica Online</strong> · <strong>https://cosmica.ar</strong><br>
+    Tel.: <strong>+54 9 11 0000-0000</strong>
   </div>
 
-  <div class="signatures" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="signatures" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
     <div>
-      <div style="border-bottom:1px solid #000;height:24px;"></div>
+      <div style="border-bottom:1px solid #000;height:22px;"></div>
       <div class="small muted center" style="margin-top:2px;">Firma cliente</div>
     </div>
     <div>
-      <div style="border-bottom:1px solid #000;height:24px;"></div>
+      <div style="border-bottom:1px solid #000;height:22px;"></div>
       <div class="small muted center" style="margin-top:2px;">Firma técnico</div>
     </div>
+  </div>
+
+  <div class="center small muted" style="margin-top:10px;font-size:7px;line-height:1.4;">
+    Este comprobante acredita la recepción del equipo.<br>
+    Cósmica no se responsabiliza por equipos no retirados<br>
+    después de 90 días desde la finalización del servicio.
   </div>
 
 </div>
