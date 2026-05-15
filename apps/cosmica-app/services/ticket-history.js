@@ -13,6 +13,8 @@ export const TICKET_EVENT_TYPES = {
   edited:         'ticket_edited',
   budgetApproved: 'budget_approved',
   financialAdjustment: 'financial_adjustment',
+  technicianAssigned: 'technician_assigned',
+  technicianUnassigned: 'technician_unassigned',
 };
 
 /**

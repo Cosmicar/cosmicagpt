@@ -1,9 +1,10 @@
 import { openDrawer } from './drawer.js';
 import { openTicketPrint } from './ticket-print.js';
-import { updateTicketStatus, reingresoTicket, approveTicketBudget, updateTicket } from '../services/tickets.js';
+import { updateTicketStatus, reingresoTicket, approveTicketBudget, updateTicket, assignTechnician } from '../services/tickets.js';
 import { getTicketHistory, addTicketHistoryEvent, TICKET_EVENT_TYPES } from '../services/ticket-history.js';
+import { getTecnicos } from '../services/usuarios.js';
 import { WORK_STATUS } from '../../../js/domain.js';
-import { canAccess } from '../core/session.js';
+import { canAccess, getCurrentSession } from '../core/session.js';
 import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
@@ -95,6 +96,32 @@ function renderBody(ticket) {
     : '—';
   const canEdit = canAccess('edit-ticket');
 
+  // Technician section
+  const session = getCurrentSession();
+  const isAdminOrOp = ['admin', 'operador'].includes(session?.profile?.rol);
+  const assignedName = ticket.tecnicoAsignadoNombre || 'Sin asignar';
+  
+  const techBlock = `
+    <div class="qv-separator"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="qv-section-label">🛠️ Técnico Asignado</div>
+      ${!ticket.tecnicoAsignadoId ? `
+        <button class="btn btn-sm btn-primary qv-take-btn" data-id="${ticket.id}" style="font-size:10px; padding:4px 8px;">Tomar ticket</button>
+      ` : ''}
+    </div>
+    <div style="display:flex; align-items:center; gap:var(--space-sm); margin-top:4px;">
+       <div id="qv-tech-display" style="font-size:var(--font-sm); color:var(--text-primary); font-weight:600;">
+         ${ticket.tecnicoAsignadoId ? `👨‍🔧 ${assignedName}` : '<span style="color:var(--text-muted); font-weight:400;">Sin técnico</span>'}
+       </div>
+       ${isAdminOrOp ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:10px;">Cambiar</button>` : ''}
+    </div>
+    <div id="qv-tech-selector-wrap" style="display:none; margin-top:var(--space-sm);">
+       <select id="qv-tech-select" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px;">
+         <option value="">Cargando técnicos...</option>
+       </select>
+    </div>
+  `;
+
   // Budget section — only shown when there is data
   const hasBudget = ticket.presupuesto || ticket.diagnosticoTecnico;
   const budgetBlock = hasBudget ? `
@@ -180,6 +207,7 @@ function renderBody(ticket) {
 
     <!-- Problema -->
     <div class="qv-separator"></div>
+    <div>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="qv-section-label">Problema reportado</div>
         <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.problema || ''}" title="Copiar problema" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
@@ -199,6 +227,7 @@ function renderBody(ticket) {
     </div>` : ''}
 
     ${budgetBlock}
+    ${techBlock}
     ${actionsBlock}
 
     <!-- Client Snapshot -->
@@ -278,6 +307,70 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
           </button>
         `;
         undoContainer.querySelector('.qv-undo-btn').addEventListener('click', () => handleUndo(ticket, lastEvent, onStatusChange));
+      }
+
+      const refreshQuickView = () => openTicketQuickView(ticket, { onStatusChange });
+
+      // Take ticket button
+      const takeBtn = bodyEl.querySelector('.qv-take-btn');
+      if (takeBtn) {
+        takeBtn.addEventListener('click', async () => {
+          takeBtn.disabled = true;
+          const session = getCurrentSession();
+          const res = await assignTechnician(ticket.id, { 
+            id: session.user.uid, 
+            nombre: session.profile.nombre || session.user.email 
+          });
+          if (res.success) {
+            showToast('Ticket asignado a ti', 'success');
+            ticket.tecnicoAsignadoId = session.user.uid;
+            ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+            if (onStatusChange) onStatusChange(ticket.id, ticket.estado);
+            refreshQuickView();
+          } else {
+            showToast(res.error || 'Error', 'error');
+            takeBtn.disabled = false;
+          }
+        });
+      }
+
+      // Tech selector toggle
+      const editTechBtn = bodyEl.querySelector('.qv-edit-tech-btn');
+      const techWrap = bodyEl.querySelector('#qv-tech-selector-wrap');
+      const techSelect = bodyEl.querySelector('#qv-tech-select');
+      if (editTechBtn && techWrap && techSelect) {
+        editTechBtn.addEventListener('click', async () => {
+          techWrap.style.display = techWrap.style.display === 'none' ? 'block' : 'none';
+          if (techWrap.style.display === 'block') {
+            const techs = await getTecnicos();
+            techSelect.innerHTML = `<option value="">Sin asignar</option>` + techs.map(t => `<option value="${t.id}" ${t.id === ticket.tecnicoAsignadoId ? 'selected' : ''}>${t.displayName}</option>`).join('');
+          }
+        });
+
+        techSelect.addEventListener('change', async () => {
+          const tid = techSelect.value;
+          const tname = techSelect.options[techSelect.selectedIndex].text;
+          techSelect.disabled = true;
+          
+          let res;
+          if (!tid) {
+            const { unassignTechnician } = await import('../services/tickets.js');
+            res = await unassignTechnician(ticket.id);
+          } else {
+            res = await assignTechnician(ticket.id, { id: tid, nombre: tname });
+          }
+
+          if (res.success) {
+            showToast('Técnico actualizado', 'success');
+            ticket.tecnicoAsignadoId = tid || null;
+            ticket.tecnicoAsignadoNombre = tid ? tname : null;
+            if (onStatusChange) onStatusChange(ticket.id, ticket.estado);
+            refreshQuickView();
+          } else {
+            showToast(res.error || 'Error', 'error');
+            techSelect.disabled = false;
+          }
+        });
       }
 
       // Render snapshot

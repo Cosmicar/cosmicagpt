@@ -66,6 +66,8 @@ export async function createTicket(data) {
       fechaIngreso: new Date().toISOString(),
       updatedAt: serverTimestamp(),
       createdAt: serverTimestamp(),
+      tecnicoAsignadoId: data.tecnicoAsignadoId || null,
+      tecnicoAsignadoNombre: data.tecnicoAsignadoNombre || null,
       source: 'cosmica-saas-v1'
     };
 
@@ -205,6 +207,8 @@ export async function updateTicket(id, data) {
       precio: Number(data.precio || 0),
       metodoPago: data.metodoPago || 'efectivo',
       planServicio: data.planServicio || "estandar",
+      tecnicoAsignadoId: data.tecnicoAsignadoId || null,
+      tecnicoAsignadoNombre: data.tecnicoAsignadoNombre || null,
       updatedAt: serverTimestamp()
     };
 
@@ -477,3 +481,74 @@ export async function approveTicketBudget(id) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Asigna un técnico a un ticket.
+ *
+ * @param {string} id
+ * @param {{ id: string, nombre: string }} tecnico
+ * @returns {Promise<Object>}
+ */
+export async function assignTechnician(id, tecnico) {
+  try {
+    const session = getCurrentSession();
+    const updateData = {
+      tecnicoAsignadoId: tecnico.id,
+      tecnicoAsignadoNombre: tecnico.nombre,
+      updatedAt: serverTimestamp(),
+    };
+
+    await updateDoc(doc(db, COLLECTIONS.trabajos, id), updateData);
+
+    const message = session?.user?.uid === tecnico.id 
+      ? `${tecnico.nombre} tomó el ticket`
+      : `${session?.profile?.nombre || 'Operador'} asignó ticket a ${tecnico.nombre}`;
+
+    await addTicketHistoryEvent(id, {
+      type: TICKET_EVENT_TYPES.technicianAssigned,
+      message,
+      metadata: { 
+        assignedToId: tecnico.id, 
+        assignedToNombre: tecnico.nombre,
+        assignedBy: session?.user?.email 
+      },
+    });
+
+    invalidateTicketsCache();
+    return { success: true };
+  } catch (error) {
+    console.error("Error al asignar técnico:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Desasigna el técnico de un ticket.
+ *
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+export async function unassignTechnician(id) {
+  try {
+    const updateData = {
+      tecnicoAsignadoId: null,
+      tecnicoAsignadoNombre: null,
+      updatedAt: serverTimestamp(),
+    };
+
+    await updateDoc(doc(db, COLLECTIONS.trabajos, id), updateData);
+
+    await addTicketHistoryEvent(id, {
+      type: TICKET_EVENT_TYPES.technicianUnassigned,
+      message: 'Ticket desasignado',
+      metadata: { unassignedBy: getCurrentSession()?.user?.email },
+    });
+
+    invalidateTicketsCache();
+    return { success: true };
+  } catch (error) {
+    console.error("Error al desasignar técnico:", error);
+    return { success: false, error: error.message };
+  }
+}
+

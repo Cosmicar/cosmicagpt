@@ -45,7 +45,8 @@ function buildTrackingUrl(ticket) {
 
 function buildHtml(ticket) {
   const session  = getCurrentSession();
-  const tecnico  = session?.profile?.nombre || session?.user?.email || 'No especificado';
+  const tecnicoActual  = session?.profile?.nombre || session?.user?.email || 'No especificado';
+  const tecnicoAsignado = ticket.tecnicoAsignadoNombre || tecnicoActual;
 
   const orden        = esc(ticket.numeroOrden) || '—';
   const fechaIngreso = fmtDate(ticket.fechaIngreso);
@@ -387,7 +388,7 @@ function buildHtml(ticket) {
     <div class="op-grid">
       <div class="op-item"><span class="op-label">Estado</span><span class="op-value"><span class="estado-badge">${estado}</span></span></div>
       <div class="op-item"><span class="op-label">Plan</span><span class="op-value">${plan}</span></div>
-      <div class="op-item"><span class="op-label">Técnico</span><span class="op-value">${esc(tecnico)}</span></div>
+      <div class="op-item"><span class="op-label">Técnico</span><span class="op-value">${esc(tecnicoAsignado)}</span></div>
       <div class="op-item"><span class="op-label">Garantía</span><span class="op-value">${garantia} días</span></div>
       <div class="op-item"><span class="op-label">Pago</span><span class="op-value" style="text-transform:capitalize;">${esc(ticket.metodoPago || 'Efectivo')}</span></div>
       ${presupuestoRow}
@@ -462,6 +463,7 @@ function buildThermalHtml(ticket) {
   const equipo        = v(ticket.equipo);
   const marcaModelo   = esc([ticket.marca, ticket.modelo].filter(Boolean).join(' ')) || '';
   const estado        = v(ticket.estado) || 'Ingresado';
+  const tecnicoAsignado = ticket.tecnicoAsignadoNombre || 'No asignado';
   const garantia      = Number(ticket.garantiaDias) || 90;
   const trackingUrl   = buildTrackingUrl(ticket);
   const qrUrl         = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
@@ -584,6 +586,7 @@ function buildThermalHtml(ticket) {
   <div class="block-label">Estado</div>
   <table>
     ${rows('Estado', estado)}
+    ${rows('Técnico', tecnicoAsignado)}
     ${rows('Pago', ticket.metodoPago ? ticket.metodoPago.charAt(0).toUpperCase() + ticket.metodoPago.slice(1) : 'Efectivo')}
     ${rows('Garantía', garantia + ' días')}
     ${presupuesto ? rows('Presupuesto', presupuesto) : ''}

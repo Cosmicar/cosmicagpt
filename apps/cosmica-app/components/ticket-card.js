@@ -60,6 +60,8 @@ export function render(ticket, selected = false) {
           ${metodoBadge ? `<div class="badge ${metodoBadge.class}" style="white-space: nowrap; font-size: 10px;">${metodoBadge.label}</div>` : ''}
           ${overdue   ? '<div class="badge badge-orange rule-badge" style="white-space: nowrap; font-size: 10px;">⚠ DEMORADO</div>'  : ''}
           ${highValue ? '<div class="badge badge-gold rule-badge" style="white-space: nowrap; font-size: 10px;">💎 ALTO VALOR</div>' : ''}
+          ${ticket.tecnicoAsignadoId ? `<div class="badge badge-blue" style="white-space: nowrap; font-size: 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd;">👨‍🔧 ${ticket.tecnicoAsignadoNombre || 'Asignado'}</div>` : ''}
+          ${ticket.isOverloaded ? '<div class="badge badge-danger" style="white-space: nowrap; font-size: 10px; animation: pulse 2s infinite;">🔥 SOBRECARGADO</div>' : ''}
         </div>
       </div>
       

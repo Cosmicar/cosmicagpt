@@ -41,7 +41,10 @@ export class TicketsView extends AsyncView {
 
     // Load persisted state
     const persisted = JSON.parse(sessionStorage.getItem('ticketsViewState') || '{}');
-    this.currentFilter = persisted.filter || 'all';
+    const session = getCurrentSession();
+    const isTecnico = session?.profile?.rol === 'tecnico';
+    
+    this.currentFilter = persisted.filter || (isTecnico ? 'mis-tickets' : 'all');
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
     this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
@@ -58,13 +61,24 @@ export class TicketsView extends AsyncView {
     
     // Join client data for smart search (Phone, DNI)
     const clientMap = clients.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
+    
+    // Technician Load calculation
+    const techLoad = {};
+    const activeTickets = tickets.filter(t => [WORK_STATUS.ingresado, WORK_STATUS.enReparacion, WORK_STATUS.esperandoRepuesto, WORK_STATUS.listo].includes(t.estado));
+    activeTickets.forEach(t => {
+      if (t.tecnicoAsignadoId) {
+        techLoad[t.tecnicoAsignadoId] = (techLoad[t.tecnicoAsignadoId] || 0) + 1;
+      }
+    });
+
     this.allTickets = tickets.map(t => {
       const enriched = {
         ...t,
         nombre: t.nombre || clientMap[t.clienteId]?.nombre || '',
         apellido: t.apellido || clientMap[t.clienteId]?.apellido || '',
         telefono: t.telefono || clientMap[t.clienteId]?.telefono || '',
-        dni: t.dni || clientMap[t.clienteId]?.dni || ''
+        dni: t.dni || clientMap[t.clienteId]?.dni || '',
+        isOverloaded: t.tecnicoAsignadoId && techLoad[t.tecnicoAsignadoId] > 15
       };
       
       // Reentry Risk
@@ -161,7 +175,9 @@ export class TicketsView extends AsyncView {
           <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
             <div style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todos</button>
-              <button class="btn btn-sm btn-filter ${this.currentFilter === 'pendiente' ? 'active' : ''}" data-filter="pendiente">Pendiente</button>
+              <button class="btn btn-sm btn-filter ${this.currentFilter === 'mis-tickets' ? 'active' : ''}" data-filter="mis-tickets">Mis tickets</button>
+              <button class="btn btn-sm btn-filter ${this.currentFilter === 'sin-asignar' ? 'active' : ''}" data-filter="sin-asignar">Sin asignar</button>
+              <button class="btn btn-sm btn-filter ${this.currentFilter === 'pendiente' ? 'active' : ''}" data-filter="pendiente">Ingresado</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'proceso' ? 'active' : ''}" data-filter="proceso">En proceso</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'finalizado' ? 'active' : ''}" data-filter="finalizado">Finalizado</button>
             </div>
@@ -253,6 +269,8 @@ export class TicketsView extends AsyncView {
         <td>
           <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
             <span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span>
+            ${ticket.tecnicoAsignadoId ? `<span class="badge" style="background:rgba(59,130,246,0.1);color:#93c5fd;border:1px solid rgba(59,130,246,0.2);font-size:10px;">👨‍🔧 ${ticket.tecnicoAsignadoNombre}</span>` : ''}
+            ${ticket.isOverloaded ? '<span class="badge badge-danger" style="font-size:10px;">🔥 SOBRECARGADO</span>' : ''}
             ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
             ${overdue   ? '<span class="badge badge-orange rule-badge">⚠ DEMORADO</span>'  : ''}
             ${highValue ? '<span class="badge badge-gold rule-badge">💎 ALTO VALOR</span>' : ''}
@@ -563,6 +581,9 @@ export class TicketsView extends AsyncView {
     if (this.currentFilter !== 'all') {
       filtered = filtered.filter(t => {
         const estado = t.estado;
+        const session = getCurrentSession();
+        if (this.currentFilter === 'mis-tickets') return t.tecnicoAsignadoId === session?.user?.uid;
+        if (this.currentFilter === 'sin-asignar') return !t.tecnicoAsignadoId;
         if (this.currentFilter === 'pendiente')  return estado === WORK_STATUS.ingresado;
         if (this.currentFilter === 'proceso')    return estado === WORK_STATUS.enReparacion;
         if (this.currentFilter === 'finalizado') return [WORK_STATUS.listo, WORK_STATUS.entregado].includes(estado);

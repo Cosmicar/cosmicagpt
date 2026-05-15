@@ -12,6 +12,7 @@ import { canAccess, getCurrentSession } from '../core/session.js';
 import { WORK_STATUS, isAdmin } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
 import { openTicketPrint } from '../components/ticket-print.js';
+import { getTecnicos } from '../services/usuarios.js';
 import { getClientBadge, suggestBudget } from '../core/intelligence.js';
 import {
   guardBtn, setDirty, initUnsavedChangesGuard,
@@ -165,8 +166,9 @@ export class TicketFormView extends AsyncView {
 
   async loadData() {
     // Carga paralela de clientes y ticket (si es edición)
-    const [clientes, ticket] = await Promise.all([
+    const [clientes, tecnicos, ticket] = await Promise.all([
       getClientes(),
+      getTecnicos(),
       this.isEdit ? getTicket(this.ticketId) : Promise.resolve(null)
     ]);
 
@@ -176,10 +178,10 @@ export class TicketFormView extends AsyncView {
 
     this._ticket         = ticket;
     this._repuestosState = ticket ? [...(ticket.repuestos || [])] : [];
-    return { clientes, ticket };
+    return { clientes, tecnicos, ticket };
   }
 
-  renderContent({ clientes, ticket }) {
+  renderContent({ clientes, tecnicos, ticket }) {
     const clientOptions = clientes
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
       .map(c => ({
@@ -199,8 +201,32 @@ export class TicketFormView extends AsyncView {
     ];
 
     const isEntregado = ticket?.estado === WORK_STATUS.entregado;
-    const admin = isAdmin(getCurrentSession()?.profile);
+    const session = getCurrentSession();
+    const admin = isAdmin(session?.profile);
+    const userRole = session?.profile?.rol;
+    const userId = session?.user?.uid;
     const freezeFinancials = isEntregado && !admin;
+
+    // Technician Options
+    const tecnicoOptions = [
+      { value: '', label: 'Sin asignar' },
+      ...tecnicos.map(u => ({ value: u.id, label: u.displayName }))
+    ];
+
+    // Permission Logic for Technician Field
+    let tecnicoDisabled = false;
+    let tecnicoMessage = '';
+    
+    if (userRole === 'tecnico') {
+      // Tecnico solo puede autoasignarse. Si ya está asignado a otro, no puede cambiarlo.
+      if (ticket?.tecnicoAsignadoId && ticket.tecnicoAsignadoId !== userId) {
+        tecnicoDisabled = true;
+        tecnicoMessage = 'Solo el administrador o el técnico asignado pueden cambiar esta asignación.';
+      }
+    } else if (userRole === 'operador') {
+      // Operador puede asignar cualquiera (como admin en este contexto, o restringir?)
+      // Requisito dice: operador → puede asignarse o reasignar
+    }
 
     const breadcrumbHtml = renderBreadcrumb([
       { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
@@ -324,6 +350,18 @@ export class TicketFormView extends AsyncView {
                 placeholder: '90',
                 value: ticket?.garantiaDias ?? 90
               })}
+
+              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-lg); margin-top: var(--space-sm);">
+                ${renderFormField({
+                  label: '🛠️ Técnico Asignado',
+                  id: 'tecnicoAsignadoId',
+                  type: 'select',
+                  options: tecnicoOptions,
+                  value: ticket?.tecnicoAsignadoId || '',
+                  disabled: tecnicoDisabled,
+                  helpText: tecnicoMessage
+                })}
+              </div>
 
             </div>
 
@@ -895,11 +933,20 @@ export class TicketFormView extends AsyncView {
         const formData = new FormData(form);
         const rawData = Object.fromEntries(formData.entries());
         
+        const selectTecnico = document.getElementById('tecnicoAsignadoId');
         const data = {
           ...rawData,
           marca: rawData.marca_modelo || '',
-          modelo: ''
+          modelo: '',
+          tecnicoAsignadoId: rawData.tecnicoAsignadoId || null,
+          tecnicoAsignadoNombre: selectTecnico?.options[selectTecnico.selectedIndex]?.text || null
         };
+        
+        // Si seleccionó "Sin asignar", limpiar campos
+        if (!data.tecnicoAsignadoId) {
+          data.tecnicoAsignadoId = null;
+          data.tecnicoAsignadoNombre = null;
+        }
 
         this.toggleFormLoading(true);
         this.hideError();
