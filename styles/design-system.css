@@ -414,7 +414,11 @@ td, th {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Prevent main page from scrolling when drawer scroll reaches top/bottom (iOS) */
+  overscroll-behavior: contain;
   padding: var(--space-lg);
+  /* Reserve space for iOS home bar (safe area inset bottom) */
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
 }
 
 .drawer-close {
@@ -552,6 +556,8 @@ td, th {
 .cp-results {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: var(--space-xs) 0;
 }
 .cp-group        { padding-bottom: var(--space-xs); }
@@ -803,6 +809,43 @@ td, th {
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ── Global input hardening ─────────────────────────────────────────────────── */
+
+/*
+ * Prevent textarea from resizing horizontally — unconstrained horizontal resize
+ * breaks the page layout on mobile by creating overflow.
+ */
+textarea {
+  resize: vertical;
+  max-width: 100%;
+}
+
+/*
+ * .card { overflow: hidden } (Card.css) clips absolutely-positioned children
+ * such as autocomplete dropdowns and inline datepickers inside .glass-card.
+ * Override to visible ONLY on .glass-card (operational/app context).
+ * The card's ::before gradient is 5% opacity so visual regression is imperceptible.
+ */
+.card.glass-card {
+  overflow: visible;
+}
+
+/* ── btn-success (missing from Button.css) ──────────────────────────────────── */
+
+/*
+ * Used by quick-entregar-btn in ticket-card.js ("💵 COBRAR").
+ * Without this rule the button falls back to unstyled .btn appearance.
+ */
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #0ea572);
+  color: #050B14;
+  border-color: transparent;
+}
+.btn-success:hover:not(:disabled) {
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.35), 0 4px 12px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
 }
 
 /* ── Client Cards ──────────────────────────────────────────────────────────── */

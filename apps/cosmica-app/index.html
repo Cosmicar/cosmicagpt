@@ -155,22 +155,43 @@
       }
     }
 
-    /* Dropdown perfil */
+    /* ── Global UX hardening ────────────────────────────── */
+
+    /* Prevent accidental horizontal scroll from any overflowing element */
+    body {
+      overflow-x: hidden;
+    }
+
+    /* Prevent pull-to-refresh gesture while scrolling page content on iOS */
+    .main-content {
+      overscroll-behavior-y: contain;
+    }
+
+    /* Prevent double-tap zoom on all buttons/links (iOS UX — no delay) */
+    .btn, button, a, select, input[type="button"], input[type="submit"] {
+      touch-action: manipulation;
+    }
+
+    /* ── Dropdown perfil ─────────────────────────────────── */
     .perfil-dropdown {
       position: fixed;
       top: calc(var(--navbar-h) - 5px);
       right: var(--space-lg);
-      background: rgba(5, 11, 20, 0.95);
-      border: 1px solid rgba(255,255,255,0.1);
+      /* Elevated above drawer-overlay (z:200) and drawer-panel (z:201) */
+      z-index: 300;
+      background: rgba(5, 11, 20, 0.97);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: var(--radius-md);
       padding: var(--space-md);
       min-width: 200px;
-      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
       display: none;
     }
     .perfil-dropdown.open { display: block; }
 
-    /* Fix navbar email overflow */
+    /* ── Navbar overflow protection ───────────────────────── */
     .navbar-email {
       font-size: var(--font-sm);
       color: var(--text-muted);
@@ -183,6 +204,11 @@
       .navbar-email { display: none; }
       .cp-trigger-btn kbd { display: none; }
       .navbar-actions { gap: var(--space-xs) !important; }
+    }
+    /* Hide caja status indicator on very small phones (≤480px) to prevent
+       navbar overflow — caja info is accessible in the Finanzas view */
+    @media (max-width: 480px) {
+      #caja-status-indicator { display: none !important; }
     }
   </style>
 </head>

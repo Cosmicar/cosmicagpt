@@ -248,6 +248,9 @@ function buildHtml(ticket) {
       line-height: 1.6;
       color: #222222;
       white-space: pre-wrap;
+      /* Prevent long words/URLs from overflowing the column */
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     /* ── Divider ── */
@@ -531,6 +534,9 @@ function buildThermalHtml(ticket) {
       font-size: 9px;
       line-height: 1.5;
       white-space: pre-wrap;
+      /* Prevent long words from overflowing 74mm column — critical for thermal */
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     .qr-wrap { text-align: center; margin-top: 8px; }
