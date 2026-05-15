@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
@@ -9,23 +9,70 @@ import { isAdmin } from "../../../js/domain.js";
 
 const CACHE_KEY = 'tickets:list';
 
+// ── Cursor state para paginación Firestore ──────────────────────────────────
+// Almacenado a nivel módulo para que getTicketsNextPage() pueda usar el cursor
+// del último getDocs() sin necesitar los DocumentSnapshot en el caller.
+const FETCH_LIMIT = 500; // tickets por lectura Firestore
+let _lastTicketDoc  = null;  // cursor para startAfter()
+let _hasMoreTickets = false; // true si la última lectura llegó al límite
+
 /**
  * Obtiene el listado de tickets (trabajos) desde Firestore.
- * Retorna datos puros.
- * 
- * @returns {Promise<Array>} Lista de tickets
+ * Limitado a FETCH_LIMIT documentos por lectura.
+ * Retorna datos puros como array — backward-compatible con todos los callers.
+ *
+ * @returns {Promise<Array>} Lista de tickets (máx. FETCH_LIMIT)
  */
 export function getTickets() {
   return cacheWrap(CACHE_KEY, async () => {
-    const q = query(collection(db, COLLECTIONS.trabajos), orderBy("fechaIngreso", "desc"));
+    const q = query(
+      collection(db, COLLECTIONS.trabajos),
+      orderBy('fechaIngreso', 'desc'),
+      limit(FETCH_LIMIT)
+    );
     const snap = await getDocs(q);
+    _lastTicketDoc  = snap.docs[snap.docs.length - 1] ?? null;
+    _hasMoreTickets = snap.docs.length === FETCH_LIMIT;
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   });
 }
 
-/** Invalidates the ticket list cache. Call after any write that changes the list. */
+/**
+ * Indica si getTickets() alcanzó el límite — hay tickets más antiguos en Firestore.
+ * Solo es confiable después de que getTickets() resolvió sin cache hit.
+ */
+export function hasMoreTickets() {
+  return _hasMoreTickets;
+}
+
+/**
+ * Carga la siguiente página de tickets usando el cursor del último getTickets().
+ * Retorna [] si no hay más datos.
+ *
+ * @returns {Promise<Array>}
+ */
+export async function getTicketsNextPage() {
+  if (!_lastTicketDoc || !_hasMoreTickets) return [];
+  const q = query(
+    collection(db, COLLECTIONS.trabajos),
+    orderBy('fechaIngreso', 'desc'),
+    startAfter(_lastTicketDoc),
+    limit(FETCH_LIMIT)
+  );
+  const snap = await getDocs(q);
+  _lastTicketDoc  = snap.docs[snap.docs.length - 1] ?? null;
+  _hasMoreTickets = snap.docs.length === FETCH_LIMIT;
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/**
+ * Invalidates the ticket list cache.
+ * También resetea el cursor Firestore para que el próximo fetch empiece desde el inicio.
+ */
 export function invalidateTicketsCache() {
   cacheInvalidate(CACHE_KEY);
+  _lastTicketDoc  = null;
+  _hasMoreTickets = false;
 }
 
 /**

@@ -39,6 +39,12 @@ export class TicketsView extends AsyncView {
     this.selectedTickets = new Set();  // ids of currently selected tickets
     this._onEsc          = null;       // stored for cleanup in destroy()
 
+    // ── Pagination & scalability state ──────────────────────────────────────
+    this._page            = 1;
+    this._pageSize        = 50;
+    this._hasMoreFirestore = false; // hay tickets más antiguos en Firestore
+    this._clientMap        = {};   // clienteId → cliente, reutilizado en load-more
+
     // Load persisted state
     const persisted = JSON.parse(sessionStorage.getItem('ticketsViewState') || '{}');
     const session = getCurrentSession();
@@ -49,6 +55,7 @@ export class TicketsView extends AsyncView {
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
     this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
+    this._page = persisted.page || 1;
 
     const isMobile = window.innerWidth < 768;
     if (this.viewMode === 'table' && isMobile) this.viewMode = 'comfortable';
@@ -62,7 +69,8 @@ export class TicketsView extends AsyncView {
     
     // Join client data for smart search (Phone, DNI)
     const clientMap = clients.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
-    
+    this._clientMap = clientMap; // guardado para reutilizar en load-more
+
     // Technician Load calculation
     const techLoad = {};
     const activeTickets = tickets.filter(t => [WORK_STATUS.ingresado, WORK_STATUS.enReparacion, WORK_STATUS.esperandoRepuesto, WORK_STATUS.listo].includes(t.estado));
@@ -80,20 +88,32 @@ export class TicketsView extends AsyncView {
     });
 
     this.allTickets = tickets.map(t => {
+      const nombre   = t.nombre   || clientMap[t.clienteId]?.nombre   || '';
+      const apellido = t.apellido || clientMap[t.clienteId]?.apellido || '';
+      const telefono = t.telefono || clientMap[t.clienteId]?.telefono || '';
+      const dni      = t.dni      || clientMap[t.clienteId]?.dni      || '';
+
       const enriched = {
-        ...t,
-        nombre: t.nombre || clientMap[t.clienteId]?.nombre || '',
-        apellido: t.apellido || clientMap[t.clienteId]?.apellido || '',
-        telefono: t.telefono || clientMap[t.clienteId]?.telefono || '',
-        dni: t.dni || clientMap[t.clienteId]?.dni || '',
+        ...t, nombre, apellido, telefono, dni,
         isOverloaded: t.tecnicoAsignadoId && techLoad[t.tecnicoAsignadoId] > 15
       };
 
       // Reentry Risk — lookup O(1) con mapa pre-construido
       enriched.reentryRisk = getReentryRisk(clientTicketMap.get(enriched.clienteId) || []);
 
+      // ── Pre-index para búsqueda: calculado UNA vez, no en cada keystroke ──
+      enriched._searchIndex = [
+        String(t.numeroOrden || ''),
+        nombre, apellido, telefono, dni,
+        t.equipo || '', t.marca || '', t.modelo || '', t.problema || ''
+      ].join(' ').toLowerCase();
+
       return enriched;
     });
+
+    // ¿Hay más tickets en Firestore más allá del límite de 500?
+    const { hasMoreTickets } = await import('../services/tickets.js');
+    this._hasMoreFirestore = hasMoreTickets();
 
     seedPaletteCache({ tickets: this.allTickets });
     return this.allTickets;
@@ -212,8 +232,12 @@ export class TicketsView extends AsyncView {
       </div>
 
       <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
-        ${this.viewMode === 'table' ? this.renderTable(tickets) : this.renderCards(tickets)}
+        ${this.viewMode === 'table'
+          ? this.renderTable(this.getPagedTickets(tickets))
+          : this.renderCards(this.getPagedTickets(tickets))}
       </div>
+
+      <div id="pagination-bar"></div>
 
       ${this.renderBulkBar()}
     `;
@@ -329,7 +353,7 @@ export class TicketsView extends AsyncView {
           this.currentTerm = e.target.value.toLowerCase().trim();
           this.saveState();
           const g = document.getElementById('tickets-grid');
-          if (g) this.applyFilters(g);
+          if (g) this.applyFilters(g, true); // true = resetPage (nueva búsqueda → página 1)
         }, 200); // 200ms debounce
       });
       searchInput.value = this.currentTerm;
@@ -355,7 +379,7 @@ export class TicketsView extends AsyncView {
         btn.classList.add('active');
         this.currentFilter = btn.dataset.filter;
         this.saveState();
-        this.applyFilters(grid);
+        this.applyFilters(grid, true); // resetPage: nuevo filtro → página 1
       });
     });
 
@@ -379,8 +403,10 @@ export class TicketsView extends AsyncView {
 
         if (wasTable || isTable) {
           const filtered = this.getFilteredTickets();
-          grid.innerHTML = isTable ? this.renderTable(filtered) : this.renderCards(filtered);
+          const paged    = this.getPagedTickets(filtered);
+          grid.innerHTML = isTable ? this.renderTable(paged) : this.renderCards(paged);
           this.initStatusSelectors();
+          this.updatePagination(filtered.length);
         }
       });
     });
@@ -498,6 +524,9 @@ export class TicketsView extends AsyncView {
     document.addEventListener('keydown', this._onEsc);
 
     this.initStatusSelectors();
+
+    // Render inicial de la barra de paginación
+    this.updatePagination(this.getFilteredTickets().length);
   }
 
   openTicketDrawer(ticket) {
@@ -629,7 +658,8 @@ export class TicketsView extends AsyncView {
       filter: this.currentFilter,
       term: this.currentTerm,
       viewMode: this.viewMode,
-      scroll: window.scrollY
+      scroll: window.scrollY,
+      page: this._page,
     }));
   }
 
@@ -650,22 +680,8 @@ export class TicketsView extends AsyncView {
     }
     if (this.currentTerm) {
       const q = this.currentTerm.toLowerCase();
-      filtered = filtered.filter(t => {
-        // Smart search searchable string
-        const searchable = [
-          t.numeroOrden || '',
-          t.nombre || '',
-          t.apellido || '',
-          t.telefono || '',
-          t.dni || '',
-          t.equipo || '',
-          t.marca || '',
-          t.modelo || '',
-          t.problema || ''
-        ].join(' ').toLowerCase();
-        
-        return searchable.includes(q);
-      });
+      // Usa el pre-index calculado en loadData() — O(1) por ticket vs. O(M) antes
+      filtered = filtered.filter(t => t._searchIndex ? t._searchIndex.includes(q) : false);
     }
 
     // Orden inteligente:
@@ -694,11 +710,133 @@ export class TicketsView extends AsyncView {
     return filtered;
   }
 
-  applyFilters(grid) {
+  /** Retorna el slice de `filtered` correspondiente a la página actual. */
+  getPagedTickets(filtered) {
+    const start = (this._page - 1) * this._pageSize;
+    return filtered.slice(start, start + this._pageSize);
+  }
+
+  /**
+   * Re-renderiza el grid aplicando filtros + paginación.
+   * @param {HTMLElement} grid
+   * @param {boolean}     resetPage  Si true, vuelve a la página 1 (nuevo filtro o búsqueda).
+   */
+  applyFilters(grid, resetPage = false) {
     if (!grid) return; // Guard: vista puede haber sido desmontada
+    if (resetPage) this._page = 1;
     const filtered = this.getFilteredTickets();
-    grid.innerHTML  = this.viewMode === 'table' ? this.renderTable(filtered) : this.renderCards(filtered);
+    const paged    = this.getPagedTickets(filtered);
+    grid.innerHTML  = this.viewMode === 'table' ? this.renderTable(paged) : this.renderCards(paged);
     this.initStatusSelectors();
+    this.updatePagination(filtered.length);
+  }
+
+  /** Actualiza (o limpia) la barra de paginación bajo el grid. */
+  updatePagination(totalFiltered) {
+    const bar = document.getElementById('pagination-bar');
+    if (!bar) return;
+
+    const totalPages = Math.ceil(totalFiltered / this._pageSize);
+    const hasPrev    = this._page > 1;
+    const hasNext    = this._page < totalPages;
+    const start      = Math.min((this._page - 1) * this._pageSize + 1, totalFiltered || 1);
+    const end        = Math.min(this._page * this._pageSize, totalFiltered);
+
+    if (totalPages <= 1 && !this._hasMoreFirestore) {
+      bar.innerHTML = '';
+      return;
+    }
+
+    bar.innerHTML = `
+      <div style="
+        display:flex;align-items:center;gap:var(--space-md);flex-wrap:wrap;
+        justify-content:center;padding:var(--space-md) var(--space-lg);
+        border-top:1px solid var(--border);margin-top:var(--space-md);
+      ">
+        <button class="btn btn-sm btn-secondary" id="pg-prev" ${hasPrev ? '' : 'disabled'}>← Anterior</button>
+        <span style="font-size:var(--font-sm);color:var(--text-muted);">
+          <strong style="color:var(--text-primary);">${start}–${end}</strong> de
+          <strong style="color:var(--text-primary);">${totalFiltered}</strong>
+          ${this._hasMoreFirestore
+            ? `<span style="color:var(--accent-orange);margin-left:4px;" title="Hay tickets más antiguos sin cargar">· +500 en BD</span>`
+            : ''}
+        </span>
+        <button class="btn btn-sm btn-secondary" id="pg-next" ${hasNext ? '' : 'disabled'}>Siguiente →</button>
+        ${this._hasMoreFirestore ? `
+          <button class="btn btn-sm" id="pg-load-more"
+            style="margin-left:var(--space-sm);color:var(--accent-cyan);border-color:rgba(0,229,255,0.3);">
+            ⬇ Cargar más desde la BD
+          </button>` : ''}
+      </div>`;
+
+    const prevBtn = document.getElementById('pg-prev');
+    const nextBtn = document.getElementById('pg-next');
+
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      this._page--;
+      this.saveState();
+      const g = document.getElementById('tickets-grid');
+      if (g) this.applyFilters(g);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      this._page++;
+      this.saveState();
+      const g = document.getElementById('tickets-grid');
+      if (g) this.applyFilters(g);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const loadMoreBtn = document.getElementById('pg-load-more');
+    if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => this.handleLoadMoreFirestore(loadMoreBtn));
+  }
+
+  /** Carga la siguiente página desde Firestore y agrega los tickets al dataset. */
+  async handleLoadMoreFirestore(btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Cargando...';
+    try {
+      const { getTicketsNextPage, hasMoreTickets } = await import('../services/tickets.js');
+      const newDocs = await getTicketsNextPage();
+
+      if (!newDocs.length) {
+        this._hasMoreFirestore = false;
+        showToast('No hay tickets adicionales en la base de datos', 'info');
+        const g = document.getElementById('tickets-grid');
+        if (g) this.applyFilters(g);
+        return;
+      }
+
+      // Enriquecer nuevos tickets con el mismo pipeline que loadData()
+      const existingIds = new Set(this.allTickets.map(t => t.id));
+      const fresh = newDocs
+        .filter(t => !existingIds.has(t.id))
+        .map(t => {
+          const nombre   = t.nombre   || this._clientMap[t.clienteId]?.nombre   || '';
+          const apellido = t.apellido || this._clientMap[t.clienteId]?.apellido || '';
+          const telefono = t.telefono || this._clientMap[t.clienteId]?.telefono || '';
+          const dni      = t.dni      || this._clientMap[t.clienteId]?.dni      || '';
+          return {
+            ...t, nombre, apellido, telefono, dni,
+            _searchIndex: [
+              String(t.numeroOrden || ''), nombre, apellido, telefono, dni,
+              t.equipo || '', t.marca || '', t.modelo || '', t.problema || ''
+            ].join(' ').toLowerCase(),
+          };
+        });
+
+      this.allTickets = [...this.allTickets, ...fresh];
+      this._hasMoreFirestore = hasMoreTickets();
+      showToast(`${fresh.length} tickets adicionales cargados`, 'success');
+
+      const g = document.getElementById('tickets-grid');
+      if (g) this.applyFilters(g);
+    } catch (err) {
+      console.error('[TicketsView] load-more failed:', err);
+      showToast('Error al cargar más tickets', 'error');
+      btn.disabled = false;
+      btn.textContent = '⬇ Cargar más desde la BD';
+    }
   }
 
   toggleTicketSelection(id) {

@@ -55,36 +55,47 @@ function computeRecentClients(clientes, limit = 5) {
     .slice(0, limit);
 }
 
-async function getGlobalActivity(limitCount = 15) {
+// Límite máximo de eventos en el Activity Feed del dashboard
+const ACTIVITY_LIMIT = 20;
+
+async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
+  // Clampeamos para no leer más de ACTIVITY_LIMIT * 2 docs en total
+  const safeLimit = Math.min(limitCount, ACTIVITY_LIMIT);
+
   try {
     // 1. Fetch recent ticket history via collectionGroup
-    const historyQuery = query(collectionGroup(db, 'history'), orderBy('createdAt', 'desc'), limit(limitCount));
+    const historyQuery = query(
+      collectionGroup(db, 'history'),
+      orderBy('createdAt', 'desc'),
+      limit(safeLimit)
+    );
     const historySnap = await getDocs(historyQuery);
     const historyEvents = historySnap.docs.map(d => ({
-      id: d.id,
-      ...d.data(),
-      source: 'ticket'
+      id: d.id, ...d.data(), source: 'ticket'
     }));
 
-    // 2. Fetch recent finance/caja movements
-    const cajaQuery = query(collection(db, COLLECTIONS.caja), orderBy('createdAt', 'desc'), limit(limitCount));
+    // 2. Fetch recent finance/caja movements — same limit
+    const cajaQuery = query(
+      collection(db, COLLECTIONS.caja),
+      orderBy('createdAt', 'desc'),
+      limit(safeLimit)
+    );
     const cajaSnap = await getDocs(cajaQuery);
     const cajaEvents = cajaSnap.docs.map(d => ({
-      id: d.id,
-      ...d.data(),
+      id: d.id, ...d.data(),
       type: 'financial_movement',
       message: `${d.data().tipo?.toUpperCase()}: ${d.data().descripcion}`,
       source: 'finance'
     }));
 
-    // 3. Merge and sort
-    const combined = [...historyEvents, ...cajaEvents].sort((a,b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-      return dateB - dateA;
-    }).slice(0, limitCount);
-
-    return combined;
+    // 3. Merge, sort, slice final
+    return [...historyEvents, ...cajaEvents]
+      .sort((a, b) => {
+        const dA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+        const dB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+        return dB - dA;
+      })
+      .slice(0, safeLimit);
   } catch (err) {
     console.error('[dashboard-service] Activity feed failed:', err);
     return [];

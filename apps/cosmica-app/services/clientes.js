@@ -1,19 +1,25 @@
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
 
-const CACHE_KEY = 'clientes:list';
+const CACHE_KEY     = 'clientes:list';
+const CLIENTES_LIMIT = 500; // máximo por lectura Firestore
 
 /**
  * Obtiene el listado de clientes desde Firestore.
- * Retorna datos puros.
- * 
+ * Limitado a CLIENTES_LIMIT, ordenado por createdAt desc (más recientes primero).
+ *
  * @returns {Promise<Array>} Lista de clientes
  */
 export function getClientes() {
   return cacheWrap(CACHE_KEY, async () => {
-    const snap = await getDocs(collection(db, COLLECTIONS.clientes));
+    const q = query(
+      collection(db, COLLECTIONS.clientes),
+      orderBy('createdAt', 'desc'),
+      limit(CLIENTES_LIMIT)
+    );
+    const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   });
 }
