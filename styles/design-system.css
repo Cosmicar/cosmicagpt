@@ -805,6 +805,86 @@ td, th {
   }
 }
 
+/* ── Client Cards ──────────────────────────────────────────────────────────── */
+
+/*
+ * Scoped to .client-actions — prevents the generic flex-column card
+ * from stretching each button to full width.
+ * Root cause: buttons were direct children of a flex-direction:column card
+ * with no wrapping footer div, causing full-width stretch on every button.
+ */
+
+.client-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border);
+  /* Prevent accidental stretch from parent flex-column */
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* Edit button takes available horizontal space; icon buttons stay compact */
+.client-actions .client-edit-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Icon-only buttons: fixed compact size, never stretch */
+.client-actions .client-merge-btn,
+.client-actions .client-delete-btn {
+  flex-shrink: 0;
+  width: 32px;
+  padding: 6px;
+  justify-content: center;
+}
+
+/* Compact mode: retain edit, hide secondary icon actions */
+.grid-stack.vm-compact .client-actions .client-merge-btn,
+.grid-stack.vm-compact .client-actions .client-delete-btn {
+  display: none;
+}
+
+/* Compact mode: also tighten the card padding and hide contact details */
+.grid-stack.vm-compact .card.glass-card .client-actions {
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+}
+
+/* Expanded mode: slightly more breathing room */
+.grid-stack.vm-expanded .client-actions {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  gap: var(--space-sm);
+}
+.grid-stack.vm-expanded .client-actions .client-edit-btn {
+  padding: 8px 16px;
+  height: 36px;
+}
+
+/* Mobile: stack buttons vertically below 640px */
+@media (max-width: 640px) {
+  .client-actions {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  /* All client action buttons go full-width on mobile for touch targets */
+  .client-actions .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+  /* Restore width on icon-only buttons that were previously 32px */
+  .client-actions .client-merge-btn,
+  .client-actions .client-delete-btn {
+    width: 100% !important;
+    padding: 6px 12px !important;
+  }
+}
+
 /* ── Smart Rule badges ──────────────────────────────────────────────────────── */
 
 .badge-gold {
