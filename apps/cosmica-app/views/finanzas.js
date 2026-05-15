@@ -742,7 +742,7 @@ export class FinanzasView extends AsyncView {
       <section class="card glass-card" style="padding:var(--space-lg);">
         <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);
                    display:flex;align-items:center;gap:8px;">
-          <span style="opacity:0.8;">📜</span> Historial de cierres
+          <span style="opacity:0.8;">📜</span> Bitácora de Sesiones
           <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">últimos ${historial.length}</span>
         </h3>
         <!-- overflow-x for mobile -->

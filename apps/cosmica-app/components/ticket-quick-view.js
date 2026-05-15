@@ -1,13 +1,13 @@
 import { openDrawer } from './drawer.js';
 import { openTicketPrint } from './ticket-print.js';
-import { updateTicketStatus, reingresoTicket, approveTicketBudget } from '../services/tickets.js';
-import { getTicketHistory } from '../services/ticket-history.js';
+import { updateTicketStatus, reingresoTicket, approveTicketBudget, updateTicket } from '../services/tickets.js';
+import { getTicketHistory, addTicketHistoryEvent, TICKET_EVENT_TYPES } from '../services/ticket-history.js';
 import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
 import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
-import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot } from '../core/intelligence.js';
+import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot, getCriticalAlert } from '../core/intelligence.js';
 import { getTickets } from '../services/tickets.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -78,6 +78,7 @@ function renderHeader(ticket) {
       </span>
       <span class="badge ${badgeClass(estado)}">${estado}</span>
       ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
+      ${ticket.criticalAlert ? `<span class="badge ${ticket.criticalAlert.class}" title="${ticket.criticalAlert.reason}">${ticket.criticalAlert.label}</span>` : ''}
       <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.numeroOrden}" title="Copiar orden" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
     </div>`;
 }
@@ -234,6 +235,7 @@ function renderBody(ticket) {
       <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;">
         📝 Editar completo
       </a>
+      <div id="qv-undo-container" style="margin-top: var(--space-sm);"></div>
     </div>
   `;
 }
@@ -255,13 +257,28 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
   const clientTickets = allTickets.filter(t => t.clienteId === ticket.clienteId);
   ticket.clientBadge = getClientBadge(clientTickets.length);
   ticket.reentryRisk = getReentryRisk(clientTickets);
+  ticket.criticalAlert = getCriticalAlert(ticket, allTickets);
 
   openDrawer(
     renderHeader(ticket),
     renderBody(ticket),
-    (bodyEl) => {
+    async (bodyEl) => {
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
+
+      // Check for Undo possibility
+      const history = await getTicketHistory(ticket.id);
+      const lastEvent = history[0];
+      const undoContainer = bodyEl.querySelector('#qv-undo-container');
+      
+      if (lastEvent && canUndo(lastEvent) && undoContainer) {
+        undoContainer.innerHTML = `
+          <button class="btn btn-sm btn-secondary qv-undo-btn" style="width:100%; border-style: dashed; font-size: 11px; color: var(--text-muted);">
+            ↩ Deshacer último cambio (${lastEvent.message})
+          </button>
+        `;
+        undoContainer.querySelector('.qv-undo-btn').addEventListener('click', () => handleUndo(ticket, lastEvent, onStatusChange));
+      }
 
       // Render snapshot
       const snapshot = getClientSnapshot(ticket.clienteId, allTickets);
@@ -429,3 +446,57 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
     }
   );
 }
+
+/**
+ * UNDO LOGIC
+ */
+function canUndo(event) {
+  if (!event || !event.createdAt) return false;
+  const now = Date.now();
+  const eventTime = (event.createdAt.seconds || 0) * 1000 || new Date(event.createdAt).getTime();
+  const diffMinutes = (now - eventTime) / (1000 * 60);
+  
+  if (diffMinutes > 2) return false; // Max 2 minutes
+  
+  const reversibleTypes = [TICKET_EVENT_TYPES.statusChanged, TICKET_EVENT_TYPES.edited];
+  if (!reversibleTypes.includes(event.type)) return false;
+  
+  const meta = event.metadata || {};
+  return meta.from !== undefined || meta.presupuesto !== undefined;
+}
+
+async function handleUndo(ticket, event, onStatusChange) {
+  if (!confirm('¿Deshacer el último cambio?')) return;
+  
+  try {
+    const meta = event.metadata || {};
+    let success = false;
+    
+    if (event.type === TICKET_EVENT_TYPES.statusChanged && meta.from) {
+      const res = await updateTicketStatus(ticket.id, meta.from);
+      success = res.success;
+      if (success) {
+        ticket.estado = meta.from;
+        if (onStatusChange) onStatusChange(ticket.id, meta.from);
+      }
+    } else if (event.type === TICKET_EVENT_TYPES.edited && meta.presupuesto !== undefined) {
+      // Revert budget logic would need previous budget in metadata. 
+      // For now, let's just log it or alert.
+      showToast('Undo para presupuesto no disponible sin valor previo en metadata', 'error');
+      return;
+    }
+
+    if (success) {
+      showToast('Cambio deshecho', 'success');
+      await addTicketHistoryEvent(ticket.id, {
+        type: TICKET_EVENT_TYPES.edited,
+        message: `Undo: ${event.message}`,
+        metadata: { undoing: event.id }
+      });
+      openTicketQuickView(ticket, { onStatusChange });
+    }
+  } catch (err) {
+    showToast('Error al deshacer: ' + err.message, 'error');
+  }
+}
+

@@ -110,3 +110,39 @@ export function getClientSnapshot(clienteId, allTickets) {
     lastEntry
   };
 }
+
+/**
+ * DETECCIÓN DE TICKET CRÍTICO
+ */
+export function getCriticalAlert(ticket, allTickets) {
+  const now = new Date();
+  const createdAt = new Date(ticket.createdAt || ticket.fechaIngreso);
+  const updatedAt = new Date(ticket.updatedAt || ticket.createdAt);
+  const daysOpen = (now - createdAt) / (1000 * 60 * 60 * 24);
+  const daysStagnant = (now - updatedAt) / (1000 * 60 * 60 * 24);
+  
+  // 1. 3+ reingresos históricos para este cliente
+  const history = allTickets.filter(t => t.clienteId === ticket.clienteId);
+  const totalReentries = history.filter(t => t.estado === WORK_STATUS.reingresada).length;
+  if (totalReentries >= 3) {
+    return { label: '🚨 Crítico: Reincidente Serial', class: 'badge-danger', reason: '3+ reingresos' };
+  }
+  
+  // 2. Ticket abierto > 30 días (no entregado)
+  if (ticket.estado !== WORK_STATUS.entregado && daysOpen > 30) {
+    return { label: '🚨 Crítico: Abandonado', class: 'badge-danger', reason: '+30 días abierto' };
+  }
+  
+  // 3. Presupuesto aprobado pero sin movimiento > 7 días
+  if (ticket.aprobadoCliente && ticket.estado === WORK_STATUS.ingresado && daysStagnant > 7) {
+    return { label: '🚨 Crítico: Sin Reparar', class: 'badge-danger', reason: 'Aprobado sin avance > 7 días' };
+  }
+  
+  // 4. Cliente VIP + Reingreso (reclamo recurrente)
+  const isVIP = history.length >= 6;
+  if (isVIP && ticket.estado === WORK_STATUS.reingresada) {
+    return { label: '🚨 Crítico: VIP Reclamo', class: 'badge-danger', reason: 'Cliente VIP con reingreso' };
+  }
+  
+  return null;
+}

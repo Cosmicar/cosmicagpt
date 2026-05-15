@@ -1,7 +1,9 @@
 import { getTickets, isOverdue } from './tickets.js';
 import { getClientes } from './clientes.js';
-import { WORK_STATUS } from '../../../js/domain.js';
+import { WORK_STATUS, COLLECTIONS } from '../../../js/domain.js';
 import { getClientBadge, getReentryRisk } from '../core/intelligence.js';
+import { collectionGroup, query, orderBy, limit, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { db } from "../../../js/firebase.js";
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -53,6 +55,42 @@ function computeRecentClients(clientes, limit = 5) {
     .slice(0, limit);
 }
 
+async function getGlobalActivity(limitCount = 15) {
+  try {
+    // 1. Fetch recent ticket history via collectionGroup
+    const historyQuery = query(collectionGroup(db, 'history'), orderBy('createdAt', 'desc'), limit(limitCount));
+    const historySnap = await getDocs(historyQuery);
+    const historyEvents = historySnap.docs.map(d => ({
+      id: d.id,
+      ...d.data(),
+      source: 'ticket'
+    }));
+
+    // 2. Fetch recent finance/caja movements
+    const cajaQuery = query(collection(db, COLLECTIONS.caja), orderBy('createdAt', 'desc'), limit(limitCount));
+    const cajaSnap = await getDocs(cajaQuery);
+    const cajaEvents = cajaSnap.docs.map(d => ({
+      id: d.id,
+      ...d.data(),
+      type: 'financial_movement',
+      message: `${d.data().tipo?.toUpperCase()}: ${d.data().descripcion}`,
+      source: 'finance'
+    }));
+
+    // 3. Merge and sort
+    const combined = [...historyEvents, ...cajaEvents].sort((a,b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+      return dateB - dateA;
+    }).slice(0, limitCount);
+
+    return combined;
+  } catch (err) {
+    console.error('[dashboard-service] Activity feed failed:', err);
+    return [];
+  }
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -75,7 +113,8 @@ export async function getDashboardData() {
     metrics:           computeMetrics(tickets),
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),
-    attentionRequired: computeAttentionRequired(tickets).map(enrichTicket)
+    attentionRequired: computeAttentionRequired(tickets).map(enrichTicket),
+    activityFeed:      await getGlobalActivity(15)
   };
 }
 

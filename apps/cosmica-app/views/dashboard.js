@@ -63,9 +63,10 @@ export class DashboardView extends AsyncView {
    * Renderiza el contenido del dashboard con los datos procesados
    */
   renderContent(data) {
-    const { metrics, recentTickets, recentClients, attentionRequired } = data;
+    const { metrics, recentTickets, recentClients, attentionRequired, activityFeed } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
+    this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
     const canCreateTicket = canAccess('create-ticket');
 
     return `
@@ -78,7 +79,11 @@ export class DashboardView extends AsyncView {
             <h1 style="font-size: var(--font-xl); font-weight: 800; letter-spacing: -0.5px;">Panel Operacional</h1>
             <p style="color: var(--text-muted); font-size: var(--font-sm);">Estado del taller al ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
           </div>
-          <div style="display: flex; gap: var(--space-sm);">
+          <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+             <div style="display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+               <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar tickets visibles a CSV" style="font-size: 10px; padding: 4px 8px;">📥 Tickets</button>
+               <button id="export-caja-btn" class="btn btn-sm btn-secondary" title="Exportar caja diaria a CSV" style="font-size: 10px; padding: 4px 8px;">📊 Caja</button>
+             </div>
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
              ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>' : ''}
           </div>
@@ -110,6 +115,32 @@ export class DashboardView extends AsyncView {
 
         <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
           
+          <!-- Satélite de Actividad Global -->
+          <section>
+            <div class="section-divider flex-between">
+              <h3 style="font-size: var(--font-md); font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+                <span>🛰️</span> Actividad Global
+              </h3>
+              <span class="badge badge-cyan" style="font-size: 10px;">Audit Pass</span>
+            </div>
+            <div class="glass-card" style="padding: 0; max-height: 480px; overflow-y: auto; border-radius: var(--radius-lg);">
+              ${activityFeed && activityFeed.length > 0 ? activityFeed.map(ev => `
+                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; background: ${ev.source === 'finance' ? 'rgba(16, 185, 129, 0.02)' : 'transparent'};">
+                  <span style="font-size: 1.2rem; min-width: 24px; text-align: center; opacity: 0.8;">
+                    ${ev.source === 'finance' ? '💰' : (TICKET_EVENT_ICONS[ev.type] || '⚪')}
+                  </span>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: var(--font-sm); font-weight: 500; color: var(--text-primary); line-height: 1.4;">${ev.message}</div>
+                    <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;">
+                      <span>👤 ${ev.user || 'sistema'}</span>
+                      <span>${formatRelativeTs(ev.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              `).join('') : '<div style="text-align:center; padding: 40px; color: var(--text-muted); opacity: 0.5;">Sin actividad reciente para auditar.</div>'}
+            </div>
+          </section>
+
           <!-- Actividad Reciente -->
           <section>
             <div class="section-divider flex-between">
@@ -217,5 +248,47 @@ export class DashboardView extends AsyncView {
         }
       });
     });
+
+    // Export Buttons
+    const exportTicketsBtn = document.getElementById('export-tickets-btn');
+    if (exportTicketsBtn) {
+      exportTicketsBtn.addEventListener('click', () => this.exportToCSV('tickets', this._recentTickets));
+    }
+
+    const exportCajaBtn = document.getElementById('export-caja-btn');
+    if (exportCajaBtn) {
+      exportCajaBtn.addEventListener('click', async () => {
+        const { getCajaMovimientos } = await import('../services/finanzas.js');
+        const movs = await getCajaMovimientos();
+        this.exportToCSV('caja', movs);
+      });
+    }
+  }
+
+  exportToCSV(filename, data) {
+    if (!data || !data.length) {
+      showToast('No hay datos para exportar', 'error');
+      return;
+    }
+
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map(obj => {
+      return Object.values(obj).map(val => {
+        const str = String(val).replace(/,/g, ' ');
+        return `"${str}"`;
+      }).join(',');
+    });
+
+    const csvContent = [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exportación iniciada', 'success');
   }
 }

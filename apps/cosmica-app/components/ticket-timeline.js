@@ -36,6 +36,32 @@ function renderEvent(event) {
   const icon = TICKET_EVENT_ICONS[event.type] || '⚪';
   const time = formatRelativeTs(event.createdAt);
   const user = event.user || 'sistema';
+  const meta = event.metadata || {};
+
+  let detailHtml = '';
+  
+  if (event.type === 'status_changed' && meta.from && meta.to) {
+    detailHtml = `
+      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--accent-cyan);">
+        <div style="font-weight: 600; margin-bottom: 4px;">🟡 Cambio de Estado</div>
+        <div style="font-family: monospace;">${meta.from} → ${meta.to}</div>
+      </div>
+    `;
+  } else if (event.type === 'ticket_edited' && meta.presupuesto !== undefined) {
+    detailHtml = `
+      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(0, 229, 255, 0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--accent-cyan);">
+        <div style="font-weight: 600; margin-bottom: 4px;">💰 Presupuesto</div>
+        <div style="font-family: monospace;">$${meta.presupuesto.toLocaleString('es-AR')}</div>
+      </div>
+    `;
+  } else if (event.type === 'ticket_edited' && meta.totalRepuestos !== undefined) {
+    detailHtml = `
+      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(16, 185, 129, 0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--success);">
+        <div style="font-weight: 600; margin-bottom: 4px;">🔧 Repuestos</div>
+        <div style="font-family: monospace;">Total: $${meta.totalRepuestos.toLocaleString('es-AR')} (${meta.cantidad} ítems)</div>
+      </div>
+    `;
+  }
 
   return `
     <div style="
@@ -50,6 +76,7 @@ function renderEvent(event) {
         <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.5; font-weight: 500;">
           ${event.message}
         </div>
+        ${detailHtml}
         <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 6px; display: flex; gap: 12px; align-items: center;">
           <span style="opacity: 0.8; display: flex; align-items: center; gap: 4px;">👤 ${user}</span>
           <span style="opacity: 0.3;">•</span>
