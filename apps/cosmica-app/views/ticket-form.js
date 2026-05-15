@@ -6,7 +6,8 @@ import { renderFormActions } from '../components/form-actions.js';
 import { getClientes } from '../services/clientes.js';
 import { createTicket, getTicket, updateTicket, updateTicketBudget, updateTicketRepuestos } from '../services/tickets.js';
 import { getInventario, filterInventario, batchAdjustStock } from '../services/inventario.js';
-import { canAccess } from '../core/session.js';
+import { canAccess, getCurrentSession } from '../core/session.js';
+import { WORK_STATUS, isAdmin } from '../../../js/domain.js';
 import { showToast } from '../components/toast.js';
 import { renderTicketTimeline, mountTicketTimeline } from '../components/ticket-timeline.js';
 import { renderFormSkeleton } from '../components/app-state.js';
@@ -70,7 +71,10 @@ function renderBudgetSection(ticket) {
 // ─── Repuestos section HTML ───────────────────────────────────────────────────
 
 function renderRepuestosSection(ticket) {
-  const canConsume = canAccess('inventario-write') || canAccess('edit-ticket');
+  const isEntregado = ticket?.estado === WORK_STATUS.entregado;
+  const admin = isAdmin(getCurrentSession()?.profile);
+  const freezeFinancials = isEntregado && !admin;
+  const canConsume = (canAccess('inventario-write') || canAccess('edit-ticket')) && !freezeFinancials;
   const repuestos  = ticket?.repuestos || [];
   const total      = repuestos.reduce((s, r) => s + Number(r.subtotal || 0), 0);
 
@@ -189,6 +193,10 @@ export class TicketFormView extends AsyncView {
       { value: 'platinum', label: 'Platinum (Urgente)' }
     ];
 
+    const isEntregado = ticket?.estado === WORK_STATUS.entregado;
+    const admin = isAdmin(getCurrentSession()?.profile);
+    const freezeFinancials = isEntregado && !admin;
+
     const breadcrumbHtml = renderBreadcrumb([
       { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
       { label: 'Trabajos', href: '#tickets', icon: '🛠️' },
@@ -271,7 +279,23 @@ export class TicketFormView extends AsyncView {
                 id: 'precio',
                 type: 'number',
                 placeholder: 'Ej: 5000',
-                value: ticket?.precio || ''
+                value: ticket?.precio || '',
+                disabled: freezeFinancials
+              })}
+
+              ${renderFormField({
+                label: 'Método de Pago',
+                id: 'metodoPago',
+                type: 'select',
+                options: [
+                  { value: 'efectivo', label: 'Efectivo' },
+                  { value: 'transferencia', label: 'Transferencia' },
+                  { value: 'mercadopago', label: 'Mercado Pago' },
+                  { value: 'debito', label: 'Débito' },
+                  { value: 'credito', label: 'Crédito' }
+                ],
+                value: ticket?.metodoPago || 'efectivo',
+                disabled: freezeFinancials
               })}
 
               ${renderFormField({

@@ -4,6 +4,8 @@ import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
+import { getCurrentSession } from "../core/session.js";
+import { isAdmin } from "../../../js/domain.js";
 
 const CACHE_KEY = 'tickets:list';
 
@@ -115,6 +117,14 @@ export async function updateTicketStatus(id, newStatus) {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("Orden no encontrada.");
 
+    if (newStatus === WORK_STATUS.entregado) {
+      const { getCajaSession } = await import('./finanzas.js');
+      const cajaSession = await getCajaSession();
+      if (!cajaSession) {
+        throw new Error("Debe existir una caja abierta para registrar el cobro.");
+      }
+    }
+
     const updateData = {
       estado: newStatus,
       updatedAt: serverTimestamp()
@@ -146,7 +156,7 @@ export async function updateTicketStatus(id, newStatus) {
         try {
           const { autoRegistrarIngresoTicket, getCajaSession } = await import('./finanzas.js');
           const session = await getCajaSession();
-          await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id ?? null);
+          await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id);
         } catch (e) {
           console.warn('[tickets] auto-income registration failed silently:', e);
         }
@@ -193,9 +203,70 @@ export async function updateTicket(id, data) {
       servicioRealizado: (data.servicioRealizado || '').trim(),
       garantiaDias: Number(data.garantiaDias) || 90,
       precio: Number(data.precio || 0),
+      metodoPago: data.metodoPago || 'efectivo',
       planServicio: data.planServicio || "estandar",
       updatedAt: serverTimestamp()
     };
+
+    const oldPrice = Number(trabajoActual.precio || 0);
+    const newPrice = updateData.precio;
+    const oldMetodo = trabajoActual.metodoPago || 'efectivo';
+    const newMetodo = updateData.metodoPago;
+
+    if (trabajoActual.estado === WORK_STATUS.entregado && (oldPrice !== newPrice || oldMetodo !== newMetodo)) {
+      const session = getCurrentSession();
+      if (!isAdmin(session?.profile)) {
+        throw new Error("Solo un administrador puede editar el precio o método de pago de un ticket entregado.");
+      }
+      
+      const { createCajaEntry, getCajaSession } = await import('./finanzas.js');
+      const cajaSession = await getCajaSession();
+      if (!cajaSession) {
+        throw new Error("Debe existir una caja abierta para registrar el ajuste financiero.");
+      }
+
+      const delta = newPrice - oldPrice;
+
+      await addTicketHistoryEvent(id, {
+        type: TICKET_EVENT_TYPES.financialAdjustment,
+        message: `Ajuste financiero post-entrega (Admin)`,
+        metadata: {
+          oldPrice,
+          newPrice,
+          oldMetodoPago: oldMetodo,
+          newMetodoPago: newMetodo,
+          adjustedBy: session?.user?.email || 'admin'
+        }
+      });
+
+      if (oldMetodo === newMetodo) {
+        if (delta !== 0) {
+          await createCajaEntry({
+            tipo: 'ajuste',
+            descripcion: `Ajuste Ticket #${trabajoActual.numeroOrden || id} (Admin Override)`,
+            monto: delta,
+            metodoPago: newMetodo
+          }, cajaSession.id);
+        }
+      } else {
+        if (oldPrice > 0) {
+          await createCajaEntry({
+            tipo: 'ajuste',
+            descripcion: `Reversión Ticket #${trabajoActual.numeroOrden || id} (Admin Cambio M.Pago)`,
+            monto: -oldPrice,
+            metodoPago: oldMetodo
+          }, cajaSession.id);
+        }
+        if (newPrice > 0) {
+          await createCajaEntry({
+            tipo: 'ajuste',
+            descripcion: `Registro Ticket #${trabajoActual.numeroOrden || id} (Admin Cambio M.Pago)`,
+            monto: newPrice,
+            metodoPago: newMetodo
+          }, cajaSession.id);
+        }
+      }
+    }
 
     const docRef = doc(db, COLLECTIONS.trabajos, id);
     await updateDoc(docRef, updateData);

@@ -84,7 +84,7 @@ export class DashboardView extends AsyncView {
         </header>
 
         <!-- KPIs Principales -->
-        <section class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <section class="kpi-grid">
           ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
           ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
           ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
@@ -92,7 +92,7 @@ export class DashboardView extends AsyncView {
           ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger, #ff4757)', '⚠️')}
         </section>
 
-        <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
           
           <!-- Actividad Reciente -->
           <section>

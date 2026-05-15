@@ -15,6 +15,18 @@ export function render(ticket, selected = false) {
   if (estado === WORK_STATUS.enReparacion) badgeClass = 'badge-orange';
   if (estado === WORK_STATUS.listo) badgeClass = 'badge-green';
   if (estado === WORK_STATUS.entregado) badgeClass = 'badge-gray';
+
+  const getMetodoPagoBadge = (metodo) => {
+    const m = String(metodo || '').toLowerCase();
+    if (m === 'efectivo') return { class: 'badge-green', label: '💵 EFVO' };
+    if (m === 'transferencia') return { class: 'badge-blue', label: '🏦 TRANS' };
+    if (m === 'mercadopago') return { class: 'badge-cyan', label: '📱 MP' };
+    if (m === 'debito') return { class: 'badge-violet', label: '💳 DEB' };
+    if (m === 'credito') return { class: 'badge-orange', label: '💳 CRED' };
+    return null;
+  };
+
+  const metodoBadge = getMetodoPagoBadge(ticket.metodoPago);
   
   const fecha = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString() : 'N/A';
   const prioridad = ticket.planServicio || 'Estándar';
@@ -41,8 +53,9 @@ export function render(ticket, selected = false) {
           </h3>
           <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">#${ticket.numeroOrden || 'N/A'}</div>
         </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-wrap: wrap;">
           <div class="badge ${badgeClass}" id="badge-${ticket.id}">${estado}</div>
+          ${metodoBadge ? `<div class="badge ${metodoBadge.class}">${metodoBadge.label}</div>` : ''}
           ${overdue   ? '<div class="badge badge-orange rule-badge">⚠ DEMORADO</div>'  : ''}
           ${highValue ? '<div class="badge badge-gold rule-badge">💎 ALTO VALOR</div>' : ''}
         </div>

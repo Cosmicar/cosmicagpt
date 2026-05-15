@@ -12,6 +12,7 @@ export const TICKET_EVENT_TYPES = {
   statusChanged:  'status_changed',
   edited:         'ticket_edited',
   budgetApproved: 'budget_approved',
+  financialAdjustment: 'financial_adjustment',
 };
 
 /**

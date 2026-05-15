@@ -117,14 +117,27 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
   const entries = movSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
   const totalIngresos = entries
-    .filter(e => e.tipo === 'ingreso')
-    .reduce((s, e) => s + Number(e.monto || 0), 0);
+    .filter(e => e.tipo === 'ingreso' || (e.tipo === 'ajuste' && Number(e.monto || 0) > 0))
+    .reduce((s, e) => s + Math.abs(Number(e.monto || 0)), 0);
   const totalEgresos = entries
-    .filter(e => e.tipo === 'egreso')
-    .reduce((s, e) => s + Number(e.monto || 0), 0);
+    .filter(e => e.tipo === 'egreso' || (e.tipo === 'ajuste' && Number(e.monto || 0) < 0))
+    .reduce((s, e) => s + Math.abs(Number(e.monto || 0)), 0);
 
   const saldoFinalSistema = saldoInicial + totalIngresos - totalEgresos;
   const diferencia        = declared - saldoFinalSistema;
+
+  const calcTotalByMethod = (method) => entries
+    .filter(e => e.metodoPago === method)
+    .reduce((s, e) => {
+      const m = Number(e.monto || 0);
+      return s + (e.tipo === 'egreso' || (e.tipo === 'ajuste' && m < 0) ? -Math.abs(m) : Math.abs(m));
+    }, 0);
+
+  const totalEfectivo      = calcTotalByMethod('efectivo');
+  const totalTransferencia = calcTotalByMethod('transferencia');
+  const totalMP            = calcTotalByMethod('mercadopago');
+  const totalDebito        = calcTotalByMethod('debito');
+  const totalCredito       = calcTotalByMethod('credito');
 
   await updateDoc(sesionRef, {
     status:              'closed',
@@ -136,6 +149,11 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
     diferencia,
     totalIngresos,
     totalEgresos,
+    totalEfectivo,
+    totalTransferencia,
+    totalMP,
+    totalDebito,
+    totalCredito,
     movimientosCount:    entries.length,
   });
 
@@ -195,17 +213,19 @@ export async function createCajaEntry(data, sesionId = null) {
   try {
     if (!data.descripcion?.trim()) throw new Error('La descripción es obligatoria.');
     const monto = Number(data.monto);
-    if (!monto || monto <= 0) throw new Error('El monto debe ser mayor a cero.');
+    if (isNaN(monto) || monto === 0) throw new Error('El monto es inválido.');
     if (!sesionId) throw new Error('No hay caja abierta. Abrí la caja antes de registrar movimientos.');
 
+    const tipo = ['ingreso', 'egreso', 'ajuste'].includes(data.tipo) ? data.tipo : 'ingreso';
+
     const ref = await addDoc(collection(db, COLLECTIONS.caja), {
-      tipo:        data.tipo === 'egreso' ? 'egreso' : 'ingreso',
+      tipo,
       descripcion: data.descripcion.trim(),
       monto,
-      metodoPago:  ['efectivo', 'transferencia', 'tarjeta'].includes(data.metodoPago)
+      metodoPago:  ['efectivo', 'transferencia', 'mercadopago', 'debito', 'credito'].includes(data.metodoPago)
         ? data.metodoPago : 'efectivo',
-      origen:    'manual',
-      ticketRef: null,
+      origen:    data.origen || 'manual',
+      ticketRef: data.ticketRef || null,
       sesionId,
       createdAt: serverTimestamp(),
       createdBy: sessionUid(),
@@ -245,7 +265,7 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
       tipo:        'ingreso',
       descripcion,
       monto:       Number(ticket.precio),
-      metodoPago:  'efectivo',
+      metodoPago:  ticket.metodoPago || 'efectivo',
       origen:      'ticket',
       ticketRef:   ticket.id,
       sesionId:    sesionId || null,
@@ -308,11 +328,15 @@ export async function getFinanzasData() {
   const cajaHoy    = cajaEntries.filter(e => toDate(e.createdAt) >= todayStart);
   const cajaSemana = cajaEntries.filter(e => toDate(e.createdAt) >= weekStart);
 
-  const calcCaja = (entries) => ({
-    ingresos: entries.filter(e => e.tipo === 'ingreso').reduce((s, e) => s + Number(e.monto || 0), 0),
-    egresos:  entries.filter(e => e.tipo === 'egreso').reduce((s, e) => s + Number(e.monto || 0), 0),
-    get balance() { return this.ingresos - this.egresos; },
-  });
+  const calcCaja = (entries) => {
+    const ingresos = entries.filter(e => e.tipo === 'ingreso' || (e.tipo === 'ajuste' && Number(e.monto || 0) > 0)).reduce((s, e) => s + Math.abs(Number(e.monto || 0)), 0);
+    const egresos  = entries.filter(e => e.tipo === 'egreso' || (e.tipo === 'ajuste' && Number(e.monto || 0) < 0)).reduce((s, e) => s + Math.abs(Number(e.monto || 0)), 0);
+    return {
+      ingresos,
+      egresos,
+      get balance() { return this.ingresos - this.egresos; },
+    };
+  };
 
   const cajaDia = calcCaja(cajaHoy);
   const cajaSem = calcCaja(cajaSemana);

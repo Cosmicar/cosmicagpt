@@ -30,4 +30,6 @@ export const TICKET_EVENT_ICONS = {
   ticket_created: '🟢',
   status_changed: '🟡',
   ticket_edited:  '🔵',
+  budget_approved: '💎',
+  financial_adjustment: '💰',
 };

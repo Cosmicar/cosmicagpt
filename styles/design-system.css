@@ -58,6 +58,19 @@ body {
   align-items: stretch;
 }
 
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-md);
+}
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    gap: var(--space-sm);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
 .flex-between {
   display: flex;
   justify-content: space-between;
@@ -278,6 +291,8 @@ body {
   outline: none;
   min-width: 120px;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Mobile: hide table button; JS handles the render fallback */

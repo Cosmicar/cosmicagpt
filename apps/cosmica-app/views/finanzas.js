@@ -115,7 +115,7 @@ export class FinanzasView extends AsyncView {
 
         <!-- KPIs -->
         <section>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--space-md);">
+          <div class="kpi-grid">
             ${this.renderKPI('FACTURADO', ars(kpis.facturacionConcretada), 'var(--accent-cyan)',   '💰', `${kpis.totalConPrecio} cobro${kpis.totalConPrecio !== 1 ? 's' : ''}`)}
             ${this.renderKPI('POTENCIAL', ars(kpis.facturacionPotencial),  'var(--accent-green)',  '📈', 'presupuestos aprobados')}
             ${this.renderKPI('REPUESTOS', ars(kpis.costoRepuestos),        'var(--accent-orange)', '🔩', 'costo en partes')}
@@ -137,7 +137,7 @@ export class FinanzasView extends AsyncView {
         <!-- Plan distribution + Resumen diario -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-xl);">
           ${this.renderPlanDistribucion(distribucionPlanes, kpis.totalTickets)}
-          ${this.renderResumenDiario(cajaDia, cajaSem, entregadosHoy)}
+          ${this.renderResumenDiario(cajaDia, cajaSem, entregadosHoy, data.cajaSessionEntries)}
         </div>
 
         <!-- ══ CAJA SECTION ══ -->
@@ -240,9 +240,17 @@ export class FinanzasView extends AsyncView {
 
   // ── Cierre Panel ──────────────────────────────────────────────────────────
 
-  renderCierrePanel(session, sessionData) {
+  renderCierrePanel(session, sessionData, entries = []) {
     if (!session) return '';
     const saldoEsperado = Number(session.saldoInicial || 0) + sessionData.ingresos - sessionData.egresos;
+    
+    const calcTotalByMethod = (method) => entries
+      .filter(e => e.metodoPago === method)
+      .reduce((s, e) => {
+        const m = Number(e.monto || 0);
+        return s + (e.tipo === 'egreso' || (e.tipo === 'ajuste' && m < 0) ? -Math.abs(m) : Math.abs(m));
+      }, 0);
+
     return `
       <div id="cierre-panel" style="display:${this._showCierre ? 'block' : 'none'};">
         <div class="card glass-card" style="
@@ -254,10 +262,18 @@ export class FinanzasView extends AsyncView {
           </h4>
 
           <!-- Summary -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg);">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-sm);margin-bottom:var(--space-sm);">
             ${this._miniStat('Saldo Inicial', ars(session.saldoInicial || 0), 'var(--text-muted)')}
             ${this._miniStat('Ingresos', ars(sessionData.ingresos), 'var(--accent-green)')}
             ${this._miniStat('Egresos', ars(sessionData.egresos), 'var(--accent-orange)')}
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:var(--space-lg);">
+            ${this._miniStat('EFVO', ars(calcTotalByMethod('efectivo')), 'var(--accent-cyan)')}
+            ${this._miniStat('TRAN', ars(calcTotalByMethod('transferencia')), 'var(--accent-cyan)')}
+            ${this._miniStat('MP', ars(calcTotalByMethod('mercadopago')), 'var(--accent-cyan)')}
+            ${this._miniStat('DEB', ars(calcTotalByMethod('debito')), 'var(--accent-cyan)')}
+            ${this._miniStat('CRED', ars(calcTotalByMethod('credito')), 'var(--accent-cyan)')}
           </div>
           <div style="
             display:flex;justify-content:space-between;align-items:center;
@@ -330,14 +346,14 @@ export class FinanzasView extends AsyncView {
   renderKPI(label, value, color, icon, sub = '') {
     return `
       <div class="card glass-card" style="display:flex;flex-direction:column;gap:var(--space-xs);
-                  border-left:4px solid ${color};padding:var(--space-lg);">
+                  border-left:4px solid ${color};padding:var(--space-lg);min-width:0;overflow:hidden;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <span style="font-size:9px;color:var(--text-muted);font-weight:800;letter-spacing:0.8px;">${label}</span>
           <span style="font-size:18px;opacity:0.85;">${icon}</span>
         </div>
-        <div style="font-size:28px;font-weight:800;color:${color};line-height:1.1;margin-top:4px;
+        <div style="font-size:clamp(20px, 4vw, 28px);font-weight:800;color:${color};line-height:1.1;margin-top:4px;
                     word-break:break-all;">${value}</div>
-        ${sub ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${sub}</div>` : ''}
+        ${sub ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub}</div>` : ''}
       </div>`;
   }
 
@@ -470,35 +486,50 @@ export class FinanzasView extends AsyncView {
 
   // ── Resumen diario ────────────────────────────────────────────────────────
 
-  renderResumenDiario(cajaDia, cajaSem, entregadosHoy) {
+  renderResumenDiario(cajaDia, cajaSem, entregadosHoy, entries = []) {
     const balColor = cajaDia.balance >= 0 ? 'var(--accent-green)' : 'var(--danger)';
+    
+    const calc = (m) => entries.filter(e => e.metodoPago === m).reduce((s, e) => {
+      const v = Number(e.monto || 0);
+      return s + (e.tipo === 'egreso' || (e.tipo === 'ajuste' && v < 0) ? -Math.abs(v) : Math.abs(v));
+    }, 0);
+
     return `
-      <section class="card glass-card" style="padding:var(--space-lg);">
+      <section class="card glass-card" style="padding:var(--space-lg);min-width:0;overflow:hidden;">
         <div class="section-divider" style="margin-bottom:var(--space-lg);">
           <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;">
-            <span style="opacity:0.8;">📅</span> Resumen de hoy
+            <span style="opacity:0.8;">📅</span> Resumen Operacional
           </h3>
         </div>
         <div style="display:flex;flex-direction:column;gap:var(--space-md);">
           <div style="text-align:center;padding:var(--space-lg);background:rgba(255,255,255,0.03);
                       border-radius:var(--radius-md);border:1px solid var(--border);">
-            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-bottom:4px;">BALANCE DEL DÍA</div>
-            <div style="font-size:36px;font-weight:900;color:${balColor};line-height:1;">
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-bottom:4px;">BALANCE SESIÓN</div>
+            <div style="font-size:32px;font-weight:900;color:${balColor};line-height:1;">
               ${ars(cajaDia.balance)}
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);">
-            <div style="padding:var(--space-md);background:rgba(34,197,94,0.07);
-                        border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
-              <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">INGRESOS</div>
-              <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-green);">${ars(cajaDia.ingresos)}</div>
+          
+          <!-- Simple Breakdown -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text-muted);">EFVO</span>
+              <span style="font-size:11px;font-weight:700;color:var(--accent-green);">${ars(calc('efectivo'))}</span>
             </div>
-            <div style="padding:var(--space-md);background:rgba(249,115,22,0.07);
-                        border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
-              <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">EGRESOS</div>
-              <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-orange);">${ars(cajaDia.egresos)}</div>
+            <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text-muted);">TRANS</span>
+              <span style="font-size:11px;font-weight:700;color:var(--accent-cyan);">${ars(calc('transferencia'))}</span>
+            </div>
+            <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text-muted);">M.PAGO</span>
+              <span style="font-size:11px;font-weight:700;color:var(--accent-cyan);">${ars(calc('mercadopago'))}</span>
+            </div>
+            <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text-muted);">DEB/CRE</span>
+              <span style="font-size:11px;font-weight:700;color:var(--accent-orange);">${ars(calc('debito') + calc('credito'))}</span>
             </div>
           </div>
+
           <div style="display:flex;justify-content:space-between;align-items:center;
                       padding:var(--space-sm) 0;border-top:1px solid var(--border);">
             <span style="font-size:var(--font-sm);color:var(--text-muted);">📦 Entregas hoy</span>
@@ -506,7 +537,7 @@ export class FinanzasView extends AsyncView {
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;
                       border-top:1px solid var(--border);padding-top:var(--space-sm);">
-            <span style="font-size:var(--font-sm);color:var(--text-muted);">Balance semana</span>
+            <span style="font-size:var(--font-sm);color:var(--text-muted);">Acumulado semana</span>
             <span style="font-size:var(--font-md);font-weight:700;
                          color:${cajaSem.balance >= 0 ? 'var(--accent-green)' : 'var(--danger)'};">
               ${ars(cajaSem.balance)}
@@ -543,7 +574,7 @@ export class FinanzasView extends AsyncView {
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-xl);">
+        <div class="kpi-grid">
           <!-- Formulario -->
           ${canWrite
             ? (session
@@ -570,7 +601,7 @@ export class FinanzasView extends AsyncView {
         </div>
 
         <!-- Cierre panel -->
-        ${canWrite && session ? this.renderCierrePanel(session, sessionData) : ''}
+        ${canWrite && session ? this.renderCierrePanel(session, sessionData, sessionEntries) : ''}
       </section>`;
   }
 
@@ -607,7 +638,9 @@ export class FinanzasView extends AsyncView {
               style="margin:0;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-primary);">
               <option value="efectivo">💵 Efectivo</option>
               <option value="transferencia">🏦 Transferencia</option>
-              <option value="tarjeta">💳 Tarjeta</option>
+              <option value="mercadopago">📱 Mercado Pago</option>
+              <option value="debito">💳 Débito</option>
+              <option value="credito">💳 Crédito</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary" id="caja-submit-btn">＋ Registrar</button>
@@ -621,13 +654,15 @@ export class FinanzasView extends AsyncView {
                           font-size:var(--font-sm);border:1px dashed var(--border);
                           border-radius:var(--radius-md);">Sin movimientos en este período.</div>`;
     }
-    const metodoLabel = { efectivo: '💵', transferencia: '🏦', tarjeta: '💳' };
+    const metodoLabel = { efectivo: '💵', transferencia: '🏦', mercadopago: '📱', debito: '💳', credito: '💳' };
     return entries.map(e => {
-      const isIng = e.tipo === 'ingreso';
+      const isIng = e.tipo === 'ingreso' || (e.tipo === 'ajuste' && Number(e.monto||0) > 0);
+      const isEgr = e.tipo === 'egreso' || (e.tipo === 'ajuste' && Number(e.monto||0) < 0);
+      const isAjuste = e.tipo === 'ajuste';
       const color = isIng ? 'var(--accent-green)' : 'var(--accent-orange)';
       const origenTag = e.origen === 'ticket'
         ? `<span style="font-size:9px;background:rgba(0,229,255,0.12);color:var(--accent-cyan);
-                        border-radius:3px;padding:1px 4px;margin-left:4px;">AUTO</span>` : '';
+                        border-radius:3px;padding:1px 4px;margin-left:4px;">AUTO</span>` : (isAjuste ? `<span style="font-size:9px;background:rgba(249,115,22,0.12);color:var(--accent-orange);border-radius:3px;padding:1px 4px;margin-left:4px;">AJUSTE</span>` : '');
       return `
         <div style="display:flex;justify-content:space-between;align-items:center;
                     padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">

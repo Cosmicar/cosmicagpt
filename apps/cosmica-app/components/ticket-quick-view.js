@@ -157,6 +157,10 @@ function renderBody(ticket) {
         <div class="qv-meta-label">Garantía</div>
         <div class="qv-meta-value">${ticket.garantiaDias ?? 90} días</div>
       </div>
+      <div class="qv-meta-item">
+        <div class="qv-meta-label">Método Pago</div>
+        <div class="qv-meta-value" style="text-transform:capitalize;">${ticket.metodoPago || 'Efectivo'}</div>
+      </div>
     </div>
 
     <!-- Problema -->

@@ -389,6 +389,7 @@ function buildHtml(ticket) {
       <div class="op-item"><span class="op-label">Plan</span><span class="op-value">${plan}</span></div>
       <div class="op-item"><span class="op-label">Técnico</span><span class="op-value">${esc(tecnico)}</span></div>
       <div class="op-item"><span class="op-label">Garantía</span><span class="op-value">${garantia} días</span></div>
+      <div class="op-item"><span class="op-label">Pago</span><span class="op-value" style="text-transform:capitalize;">${esc(ticket.metodoPago || 'Efectivo')}</span></div>
       ${presupuestoRow}
       ${precioRow}
     </div>
@@ -511,7 +512,7 @@ function buildThermalHtml(ticket) {
 
     table { width: 100%; border-collapse: collapse; }
     td { padding: 2px 0; vertical-align: top; }
-    td.lbl { color: #555; width: 38%; font-size: 9px; padding-right: 4px; }
+    td.lbl { color: #555; width: 42%; font-size: 9px; padding-right: 4px; }
     td.val { font-weight: 600; }
 
     .block-label {
@@ -583,6 +584,7 @@ function buildThermalHtml(ticket) {
   <div class="block-label">Estado</div>
   <table>
     ${rows('Estado', estado)}
+    ${rows('Pago', ticket.metodoPago ? ticket.metodoPago.charAt(0).toUpperCase() + ticket.metodoPago.slice(1) : 'Efectivo')}
     ${rows('Garantía', garantia + ' días')}
     ${presupuesto ? rows('Presupuesto', presupuesto) : ''}
     ${precio ? rows('Total Final', precio) : ''}
