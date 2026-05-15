@@ -346,7 +346,15 @@ export class TicketsView extends AsyncView {
     grid.addEventListener('click', (e) => {
       const cb = e.target.closest('.ticket-checkbox');
       if (cb) {
-        this.toggleTicketSelection(cb.dataset.id);
+        const id = cb.dataset.id;
+        const isShift = e.shiftKey;
+        
+        if (isShift && this._lastClickedId && this.viewMode === 'table') {
+          this.handleShiftSelect(id);
+        } else {
+          this.toggleTicketSelection(id);
+          this._lastClickedId = id;
+        }
         return;
       }
       const qrBtn = e.target.closest('.quick-repair-btn');
@@ -403,6 +411,34 @@ export class TicketsView extends AsyncView {
     this._onEsc = (e) => {
       if (e.key === 'Escape' && this.selectedTickets.size > 0) {
         this.clearSelection();
+      }
+      
+      // Status Shortcuts (1-5)
+      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+      if (!isInput && /^[1-5]$/.test(e.key)) {
+        const statusMap = {
+          '1': WORK_STATUS.ingresado,
+          '2': WORK_STATUS.enReparacion,
+          '3': WORK_STATUS.esperandoRepuesto,
+          '4': WORK_STATUS.listo,
+          '5': WORK_STATUS.entregado
+        };
+        const newStatus = statusMap[e.key];
+        
+        // Apply to bulk selection if any
+        if (this.selectedTickets.size > 0) {
+          this.executeBulkAction(newStatus);
+        } else {
+          // Check if drawer is open and apply to that ticket
+          const drawer = document.querySelector('.drawer-panel.is-open');
+          if (drawer) {
+            const select = drawer.querySelector('#qv-status-select');
+            if (select) {
+              select.value = newStatus;
+              select.dispatchEvent(new Event('change'));
+            }
+          }
+        }
       }
     };
     document.addEventListener('keydown', this._onEsc);
@@ -574,8 +610,41 @@ export class TicketsView extends AsyncView {
 
   clearSelection() {
     this.selectedTickets.clear();
+    this._lastClickedId = null;
     document.querySelectorAll('.ticket-selected').forEach(el => el.classList.remove('ticket-selected'));
     document.querySelectorAll('.ticket-checkbox').forEach(cb => { cb.checked = false; });
+    this.updateBulkBar();
+  }
+
+  handleShiftSelect(targetId) {
+    const rows = Array.from(document.querySelectorAll('.tickets-table tbody tr'));
+    const ids = rows.map(r => r.dataset.ticketId);
+    
+    const startIdx = ids.indexOf(this._lastClickedId);
+    const endIdx   = ids.indexOf(targetId);
+    
+    if (startIdx === -1 || endIdx === -1) {
+      this.toggleTicketSelection(targetId);
+      this._lastClickedId = targetId;
+      return;
+    }
+
+    const range = ids.slice(Math.min(startIdx, endIdx), Math.max(startIdx, endIdx) + 1);
+    
+    // Determine if we are selecting or deselecting based on the target state
+    const shouldSelect = !this.selectedTickets.has(targetId);
+    
+    range.forEach(id => {
+      if (shouldSelect) this.selectedTickets.add(id);
+      else this.selectedTickets.delete(id);
+      
+      const rowEl = document.querySelector(`tr[data-ticket-id="${id}"]`);
+      if (rowEl) rowEl.classList.toggle('ticket-selected', shouldSelect);
+      const cb = document.querySelector(`.ticket-checkbox[data-id="${id}"]`);
+      if (cb) cb.checked = shouldSelect;
+    });
+    
+    this._lastClickedId = targetId;
     this.updateBulkBar();
   }
 

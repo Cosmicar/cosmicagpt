@@ -58,6 +58,7 @@ export const ORDER_PREFIX = Object.freeze({
 export const WORK_STATUS = Object.freeze({
   ingresado: "Ingresado",
   enReparacion: "En reparación",
+  esperandoRepuesto: "Esperando repuesto",
   listo: "Listo",
   entregado: "Entregado",
   reingresada: "Reingresada"
@@ -66,6 +67,7 @@ export const WORK_STATUS = Object.freeze({
 export const ACTIVE_STATUSES = Object.freeze([
   WORK_STATUS.ingresado,
   WORK_STATUS.enReparacion,
+  WORK_STATUS.esperandoRepuesto,
   WORK_STATUS.listo
 ]);
 

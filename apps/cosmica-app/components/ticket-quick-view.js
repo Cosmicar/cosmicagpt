@@ -13,6 +13,7 @@ import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 const STATUS_OPTIONS = [
   WORK_STATUS.ingresado,
   WORK_STATUS.enReparacion,
+  WORK_STATUS.esperandoRepuesto,
   WORK_STATUS.listo,
   WORK_STATUS.entregado,
 ];
@@ -21,6 +22,7 @@ const STATUS_OPTIONS = [
 
 export function badgeClass(estado) {
   if (estado === WORK_STATUS.enReparacion) return 'badge-orange';
+  if (estado === WORK_STATUS.esperandoRepuesto) return 'badge-orange'; // Same color as enReparacion
   if (estado === WORK_STATUS.listo)        return 'badge-green';
   if (estado === WORK_STATUS.entregado)    return 'badge-gray';
   return 'badge-cyan';
@@ -73,6 +75,7 @@ function renderHeader(ticket) {
         #${ticket.numeroOrden || '—'}
       </span>
       <span class="badge ${badgeClass(estado)}">${estado}</span>
+      <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.numeroOrden}" title="Copiar orden" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
     </div>`;
 }
 
@@ -139,7 +142,10 @@ function renderBody(ticket) {
     <div class="qv-meta-grid">
       <div class="qv-meta-item">
         <div class="qv-meta-label">Cliente</div>
-        <div class="qv-meta-value">${cliente}</div>
+        <div class="qv-meta-value" style="display:flex;align-items:center;gap:6px;">
+          ${cliente}
+          ${ticket.telefono ? `<button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" title="Copiar teléfono" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>` : ''}
+        </div>
       </div>
       <div class="qv-meta-item">
         <div class="qv-meta-label">Fecha ingreso</div>
@@ -165,8 +171,10 @@ function renderBody(ticket) {
 
     <!-- Problema -->
     <div class="qv-separator"></div>
-    <div>
-      <div class="qv-section-label">Problema reportado</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="qv-section-label">Problema reportado</div>
+        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.problema || ''}" title="Copiar problema" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
+      </div>
       <p style="font-size:var(--font-sm);color:var(--text-primary);line-height:1.6;margin:0;">
         ${ticket.problema || 'No especificado'}
       </p>
@@ -359,6 +367,19 @@ export function openTicketQuickView(ticket, { onStatusChange } = {}) {
         }
 
         select.disabled = false;
+      });
+
+      // Copy buttons handler
+      bodyEl.querySelectorAll('.qv-copy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const text = btn.dataset.text;
+          if (text) {
+            navigator.clipboard.writeText(text).then(() => {
+              showToast('Copiado', 'success');
+            });
+          }
+        });
       });
     }
   );

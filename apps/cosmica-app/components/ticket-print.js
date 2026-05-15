@@ -498,7 +498,7 @@ function buildThermalHtml(ticket) {
     .doc {
       width: 74mm;
       margin: 0 auto;
-      padding: 4mm 2mm;
+      padding: 4mm 2mm 10mm 2mm;
     }
 
     .center { text-align: center; }

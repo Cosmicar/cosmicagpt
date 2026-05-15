@@ -243,11 +243,16 @@ export class TicketFormView extends AsyncView {
                 })}
                 <input type="hidden" name="clienteId" id="clienteId" value="${ticket?.clienteId || ''}">
                 <div id="cliente-suggestions" 
-                     style="position:absolute;z-index:200;top:calc(100% - 15px);left:0;right:0;
+                     style="position:absolute;z-index:9999;top:calc(100% - 15px);left:0;right:0;
                             background:var(--surface);border:1px solid var(--border);
                             border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;
                             box-shadow: var(--shadow-lg);">
                 </div>
+              </div>
+
+              <div id="equipo-suggestions-wrap" style="grid-column: 1 / -1; display: none;">
+                <div style="font-size: var(--font-xs); color: var(--text-muted); margin-bottom: 8px;">Equipos usados anteriormente:</div>
+                <div id="equipo-suggestions-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
               </div>
 
               ${renderFormField({
@@ -365,6 +370,7 @@ export class TicketFormView extends AsyncView {
     this._clientesCache = clientes;
     this.initFormHandlers();
     this.initClienteAutocomplete();
+    this.initFormShortcuts();
     
     if (this.isEdit) {
       this.initBudgetHandlers();
@@ -383,7 +389,23 @@ export class TicketFormView extends AsyncView {
 
     // Autofocus
     const firstInput = document.getElementById(this.isEdit ? 'precio' : 'cliente_search');
-    if (firstInput) firstInput.focus();
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 150);
+    }
+  }
+
+  initFormShortcuts() {
+    const form = document.getElementById('ticket-form');
+    if (!form) return;
+    form.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn && !submitBtn.disabled) {
+          submitBtn.click();
+        }
+      }
+    });
   }
 
   // ─── Cliente Autocomplete ───────────────────────────────────────────────────
@@ -468,13 +490,70 @@ export class TicketFormView extends AsyncView {
     });
   }
 
-  _selectCliente(id, name) {
+  async _selectCliente(id, name) {
     const input = document.getElementById('cliente_search');
     const hidden = document.getElementById('clienteId');
     const suggestions = document.getElementById('cliente-suggestions');
     if (input) input.value = name;
     if (hidden) hidden.value = id;
     if (suggestions) suggestions.style.display = 'none';
+
+    // Fetch and show equipment suggestions
+    this._loadEquipoSuggestions(id);
+  }
+
+  async _loadEquipoSuggestions(clienteId) {
+    const wrap = document.getElementById('equipo-suggestions-wrap');
+    const list = document.getElementById('equipo-suggestions-list');
+    if (!wrap || !list) return;
+
+    try {
+      const tickets = await getTickets();
+      const clientTickets = tickets.filter(t => t.clienteId === clienteId && t.equipo);
+      
+      // Get unique equipment combos
+      const seen = new Set();
+      const suggestions = [];
+      
+      for (const t of clientTickets) {
+        const key = `${t.equipo}|${t.marca || ''}|${t.modelo || ''}`.toLowerCase().trim();
+        if (!seen.has(key)) {
+          seen.add(key);
+          suggestions.push({
+            equipo: t.equipo,
+            marca: t.marca || '',
+            modelo: t.modelo || ''
+          });
+        }
+        if (suggestions.length >= 4) break;
+      }
+
+      if (suggestions.length > 0) {
+        list.innerHTML = suggestions.map(s => `
+          <button type="button" class="btn btn-sm btn-secondary equipo-suggest-btn" 
+            data-equipo="${s.equipo}" data-marca="${s.marca}" data-modelo="${s.modelo}"
+            style="font-size: var(--font-xs); background: rgba(0, 229, 255, 0.05); border-color: rgba(0, 229, 255, 0.1);">
+            ${s.equipo} ${s.marca} ${s.modelo}
+          </button>
+        `).join('');
+        wrap.style.display = 'block';
+
+        list.querySelectorAll('.equipo-suggest-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const eqInput = document.getElementById('equipo');
+            const mmInput = document.getElementById('marca_modelo');
+            if (eqInput) eqInput.value = btn.dataset.equipo;
+            if (mmInput) mmInput.value = `${btn.dataset.marca} ${btn.dataset.modelo}`.trim();
+            wrap.style.display = 'none';
+          });
+        });
+      } else {
+        wrap.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Error loading equipo suggestions:', err);
+      wrap.style.display = 'none';
+    }
   }
 
   // ─── Repuestos section ──────────────────────────────────────────────────────

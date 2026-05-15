@@ -357,6 +357,7 @@ body {
 .drawer-body {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: var(--space-lg);
 }
 
@@ -654,6 +655,8 @@ body {
   width: 36px;
   text-align: center;
   padding: 0 8px !important;
+  display: table-cell;
+  vertical-align: middle;
 }
 .tt-check .ticket-checkbox { margin: 0; }
 
