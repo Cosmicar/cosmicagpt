@@ -129,9 +129,16 @@ service cloud.firestore {
     // COLECCIÓN: inventario
     // Todo el staff puede leer.
     // Admin y técnico pueden escribir (ajustar stock, crear repuestos).
+    //
+    // HOTFIX: allow read usa get() directo con .get('rol','') en vez de
+    // isStaff() (que encadena exists()+get()) para evitar permission-denied
+    // en list queries (getDocs). La evaluación de exists()+get() en reglas
+    // para list operations puede fallar cuando .rol es null o no existe;
+    // .get('rol','') previene ese caso. Mismo patrón que cajaSesiones.
     // ─────────────────────────────────────────────
     match /inventario/{docId} {
-      allow read: if isStaff();
+      allow read: if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       allow write: if isStaff();
     }
 

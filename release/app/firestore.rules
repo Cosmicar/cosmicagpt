@@ -125,6 +125,18 @@ service cloud.firestore {
       allow read, write: if isStaff();
     }
 
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: inventario
+    // Regla ausente en versiones anteriores → permission-denied en getDocs.
+    // allow read usa single get() con .get('rol','') para evitar el fallo
+    // de la cadena exists()+get() en list queries.
+    // ─────────────────────────────────────────────
+    match /inventario/{docId} {
+      allow read: if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
+      allow write: if isStaff();
+    }
+
     match /system_logs/{docId} {
       allow create: if isStaff();
       allow read: if isAdmin();
