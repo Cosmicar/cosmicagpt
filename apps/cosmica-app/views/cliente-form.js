@@ -47,7 +47,7 @@ export class ClienteFormView extends BaseView {
         ${headerHtml}
 
         <div class="card glass-card" style="margin-top: var(--space-xl); max-width: 800px;">
-          <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
+          <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
           
           <form id="cliente-form">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">

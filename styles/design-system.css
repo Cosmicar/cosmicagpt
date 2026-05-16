@@ -1168,3 +1168,104 @@ textarea {
     background: white !important;
   }
 }
+/* ── Global Alert & Banner Pass ─────────────────────────────────────────────────── */
+
+.alert {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  margin-bottom: var(--space-lg);
+}
+
+.alert-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.alert-warning {
+  background: rgba(255, 170, 0, 0.05);
+  border-color: rgba(255, 170, 0, 0.2);
+  color: var(--accent-orange);
+}
+
+.alert-danger {
+  background: rgba(255, 0, 127, 0.05);
+  border-color: rgba(255, 0, 127, 0.2);
+  color: var(--danger);
+}
+
+.alert-info {
+  background: rgba(0, 229, 255, 0.05);
+  border-color: rgba(0, 229, 255, 0.2);
+  color: var(--accent-cyan);
+}
+
+.alert-success {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+/* ── Global Search Bar Normalization ─────────────────────────────────────────── */
+
+.operational-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+}
+
+.search-wrapper .input {
+  padding-left: 42px;
+  height: 42px;
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.search-wrapper .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .operational-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-wrapper {
+    min-width: 0;
+  }
+}

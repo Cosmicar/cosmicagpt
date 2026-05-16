@@ -3,20 +3,23 @@
   align-items: center;
   justify-content: center;
   padding: 10px 20px;
+  height: 42px;
   border-radius: var(--radius-md);
   font-weight: 700;
   font-size: var(--font-sm);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
   border: 1px solid transparent;
   gap: 8px;
   position: relative;
   overflow: hidden;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-primary {
@@ -25,7 +28,7 @@
   box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), 0 5px 10px rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
 }
@@ -37,21 +40,40 @@
   backdrop-filter: blur(8px);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.btn-orange {
-  background: linear-gradient(135deg, var(--accent-orange), #ff6b00);
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #0ea572);
   color: #050B14;
 }
-
-.btn-orange:hover {
-  box-shadow: 0 0 20px rgba(255, 107, 0, 0.4), 0 5px 10px rgba(0, 0, 0, 0.2);
+.btn-success:hover:not(:disabled) {
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
   transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: rgba(255, 0, 127, 0.1);
+  color: var(--danger);
+  border-color: rgba(255, 0, 127, 0.2);
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 0, 127, 0.2);
+  border-color: var(--danger);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
 }
 
 .btn-sm {
@@ -67,7 +89,7 @@
   box-shadow: none !important;
 }
 
-.btn:focus {
+.btn:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }

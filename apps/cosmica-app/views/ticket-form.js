@@ -42,7 +42,7 @@ function renderBudgetSection(ticket) {
         ${renderApprovalBadge(aprobado)}
       </div>
 
-      <div id="budget-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
+      <div id="budget-error-msg" class="alert alert-danger" style="display: none;"></div>
 
       <form id="budget-form">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
@@ -104,10 +104,7 @@ function renderRepuestosSection(ticket) {
           </div>` : ''}
       </div>
 
-      <div id="repuestos-error" class="badge badge-danger"
-        style="display:none;width:100%;margin-bottom:var(--space-md);padding:var(--space-md);
-               text-align:center;background:rgba(255,0,127,0.1);border:1px solid var(--danger);">
-      </div>
+      <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
 
       ${canConsume ? `
         <!-- Search box -->
@@ -115,16 +112,16 @@ function renderRepuestosSection(ticket) {
           <div id="repuesto-search-skeleton" style="display:none;">
             <div class="skeleton" style="width:100%;height:42px;border-radius:8px;"></div>
           </div>
-          <div id="repuesto-search-ready" style="display:none;position:relative;">
+          <div id="repuesto-search-ready" style="display:none;" class="search-wrapper">
             <input type="text" id="repuesto-search-input" class="input"
               placeholder="Buscar repuesto por nombre, SKU o categoría..."
-              style="padding-left:40px;margin-bottom:0;" autocomplete="off">
-            <span style="position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:0.5;pointer-events:none;">🔍</span>
-            <div id="repuesto-suggestions"
+              autocomplete="off">
+            <span class="search-icon">🔍</span>
+          </div>
+          <div id="repuesto-suggestions"
               style="position:absolute;z-index:200;top:calc(100% + 4px);left:0;right:0;
                      background:var(--surface, #1a1a2e);border:1px solid var(--border);
                      border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;">
-            </div>
           </div>
         </div>` : ''}
 
@@ -272,7 +269,7 @@ export class TicketFormView extends AsyncView {
         ` : ''}
 
         <div class="card glass-card" style="max-width: 900px;">
-          <div id="form-error-msg" class="badge badge-danger" style="display: none; width: 100%; margin-bottom: var(--space-md); padding: var(--space-md); text-align: center; background: rgba(255, 0, 127, 0.1); border: 1px solid var(--danger);"></div>
+          <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
           
           <form id="ticket-form" class="stack-lg">
             <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">

@@ -72,10 +72,7 @@ export class InventarioFormView extends AsyncView {
         ${header}
 
         <div class="card glass-card" style="max-width: 860px;">
-          <div id="inv-form-error" class="badge badge-danger"
-            style="display:none;width:100%;margin-bottom:var(--space-md);padding:var(--space-md);
-                   text-align:center;background:rgba(255,0,127,0.1);border:1px solid var(--danger);">
-          </div>
+          <div id="inv-form-error" class="alert alert-danger" style="display:none;"></div>
 
           <form id="inv-form" class="stack-lg">
             <!-- Row 1 -->

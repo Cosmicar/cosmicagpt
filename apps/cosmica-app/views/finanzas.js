@@ -217,11 +217,7 @@ export class FinanzasView extends AsyncView {
           <h4 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-md);">
             🔓 Abrir Caja
           </h4>
-          <div id="apertura-error" class="badge badge-danger"
-            style="display:none;margin-bottom:var(--space-md);padding:var(--space-sm);width:100%;
-                   text-align:center;background:rgba(255,0,127,0.1);border:1px solid var(--danger);
-                   border-radius:var(--radius-sm);">
-          </div>
+          <div id="apertura-error" class="alert alert-danger" style="display:none;"></div>
           <form id="apertura-form" style="display:flex;flex-direction:column;gap:var(--space-md);">
             <div>
               <label style="font-size:var(--font-sm);color:var(--text-muted);display:block;margin-bottom:6px;">
@@ -294,11 +290,7 @@ export class FinanzasView extends AsyncView {
             </span>
           </div>
 
-          <div id="cierre-error" class="badge badge-danger"
-            style="display:none;margin-bottom:var(--space-md);padding:var(--space-sm);width:100%;
-                   text-align:center;background:rgba(255,0,127,0.1);border:1px solid var(--danger);
-                   border-radius:var(--radius-sm);">
-          </div>
+          <div id="cierre-error" class="alert alert-danger" style="display:none;"></div>
 
           <form id="cierre-form" style="display:flex;flex-direction:column;gap:var(--space-md);">
             <input type="hidden" name="sesionId" value="${session.id}">
@@ -615,10 +607,7 @@ export class FinanzasView extends AsyncView {
       <div>
         <div style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;
                     margin-bottom:var(--space-md);">REGISTRAR MOVIMIENTO</div>
-        <div id="caja-form-error" class="badge badge-danger"
-          style="display:none;margin-bottom:var(--space-md);padding:var(--space-sm);width:100%;text-align:center;
-                 background:rgba(255,0,127,0.1);border:1px solid var(--danger);border-radius:var(--radius-sm);">
-        </div>
+        <div id="caja-form-error" class="alert alert-danger" style="display:none;"></div>
         <form id="caja-form" style="display:flex;flex-direction:column;gap:var(--space-md);">
           <input type="hidden" name="sesionId" value="${sesionId}">
           <div style="display:flex;gap:var(--space-sm);">

@@ -5,38 +5,38 @@ export class LoginView extends BaseView {
   render() {
     return `
       <div style="display:flex; align-items:center; justify-content:center; min-height:80vh;">
-        <div class="card glass-card" style="width:100%; max-width:380px; padding: var(--space-xl); box-shadow: var(--shadow-lg);">
-          <div style="text-align:center; margin-bottom: var(--space-lg);">
+        <div class="card glass-card" style="width:100%; max-width:400px; padding: var(--space-xl); box-shadow: var(--shadow-lg);">
+          <div style="text-align:center; margin-bottom: var(--space-xl);">
             <div style="margin-bottom: var(--space-md);">
-              <img src="assets/icon-192.png" alt="Cósmica Logo" style="height: 64px; width: 64px; object-fit: contain;">
+              <img src="assets/icon-192.png" alt="Cósmica Logo" style="height: 72px; width: 72px; object-fit: contain;">
             </div>
-            <h2 style="font-size: var(--font-2xl); font-weight: 800; color: var(--text-primary); letter-spacing: -0.04em;">Cósmica App</h2>
-            <p style="color: var(--text-muted); font-size: var(--font-sm); margin-top: 4px; font-weight: 500;">Sistema de Gestión de Taller</p>
+            <h2 style="font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.05em; margin: 0;">Cósmica App</h2>
+            <p style="color: var(--text-muted); font-size: var(--font-sm); margin-top: 6px; font-weight: 500;">Sistema de Gestión de Taller</p>
           </div>
 
-          <div style="margin-bottom: var(--space-md);">
-            <label style="display:block; font-size: var(--font-sm); margin-bottom: var(--space-xs); color: var(--text-muted);">Email</label>
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Email Corporativo</label>
             <input
               id="loginEmail"
               type="email"
+              class="input"
               placeholder="usuario@cosmica.ar"
-              style="width:100%; padding: var(--space-sm); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-sm); box-sizing: border-box;"
             />
           </div>
 
-          <div style="margin-bottom: var(--space-lg);">
-            <label style="display:block; font-size: var(--font-sm); margin-bottom: var(--space-xs); color: var(--text-muted);">Contraseña</label>
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Contraseña</label>
             <input
               id="loginPassword"
               type="password"
+              class="input"
               placeholder="••••••••"
-              style="width:100%; padding: var(--space-sm); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--font-sm); box-sizing: border-box;"
             />
           </div>
 
-          <button id="btnLogin" class="btn btn-primary" style="width:100%;">Ingresar</button>
+          <button id="btnLogin" class="btn btn-primary" style="width:100%; margin-top: var(--space-md);">Ingresar al Sistema</button>
 
-          <div id="loginError" style="display:none; margin-top: var(--space-md); color: #ff6b6b; font-size: var(--font-sm); text-align:center;"></div>
+          <div id="loginError" class="alert alert-danger" style="display:none; margin-top: var(--space-lg); padding: var(--space-sm); justify-content: center;"></div>
         </div>
       </div>
     `;

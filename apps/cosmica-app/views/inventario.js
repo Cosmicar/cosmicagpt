@@ -58,11 +58,10 @@ export class InventarioView extends AsyncView {
       ${header}
 
       <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-xl); flex-wrap: wrap; gap: var(--space-lg); background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--border);">
-        <div style="position: relative; flex: 1; min-width: 280px; max-width: 480px;">
+        <div class="search-wrapper">
           <input type="text" id="inv-search" class="input"
-            placeholder="Buscar por nombre, SKU o categoría..."
-            style="padding-left: 42px; margin-bottom: 0; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
-          <span style="position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;">🔍</span>
+            placeholder="Buscar por nombre, SKU o categoría...">
+          <span class="search-icon">🔍</span>
         </div>
 
         <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
