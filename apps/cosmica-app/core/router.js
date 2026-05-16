@@ -46,7 +46,15 @@ export class Router {
       'inventario-nuevo': InventarioFormView,
       'inventario-edit':  InventarioFormView,
       'finanzas':        FinanzasView,
-      'configuracion': class extends BaseView { render() { return renderEmptyState('El módulo de configuración aún no está implementado.'); } }
+      'configuracion': class extends BaseView { 
+        render() { 
+          return renderEmptyState(
+            'Estamos preparando las mejores herramientas para que personalices tu experiencia en Cósmica App.',
+            '🚀',
+            '<div class="badge badge-cyan" style="font-size:12px; padding: 6px 16px;">PRÓXIMAMENTE</div>'
+          ); 
+        } 
+      }
     };
     
     // Escuchar cambios de ruta

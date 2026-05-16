@@ -255,16 +255,11 @@ export class DashboardView extends AsyncView {
    */
   renderKPI(label, value, color, icon) {
     return `
-      <div class="card glass-card kpi-card" style="display: flex; flex-direction: column; gap: var(--space-xs); border-left: 4px solid ${color}; transition: all var(--transition-normal); position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -10px; right: -10px; font-size: 64px; opacity: 0.03; pointer-events: none;">${icon}</div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-          <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">${label}</span>
-          <span style="font-size: 18px; opacity: 0.8;">${icon}</span>
-        </div>
-        <div style="font-size: 42px; font-weight: 800; color: var(--text-primary); line-height: 1; margin-top: 8px; letter-spacing: -0.04em;">
-          ${value}
-        </div>
-        <div style="width: 40px; height: 2px; background: ${color}; margin-top: var(--space-xs); opacity: 0.6; border-radius: 2px;"></div>
+      <div class="card glass-card kpi-card" style="border-left-color: ${color};">
+        <div class="kpi-icon">${icon}</div>
+        <div class="kpi-label">${label}</div>
+        <div class="kpi-value">${value}</div>
+        <div style="width: 20px; height: 2px; background: ${color}; opacity: 0.5; border-radius: 2px;"></div>
       </div>
     `;
   }

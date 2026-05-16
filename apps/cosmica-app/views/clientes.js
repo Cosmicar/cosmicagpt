@@ -130,9 +130,12 @@ export class ClientesView extends AsyncView {
    */
   renderCards(clientes) {
     if (clientes.length === 0) {
+      const cta = this._currentTerm 
+        ? '<button class="btn btn-sm btn-secondary" onclick="document.getElementById(\'cliente-search\').value=\'\'; document.getElementById(\'cliente-search\').dispatchEvent(new Event(\'input\'))">Limpiar búsqueda</button>'
+        : '<a href="#cliente-nuevo" class="btn btn-sm btn-primary">➕ Registrar cliente</a>';
       return `
         <div style="grid-column: 1 / -1;">
-          ${renderEmptyState('No se encontraron clientes que coincidan con la búsqueda.')}
+          ${renderEmptyState('No se encontraron clientes que coincidan con la búsqueda.', '👥', cta)}
         </div>
       `;
     }

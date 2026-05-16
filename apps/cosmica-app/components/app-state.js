@@ -50,16 +50,14 @@ export function renderCardSkeletonList(count = 3) {
  * Renderiza skeletons para los KPIs del Dashboard
  * @returns {string} HTML
  */
-export function renderKPISkeletons() {
+export function renderKPISkeletons(count = 4) {
   return `
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
-      ${Array(4).fill(`
-        <div class="card glass-card" style="height: 120px; display: flex; flex-direction: column; justify-content: center; gap: 12px; border-left: 4px solid rgba(255,255,255,0.05);">
-          <div style="display: flex; justify-content: space-between;">
-            <div class="skeleton" style="width: 60px; height: 10px;"></div>
-            <div class="skeleton" style="width: 20px; height: 20px; border-radius: 50%;"></div>
-          </div>
-          <div class="skeleton" style="width: 40px; height: 36px;"></div>
+    <div class="render-kpi-container">
+      ${Array(count).fill(`
+        <div class="card glass-card kpi-card" style="border-left-color: rgba(255,255,255,0.05); pointer-events: none;">
+          <div class="skeleton" style="width: 50%; height: 10px;"></div>
+          <div class="skeleton" style="width: 40%; height: 32px; margin: var(--space-sm) 0;"></div>
+          <div class="skeleton" style="width: 20px; height: 2px; opacity: 0.5;"></div>
         </div>
       `).join('')}
     </div>
@@ -117,15 +115,30 @@ export function renderErrorState(message) {
  * @param {string} icon 
  * @returns {string} HTML
  */
-export function renderEmptyState(message = 'No se encontraron registros.', icon = '🔭') {
+export function renderEmptyState(message = 'No se encontraron registros.', icon = '🔭', ctaHtml = '') {
   return `
-    <div class="card glass-card animate-fade-in" style="text-align: center; padding: var(--space-2xl) var(--space-xl); border: 1px dashed var(--border); background: rgba(255,255,255,0.01);">
-      <div style="font-size: 64px; margin-bottom: var(--space-md); filter: grayscale(1); opacity: 0.3;">${icon}</div>
-      <h2 style="font-size: var(--font-lg); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Búsqueda sin éxito</h2>
-      <p style="color: var(--text-muted); margin-top: var(--space-sm); max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.6; font-size: var(--font-sm);">
-        ${message}
-      </p>
-      <div style="margin-top: var(--space-xl); opacity: 0.5; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-cyan);">
+    <div class="card glass-card animate-fade-in" style="
+      text-align: center; 
+      padding: var(--space-2xl) var(--space-xl); 
+      border: 1px dashed var(--border); 
+      background: rgba(255,255,255,0.01);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+    ">
+      <div style="font-size: 64px; opacity: 0.15; filter: grayscale(1); line-height: 1;">${icon}</div>
+      <div style="max-width: 400px;">
+        <h2 style="font-size: var(--font-lg); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 8px;">
+          Búsqueda sin éxito
+        </h2>
+        <p style="color: var(--text-muted); line-height: 1.6; font-size: var(--font-sm); margin: 0;">
+          ${message}
+        </p>
+      </div>
+      ${ctaHtml ? `<div style="margin-top: var(--space-sm);">${ctaHtml}</div>` : ''}
+      <div style="margin-top: var(--space-lg); opacity: 0.3; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: var(--accent-cyan);">
         Cósmica App
       </div>
     </div>

@@ -250,9 +250,12 @@ export class TicketsView extends AsyncView {
 
   renderCards(tickets) {
     if (tickets.length === 0) {
+      const cta = this.currentFilter !== 'all' || this.currentTerm 
+        ? '<button class="btn btn-sm btn-secondary" onclick="document.getElementById(\'ticket-search\').value=\'\'; document.querySelector(\'[data-filter=\\\'all\\\']\').click()">Limpiar filtros</button>'
+        : '<a href="#ticket-nuevo" class="btn btn-sm btn-primary">➕ Crear primer trabajo</a>';
       return `
         <div style="grid-column: 1 / -1;">
-          ${renderEmptyState('No se encontraron trabajos que coincidan con los filtros.')}
+          ${renderEmptyState('No se encontraron trabajos que coincidan con los filtros.', '🛠️', cta)}
         </div>
       `;
     }

@@ -112,7 +112,8 @@ export class InventarioView extends AsyncView {
 
   renderCards(items) {
     if (items.length === 0) {
-      return `<div style="grid-column:1/-1;">${renderEmptyState('No se encontraron repuestos que coincidan con la búsqueda.')}</div>`;
+      const cta = '<a href="#inventario-nuevo" class="btn btn-sm btn-primary">➕ Agregar repuesto</a>';
+      return `<div style="grid-column:1/-1;">${renderEmptyState('No se encontraron repuestos que coincidan con la búsqueda.', '📦', cta)}</div>`;
     }
     return items.map(item => this.renderCard(item)).join('');
   }
