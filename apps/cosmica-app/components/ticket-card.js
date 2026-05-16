@@ -60,11 +60,11 @@ export function render(ticket, selected = false) {
         <!-- Title + order number — must shrink, never overflow -->
         <div style="flex:1;min-width:0;padding:0 8px;overflow:hidden;box-sizing:border-box;">
           <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}"
-            style="font-size:var(--font-md); font-weight:700; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; color: var(--text-primary);">
+            style="font-size:var(--font-md); font-weight:800; margin:0; letter-spacing: -0.01em; color: var(--text-primary);">
             ${ticket.nombre || 'Sin Nombre'} ${ticket.apellido || ''}
           </h3>
-          <div style="font-size:var(--font-xs); color:var(--text-muted); margin-top:1px; font-weight:600;
-                      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing: 0.02em;">
+          <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 2px; font-weight: 800;
+                      text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">
             ORDEN #${ticket.numeroOrden || 'N/A'}
           </div>
         </div>
@@ -95,18 +95,18 @@ export function render(ticket, selected = false) {
       <div style="flex:1;min-width:0;overflow:hidden;box-sizing:border-box; padding: 0 4px;">
         <p class="vm-meta"
           style="color:var(--text-muted);font-size:var(--font-sm);margin-bottom:var(--space-md);
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.6;">
-          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Equipo:</span> <span style="color: var(--text-primary); font-weight: 500;">${ticket.equipo || '—'} ${ticket.marca || ''}</span><br>
-          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Fecha:</span> <span style="color: var(--text-primary); font-weight: 500;">${fecha}</span><br>
-          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Prioridad:</span> <span style="color: var(--text-primary); font-weight: 600; text-transform:capitalize;">${prioridad}</span>
+                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.7;">
+          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Equipo:</span> <span style="color: var(--text-primary); font-weight: 500;">${ticket.equipo || '—'} ${ticket.marca || ''}</span><br>
+          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Fecha:</span> <span style="color: var(--text-primary); font-weight: 500;">${fecha}</span><br>
+          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Prioridad:</span> <span style="color: var(--text-primary); font-weight: 700; text-transform:capitalize;">${prioridad}</span>
         </p>
 
         <div class="vm-problema"
-          style="border-top:1px solid var(--border);padding-top:var(--space-sm);
-                 font-size:var(--font-sm);color:var(--text-muted);min-height:3.2em;
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.5;">
-          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Problema:</span>
-          <span class="vm-problema-text" style="color: var(--text-primary);">${ticket.problema || 'No especificado'}</span>
+          style="border-top: 1px solid var(--border); padding-top: var(--space-sm);
+                 font-size: var(--font-sm); color: var(--text-muted); min-height: 3.2em;
+                 overflow-wrap: anywhere; word-break: break-word; min-width: 0; max-width: 100%; box-sizing: border-box; line-height: 1.6;">
+          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Problema:</span>
+          <span class="vm-problema-text" style="color: var(--text-primary); font-weight: 400;">${ticket.problema || 'No especificado'}</span>
         </div>
       </div>
 

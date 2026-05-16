@@ -24,10 +24,19 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
-  line-height: 1.5;
-  word-break: break-word; /* Huge text guard */
+  line-height: 1.6;
+  word-break: break-word;
   overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
 
 /* 0. GLOBAL DATA HARDENING */
 .text-prose {
@@ -132,25 +141,29 @@ td, th {
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar (Premium Refinement) */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid transparent;
+  background-clip: padding-box;
   border-radius: var(--radius-full);
   transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan-glow);
+  background: rgba(255, 255, 255, 0.12);
+  background-clip: padding-box;
 }
+
 
 /* Focus States Accessibility */
 :focus-visible {
@@ -454,18 +467,22 @@ td, th {
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 11, 20, 0.75);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(5, 11, 20, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 900;
   opacity: 0;
   transition: opacity var(--transition-normal);
   pointer-events: none;
-  will-change: opacity;
 }
+
 .drawer-overlay.is-open {
   opacity: 1;
   pointer-events: auto;
+}
+
+.drawer-panel.is-open {
+  transform: translateX(0);
 }
 
 .drawer-panel {
@@ -479,12 +496,9 @@ td, th {
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--transition-normal);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  will-change: transform;
-}
-.drawer-panel.is-open {
-  transform: translateX(0);
 }
 
 .drawer-header {
@@ -492,34 +506,34 @@ td, th {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-lg);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .drawer-body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Prevent main page from scrolling when drawer scroll reaches top/bottom (iOS) */
   overscroll-behavior: contain;
-  padding: var(--space-lg);
-  /* Reserve space for iOS home bar (safe area inset bottom) */
-  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-xl) var(--space-lg);
 }
 
 .drawer-footer {
   position: sticky;
   bottom: 0;
-  background: rgba(8, 15, 28, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: var(--space-md) var(--space-lg) calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
-  margin: 0 -var(--space-lg) -calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 15, 28, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: var(--space-lg);
   border-top: 1px solid var(--border);
   z-index: 10;
+  display: flex;
+  gap: var(--space-md);
+  justify-content: flex-end;
 }
+
 
 .drawer-close {
   flex-shrink: 0;
@@ -586,36 +600,32 @@ td, th {
 .cp-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 11, 20, 0.82);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(5, 11, 20, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 400;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: min(10vh, 80px);
+  padding-top: min(12vh, 100px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
-}
-.cp-overlay.is-open {
-  opacity: 1;
-  pointer-events: auto;
+  transition: opacity var(--transition-fast);
 }
 
 .cp-modal {
-  width: 700px;
+  width: 680px;
   max-width: calc(100vw - 32px);
   background: #0a1120;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0, 229, 255, 0.04);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 160px);
-  transform: translateY(-8px);
-  transition: transform 0.15s ease;
+  max-height: calc(100vh - 200px);
+  transform: translateY(-12px);
+  transition: transform var(--transition-fast);
 }
 .cp-overlay.is-open .cp-modal {
   transform: translateY(0);

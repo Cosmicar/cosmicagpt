@@ -39,17 +39,17 @@ export function render(cliente) {
 
       <!-- Footer: action buttons — scoped container prevents flex-stretch -->
       ${canEdit ? `
-      <div class="client-actions">
-        <a href="#cliente-edit?id=${cliente.id}" class="btn btn-sm btn-secondary client-edit-btn">
+      <div class="client-actions" style="margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid var(--border); display: flex; gap: var(--space-xs);">
+        <a href="#cliente-edit?id=${cliente.id}" class="btn btn-sm btn-secondary client-edit-btn" style="flex: 1; justify-content: center; font-weight: 600;">
           📝 Editar
         </a>
         <button class="btn btn-sm btn-secondary client-merge-btn"
                 data-id="${cliente.id}"
-                style="color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.2);"
+                style="color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.1); width: 38px; flex-shrink: 0;"
                 title="Fusionar con otro">🔗</button>
         <button class="btn btn-sm btn-secondary client-delete-btn"
                 data-id="${cliente.id}"
-                style="color: var(--danger); border-color: rgba(255, 71, 87, 0.2);"
+                style="color: var(--danger); border-color: rgba(255, 71, 87, 0.1); width: 38px; flex-shrink: 0;"
                 title="Eliminar cliente">🗑</button>
       </div>
       ` : ''}

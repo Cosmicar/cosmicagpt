@@ -118,16 +118,16 @@ export class DashboardView extends AsyncView {
       <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-xl);">
         
         <!-- Header del Dashboard -->
-        <header class="flex-between">
+        <header class="flex-between" style="margin-bottom: var(--space-lg);">
           <div>
-            <div class="badge badge-cyan" style="margin-bottom: var(--space-xs);">Vista General</div>
-            <h1 style="font-size: var(--font-xl); font-weight: 800; letter-spacing: -0.5px;">Panel Operacional</h1>
-            <p style="color: var(--text-muted); font-size: var(--font-sm);">Estado del taller al ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+            <div class="badge badge-cyan" style="margin-bottom: var(--space-sm); opacity: 0.8;">Operativo</div>
+            <h1 style="font-size: var(--font-3xl); font-weight: 800; letter-spacing: -0.03em;">Panel de Control</h1>
+            <p style="color: var(--text-muted); font-size: var(--font-sm); font-weight: 500;">Monitor de actividad en tiempo real · ${new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
-          <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-             <div style="display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-               <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar tickets visibles a CSV" style="font-size: 10px; padding: 4px 8px;">📥 Tickets</button>
-               <button id="export-caja-btn" class="btn btn-sm btn-secondary" title="Exportar caja diaria a CSV" style="font-size: 10px; padding: 4px 8px;">📊 Caja</button>
+          <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+             <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.03); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+               <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar tickets visibles a CSV" style="font-size: 11px; padding: 6px 12px;">📥 Tickets</button>
+               <button id="export-caja-btn" class="btn btn-sm btn-secondary" title="Exportar caja diaria a CSV" style="font-size: 11px; padding: 6px 12px;">📊 Caja</button>
              </div>
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
              ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>' : ''}
@@ -135,24 +135,24 @@ export class DashboardView extends AsyncView {
         </header>
 
         <!-- KPIs Principales -->
-        <section class="kpi-grid">
+        <section class="kpi-grid" style="margin-bottom: var(--space-xl);">
           ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
           ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
           ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
           ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
-          ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger, #ff4757)', '⚠️')}
+          ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger)', '⚠️')}
         </section>
         
         <!-- Atención Requerida -->
         ${attentionRequired && attentionRequired.length > 0 ? `
-        <section style="background: rgba(255, 71, 87, 0.05); padding: var(--space-lg); border-radius: var(--radius-lg); border: 1px solid rgba(255, 71, 87, 0.1);">
-          <div class="section-divider flex-between">
-            <h3 style="font-size: var(--font-md); font-weight: 700; color: #ff4757; display: flex; align-items: center; gap: 8px;">
+        <section style="background: rgba(255, 71, 87, 0.03); padding: var(--space-xl); border-radius: var(--radius-xl); border: 1px solid rgba(255, 71, 87, 0.08); margin-bottom: var(--space-2xl);">
+          <div class="section-divider flex-between" style="margin-bottom: var(--space-lg);">
+            <h3 style="font-size: var(--font-lg); font-weight: 800; color: var(--danger); display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em;">
               <span>⚠️</span> Atención Requerida
             </h3>
-            <span style="font-size: var(--font-xs); color: var(--text-muted);">Tickets demorados o estancados</span>
+            <span style="font-size: var(--font-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">Tickets Críticos</span>
           </div>
-          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-md);">
+          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-lg);">
             ${attentionRequired.map(t => renderTicketCard(t)).join('')}
           </div>
         </section>
@@ -160,27 +160,27 @@ export class DashboardView extends AsyncView {
 
         <!-- Follow-up Alerts -->
         ${this._followUpItems.length > 0 ? `
-        <section style="background:rgba(37,211,102,0.04);padding:var(--space-lg);border-radius:var(--radius-lg);border:1px solid rgba(37,211,102,0.15);">
-          <div class="section-divider flex-between" style="margin-bottom:var(--space-md);">
-            <h3 style="font-size:var(--font-md);font-weight:700;color:#25D366;display:flex;align-items:center;gap:8px;">
-              <span>📲</span> Seguimientos pendientes
+        <section style="background:rgba(37,211,102,0.03);padding:var(--space-xl);border-radius:var(--radius-xl);border:1px solid rgba(37,211,102,0.1); margin-bottom: var(--space-2xl);">
+          <div class="section-divider flex-between" style="margin-bottom:var(--space-lg);">
+            <h3 style="font-size:var(--font-lg);font-weight:800;color:#25D366;display:flex;align-items:center;gap:10px; letter-spacing: -0.02em;">
+              <span>📲</span> Seguimientos Pendientes
             </h3>
-            <span style="font-size:var(--font-xs);color:var(--text-muted);">${this._followUpItems.length} ticket${this._followUpItems.length !== 1 ? 's' : ''} requieren contacto</span>
+            <span style="font-size:var(--font-xs);color:var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">${this._followUpItems.length} por contactar</span>
           </div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
             ${this._followUpItems.slice(0, 10).map(({ ticket: t, reason, days }) => `
-              <div class="glass-card" style="padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;" data-followup-id="${t.id}">
+              <div class="glass-card" style="padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap; border: 1px solid rgba(255,255,255,0.02);" data-followup-id="${t.id}">
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);">${[t.nombre, t.apellido].filter(Boolean).join(' ') || 'Sin nombre'} · #${t.numeroOrden || '—'}</div>
-                  <div style="font-size:var(--font-xs);color:var(--text-muted);">${[t.equipo, t.marca].filter(Boolean).join(' ') || '—'} · <span style="color:var(--accent-orange);">${reason}</span> · ${days}d</div>
+                  <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary); letter-spacing: -0.01em;">${[t.nombre, t.apellido].filter(Boolean).join(' ') || 'Sin nombre'} · <span style="color: var(--accent-cyan); opacity: 0.8;">#${t.numeroOrden || '—'}</span></div>
+                  <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px; font-weight: 500;">${[t.equipo, t.marca].filter(Boolean).join(' ') || '—'} · <span style="color:var(--accent-orange); opacity: 0.9;">${reason}</span> · <span style="opacity: 0.7;">hace ${days}d</span></div>
                 </div>
                 ${getAgingBadge(t)}
                 ${t.telefono ? `
-                  <button class="btn btn-sm followup-wa-btn" data-id="${t.id}" data-reason="${reason}" style="padding:4px 10px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);font-size:10px;white-space:nowrap;">
+                  <button class="btn btn-sm followup-wa-btn" data-id="${t.id}" data-reason="${reason}" style="padding:6px 12px;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);font-size:11px; font-weight: 700; white-space:nowrap;">
                     📲 WhatsApp
                   </button>
-                ` : '<span style="font-size:10px;color:var(--text-muted);">Sin teléfono</span>'}
-                <a href="#ticket-edit?id=${t.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;font-size:10px;">📝</a>
+                ` : '<span style="font-size:11px;color:var(--text-muted); font-weight: 600; opacity: 0.5;">Sin teléfono</span>'}
+                <a href="#ticket-edit?id=${t.id}" class="btn btn-sm btn-secondary" style="padding:6px 10px;font-size:11px; font-weight: 700;">📝</a>
               </div>
             `).join('')}
           </div>
@@ -197,21 +197,21 @@ export class DashboardView extends AsyncView {
               </h3>
               <span class="badge badge-cyan" style="font-size: 10px;">Audit Pass</span>
             </div>
-            <div class="glass-card" style="padding: 0; max-height: 480px; overflow-y: auto; border-radius: var(--radius-lg);">
+            <div class="glass-card" style="padding: 0; max-height: 520px; overflow-y: auto; border-radius: var(--radius-lg); border: 1px solid var(--border);">
               ${activityFeed && activityFeed.length > 0 ? activityFeed.map(ev => `
-                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; background: ${ev.source === 'finance' ? 'rgba(16, 185, 129, 0.02)' : 'transparent'};">
-                  <span style="font-size: 1.2rem; min-width: 24px; text-align: center; opacity: 0.8;">
+                <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; gap: 14px; align-items: flex-start; transition: background var(--transition-fast); background: ${ev.source === 'finance' ? 'rgba(16, 185, 129, 0.03)' : 'rgba(255,255,255,0.01)'};">
+                  <span style="font-size: 1.3rem; min-width: 28px; text-align: center; opacity: 0.9; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));">
                     ${ev.source === 'finance' ? '💰' : (TICKET_EVENT_ICONS[ev.type] || '⚪')}
                   </span>
                   <div style="flex: 1; min-width: 0;">
-                    <div style="font-size: var(--font-sm); font-weight: 500; color: var(--text-primary); line-height: 1.4;">${ev.message}</div>
-                    <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;">
-                      <span>👤 ${ev.user || 'sistema'}</span>
-                      <span>${formatRelativeTs(ev.createdAt)}</span>
+                    <div style="font-size: var(--font-sm); font-weight: 600; color: var(--text-primary); line-height: 1.5; letter-spacing: -0.01em;">${ev.message}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between; font-weight: 500;">
+                      <span style="display:flex; align-items:center; gap:4px;"><i style="font-style:normal; opacity:0.6;">👤</i> ${ev.user || 'sistema'}</span>
+                      <span style="opacity:0.8;">${formatRelativeTs(ev.createdAt)}</span>
                     </div>
                   </div>
                 </div>
-              `).join('') : '<div style="text-align:center; padding: 40px; color: var(--text-muted); opacity: 0.5;">Sin actividad reciente para auditar.</div>'}
+              `).join('') : '<div style="text-align:center; padding: 60px; color: var(--text-muted); opacity: 0.5; font-weight: 500;">Sin actividad reciente para auditar.</div>'}
             </div>
           </section>
 

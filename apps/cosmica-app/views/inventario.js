@@ -57,17 +57,17 @@ export class InventarioView extends AsyncView {
       ${breadcrumb}
       ${header}
 
-      <div class="flex-between animate-fade-in" style="margin-top: var(--space-lg); flex-wrap: wrap; gap: var(--space-md);">
-        <div style="position: relative; flex: 1; min-width: 250px; max-width: 460px;">
+      <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-xl); flex-wrap: wrap; gap: var(--space-lg); background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+        <div style="position: relative; flex: 1; min-width: 280px; max-width: 480px;">
           <input type="text" id="inv-search" class="input"
             placeholder="Buscar por nombre, SKU o categoría..."
-            style="padding-left: 40px; margin-bottom: 0;">
-          <span style="position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:0.5;pointer-events:none;">🔍</span>
+            style="padding-left: 42px; margin-bottom: 0; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
+          <span style="position:absolute;left:15px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;">🔍</span>
         </div>
 
         <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
           ${this.renderViewModeSelector()}
-          ${canAdmin ? `<a href="#inventario-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Repuesto</a>` : ''}
+          ${canAdmin ? `<a href="#inventario-nuevo" class="btn btn-primary btn-sm" style="box-shadow: var(--shadow-glow);">➕ Nuevo Repuesto</a>` : ''}
         </div>
       </div>
 

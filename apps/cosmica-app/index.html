@@ -43,7 +43,7 @@
       padding: var(--space-xl);
       padding-top: calc(var(--navbar-h) + 25px);
       min-height: 100vh;
-      transition: all var(--transition-normal);
+      transition: padding var(--transition-normal), opacity var(--transition-normal);
     }
 
     /* Mobile Overrides (Operational Pass) */
@@ -188,21 +188,27 @@
     /* ── Dropdown perfil ─────────────────────────────────── */
     .perfil-dropdown {
       position: fixed;
-      top: calc(var(--navbar-h) - 5px);
+      top: calc(var(--navbar-h) + 8px);
       right: var(--space-lg);
-      /* Elevated above Navbar */
       z-index: 150;
-      background: rgba(5, 11, 20, 0.97);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: var(--radius-md);
+      background: rgba(8, 15, 28, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: var(--space-md);
-      min-width: 200px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      min-width: 220px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
       display: none;
+      transform: translateY(-8px);
+      transition: transform var(--transition-fast), opacity var(--transition-fast);
+      opacity: 0;
     }
-    .perfil-dropdown.open { display: block; }
+    .perfil-dropdown.open { 
+      display: block; 
+      transform: translateY(0);
+      opacity: 1;
+    }
 
     /* ── Navbar overflow protection ───────────────────────── */
     .navbar-email {
