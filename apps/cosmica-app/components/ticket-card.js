@@ -29,7 +29,7 @@ export function render(ticket, selected = false) {
 
   const metodoBadge = getMetodoPagoBadge(ticket.metodoPago);
   
-  const fecha = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString() : 'N/A';
+  const fecha = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString() : '—';
   const prioridad = ticket.planServicio || 'Estándar';
 
   const statusOptions = [
@@ -65,7 +65,7 @@ export function render(ticket, selected = false) {
           </h3>
           <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 2px; font-weight: 800;
                       text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">
-            ORDEN #${ticket.numeroOrden || 'N/A'}
+            ORDEN #${ticket.numeroOrden || '—'}
           </div>
         </div>
 

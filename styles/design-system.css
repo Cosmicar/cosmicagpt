@@ -336,7 +336,9 @@ td, th {
 .tickets-table-wrapper {
   width: 100%;
   max-width: 100%;
+  max-height: calc(100vh - 220px); /* Leave space for navbar and ops bar */
   overflow-x: auto;
+  overflow-y: auto; /* Enable vertical scrolling within the wrapper */
   -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -389,8 +391,8 @@ td, th {
   padding: 10px 14px; /* Reduced vertical padding */
   text-align: left;
   border-bottom: 1px solid var(--border); /* Thinner border */
-  /* position:sticky and top:0 removed — thead handles stickiness.
-     Double-sticky caused the header to float mid-table when scrolled. */
+  position: sticky;
+  top: 0;
   z-index: 20;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

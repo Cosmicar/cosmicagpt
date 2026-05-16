@@ -15,7 +15,7 @@ export function render(cliente) {
             ${cliente.nombre || 'Sin Nombre'} ${cliente.apellido || ''}
           </h3>
           <div class="vm-meta" style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 2px;">
-            DNI: ${cliente.dni || 'N/A'}
+            DNI: ${cliente.dni || '—'}
           </div>
         </div>
         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; margin-left: var(--space-sm);">
@@ -28,11 +28,11 @@ export function render(cliente) {
       <div style="flex: 1; min-width: 0;">
         <p style="color: var(--text-muted); font-size: var(--font-sm); margin: 0 0 var(--space-sm) 0; line-height: 1.7;">
           <strong style="color: var(--text-primary);">Tel:</strong>
-          <span class="text-truncate" style="display: inline-block; max-width: calc(100% - 32px); vertical-align: bottom;">${cliente.telefono || 'N/A'}</span><br>
-          <strong style="color: var(--text-primary);">Provincia:</strong> ${cliente.provincia || 'N/A'}<br>
+          <span class="text-truncate" style="display: inline-block; max-width: calc(100% - 32px); vertical-align: bottom;">${cliente.telefono || '—'}</span><br>
+          <strong style="color: var(--text-primary);">Provincia:</strong> ${cliente.provincia || '—'}<br>
           <span class="vm-details">
             <strong style="color: var(--text-primary);">Email:</strong>
-            <span class="text-truncate" style="display: inline-block; max-width: calc(100% - 48px); vertical-align: bottom;">${cliente.email || 'N/A'}</span>
+            <span class="text-truncate" style="display: inline-block; max-width: calc(100% - 48px); vertical-align: bottom;">${cliente.email || '—'}</span>
           </span>
         </p>
       </div>

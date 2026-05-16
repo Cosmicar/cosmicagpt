@@ -62,53 +62,67 @@ export class ConfiguracionView extends BaseView {
         ${breadcrumb}
         ${header}
         
-        <form id="config-form" class="card glass-card" style="max-width: 600px; padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);">
-          <div style="font-size: var(--font-sm); color: var(--text-muted); margin-bottom: var(--space-sm);">
-            Estos datos se utilizarán en los tickets impresos, mensajes de WhatsApp y encabezados del sistema.
+        <form id="config-form" class="card glass-card" style="max-width: 800px; padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-lg); position: relative; overflow: hidden;">
+          <!-- Premium background accent -->
+          <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--accent-cyan); filter: blur(80px); opacity: 0.15; pointer-events: none;"></div>
+          
+          <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: var(--space-md); margin-bottom: var(--space-xs);">
+            <h3 style="font-size: var(--font-lg); margin: 0 0 4px 0; color: var(--text-primary); font-weight: 700; letter-spacing: -0.01em;">Ajustes Generales</h3>
+            <div style="font-size: var(--font-sm); color: var(--text-muted); opacity: 0.8;">
+              Estos datos se utilizarán en los tickets impresos, mensajes de WhatsApp y encabezados del sistema.
+            </div>
           </div>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-            <div class="form-group">
-              <label class="label">Nombre del Taller</label>
-              <input type="text" name="nombreTaller" class="input" value="${config.nombreTaller || ''}" required>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-xl);">
+            <!-- Columna Izquierda -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">🏢</span> Nombre del Taller</label>
+                <input type="text" name="nombreTaller" class="input" value="${config.nombreTaller || ''}" required placeholder="Ej. Cósmica Repairs">
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">📍</span> Dirección Física</label>
+                <input type="text" name="direccion" class="input" value="${config.direccion || ''}" placeholder="Ej. Av. Central 456, Ciudad">
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">🎨</span> Color Principal (Acento UI)</label>
+                <div style="display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05);">
+                  <input type="color" name="colorPrincipal" value="${config.colorPrincipal || '#00e5ff'}" style="height: 32px; width: 32px; padding: 0; border: none; border-radius: 4px; background: none; cursor: pointer;">
+                  <span style="font-size: var(--font-sm); color: var(--text-primary); font-family: monospace; opacity: 0.8;">${config.colorPrincipal || '#00e5ff'}</span>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="label">Color Principal</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="color" name="colorPrincipal" value="${config.colorPrincipal || '#00e5ff'}" style="height: 40px; width: 40px; padding: 0; border: 1px solid var(--border); border-radius: 4px; background: none;">
-                <span style="font-size: var(--font-xs); color: var(--text-muted);">Acento UI</span>
+
+            <!-- Columna Derecha -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">💬</span> WhatsApp Contacto</label>
+                <input type="text" name="whatsapp" class="input" value="${config.whatsapp || ''}" placeholder="Ej. +54 9 11 2345-6789">
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">📸</span> Instagram / Redes</label>
+                <input type="text" name="instagram" class="input" value="${config.instagram || ''}" placeholder="Ej. @cosmica.repairs">
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">🖼️</span> URL del Logo (Opcional)</label>
+                <input type="url" name="logoUrl" class="input" value="${config.logoUrl || ''}" placeholder="https://tu-dominio.com/logo.png">
               </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="label">Dirección Física</label>
-            <input type="text" name="direccion" class="input" value="${config.direccion || ''}" placeholder="Av. Siempre Viva 123">
+          <div class="form-group" style="margin-top: var(--space-sm);">
+            <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">⚖️</span> Texto legal (Footer tickets)</label>
+            <textarea name="textoFooter" class="input" style="min-height: 80px; resize: vertical; line-height: 1.5; padding: 12px;" placeholder="Términos y condiciones de la reparación...">${config.textoFooter || ''}</textarea>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-            <div class="form-group">
-              <label class="label">WhatsApp Contacto</label>
-              <input type="text" name="whatsapp" class="input" value="${config.whatsapp || ''}" placeholder="+54 9 11...">
-            </div>
-            <div class="form-group">
-              <label class="label">Instagram / Redes</label>
-              <input type="text" name="instagram" class="input" value="${config.instagram || ''}" placeholder="@taller_ejemplo">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="label">URL del Logo (Opcional)</label>
-            <input type="url" name="logoUrl" class="input" value="${config.logoUrl || ''}" placeholder="https://ejemplo.com/logo.png">
-          </div>
-
-          <div class="form-group">
-            <label class="label">Texto legal (Footer tickets)</label>
-            <textarea name="textoFooter" class="input" style="min-height: 80px;">${config.textoFooter || ''}</textarea>
-          </div>
-
-          <div style="margin-top: var(--space-md); border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: flex-end;">
-            <button type="submit" class="btn btn-primary">💾 Guardar Configuración</button>
+          <div style="margin-top: var(--space-md); border-top: 1px solid rgba(255,255,255,0.05); padding-top: var(--space-lg); display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,229,255,0.2);">
+              💾 Guardar Configuración
+            </button>
           </div>
         </form>
       </div>
