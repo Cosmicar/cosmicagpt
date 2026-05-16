@@ -351,7 +351,12 @@ td, th {
   font-size: var(--font-sm);
 }
 
-/* Sticky header */
+/* Sticky header
+ * FIX: sticky is set on thead ONLY.
+ * Having position:sticky on both thead AND th caused the inner th (top:0)
+ * to stick to the top of the scroll container instead of the viewport,
+ * making the header row appear mid-table when scrolled.
+ */
 .tickets-table thead {
   position: sticky;
   top: calc(var(--navbar-h, 64px) - 1px);
@@ -389,8 +394,8 @@ td, th {
   padding: 10px 14px; /* Reduced vertical padding */
   text-align: left;
   border-bottom: 1px solid var(--border); /* Thinner border */
-  position: sticky;
-  top: 0;
+  /* position:sticky and top:0 removed — thead handles stickiness.
+     Double-sticky caused the header to float mid-table when scrolled. */
   z-index: 20;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

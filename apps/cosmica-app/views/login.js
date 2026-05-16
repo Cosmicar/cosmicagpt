@@ -37,6 +37,12 @@ export class LoginView extends BaseView {
           <button id="btnLogin" class="btn btn-primary" style="width:100%; margin-top: var(--space-md);">Ingresar al Sistema</button>
 
           <div id="loginError" class="alert alert-danger" style="display:none; margin-top: var(--space-lg); padding: var(--space-sm); justify-content: center;"></div>
+          
+          <div style="margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 1px solid var(--border); text-align: center;">
+            <p style="font-size: 11px; color: var(--text-muted); opacity: 0.7;">
+              ¿Problemas para ingresar? Contactá al administrador del taller para blanquear tu clave de operador.
+            </p>
+          </div>
         </div>
       </div>
     `;

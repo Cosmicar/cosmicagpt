@@ -37,7 +37,7 @@ function buildTrackingUrl(ticket) {
     const base = href.includes('/apps/cosmica-app/')
       ? href.split('/apps/cosmica-app/')[0]
       : window.location.origin;
-    return `${base}/estado.html?id=${encodeURIComponent(ticket.id || '')}`;
+    return `${base}/estado.html?orden=${encodeURIComponent(ticket.numeroOrden || '')}`;
   } catch { return ''; }
 }
 

@@ -119,6 +119,8 @@ export function showToast(message, type = 'info', duration = 3500) {
     }, 400);
   }, duration);
 }
+// Expose for usage outside component scope
+if (typeof window !== 'undefined') window.__cosmicaShowToast = showToast;
 
 /**
  * Muestra un toast con un botón de acción inline (usado por el mecanismo de undo).

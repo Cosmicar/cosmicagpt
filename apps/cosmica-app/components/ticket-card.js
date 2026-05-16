@@ -1,6 +1,6 @@
 import { WORK_STATUS } from '../../../js/domain.js';
 import { canAccess } from '../core/session.js';
-import { isOverdue, isHighValue, needsApprovalCTA } from '../services/tickets.js';
+import { isOverdue, isHighValue, hasBudgetApproved } from '../services/tickets.js';
 import { getAgingBadge } from '../core/intelligence.js';
 
 /**
@@ -42,7 +42,7 @@ export function render(ticket, selected = false) {
   const canEdit = canAccess('edit-ticket');
   const overdue   = isOverdue(ticket);
   const highValue = isHighValue(ticket);
-  const showCTA   = needsApprovalCTA(ticket) && canEdit;
+  const showCTA   = hasBudgetApproved(ticket) && canEdit;
 
   // Aging visual — uses centralized helper from intelligence.js
   const agingBadge = getAgingBadge(ticket);

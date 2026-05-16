@@ -40,7 +40,7 @@ export class InventarioView extends AsyncView {
   // ── Render ────────────────────────────────────────────────────────────────
 
   renderContent({ items }) {
-    const canCreate = canAccess('admin') || false; // only admin via catch-all
+    const canCreate = canAccess('inventario-write') || false; 
     const canAdmin  = canCreate;
 
     const breadcrumb = renderBreadcrumb([
@@ -121,7 +121,7 @@ export class InventarioView extends AsyncView {
     const badgeClass = stockBadgeClass(item);
     const badgeLabel = stockBadgeLabel(item);
     const costo      = Number(item.costo || 0).toLocaleString('es-AR');
-    const canAdmin   = canAccess('admin') || false;
+    const canAdmin   = canAccess('inventario-write') || false;
 
     return `
       <div class="card glass-card" style="display:flex;flex-direction:column;gap:var(--space-sm);">

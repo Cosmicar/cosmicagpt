@@ -6,6 +6,7 @@ import { TicketFormView } from '../views/ticket-form.js';
 import { InventarioView } from '../views/inventario.js';
 import { InventarioFormView } from '../views/inventario-form.js';
 import { FinanzasView } from '../views/finanzas.js';
+import { ConfiguracionView } from '../views/configuracion.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession, canAccess } from './session.js';
@@ -46,15 +47,7 @@ export class Router {
       'inventario-nuevo': InventarioFormView,
       'inventario-edit':  InventarioFormView,
       'finanzas':        FinanzasView,
-      'configuracion': class extends BaseView { 
-        render() { 
-          return renderEmptyState(
-            'Estamos preparando las mejores herramientas para que personalices tu experiencia en Cósmica App.',
-            '🚀',
-            '<div class="badge badge-cyan" style="font-size:12px; padding: 6px 16px;">PRÓXIMAMENTE</div>'
-          ); 
-        } 
-      }
+      'configuracion':    ConfiguracionView
     };
     
     // Escuchar cambios de ruta

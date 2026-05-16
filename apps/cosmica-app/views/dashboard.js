@@ -361,12 +361,17 @@ export class DashboardView extends AsyncView {
       return;
     }
 
-    const headers = Object.keys(data[0]).join(',');
+    const excludeKeys = ['_searchIndex', 'reentryRisk', 'criticalAlert', 'badge', 'isOverloaded'];
+    const sampleObj = data[0];
+    const headers = Object.keys(sampleObj).filter(k => !excludeKeys.includes(k)).join(',');
+    
     const rows = data.map(obj => {
-      return Object.values(obj).map(val => {
-        const str = String(val).replace(/,/g, ' ');
-        return `"${str}"`;
-      }).join(',');
+      return Object.keys(obj)
+        .filter(k => !excludeKeys.includes(k))
+        .map(k => {
+          const str = String(obj[k] || '').replace(/,/g, ' ').replace(/"/g, '""');
+          return `"${str}"`;
+        }).join(',');
     });
 
     const csvContent = [headers, ...rows].join('\n');
@@ -382,5 +387,11 @@ export class DashboardView extends AsyncView {
     // Liberar blob URL después de que el navegador inicia la descarga
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Exportación iniciada', 'success');
+  }
+
+  destroy() {
+    // Los eventos en .status-selector, .ticket-print-btn, etc son delegados al nodo principal por mainContent.innerHTML en el router (ya que se reemplaza el HTML, se limpian del DOM), pero para ser correctos:
+    // Los listeners de document.getElementById si se hicieron, se limpian si el nodo se destruye, pero en finanzas se usa ID en el DOM global? No, main-content.
+    // Dashboard no crea listeners en window ni document global.
   }
 }

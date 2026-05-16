@@ -208,15 +208,20 @@ export async function updateTicketStatus(id, newStatus) {
 
     // Auto-registrar ingreso en caja cuando un ticket es entregado con precio
     if (newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0) {
-      (async () => {
-        try {
-          const { autoRegistrarIngresoTicket, getCajaSession } = await import('./finanzas.js');
-          const session = await getCajaSession();
-          await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id);
-        } catch (e) {
-          console.warn('[tickets] auto-income registration failed silently:', e);
+      try {
+        const { autoRegistrarIngresoTicket, getCajaSession } = await import('./finanzas.js');
+        const session = await getCajaSession();
+        const autoResult = await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id);
+        if (!autoResult || !autoResult.success) {
+          throw new Error(autoResult?.error || 'Error desconocido al registrar ingreso');
         }
-      })();
+      } catch (e) {
+        console.warn('[tickets] auto-income registration failed:', e);
+        // We do not fail the status change, but we MUST alert the operator
+        if (typeof window !== 'undefined' && window.__cosmicaShowToast) {
+          window.__cosmicaShowToast('⚠️ El ticket se entregó pero NO pudo registrarse el pago en caja. Revisá manualmente.', 'warning', 10000);
+        }
+      }
     }
 
     invalidateTicketsCache();
@@ -378,7 +383,7 @@ export async function updateTicket(id, data) {
  */
 
 export function isOverdue(ticket) {
-  if (ticket.estado !== WORK_STATUS.enReparacion) return false;
+  if (ticket.estado !== WORK_STATUS.enReparacion && ticket.estado !== WORK_STATUS.ingresado) return false;
   if (!ticket.fechaIngreso) return false;
   return Date.now() - new Date(ticket.fechaIngreso).getTime() > 7 * 24 * 60 * 60 * 1000;
 }
@@ -387,7 +392,7 @@ export function isHighValue(ticket) {
   return Number(ticket.presupuesto || 0) >= 100_000;
 }
 
-export function needsApprovalCTA(ticket) {
+export function hasBudgetApproved(ticket) {
   return ticket.aprobadoCliente === true && ticket.estado === WORK_STATUS.ingresado;
 }
 

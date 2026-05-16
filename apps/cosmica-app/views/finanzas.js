@@ -1022,4 +1022,9 @@ export class FinanzasView extends AsyncView {
       });
     });
   }
+
+  destroy() {
+    // Limpieza al desmontar la vista
+    this._data = null;
+  }
 }
