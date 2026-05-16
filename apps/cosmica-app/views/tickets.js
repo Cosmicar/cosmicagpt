@@ -140,8 +140,6 @@ export class TicketsView extends AsyncView {
       this._searchDebounce = null;
     }
     this.selectedTickets.clear();
-    // Reset dynamic sticky variable so it doesn't bleed into other views
-    document.documentElement.style.removeProperty('--ops-bar-height');
   }
 
   // ── Render helpers ────────────────────────────────────────────────────────

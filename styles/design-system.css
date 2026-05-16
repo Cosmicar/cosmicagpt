@@ -351,14 +351,11 @@ td, th {
   font-size: var(--font-sm);
 }
 
-/* Sticky header — dynamic stacking via CSS variable.
- * --ops-bar-height is set by tickets.js after render (offsetHeight).
- * Defaults to 0px so this is safe in all other views.
- */
+/* Sticky thead was removed — overflow-x:auto on .tickets-table-wrapper creates
+ * a block formatting context that traps position:sticky, causing the header to
+ * appear between data rows. Table header now scrolls with the table. */
 .tickets-table thead {
-  position: sticky;
-  top: calc(var(--navbar-h, 64px) + var(--ops-bar-height, 0px));
-  z-index: 10; /* Above rows, below dropdowns */
+  z-index: 10;
 }
 .badge {
   display: inline-flex;
