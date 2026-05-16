@@ -20,8 +20,8 @@ const VIEW_MODES = [
 const VM_STORAGE_KEY = 'clientsViewMode';
 
 export class ClientesView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId   = 'clientes-container';
     this.allClientes   = [];
     this._page         = 1;

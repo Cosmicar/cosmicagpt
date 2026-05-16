@@ -31,8 +31,8 @@ const BULK_ACTIONS = [
 ];
 
 export class TicketsView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId    = 'tickets-container';
     this.allTickets     = [];
     this.currentFilter  = 'all';

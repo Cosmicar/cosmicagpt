@@ -13,8 +13,8 @@ const VIEW_MODES = [
 ];
 
 export class InventarioView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId = 'inventario-container';
     this.allItems    = [];
     this.viewMode    = localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';

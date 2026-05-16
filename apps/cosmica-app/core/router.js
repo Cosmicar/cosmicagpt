@@ -133,8 +133,14 @@ export class Router {
     document.querySelectorAll('.sidebar-link').forEach(link => {
       link.classList.remove('active');
       const href = link.getAttribute('href');
-      // Soporte para múltiples formas de referenciar la misma ruta
-      if (href === `#${route}` || (route === 'dashboard' && (href === '#' || href === '#dashboard'))) {
+      const linkRoute = href ? href.slice(1) : '';
+
+      // Match exact route or sub-routes (e.g. #inventario-nuevo highlights #inventario)
+      const isExactMatch = href === `#${route}`;
+      const isSubRoute   = linkRoute && route.startsWith(linkRoute) && linkRoute !== 'dashboard';
+      const isDashboard  = route === 'dashboard' && (href === '#' || href === '#dashboard');
+
+      if (isExactMatch || isSubRoute || isDashboard) {
         link.classList.add('active');
       }
     });

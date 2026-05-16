@@ -17,9 +17,10 @@ import { openWhatsApp, buildReadyMessage, buildApprovalMessage, buildReminderMes
  * Delegación de lógica a dashboard service.
  */
 export class DashboardView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId = 'dashboard-container';
+    this.stats       = null;
   }
 
   /**

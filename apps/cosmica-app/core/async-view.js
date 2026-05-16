@@ -6,8 +6,8 @@ import { renderLoadingState, renderErrorState, renderEmptyState } from '../compo
  * Automatiza los estados de carga, error y vacío.
  */
 export class AsyncView extends BaseView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId = 'async-view-container';
   }
 

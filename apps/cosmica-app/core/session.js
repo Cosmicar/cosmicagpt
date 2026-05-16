@@ -126,8 +126,8 @@ export function canAccess(action) {
 
   const role = profile.rol;
 
-  // Admin has full access
-  if (role === 'admin') return true;
+  // Admin and Tester have full access
+  if (role === 'admin' || role === 'tester') return true;
 
   switch (action) {
     case 'config':

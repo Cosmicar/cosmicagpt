@@ -127,10 +127,10 @@ function renderSidebar(profile) {
   const menuItems = [
     { id: 'dashboard',     label: 'Dashboard',     icon: '📊', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
     { id: 'tickets',       label: 'Trabajos',       icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
-    { id: 'clientes',      label: 'Clientes',       icon: '👥', roles: ['admin', 'recepcion', 'operador'] },
-    { id: 'inventario',    label: 'Inventario',     icon: '📦', roles: ['admin', 'tecnico', 'recepcion', 'operador'] },
-    { id: 'finanzas',      label: 'Finanzas',       icon: '💰', roles: ['admin', 'recepcion', 'tecnico', 'operador'] },
-    { id: 'configuracion', label: 'Configuración',  icon: '⚙️', roles: ['admin'] }
+    { id: 'clientes',      label: 'Clientes',       icon: '👥', roles: ['admin', 'recepcion', 'operador', 'tester'] },
+    { id: 'inventario',    label: 'Inventario',     icon: '📦', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'finanzas',      label: 'Finanzas',       icon: '💰', roles: ['admin', 'recepcion', 'tecnico', 'operador', 'tester'] },
+    { id: 'configuracion', label: 'Configuración',  icon: '⚙️', roles: ['admin', 'tester'] }
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));

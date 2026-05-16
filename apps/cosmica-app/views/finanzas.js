@@ -46,8 +46,8 @@ function difBadge(dif) {
 // ── View ──────────────────────────────────────────────────────────────────────
 
 export class FinanzasView extends AsyncView {
-  constructor() {
-    super();
+  constructor(params) {
+    super(params);
     this.containerId = 'finanzas-container';
     this._data       = null;
     this._cajaPeriod = 'session'; // 'session' | 'today' | 'week'
