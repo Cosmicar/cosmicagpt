@@ -35,14 +35,17 @@ export function badgeClass(estado) {
 // ─── Timeline (drawer-scoped ids, no conflict with ticket-form timeline) ─────
 
 function renderTimelineSkeleton() {
-  return Array(3).fill(`
-    <div style="display:grid;grid-template-columns:28px 1fr;gap:var(--space-sm);padding:var(--space-sm) 0;">
-      <div class="skeleton" style="width:24px;height:24px;border-radius:50%;"></div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="skeleton" style="width:80%;height:13px;"></div>
-        <div class="skeleton" style="width:40%;height:10px;"></div>
-      </div>
-    </div>`).join('');
+  return `
+    <div class="timeline-container">
+      ${Array(3).fill(`
+        <div class="timeline-item">
+          <div class="skeleton timeline-icon-wrapper"></div>
+          <div class="timeline-content">
+            <div class="skeleton" style="width:80%;height:12px;margin-bottom:6px;"></div>
+            <div class="skeleton" style="width:40%;height:10px;"></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
 }
 
 async function mountQvTimeline(ticketId) {
@@ -54,16 +57,20 @@ async function mountQvTimeline(ticketId) {
       container.innerHTML = `<div style="color:var(--text-muted);font-size:var(--font-sm);text-align:center;padding:var(--space-md) 0;opacity:0.6;">Sin eventos registrados aún.</div>`;
       return;
     }
-    container.innerHTML = events.map(ev => `
-      <div style="display:grid;grid-template-columns:28px 1fr;gap:var(--space-sm);padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:1rem;line-height:1.5;padding-top:2px;">${TICKET_EVENT_ICONS[ev.type] || '⚪'}</span>
-        <div>
-          <div style="font-size:var(--font-sm);color:var(--text-primary);font-weight:500;line-height:1.4;">${ev.message}</div>
-          <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:3px;">
-            👤 ${ev.user || 'sistema'}&nbsp;•&nbsp;🕒 ${formatRelativeTs(ev.createdAt)}
-          </div>
-        </div>
-      </div>`).join('');
+    container.innerHTML = `
+      <div class="timeline-container">
+        ${events.map(ev => `
+          <div class="timeline-item">
+            <div class="timeline-icon-wrapper">${TICKET_EVENT_ICONS[ev.type] || '⚪'}</div>
+            <div class="timeline-content">
+              <div class="timeline-message">${ev.message}</div>
+              <div class="timeline-meta">
+                <span>👤 ${ev.user || 'sistema'}</span>
+                <span>🕒 ${formatRelativeTs(ev.createdAt)}</span>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
   } catch (err) {
     container.innerHTML = `<div style="color:var(--danger);font-size:var(--font-sm);text-align:center;">⚠️ ${err.message || 'Error al cargar historial'}</div>`;
   }
@@ -74,14 +81,14 @@ async function mountQvTimeline(ticketId) {
 function renderHeader(ticket) {
   const estado = ticket.estado || WORK_STATUS.ingresado;
   return `
-    <div style="display:flex;align-items:center;gap:var(--space-sm);">
+    <div style="display:flex;align-items:center;gap:6px;">
       <span style="font-family:'Rajdhani',monospace;font-size:var(--font-lg);font-weight:700;color:var(--accent-cyan);">
         #${ticket.numeroOrden || '—'}
       </span>
       <span class="badge ${badgeClass(estado)}">${estado}</span>
       ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
       ${ticket.criticalAlert ? `<span class="badge ${ticket.criticalAlert.class}" title="${ticket.criticalAlert.reason}">${ticket.criticalAlert.label}</span>` : ''}
-      <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.numeroOrden}" title="Copiar orden" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
+      <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.numeroOrden}" title="Copiar orden" style="width:24px;height:24px;padding:0;font-size:10px;opacity:0.5;border:none;background:transparent;">📋</button>
     </div>`;
 }
 
@@ -104,20 +111,20 @@ function renderBody(ticket) {
   
   const techBlock = `
     <div class="qv-separator"></div>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div class="qv-section-label">🛠️ Técnico Asignado</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+      <div class="qv-section-label" style="margin:0;">🛠️ Técnico Asignado</div>
       ${!ticket.tecnicoAsignadoId ? `
-        <button class="btn btn-sm btn-primary qv-take-btn" data-id="${ticket.id}" style="font-size:10px; padding:4px 8px;">Tomar ticket</button>
+        <button class="btn btn-sm btn-primary qv-take-btn" data-id="${ticket.id}" style="font-size:9px; padding:3px 8px; min-height:24px;">Tomar ticket</button>
       ` : ''}
     </div>
-    <div style="display:flex; align-items:center; gap:var(--space-sm); margin-top:4px;">
+    <div style="display:flex; align-items:center; gap:var(--space-sm);">
        <div id="qv-tech-display" style="font-size:var(--font-sm); color:var(--text-primary); font-weight:600;">
          ${ticket.tecnicoAsignadoId ? `👨‍🔧 ${assignedName}` : '<span style="color:var(--text-muted); font-weight:400;">Sin técnico</span>'}
        </div>
-       ${isAdminOrOp ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:10px;">Cambiar</button>` : ''}
+       ${isAdminOrOp ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:9px; min-height:22px;">Cambiar</button>` : ''}
     </div>
     <div id="qv-tech-selector-wrap" style="display:none; margin-top:var(--space-sm);">
-       <select id="qv-tech-select" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px;">
+       <select id="qv-tech-select" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px;">
          <option value="">Cargando técnicos...</option>
        </select>
     </div>
@@ -171,13 +178,13 @@ function renderBody(ticket) {
 
   return `
     <!-- Meta grid -->
-    <div class="qv-meta-grid">
+    <div class="qv-meta-grid" style="gap: 12px var(--space-md);">
       <div class="qv-meta-item">
         <div class="qv-meta-label">Cliente</div>
-        <div class="qv-meta-value" style="display:flex;align-items:center;gap:6px; flex-wrap: wrap;">
+        <div class="qv-meta-value" style="display:flex;align-items:center;gap:6px; flex-wrap: wrap; line-height: 1.2;">
           ${cliente}
-          ${ticket.telefono ? `<button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" title="Copiar teléfono" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>` : ''}
-          ${ticket.clientBadge ? `<span class="badge ${ticket.clientBadge.class}" style="font-size:9px;">${ticket.clientBadge.label}</span>` : ''}
+          ${ticket.telefono ? `<button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}" title="Copiar teléfono" style="padding:0 4px; height: 18px; font-size:10px; opacity:0.6;">📋</button>` : ''}
+          ${ticket.clientBadge ? `<span class="badge ${ticket.clientBadge.class}" style="font-size:9px; padding: 1px 6px;">${ticket.clientBadge.label}</span>` : ''}
         </div>
       </div>
       <div class="qv-meta-item">
@@ -186,7 +193,7 @@ function renderBody(ticket) {
       </div>
       <div class="qv-meta-item">
         <div class="qv-meta-label">Equipo</div>
-        <div class="qv-meta-value">${equipo}</div>
+        <div class="qv-meta-value" style="line-height: 1.2;">${equipo}</div>
       </div>
       <div class="qv-meta-item">
         <div class="qv-meta-label">Plan</div>
@@ -209,11 +216,11 @@ function renderBody(ticket) {
     <!-- Problema -->
     <div class="qv-separator"></div>
     <div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="qv-section-label">Problema reportado</div>
-        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.problema || ''}" title="Copiar problema" style="padding:2px 6px; font-size:10px; opacity:0.6;">📋</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+        <div class="qv-section-label" style="margin:0;">Problema reportado</div>
+        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.problema || ''}" title="Copiar problema" style="width:24px;height:24px;padding:0;font-size:10px;opacity:0.4;border:none;background:transparent;">📋</button>
       </div>
-      <p style="font-size:var(--font-sm);color:var(--text-primary);line-height:1.6;margin:0;">
+      <p style="font-size:var(--font-sm);color:var(--text-primary);line-height:1.5;margin:0;">
         ${ticket.problema || 'No especificado'}
       </p>
     </div>
@@ -235,30 +242,31 @@ function renderBody(ticket) {
     ${ticket.telefono ? `
     <div class="qv-separator"></div>
     <div class="qv-section-label">📞 Contacto rápido</div>
-    <div style="display:flex;flex-direction:column;gap:8px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-md);padding:10px;">
+    <div style="background:rgba(37,211,102,0.03);border:1px solid rgba(37,211,102,0.15);border-radius:var(--radius-md);padding:10px;">
       <!-- Phone + quick actions row -->
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="font-size:var(--font-sm);font-weight:600;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ticket.telefono}</span>
-        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}"
-          style="min-width:44px;min-height:44px;padding:4px 10px;font-size:13px;flex-shrink:0;" title="Copiar teléfono">📋</button>
-        <a href="tel:${ticket.telefono}" class="btn btn-sm"
-          style="min-width:44px;min-height:44px;padding:4px 10px;font-size:12px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);display:inline-flex;align-items:center;gap:4px;flex-shrink:0;" title="Llamar">📱 Llamar</a>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:var(--font-md);font-weight:700;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;">${ticket.telefono}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${ticket.telefono}"
+            style="width:32px;height:32px;padding:0;font-size:12px;" title="Copiar teléfono">📋</button>
+          <a href="tel:${ticket.telefono}" class="btn btn-sm"
+            style="height:32px;padding:0 12px;font-size:11px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);display:inline-flex;align-items:center;gap:6px;" title="Llamar">📱 Llamar</a>
+        </div>
       </div>
-      ${ticket.dni ? `<div style="font-size:var(--font-xs);color:var(--text-muted);">DNI: ${ticket.dni}</div>` : ''}
-      <!-- WhatsApp action grid: 2 columns on mobile, wrap on desktop -->
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+      <!-- WhatsApp action grid -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
         <button class="btn btn-sm qv-wa-btn" data-action="listo"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">📲 Avisar listo</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Avisar listo</button>
         <button class="btn btn-sm qv-wa-btn" data-action="presupuesto"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">💰 Presupuesto</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Presupuesto</button>
         <button class="btn btn-sm qv-wa-btn" data-action="aprobacion"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">🛠 Aprobación</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Aprobación</button>
         <button class="btn btn-sm qv-wa-btn" data-action="repuesto"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">📦 Repuesto</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Repuesto</button>
         <button class="btn btn-sm qv-wa-btn" data-action="recordatorio"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);white-space:nowrap;">🔔 Recordar</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Recordar</button>
         <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"
-          style="min-height:44px;font-size:11px;padding:6px 4px;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);white-space:nowrap;">⚠ Último aviso</button>
+          style="height:34px;font-size:9px;font-weight:700;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);">Último aviso</button>
       </div>
     </div>` : ''}
 
@@ -275,40 +283,38 @@ function renderBody(ticket) {
     <!-- Timeline (lazy loaded) -->
     <div class="qv-separator"></div>
     <div>
-      <div class="qv-section-label">Historial</div>
+      <div class="qv-section-label" style="margin-bottom:var(--space-md);">Historial de la Orden</div>
       <div id="qv-timeline-events">${renderTimelineSkeleton()}</div>
     </div>
 
     <!-- Actions -->
-    <div class="drawer-footer" style="display:flex;flex-direction:column;gap:var(--space-sm);">
+    <div class="drawer-footer" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
       ${canEdit && estado === WORK_STATUS.listo ? `
-        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="width:100%; font-weight:700; min-height:44px;">
+        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; font-weight:700; height:36px; font-size:12px;">
           💵 COBRAR Y FINALIZAR
         </button>
       ` : ''}
       ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
-        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="width:100%; font-weight:700; min-height:44px;">
+        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; font-weight:700; height:36px; font-size:12px;">
           ✅ MARCAR COMO LISTO
         </button>
       ` : ''}
       ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.esperandoRepuesto) ? `
-        <button class="btn btn-secondary qv-reparacion-btn" data-id="${ticket.id}" style="width:100%; min-height:44px; background:rgba(251,146,60,0.1); color:#fb923c; border-color:rgba(251,146,60,0.35); font-weight:600;">
-          🔧 Enviar a Reparación
+        <button class="btn btn-secondary qv-reparacion-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; height:36px; background:rgba(251,146,60,0.1); color:#fb923c; border-color:rgba(251,146,60,0.35); font-weight:600; font-size:12px;">
+          🔧 REPARACIÓN
         </button>
       ` : ''}
       ${estado === WORK_STATUS.entregado ? `
-        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="width:100%; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2); min-height:44px;">
-          ♻️ Generar Reingreso (Garantía)
+        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2); height:36px; font-size:12px;">
+          ♻️ REINGRESO (GARANTÍA)
         </button>
       ` : ''}
-      <div style="display:flex;gap:var(--space-xs);">
-        <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="flex:1;min-height:44px;">🖨 A4</button>
-        <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="flex:1;min-height:44px;">🧾 Ticket</button>
-      </div>
-      <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="width:100%;text-align:center;display:block;min-height:44px;line-height:44px;padding:0 16px;">
-        📝 Editar completo
+      <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="height:34px; font-size:11px;">🖨 A4</button>
+      <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="height:34px; font-size:11px;">🧾 Ticket</button>
+      <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="grid-column: 1 / -1; height:34px; line-height:34px; padding:0; font-size:11px; text-align:center;">
+        📝 EDITAR COMPLETO
       </a>
-      <div id="qv-undo-container" style="margin-top: var(--space-sm);"></div>
+      <div id="qv-undo-container" style="grid-column: 1 / -1;"></div>
     </div>
   `;
 }

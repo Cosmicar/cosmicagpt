@@ -100,7 +100,7 @@ export class FinanzasView extends AsyncView {
     );
 
     return `
-      <div class="animate-fade-in" style="display:flex;flex-direction:column;gap:var(--space-xl);">
+      <div class="animate-fade-in" style="display:flex;flex-direction:column;gap:var(--space-lg);">
         ${breadcrumb}
 
         <!-- Header -->
@@ -343,14 +343,14 @@ export class FinanzasView extends AsyncView {
   renderKPI(label, value, color, icon, sub = '') {
     return `
       <div class="card glass-card" style="display:flex;flex-direction:column;gap:var(--space-xs);
-                  border-left:4px solid ${color};padding:var(--space-lg);min-width:0;overflow:hidden;">
+                  border-left:4px solid ${color};padding:var(--space-md);min-width:0;overflow:hidden;min-height:90px;justify-content:center;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <span style="font-size:9px;color:var(--text-muted);font-weight:800;letter-spacing:0.8px;">${label}</span>
-          <span style="font-size:18px;opacity:0.85;">${icon}</span>
+          <span style="font-size:16px;opacity:0.85;">${icon}</span>
         </div>
-        <div style="font-size:clamp(20px, 4vw, 28px);font-weight:800;color:${color};line-height:1.1;margin-top:4px;
+        <div style="font-size:clamp(18px, 3.5vw, 24px);font-weight:800;color:${color};line-height:1.1;margin-top:4px;
                     word-break:break-all;">${value}</div>
-        ${sub ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub}</div>` : ''}
+        ${sub ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub}</div>` : ''}
       </div>`;
   }
 
@@ -499,8 +499,7 @@ export class FinanzasView extends AsyncView {
           </h3>
         </div>
         <div style="display:flex;flex-direction:column;gap:var(--space-md);">
-          <div style="text-align:center;padding:var(--space-lg);background:rgba(255,255,255,0.03);
-                      border-radius:var(--radius-md);border:1px solid var(--border);">
+          <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-md); background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
             <div style="font-size:var(--font-xs);color:var(--text-muted);margin-bottom:4px;">BALANCE SESIÓN</div>
             <div style="font-size:32px;font-weight:900;color:${balColor};line-height:1;">
               ${ars(cajaDia.balance)}

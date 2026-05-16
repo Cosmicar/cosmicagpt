@@ -57,7 +57,7 @@ export class InventarioView extends AsyncView {
       ${breadcrumb}
       ${header}
 
-      <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-xl); flex-wrap: wrap; gap: var(--space-lg); background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+      <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-md); flex-wrap: wrap; gap: var(--space-md); background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
         <div class="search-wrapper">
           <input type="text" id="inv-search" class="input"
             placeholder="Buscar por nombre, SKU o categoría...">
@@ -72,7 +72,7 @@ export class InventarioView extends AsyncView {
 
       ${this.renderStockSummary(items)}
 
-      <div id="inv-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
+      <div id="inv-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-lg);">
         ${this.renderCards(items)}
       </div>
     `;

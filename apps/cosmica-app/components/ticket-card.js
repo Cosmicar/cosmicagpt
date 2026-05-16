@@ -94,16 +94,16 @@ export function render(ticket, selected = false) {
       <!-- ── Meta + problem ─────────────────────────────────────────────── -->
       <div style="flex:1;min-width:0;overflow:hidden;box-sizing:border-box; padding: 0 4px;">
         <p class="vm-meta"
-          style="color:var(--text-muted);font-size:var(--font-sm);margin-bottom:var(--space-md);
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.7;">
+          style="color:var(--text-muted);font-size:var(--font-sm);margin-bottom:10px;
+                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.5;">
           <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Equipo:</span> <span style="color: var(--text-primary); font-weight: 500;">${ticket.equipo || '—'} ${ticket.marca || ''}</span><br>
           <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Fecha:</span> <span style="color: var(--text-primary); font-weight: 500;">${fecha}</span><br>
           <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Prioridad:</span> <span style="color: var(--text-primary); font-weight: 700; text-transform:capitalize;">${prioridad}</span>
         </p>
 
         <div class="vm-problema"
-          style="border-top: 1px solid var(--border); padding-top: var(--space-sm);
-                 font-size: var(--font-sm); color: var(--text-muted); min-height: 3.2em;
+          style="border-top: 1px solid var(--border); padding-top: 6px;
+                 font-size: var(--font-sm); color: var(--text-muted); min-height: 3em;
                  overflow-wrap: anywhere; word-break: break-word; min-width: 0; max-width: 100%; box-sizing: border-box; line-height: 1.6;">
           <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Problema:</span>
           <span class="vm-problema-text" style="color: var(--text-primary); font-weight: 400;">${ticket.problema || 'No especificado'}</span>
@@ -118,8 +118,8 @@ export function render(ticket, selected = false) {
         </button>
       </div>` : ''}
 
-      <!-- ── Action bar — always visible, wraps on narrow viewports ─────── -->
-      <div style="margin-top:var(--space-md);border-top:1px solid var(--border);padding-top:var(--space-sm);
+      <!-- ── Action bar — always visible ─────── -->
+      <div style="margin-top:var(--space-sm);border-top:1px solid var(--border);padding-top:var(--space-xs);
                   display:flex;align-items:center;gap:4px;position:relative;z-index:10;
                   flex-wrap:wrap;min-width:0;box-sizing:border-box;">
         <div style="display:flex;gap:4px;flex:1;flex-wrap:wrap;min-width:0;box-sizing:border-box;align-items:center;">

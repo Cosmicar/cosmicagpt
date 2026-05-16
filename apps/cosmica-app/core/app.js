@@ -138,8 +138,9 @@ function renderSidebar(profile) {
   sidebar.innerHTML = `
     <div class="sidebar-nav">
       ${filteredItems.map(item => `
-        <a href="#${item.id}" class="sidebar-link ${window.location.hash === '#' + item.id || (item.id === 'dashboard' && !window.location.hash) ? 'active' : ''}" style="display: flex; align-items: center; gap: var(--space-md); padding: 12px 16px; border-radius: var(--radius-md); color: var(--text-muted); text-decoration: none; font-size: var(--font-sm); transition: var(--transition-fast);">
-          <i style="width: 20px; display: inline-flex; justify-content: center;">${item.icon}</i> ${item.label}
+        <a href="#${item.id}" class="sidebar-link ${window.location.hash === '#' + item.id || (item.id === 'dashboard' && !window.location.hash) ? 'active' : ''}">
+          <i class="sidebar-icon">${item.icon}</i>
+          <span class="sidebar-label">${item.label}</span>
         </a>
       `).join('')}
     </div>

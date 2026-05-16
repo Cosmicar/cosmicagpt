@@ -5,12 +5,12 @@ import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 
 function renderTimelineLoading() {
   return `
-    <div style="display: flex; flex-direction: column; gap: var(--space-md); padding: var(--space-sm) 0;">
+    <div class="timeline-container">
       ${Array(3).fill(`
-        <div style="display: grid; grid-template-columns: 28px 1fr; gap: var(--space-sm);">
-          <div class="skeleton" style="width: 24px; height: 24px; border-radius: 50%;"></div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="skeleton" style="width: 80%; height: 14px;"></div>
+        <div class="timeline-item">
+          <div class="skeleton timeline-icon-wrapper" style="border-radius: 50%;"></div>
+          <div class="timeline-content">
+            <div class="skeleton" style="width: 80%; height: 14px; margin-bottom: 8px;"></div>
             <div class="skeleton" style="width: 40%; height: 10px;"></div>
           </div>
         </div>
@@ -42,45 +42,36 @@ function renderEvent(event) {
   
   if (event.type === 'status_changed' && meta.from && meta.to) {
     detailHtml = `
-      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--accent-cyan);">
-        <div style="font-weight: 600; margin-bottom: 4px;">🟡 Cambio de Estado</div>
-        <div style="font-family: monospace;">${meta.from} → ${meta.to}</div>
+      <div class="timeline-detail detail-status">
+        <div style="font-weight: 600; margin-bottom: 2px;">🟡 Cambio de Estado</div>
+        <div style="font-family: monospace; opacity: 0.9;">${meta.from} → ${meta.to}</div>
       </div>
     `;
   } else if (event.type === 'ticket_edited' && meta.presupuesto !== undefined) {
     detailHtml = `
-      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(0, 229, 255, 0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--accent-cyan);">
-        <div style="font-weight: 600; margin-bottom: 4px;">💰 Presupuesto</div>
-        <div style="font-family: monospace;">$${meta.presupuesto.toLocaleString('es-AR')}</div>
+      <div class="timeline-detail detail-edit">
+        <div style="font-weight: 600; margin-bottom: 2px;">💰 Presupuesto</div>
+        <div style="font-family: monospace; opacity: 0.9;">$${meta.presupuesto.toLocaleString('es-AR')}</div>
       </div>
     `;
   } else if (event.type === 'ticket_edited' && meta.totalRepuestos !== undefined) {
     detailHtml = `
-      <div style="font-size: var(--font-xs); margin-top: 8px; color: var(--text-secondary); background: rgba(16, 185, 129, 0.03); padding: 8px; border-radius: 4px; border-left: 3px solid var(--success);">
-        <div style="font-weight: 600; margin-bottom: 4px;">🔧 Repuestos</div>
-        <div style="font-family: monospace;">Total: $${meta.totalRepuestos.toLocaleString('es-AR')} (${meta.cantidad} ítems)</div>
+      <div class="timeline-detail detail-finance">
+        <div style="font-weight: 600; margin-bottom: 2px;">🔧 Repuestos</div>
+        <div style="font-family: monospace; opacity: 0.9;">Total: $${meta.totalRepuestos.toLocaleString('es-AR')} (${meta.cantidad} ítems)</div>
       </div>
     `;
   }
 
   return `
-    <div style="
-      display: grid;
-      grid-template-columns: 28px 1fr;
-      gap: var(--space-md);
-      padding: var(--space-lg) 0;
-      border-bottom: 1px solid var(--border);
-    ">
-      <span style="font-size: 1.1rem; line-height: 1.5; padding-top: 2px; filter: grayscale(0.2);">${icon}</span>
-      <div>
-        <div style="font-size: var(--font-sm); color: var(--text-primary); line-height: 1.5; font-weight: 500;">
-          ${event.message}
-        </div>
+    <div class="timeline-item">
+      <div class="timeline-icon-wrapper">${icon}</div>
+      <div class="timeline-content">
+        <div class="timeline-message">${event.message}</div>
         ${detailHtml}
-        <div style="font-size: var(--font-xs); color: var(--text-muted); margin-top: 6px; display: flex; gap: 12px; align-items: center;">
-          <span style="opacity: 0.8; display: flex; align-items: center; gap: 4px;">👤 ${user}</span>
-          <span style="opacity: 0.3;">•</span>
-          <span style="opacity: 0.8; display: flex; align-items: center; gap: 4px;">🕒 ${time}</span>
+        <div class="timeline-meta">
+          <span>👤 ${user}</span>
+          <span>🕒 ${time}</span>
         </div>
       </div>
     </div>`;
@@ -88,7 +79,7 @@ function renderEvent(event) {
 
 function renderTimelineEvents(events) {
   if (!events.length) return renderTimelineEmpty();
-  return events.map(renderEvent).join('');
+  return `<div class="timeline-container">${events.map(renderEvent).join('')}</div>`;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -99,7 +90,7 @@ function renderTimelineEvents(events) {
  */
 export function renderTicketTimeline() {
   return `
-    <div class="card glass-card" style="margin-top: var(--space-xl); max-width: 900px;">
+    <div class="card glass-card" style="margin-top: var(--space-lg); max-width: 900px;">
       <div style="
         display: flex;
         align-items: center;
@@ -107,14 +98,14 @@ export function renderTicketTimeline() {
         margin-bottom: var(--space-md);
       ">
         <h3 style="
-          font-size: var(--font-sm);
-          font-weight: 600;
-          color: var(--text-secondary);
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-muted);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
           margin: 0;
         ">Historial de la orden</h3>
-        <span class="badge badge-cyan" style="font-size: var(--font-xs);">Timeline</span>
+        <span class="badge" style="font-size: 9px; opacity: 0.8;">Timeline</span>
       </div>
       <div id="ticket-timeline-events">
         ${renderTimelineLoading()}

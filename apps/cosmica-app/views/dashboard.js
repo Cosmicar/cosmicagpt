@@ -115,10 +115,10 @@ export class DashboardView extends AsyncView {
     const canCreateTicket = canAccess('create-ticket');
 
     return `
-      <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-xl);">
+      <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-lg);">
         
         <!-- Header del Dashboard -->
-        <header class="flex-between" style="margin-bottom: var(--space-lg);">
+        <header class="flex-between" style="margin-bottom: var(--space-md);">
           <div>
             <div class="badge badge-cyan" style="margin-bottom: var(--space-sm); opacity: 0.8;">Operativo</div>
             <h1 style="font-size: var(--font-3xl); font-weight: 800; letter-spacing: -0.03em;">Panel de Control</h1>
@@ -135,7 +135,7 @@ export class DashboardView extends AsyncView {
         </header>
 
         <!-- KPIs Principales -->
-        <section class="kpi-grid" style="margin-bottom: var(--space-xl);">
+        <section class="kpi-grid" style="margin-bottom: var(--space-lg);">
           ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
           ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
           ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
@@ -145,8 +145,8 @@ export class DashboardView extends AsyncView {
         
         <!-- Atención Requerida -->
         ${attentionRequired && attentionRequired.length > 0 ? `
-        <section style="background: rgba(255, 71, 87, 0.03); padding: var(--space-xl); border-radius: var(--radius-xl); border: 1px solid rgba(255, 71, 87, 0.08); margin-bottom: var(--space-2xl);">
-          <div class="section-divider flex-between" style="margin-bottom: var(--space-lg);">
+        <section style="background: rgba(255, 71, 87, 0.03); padding: var(--space-lg); border-radius: var(--radius-xl); border: 1px solid rgba(255, 71, 87, 0.08); margin-bottom: var(--space-xl);">
+          <div class="section-divider flex-between" style="margin-bottom: var(--space-md);">
             <h3 style="font-size: var(--font-lg); font-weight: 800; color: var(--danger); display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em;">
               <span>⚠️</span> Atención Requerida
             </h3>
@@ -160,8 +160,8 @@ export class DashboardView extends AsyncView {
 
         <!-- Follow-up Alerts -->
         ${this._followUpItems.length > 0 ? `
-        <section style="background:rgba(37,211,102,0.03);padding:var(--space-xl);border-radius:var(--radius-xl);border:1px solid rgba(37,211,102,0.1); margin-bottom: var(--space-2xl);">
-          <div class="section-divider flex-between" style="margin-bottom:var(--space-lg);">
+        <section style="background:rgba(37,211,102,0.03);padding:var(--space-lg);border-radius:var(--radius-xl);border:1px solid rgba(37,211,102,0.1); margin-bottom: var(--space-xl);">
+          <div class="section-divider flex-between" style="margin-bottom:var(--space-md);">
             <h3 style="font-size:var(--font-lg);font-weight:800;color:#25D366;display:flex;align-items:center;gap:10px; letter-spacing: -0.02em;">
               <span>📲</span> Seguimientos Pendientes
             </h3>
@@ -187,7 +187,7 @@ export class DashboardView extends AsyncView {
         </section>
         ` : ''}
 
-        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-lg);">
 
           <!-- Satélite de Actividad Global -->
           <section>

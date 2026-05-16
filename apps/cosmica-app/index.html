@@ -40,79 +40,52 @@
     }
 
     .main-content {
-      padding: var(--space-xl);
-      padding-top: calc(var(--navbar-h) + 25px);
+      padding: var(--space-lg); /* Reduced from XL for density */
+      padding-top: calc(var(--navbar-h) + 16px); /* Reduced from 25px */
       min-height: 100vh;
-      transition: padding var(--transition-normal), opacity var(--transition-normal);
+      transition: padding var(--transition-fast), opacity var(--transition-normal);
     }
 
     /* Mobile Overrides (Operational Pass) */
     @media (max-width: 768px) {
       :root {
-        --navbar-h: 55px; /* Navbar más delgada en mobile */
+        --navbar-h: 50px; /* Slimmer navbar */
       }
 
-      /* iOS Safari zoom prevention: inputs <16px trigger auto-zoom on focus */
+      /* iOS Safari zoom prevention */
       input, select, textarea {
         font-size: 16px !important;
       }
 
-      /* Prevent rubber-band scroll bounce on iOS within the content area */
       .main-content {
         overscroll-behavior: none;
+        padding: var(--space-sm); /* Maximum density for mobile */
+        padding-top: calc(var(--navbar-h) + 12px);
       }
       
       .navbar {
-        padding: 0 var(--space-md);
+        padding: 0 var(--space-sm);
         height: var(--navbar-h);
       }
 
       .sidebar {
         top: var(--navbar-h);
         height: calc(100vh - var(--navbar-h));
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        width: 280px; /* Un poco más ancho para touch */
-      }
-
-      .sidebar.active {
-        transform: translateX(0);
-      }
-
-      .main-content {
-        margin-left: 0;
-        padding: var(--space-md); /* Menos padding lateral */
-        padding-top: calc(var(--navbar-h) + 15px);
+        width: 260px;
       }
 
       /* Densidad operacional en cards */
       .glass-card {
-        padding: var(--space-md) !important;
-      }
-
-      /* Ajuste de gaps en grids */
-      .grid-stack-mobile {
-        gap: var(--space-md) !important;
-      }
-
-      /* Buscadores y filtros */
-      .operational-controls {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: var(--space-sm) !important;
-      }
-
-      .search-wrapper-mobile {
-        max-width: 100% !important;
+        padding: var(--space-sm) !important;
       }
 
       /* Formularios más compactos */
       .form-group {
-        margin-bottom: var(--space-md) !important;
+        margin-bottom: var(--space-sm) !important;
       }
       
       .navbar-logo {
-        font-size: var(--font-md) !important;
+        font-size: 14px !important;
       }
     }
 

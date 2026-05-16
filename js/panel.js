@@ -845,34 +845,37 @@ function renderDirectorio(clientes) {
 
 function renderTarjetaCliente(c) {
   const card = document.createElement("div");
-  card.style.cssText = "background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .2s,box-shadow .2s;";
-  card.onmouseenter = () => { card.style.borderColor = "var(--accent2)"; card.style.boxShadow = "0 0 14px rgba(0,229,255,.12)"; };
-  card.onmouseleave = () => { card.style.borderColor = "var(--border)";  card.style.boxShadow = "none"; };
+  card.className = "card glass-card client-card-item";
   card.onclick = () => abrirPerfilCliente(c.id);
 
   const origen = c.origenContacto === "remoto"
-    ? `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,94,0,.12);color:var(--accent);">Remoto</span>`
-    : `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,229,255,.1);color:var(--accent2);">Taller</span>`;
+    ? `<span class="badge" style="background:rgba(255,94,0,0.1);color:var(--accent-orange);">Remoto</span>`
+    : `<span class="badge" style="background:rgba(0,229,255,0.1);color:var(--accent-cyan);">Taller</span>`;
 
   const unificadoBadge = c.status === "merged" 
-    ? `<span class="badge" style="background:rgba(255,170,0,0.1);color:var(--warning);font-size:10px;padding:2px 6px;border:1px solid var(--warning);">UNIFICADO</span>` 
+    ? `<span class="badge" style="background:rgba(255,170,0,0.1);color:var(--warning);border:1px solid var(--warning);">UNIFICADO</span>` 
     : "";
 
   card.innerHTML = `
-    <div style="font-size:16px;font-weight:700;color:var(--accent2);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
-      <span>${escapeHtml(c.apellido || "—")}, ${escapeHtml(c.nombre || "—")}</span>
-      ${unificadoBadge}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:700;color:var(--text-primary);line-height:1.2;">
+        ${escapeHtml(c.apellido || "—")}, ${escapeHtml(c.nombre || "—")}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        ${origen}
+        ${unificadoBadge}
+      </div>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
-      <span style="color:var(--accent2);font-weight:bold;">${escapeHtml(c.clienteCodigo || "CLI-???")}</span> &nbsp;·&nbsp; DNI: ${escapeHtml(c.dni || "—")} &nbsp;·&nbsp; Tel: ${escapeHtml(c.telefono || "—")}
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:monospace;">
+      <span style="color:var(--accent-cyan);font-weight:700;">${escapeHtml(c.clienteCodigo || "CLI-???")}</span> &nbsp;·&nbsp; DNI: ${escapeHtml(c.dni || "—")}
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <span style="font-size:12px;color:var(--muted);">${escapeHtml(c.provincia || "—")}</span>
-      ${origen}
+    <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;">
+       <span>📞 ${escapeHtml(c.telefono || "—")}</span>
+       <span style="opacity:0.8;">📍 ${escapeHtml(c.provincia || "—")}</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr;gap:8px;">
-      <button class="btn btn-sm btn-primary" style="width:100%;font-size:11px;padding:6px;" onclick="event.stopPropagation(); window.nuevoTrabajoDesdeCliente('${c.id}')">
-        ➕ Nuevo Trabajo
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+      <button class="btn btn-sm btn-primary" style="width:100%;font-size:10px;padding:4px;min-height:28px;" onclick="event.stopPropagation(); window.nuevoTrabajoDesdeCliente('${c.id}')">
+        ➕ NUEVO TRABAJO
       </button>
     </div>
   `;
@@ -1856,17 +1859,17 @@ function mergeTrabajosById(trabajos) {
 
 function renderTrabajoCard(t, c = {}) {
   const card = document.createElement("div");
-  card.className = "card-trabajo";
+  card.className = "card glass-card card-trabajo-item";
 
   const diasSinMover = daysSince(t.updatedAt || t.fechaReparado || t.fechaEntregado || t.fechaIngreso);
   const isActivo = t.estado !== WORK_STATUS.entregado && t.estado !== WORK_STATUS.reingresada;
 
   if (isActivo) {
     if (diasSinMover >= 7) {
-      card.style.border = "1px solid var(--danger)";
-      card.style.boxShadow = "0 0 15px rgba(255,0,127,0.2)";
+      card.style.borderColor = "var(--danger)";
+      card.style.boxShadow = "0 0 15px rgba(255,0,127,0.15)";
     } else if (diasSinMover >= 3) {
-      card.style.border = "1px solid var(--warning)";
+      card.style.borderColor = "var(--accent-orange)";
     }
   }
 
@@ -1874,8 +1877,8 @@ function renderTrabajoCard(t, c = {}) {
   if (t.estado === WORK_STATUS.entregado && t.fechaEntregado) {
     const dias = daysRemaining(t.fechaEntregado, t.garantiaDias || 90);
     garantiaHtml = dias > 0
-      ? `<div class="card-garantia">Garantía: ${dias} días restantes</div>`
-      : `<div class="card-garantia vencida">Garantía vencida</div>`;
+      ? `<div style="font-size:10px; color:var(--success); font-weight:700; margin-top:4px;">🛡️ GARANTÍA: ${dias} DÍAS</div>`
+      : `<div style="font-size:10px; color:var(--danger); font-weight:700; margin-top:4px;">⚠️ GARANTÍA VENCIDA</div>`;
   }
 
   const telClean = onlyDigits(c?.telefono || "");
@@ -1889,7 +1892,7 @@ function renderTrabajoCard(t, c = {}) {
   );
   const btnWa = telClean
     ? `<a href="https://wa.me/549${telClean}?text=${waMsg}" target="_blank" rel="noopener">
-         <button class="btn btn-sm btn-wa">WhatsApp</button>
+         <button class="btn btn-sm" style="background:rgba(37,211,102,0.1); color:#25D366; border:1px solid rgba(37,211,102,0.2); font-size:10px; padding:4px 8px; min-height:28px;">WA</button>
        </a>`
     : "";
 
@@ -1898,79 +1901,68 @@ function renderTrabajoCard(t, c = {}) {
   const operatorCanEdit = state.session?.profile?.rol === "operador" && t.tipo === "taller";
   const canEdit   = admin || operatorCanEdit;
   const canDelete = admin || (state.session?.profile?.rol === "operador" && t.tipo === "taller" && t.estado !== "Entregado");
-  let botonesHtml = "";
-
+  
+  let actionsHtml = "";
   if (!bloqueado) {
-    botonesHtml = `
-      <div class="card-actions-wrapper">
-        <div class="btn-group">
-          <div class="btn-group-title">Cambiar Estado</div>
-          <button class="btn btn-sm btn-reparacion" onclick="cambiarEstado('${t.id}','${WORK_STATUS.enReparacion}')">En reparaci\u00f3n</button>
-          <button class="btn btn-sm btn-listo" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">Listo</button>
-          <button class="btn btn-sm btn-entregado" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">Entregado</button>
-        </div>
-        <div class="btn-group">
-          <div class="btn-group-title">Acciones</div>
-          ${canEdit ? `<button class="btn btn-sm btn-edit" onclick="editarTrabajo('${t.id}','${t.clienteId}')">Editar</button>` : ""}
-          ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar"}</button>` : ""}
-          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
+    actionsHtml = `
+      <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:10px; padding-top:8px; border-top:1px solid var(--border);">
+        <button class="btn btn-sm btn-primary" style="flex:1; font-size:10px; min-height:30px;" onclick="cambiarEstado('${t.id}','${WORK_STATUS.listo}')">LISTO</button>
+        <button class="btn btn-sm btn-success" style="flex:1; font-size:10px; min-height:30px;" onclick="cambiarEstado('${t.id}','${WORK_STATUS.entregado}')">COBRAR</button>
+        <div style="width:100%; display:flex; gap:4px; margin-top:4px;">
+          ${canEdit ? `<button class="btn btn-sm btn-secondary" style="flex:1; font-size:10px; min-height:28px;" onclick="editarTrabajo('${t.id}','${t.clienteId}')">EDITAR</button>` : ""}
+          <button class="btn btn-sm btn-secondary" style="flex:1; font-size:10px; min-height:28px;" onclick="imprimirTicket('${t.id}')">TICKET</button>
           ${btnWa}
         </div>
       </div>
     `;
   } else {
-    // Estado Bloqueado (Entregado o Reingresada)
-    const isReingresada = t.estado === WORK_STATUS.reingresada;
-    botonesHtml = `
-      <div class="card-actions-wrapper">
-        <div class="btn-group">
-          <div class="btn-group-title">Acciones ${admin ? '<span class="badge badge-admin">MODO ADMIN</span>' : ''}</div>
-          ${canReenterWork(t.estado) ? `<button class="btn btn-sm btn-reingreso" onclick="reingresarTrabajo('${t.id}')">Reingresar</button>` : ""}
-          
-          ${admin ? `
-            <button class="btn btn-sm btn-edit btn-admin" onclick="editarTrabajo('${t.id}','${t.clienteId}', true)">Editar (Admin)</button>
-            <button class="btn btn-sm btn-danger btn-admin" onclick="borrarTrabajo('${t.id}')">${t.reingreso ? "Eliminar Reingreso" : "Borrar (Admin)"}</button>
-          ` : ""}
-          
-          <button class="btn btn-sm btn-ticket" onclick="imprimirTicket('${t.id}')">Ticket</button>
-          ${btnWa}
-          ${isReingresada ? `<span class="reingresada-label">Orden reingresada</span>` : ""}
-        </div>
+    actionsHtml = `
+      <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:10px; padding-top:8px; border-top:1px solid var(--border);">
+        ${canReenterWork(t.estado) ? `<button class="btn btn-sm btn-primary" style="flex:1; font-size:10px; min-height:30px;" onclick="reingresarTrabajo('${t.id}')">REINGRESAR</button>` : ""}
+        <button class="btn btn-sm btn-secondary" style="flex:1; font-size:10px; min-height:30px;" onclick="imprimirTicket('${t.id}')">TICKET</button>
+        ${admin ? `<button class="btn btn-sm btn-danger" style="width:100%; font-size:10px; min-height:28px; margin-top:4px;" onclick="borrarTrabajo('${t.id}')">BORRAR (ADMIN)</button>` : ""}
+        ${btnWa}
       </div>
     `;
   }
 
   card.innerHTML = `
-    <div class="card-header">
-      <div>
-        <div class="card-nombre">${escapeHtml(c?.nombre || "—")} ${escapeHtml(c?.apellido || "")}</div>
-        <div class="card-meta">
-          DNI: ${escapeHtml(c?.dni || "—")} | Orden: ${escapeHtml(t.numeroOrden || "—")}
-          ${t.ordenOriginal ? ` | Reingreso de: <b>${escapeHtml(t.ordenOriginal)}</b>` : ""}
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+      <div style="min-width:0;">
+        <div style="font-size:13px; font-weight:700; color:var(--text-primary); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          ${escapeHtml(c?.nombre || "—")} ${escapeHtml(c?.apellido || "")}
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:2px; font-family:monospace;">
+          <span style="color:var(--accent-cyan); font-weight:700;">#${escapeHtml(t.numeroOrden || "—")}</span>
+          ${t.ordenOriginal ? ` <span style="opacity:0.6;">(Ex #${escapeHtml(t.ordenOriginal)})</span>` : ""}
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
         ${badgeEstado(t.estado)}
-        ${(diasSinMover >= 3 && isActivo) ? `<span class="demora-tag" style="color: ${diasSinMover >= 7 ? 'var(--danger)' : 'var(--warning)'}" title="Último movimiento: ${formatDateTime(t.updatedAt || t.fechaReparado || t.fechaEntregado || t.fechaIngreso)}">${diasSinMover} días sin actualizar</span>` : ""}
+        ${(diasSinMover >= 3 && isActivo) ? `<span style="font-size:9px; font-weight:700; color:${diasSinMover >= 7 ? 'var(--danger)' : 'var(--accent-orange)'}">${diasSinMover}d inactivo</span>` : ""}
       </div>
     </div>
-    <div class="card-info">
-      <div class="card-info-item"><b>Equipo:</b> ${escapeHtml(t.equipo || "—")}</div>
-      <div class="card-info-item"><b>Tipo:</b> ${escapeHtml(t.tipo || "—")}</div>
-      <div class="card-info-item"><b>Marca:</b> ${escapeHtml(t.marca || "—")}</div>
-      <div class="card-info-item"><b>Modelo:</b> ${escapeHtml(t.modelo || "—")}</div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px 8px; font-size:11px; margin-bottom:8px;">
+      <div style="color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><b>Eq:</b> ${escapeHtml(t.equipo || "—")}</div>
+      <div style="color:var(--text-muted); text-align:right;"><b>Mod:</b> ${escapeHtml(t.modelo || "—")}</div>
     </div>
-    <div class="card-problema">${escapeHtml(t.problema || "—")}</div>
-    ${t.diagnostico ? `<div class="card-problema" style="background: rgba(0,229,255,0.1); color: var(--accent2);"><b>Diagnóstico:</b> ${escapeHtml(t.diagnostico)}</div>` : ""}
-    ${t.servicioRealizado ? `<div class="card-problema" style="background: rgba(16,185,129,0.1); color: var(--success);"><b>Servicio Realizado:</b> ${escapeHtml(t.servicioRealizado)}</div>` : ""}
-    <div class="card-precio">$${formatMoney(t.precio)}</div>
-    ${garantiaHtml}
-    <div class="card-fechas">
-      Ingreso: ${formatDateTime(t.fechaIngreso)}<br>
-      Reparado: ${formatDateTime(t.fechaReparado)}<br>
-      Entregado: ${formatDateTime(t.fechaEntregado)}
+
+    <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:6px; padding:6px; font-size:11px; color:var(--text-primary); line-height:1.4; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+      ${escapeHtml(t.problema || "Sin descripción")}
     </div>
-    <div class="card-buttons">${botonesHtml}</div>
+
+    <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div style="font-size:16px; font-weight:800; color:var(--accent-cyan); letter-spacing:-0.02em;">$${formatMoney(t.precio)}</div>
+      ${garantiaHtml}
+    </div>
+
+    <div style="font-size:9px; color:var(--text-muted); margin-top:6px; opacity:0.6; display:flex; justify-content:space-between;">
+      <span>In: ${formatDate(t.fechaIngreso)}</span>
+      ${t.fechaEntregado ? `<span>Out: ${formatDate(t.fechaEntregado)}</span>` : ""}
+    </div>
+
+    ${actionsHtml}
   `;
 
   return card;

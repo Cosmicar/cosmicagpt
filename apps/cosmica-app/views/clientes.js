@@ -103,7 +103,7 @@ export class ClientesView extends AsyncView {
     
     // Controles de búsqueda y acción
     html += `
-      <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-lg); background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+      <div class="operational-controls flex-between animate-fade-in" style="margin-top: var(--space-md); background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
         <div class="search-wrapper">
           <input type="text" id="cliente-search" class="input" placeholder="Buscar por nombre, DNI o teléfono...">
           <span class="search-icon">🔍</span>
@@ -117,7 +117,7 @@ export class ClientesView extends AsyncView {
         </div>
       </div>
       
-      <div id="clientes-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">
+      <div id="clientes-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-lg);">
         ${this.renderCards(this.getPagedClientes(clientes))}
       </div>
       <div id="cl-pagination-bar"></div>
