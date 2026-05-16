@@ -96,6 +96,8 @@ export async function createTicket(data) {
     const nuevoTrabajo = {
       numeroOrden,
       clienteId: data.clienteId,
+      nombre:   data.nombre   || '',
+      apellido: data.apellido || '',
       tipo,
       equipo: data.equipo.trim(),
       marca: data.marca ? data.marca.trim() : "",
@@ -393,7 +395,9 @@ export function isHighValue(ticket) {
 }
 
 export function hasBudgetApproved(ticket) {
-  return ticket.aprobadoCliente === true && ticket.estado === WORK_STATUS.ingresado;
+  // Only checks the approval flag — estado check was wrong: budget stays approved
+  // after moving from ingresado → enReparacion, so the CTA must not disappear.
+  return ticket.aprobadoCliente === true;
 }
 
 /**
@@ -426,9 +430,10 @@ export async function updateMultipleTicketStatus(ids, status) {
   if (!failed.length) return { success: true, updated: ids.length };
 
   return {
-    success: failed.length < ids.length,
-    updated: ids.length - failed.length,
-    error:   `${failed.length} de ${ids.length} ticket(s) fallaron al actualizar.`,
+    success:        false,                     // at least one failed → never true
+    partialSuccess: failed.length < ids.length, // some succeeded
+    updated:        ids.length - failed.length,
+    error:          `${failed.length} de ${ids.length} ticket(s) fallaron al actualizar.`,
   };
 }
 
@@ -557,7 +562,11 @@ export async function approveTicketBudget(id) {
       aprobadoCliente: true,
       updatedAt: serverTimestamp(),
     });
-    await ensureBudgetApprovedEvent(id);
+    await addTicketHistoryEvent(id, {
+      type:    TICKET_EVENT_TYPES.edited,
+      message: 'Presupuesto aprobado por el cliente',
+      metadata: { approvedAt: new Date().toISOString() },
+    });
     invalidateTicketsCache();
     return { success: true };
   } catch (error) {

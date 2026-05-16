@@ -104,7 +104,7 @@ function renderRepuestosSection(ticket) {
           </div>` : ''}
       </div>
 
-      <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
+      <div id="repuestos-error-msg" class="alert alert-danger" style="display: none;"></div>
 
       ${canConsume ? `
         <!-- Search box -->
@@ -900,7 +900,7 @@ export class TicketFormView extends AsyncView {
 
   async _saveRepuestos(btn) {
     await guardBtn(btn, async () => {
-      const errorEl = document.getElementById('repuestos-error');
+      const errorEl = document.getElementById('repuestos-error-msg');
       if (errorEl) errorEl.style.display = 'none';
 
       try {
@@ -988,12 +988,19 @@ export class TicketFormView extends AsyncView {
         const rawData = Object.fromEntries(formData.entries());
         
         const selectTecnico = document.getElementById('tecnicoAsignadoId');
+        // When the select is disabled the browser excludes it from FormData.
+        // Fall back to the existing ticket values so we never overwrite with null.
+        const tecnicoFieldDisabled = selectTecnico?.disabled ?? false;
         const data = {
           ...rawData,
           marca: rawData.marca_modelo || '',
           modelo: '',
-          tecnicoAsignadoId: rawData.tecnicoAsignadoId || null,
-          tecnicoAsignadoNombre: selectTecnico?.options[selectTecnico.selectedIndex]?.text || null
+          tecnicoAsignadoId: tecnicoFieldDisabled
+            ? (this._ticket?.tecnicoAsignadoId ?? null)
+            : (rawData.tecnicoAsignadoId || null),
+          tecnicoAsignadoNombre: tecnicoFieldDisabled
+            ? (this._ticket?.tecnicoAsignadoNombre ?? null)
+            : (selectTecnico?.options[selectTecnico.selectedIndex]?.text || null),
         };
         
         // Si seleccionó "Sin asignar", limpiar campos
