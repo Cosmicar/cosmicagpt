@@ -140,6 +140,8 @@ export class TicketsView extends AsyncView {
       this._searchDebounce = null;
     }
     this.selectedTickets.clear();
+    // Reset dynamic sticky variable so it doesn't bleed into other views
+    document.documentElement.style.removeProperty('--ops-bar-height');
   }
 
   // ── Render helpers ────────────────────────────────────────────────────────
@@ -348,6 +350,19 @@ export class TicketsView extends AsyncView {
   // ── Event wiring ──────────────────────────────────────────────────────────
 
   onContentReady() {
+    // ── Dynamic sticky stacking: measure ops bar real height ─────────────────
+    // Must run before any scroll so the CSS calc is accurate on first paint.
+    const opsBar = document.querySelector('.sticky-ops-bar');
+    if (opsBar) {
+      // offsetHeight = padding + content (no margin). We also add the 10px
+      // top margin baked into the bar's inline style so the thead starts flush.
+      const opsBarTotal = opsBar.offsetHeight + 10; // 10 = margin-top on the bar
+      document.documentElement.style.setProperty('--ops-bar-height', `${opsBarTotal}px`);
+    } else {
+      document.documentElement.style.setProperty('--ops-bar-height', '0px');
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     const searchInput   = document.getElementById('ticket-search');
     const filterButtons = document.querySelectorAll('.btn-filter');
     const grid          = document.getElementById('tickets-grid');

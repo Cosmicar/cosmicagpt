@@ -351,21 +351,14 @@ td, th {
   font-size: var(--font-sm);
 }
 
-/* Sticky header
- * FIX: sticky is set on thead ONLY.
- * Having position:sticky on both thead AND th caused the inner th (top:0)
- * to stick to the top of the scroll container instead of the viewport,
- * making the header row appear mid-table when scrolled.
+/* Sticky header — dynamic stacking via CSS variable.
+ * --ops-bar-height is set by tickets.js after render (offsetHeight).
+ * Defaults to 0px so this is safe in all other views.
  */
 .tickets-table thead {
   position: sticky;
-  top: calc(var(--navbar-h, 64px) - 1px);
+  top: calc(var(--navbar-h, 64px) + var(--ops-bar-height, 0px));
   z-index: 10; /* Above rows, below dropdowns */
-}
-
-/* Surgical fix: Offset table header when sticky-ops-bar is present */
-.sticky-ops-bar + #tickets-grid .tickets-table thead {
-  top: calc(var(--navbar-h, 64px) + 42px);
 }
 .badge {
   display: inline-flex;
