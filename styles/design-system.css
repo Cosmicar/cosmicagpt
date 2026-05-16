@@ -362,6 +362,11 @@ td, th {
   top: calc(var(--navbar-h, 64px) - 1px);
   z-index: 10; /* Above rows, below dropdowns */
 }
+
+/* Surgical fix: Offset table header when sticky-ops-bar is present */
+.sticky-ops-bar + #tickets-grid .tickets-table thead {
+  top: calc(var(--navbar-h, 64px) + 42px);
+}
 .badge {
   display: inline-flex;
   align-items: center;
