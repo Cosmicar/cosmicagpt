@@ -192,8 +192,8 @@ export class TicketFormView extends AsyncView {
       }));
 
     const typeOptions = [
-      { value: 'taller', label: 'Taller (Presencial)' },
-      { value: 'remoto', label: 'Remoto (A distancia)' }
+      { value: 'taller', label: 'Cósmica Lab (Taller)' },
+      { value: 'remoto', label: 'Soporte Remoto' }
     ];
 
     const planOptions = [
@@ -242,7 +242,7 @@ export class TicketFormView extends AsyncView {
 
     const headerHtml = renderSectionHeader(
       this.isEdit ? `Editar Orden: ${ticket?.numeroOrden}` : 'Nueva Orden de Trabajo', 
-      this.isEdit ? 'Modifique los detalles técnicos de la orden.' : 'Registre un nuevo servicio técnico en el sistema.', 
+      this.isEdit ? 'Modifique los detalles técnicos de la orden en Cósmica App.' : 'Registre un nuevo servicio técnico en el sistema.', 
       this.isEdit ? '📝 Edición' : '🛠️ Registro'
     );
 

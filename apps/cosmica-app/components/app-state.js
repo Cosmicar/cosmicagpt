@@ -117,14 +117,17 @@ export function renderErrorState(message) {
  * @param {string} icon 
  * @returns {string} HTML
  */
-export function renderEmptyState(message = 'No se encontraron registros.', icon = '🔍') {
+export function renderEmptyState(message = 'No se encontraron registros.', icon = '🔭') {
   return `
-    <div class="card glass-card" style="text-align: center; padding: var(--space-xl); border: 1px dashed var(--border);">
-      <div style="font-size: 48px; margin-bottom: var(--space-md); opacity: 0.5;">${icon}</div>
-      <h2 class="card-title" style="font-weight: 700; color: var(--text-primary);">Sin resultados</h2>
-      <p style="color: var(--text-muted); margin-top: var(--space-sm); max-width: 300px; margin-left: auto; margin-right: auto;">
+    <div class="card glass-card animate-fade-in" style="text-align: center; padding: var(--space-2xl) var(--space-xl); border: 1px dashed var(--border); background: rgba(255,255,255,0.01);">
+      <div style="font-size: 64px; margin-bottom: var(--space-md); filter: grayscale(1); opacity: 0.3;">${icon}</div>
+      <h2 style="font-size: var(--font-lg); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">Búsqueda sin éxito</h2>
+      <p style="color: var(--text-muted); margin-top: var(--space-sm); max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.6; font-size: var(--font-sm);">
         ${message}
       </p>
+      <div style="margin-top: var(--space-xl); opacity: 0.5; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-cyan);">
+        Cósmica App
+      </div>
     </div>
   `;
 }

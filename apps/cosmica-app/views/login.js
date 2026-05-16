@@ -5,11 +5,13 @@ export class LoginView extends BaseView {
   render() {
     return `
       <div style="display:flex; align-items:center; justify-content:center; min-height:80vh;">
-        <div class="card glass-card" style="width:100%; max-width:380px; padding: var(--space-xl);">
+        <div class="card glass-card" style="width:100%; max-width:380px; padding: var(--space-xl); box-shadow: var(--shadow-lg);">
           <div style="text-align:center; margin-bottom: var(--space-lg);">
-            <div style="font-size:2rem;">🚀</div>
-            <h2 class="card-title" style="margin-top: var(--space-sm);">Cósmica SaaS</h2>
-            <p style="color: var(--text-muted); font-size: var(--font-sm); margin-top: var(--space-xs);">Sistema de gestión</p>
+            <div style="margin-bottom: var(--space-md);">
+              <img src="assets/icon-192.png" alt="Cósmica Logo" style="height: 64px; width: 64px; object-fit: contain;">
+            </div>
+            <h2 style="font-size: var(--font-2xl); font-weight: 800; color: var(--text-primary); letter-spacing: -0.04em;">Cósmica App</h2>
+            <p style="color: var(--text-muted); font-size: var(--font-sm); margin-top: 4px; font-weight: 500;">Sistema de Gestión de Taller</p>
           </div>
 
           <div style="margin-bottom: var(--space-md);">

@@ -19,18 +19,18 @@ export class Router {
     this.currentView = null;
     this._navId = 0;          // Increments on every navigation; guards stale async renders
     this.routeTitles = {
-      'dashboard': 'Dashboard | Cosmica SaaS',
-      'clientes': 'Clientes | Cosmica SaaS',
-      'tickets': 'Trabajos | Cosmica SaaS',
-      'cliente-nuevo': 'Nuevo Cliente | Cosmica SaaS',
-      'cliente-edit': 'Editar Cliente | Cosmica SaaS',
-      'ticket-nuevo': 'Nuevo Trabajo | Cosmica SaaS',
-      'ticket-edit': 'Editar Trabajo | Cosmica SaaS',
-      'inventario':       'Inventario | Cosmica SaaS',
-      'finanzas':         'Finanzas | Cosmica SaaS',
-      'inventario-nuevo': 'Nuevo Repuesto | Cosmica SaaS',
-      'inventario-edit':  'Editar Repuesto | Cosmica SaaS',
-      'configuracion':    'Configuración | Cosmica SaaS'
+      'dashboard': 'Dashboard | Cósmica App',
+      'clientes': 'Clientes | Cósmica App',
+      'tickets': 'Trabajos | Cósmica App',
+      'cliente-nuevo': 'Nuevo Cliente | Cósmica App',
+      'cliente-edit': 'Editar Cliente | Cósmica App',
+      'ticket-nuevo': 'Nuevo Trabajo | Cósmica App',
+      'ticket-edit': 'Editar Trabajo | Cósmica App',
+      'inventario':       'Inventario | Cósmica App',
+      'finanzas':         'Finanzas | Cósmica App',
+      'inventario-nuevo': 'Nuevo Repuesto | Cósmica App',
+      'inventario-edit':  'Editar Repuesto | Cósmica App',
+      'configuracion':    'Configuración | Cósmica App'
     };
 
     // Mapeo de rutas a Clases de Vista
@@ -125,7 +125,7 @@ export class Router {
   }
 
   updateDocumentTitle(route) {
-    const title = this.routeTitles[route] || 'Cosmica SaaS';
+    const title = this.routeTitles[route] || 'Cósmica App';
     document.title = title;
   }
   

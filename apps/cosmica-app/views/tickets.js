@@ -203,26 +203,24 @@ export class TicketsView extends AsyncView {
     html += `
       <div style="margin-top: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);" class="animate-fade-in">
 
-        <div class="flex-between">
+        <div class="flex-between" style="background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--border); backdrop-filter: blur(8px);">
           <div style="position: relative; flex: 1; min-width: 250px; max-width: 500px;">
-            <input type="text" id="ticket-search" class="input" placeholder="Buscar por cliente, orden o problema..." style="padding-left: 40px; margin-bottom: 0;">
+            <input type="text" id="ticket-search" class="input" placeholder="Buscar por cliente, orden o problema..." style="padding-left: 40px; margin-bottom: 0; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
             <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none;">🔍</span>
           </div>
 
           <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
-            <div style="display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
+            <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'activos' ? 'active' : ''}" data-filter="activos">Activos</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'mis-tickets' ? 'active' : ''}" data-filter="mis-tickets">Mis tickets</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'sin-asignar' ? 'active' : ''}" data-filter="sin-asignar">Sin asignar</button>
-              <button class="btn btn-sm btn-filter ${this.currentFilter === 'pendiente' ? 'active' : ''}" data-filter="pendiente">Ingresado</button>
-              <button class="btn btn-sm btn-filter ${this.currentFilter === 'proceso' ? 'active' : ''}" data-filter="proceso">En proceso</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'finalizado' ? 'active' : ''}" data-filter="finalizado">Finalizado</button>
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todos</button>
             </div>
 
             ${this.renderViewModeSelector()}
 
-            <a href="#ticket-nuevo" class="btn btn-primary btn-sm">
+            <a href="#ticket-nuevo" class="btn btn-primary btn-sm" style="box-shadow: var(--shadow-glow);">
               <i>➕</i> Nuevo Trabajo
             </a>
           </div>
@@ -230,11 +228,11 @@ export class TicketsView extends AsyncView {
 
       </div>
 
-      <div class="sticky-ops-bar" style="position: sticky; top: 0; z-index: 100; background: var(--surface); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-md); margin: var(--space-md) -var(--space-md) 0; overflow-x: auto; font-size: var(--font-xs); font-weight: 600;">
-        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-cyan);">●</span> Activos: ${tickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
-        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-orange);">●</span> Esperando Repuesto: ${tickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
-        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--accent-green);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
-        <div style="display:flex; align-items:center; gap:4px; color:var(--text-primary);"><span style="color:var(--danger);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
+      <div class="sticky-ops-bar" style="position: sticky; top: 0; z-index: 100; background: rgba(8, 15, 28, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-lg); margin: var(--space-md) -var(--space-md) 0; overflow-x: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan-glow);">●</span> Activos: ${tickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${tickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
       <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-xl);">

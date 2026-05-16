@@ -31,11 +31,11 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
   
-  /* Shadow System */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px var(--accent-cyan-glow);
+  /* Shadow System (Premium Pass) */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 24px -4px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 15px var(--accent-cyan-glow);
   
   /* Typography Scale */
   --font-xs: 12px;
@@ -48,8 +48,8 @@
   --font-4xl: 36px;
   --font-5xl: 48px;
   
-  /* Transition Timing */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
+  /* Transition Timing (Visual Pass) */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

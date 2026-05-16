@@ -1,5 +1,5 @@
 /**
- * Sistema ligero de notificaciones Toast para Cosmica SaaS
+ * Sistema ligero de notificaciones Toast para Cósmica App
  */
 
 // Contenedor global para los toasts

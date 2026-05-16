@@ -2,16 +2,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
   font-size: var(--font-sm);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--transition-normal);
   border: 1px solid transparent;
   gap: 8px;
   position: relative;
   overflow: hidden;
+  letter-spacing: 0.01em;
 }
 
 .btn:active {
@@ -21,6 +22,7 @@
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-cyan), #00b4d8);
   color: #050B14;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
 }
 
 .btn-primary:hover {
@@ -29,15 +31,17 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border);
+  backdrop-filter: blur(8px);
 }
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-orange {

@@ -1,5 +1,5 @@
 /**
- * CHAOS GUARD — Cosmica SaaS Resilience Engine
+ * CHAOS GUARD — Cósmica App Resilience Engine
  * Handles multi-tab conflicts, double-submit prevention, unsaved-changes guard,
  * and auto-recovery drafts with staleness/checksum validation.
  */

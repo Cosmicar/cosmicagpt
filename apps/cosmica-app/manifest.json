@@ -1,6 +1,6 @@
 {
-  "name": "Cósmica SaaS",
-  "short_name": "Cósmica",
+  "name": "Cósmica App",
+  "short_name": "Cósmica App",
   "description": "Sistema de gestión para talleres de reparación — tickets, inventario y finanzas.",
   "start_url": "./",
   "scope": "./",

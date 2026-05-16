@@ -58,14 +58,14 @@ export function render(ticket, selected = false) {
           style="flex-shrink:0;margin-top:3px;">
 
         <!-- Title + order number — must shrink, never overflow -->
-        <div style="flex:1;min-width:0;padding:0 6px;overflow:hidden;box-sizing:border-box;">
+        <div style="flex:1;min-width:0;padding:0 8px;overflow:hidden;box-sizing:border-box;">
           <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}"
-            style="font-size:var(--font-md);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">
+            style="font-size:var(--font-md); font-weight:700; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; color: var(--text-primary);">
             ${ticket.nombre || 'Sin Nombre'} ${ticket.apellido || ''}
           </h3>
-          <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;
-                      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            #${ticket.numeroOrden || 'N/A'}
+          <div style="font-size:var(--font-xs); color:var(--text-muted); margin-top:1px; font-weight:600;
+                      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing: 0.02em;">
+            ORDEN #${ticket.numeroOrden || 'N/A'}
           </div>
         </div>
 
@@ -92,21 +92,21 @@ export function render(ticket, selected = false) {
       </div>
 
       <!-- ── Meta + problem ─────────────────────────────────────────────── -->
-      <div style="flex:1;min-width:0;overflow:hidden;box-sizing:border-box;">
+      <div style="flex:1;min-width:0;overflow:hidden;box-sizing:border-box; padding: 0 4px;">
         <p class="vm-meta"
           style="color:var(--text-muted);font-size:var(--font-sm);margin-bottom:var(--space-md);
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box;">
-          <strong style="color:var(--text-primary);">Equipo:</strong> ${ticket.equipo || 'N/A'} ${ticket.marca || ''}<br>
-          <strong style="color:var(--text-primary);">Fecha:</strong> ${fecha}<br>
-          <strong style="color:var(--text-primary);">Prioridad:</strong> <span style="text-transform:capitalize;">${prioridad}</span>
+                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.6;">
+          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Equipo:</span> <span style="color: var(--text-primary); font-weight: 500;">${ticket.equipo || '—'} ${ticket.marca || ''}</span><br>
+          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Fecha:</span> <span style="color: var(--text-primary); font-weight: 500;">${fecha}</span><br>
+          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Prioridad:</span> <span style="color: var(--text-primary); font-weight: 600; text-transform:capitalize;">${prioridad}</span>
         </p>
 
         <div class="vm-problema"
           style="border-top:1px solid var(--border);padding-top:var(--space-sm);
-                 font-size:var(--font-sm);color:var(--text-muted);min-height:3em;
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box;">
-          <strong style="color:var(--text-primary);">Problema:</strong>
-          <span class="vm-problema-text">${ticket.problema || 'No especificado'}</span>
+                 font-size:var(--font-sm);color:var(--text-muted);min-height:3.2em;
+                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.5;">
+          <span style="color:var(--text-muted); opacity: 0.7; font-weight: 500;">Problema:</span>
+          <span class="vm-problema-text" style="color: var(--text-primary);">${ticket.problema || 'No especificado'}</span>
         </div>
       </div>
 
