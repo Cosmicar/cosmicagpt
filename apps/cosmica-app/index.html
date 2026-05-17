@@ -41,10 +41,11 @@
     }
 
     .main-content {
-      padding: var(--space-lg); /* Reduced from XL for density */
-      padding-top: calc(var(--navbar-h) + 16px); /* Reduced from 25px */
-      min-height: 100vh;
+      padding: var(--space-lg);
+      padding-top: calc(var(--navbar-h) + 16px);
+      padding-bottom: var(--space-xl);
       transition: padding var(--transition-fast), opacity var(--transition-normal);
+      box-sizing: border-box;
     }
 
     /* Mobile Overrides (Operational Pass & Native Feel Pass) */

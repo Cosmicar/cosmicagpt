@@ -336,7 +336,7 @@ td, th {
 .tickets-table-wrapper {
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - 220px);
+  height: calc(100vh - 310px); /* 0-scroll body: Table fills remaining viewport perfectly */
   overflow-x: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
