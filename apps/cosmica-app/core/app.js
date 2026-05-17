@@ -5,6 +5,75 @@ import { renderLoadingState, renderErrorState } from '../components/app-state.js
 import { initCommandPalette } from '../components/command-palette.js';
 import { cleanupExpiredDrafts } from './chaos-guard.js';
 
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  COSMIC AVATAR GALLERY                                       ║
+   ║  10 cosmic-themed SVG avatars, deterministically picked      ║
+   ║  per user seed (uid/email). No initials, no photos.          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+const COSMIC_AVATARS = [
+  {
+    name: 'Saturno',
+    bg: 'linear-gradient(135deg, #fb923c, #b45309)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="7" fill="#fef3c7"/><ellipse cx="18" cy="18" rx="13" ry="2.8" stroke="#fef3c7" stroke-width="1.8" opacity="0.92"/></svg>'
+  },
+  {
+    name: 'Luna',
+    bg: 'linear-gradient(135deg, #475569, #1e293b)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="11" fill="#f1f5f9"/><circle cx="14" cy="15" r="2" fill="#cbd5e1" opacity="0.55"/><circle cx="22" cy="20" r="1.5" fill="#cbd5e1" opacity="0.55"/><circle cx="20" cy="13" r="1" fill="#cbd5e1" opacity="0.55"/></svg>'
+  },
+  {
+    name: 'Sol',
+    bg: 'linear-gradient(135deg, #fbbf24, #c2410c)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none" stroke="#fef9c3" stroke-width="1.8" stroke-linecap="round"><circle cx="18" cy="18" r="5.5" fill="#fef3c7" stroke="none"/><line x1="18" y1="4" x2="18" y2="8"/><line x1="18" y1="28" x2="18" y2="32"/><line x1="4" y1="18" x2="8" y2="18"/><line x1="28" y1="18" x2="32" y2="18"/><line x1="8" y1="8" x2="11" y2="11"/><line x1="25" y1="25" x2="28" y2="28"/><line x1="28" y1="8" x2="25" y2="11"/><line x1="8" y1="28" x2="11" y2="25"/></svg>'
+  },
+  {
+    name: 'Estrella',
+    bg: 'radial-gradient(circle at 30% 30%, #1e293b, #020617)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><path d="M18 6 L20 16 L30 18 L20 20 L18 30 L16 20 L6 18 L16 16 Z" fill="#fde047"/></svg>'
+  },
+  {
+    name: 'Galaxia',
+    bg: 'linear-gradient(135deg, #6d28d9, #1e1b4b)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="2" fill="#fef3c7"/><path d="M18 18 C 23 11, 30 17, 25 22" stroke="#e9d5ff" stroke-width="1.6" stroke-linecap="round" opacity="0.9"/><path d="M18 18 C 13 25, 6 19, 11 14" stroke="#e9d5ff" stroke-width="1.6" stroke-linecap="round" opacity="0.9"/></svg>'
+  },
+  {
+    name: 'Planeta',
+    bg: 'linear-gradient(135deg, #020617, #000)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><defs><linearGradient id="ca-pl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs><circle cx="18" cy="18" r="11" fill="url(#ca-pl)"/></svg>'
+  },
+  {
+    name: 'Cometa',
+    bg: 'linear-gradient(135deg, #1e3a8a, #020617)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><line x1="6" y1="28" x2="20" y2="14" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/><line x1="10" y1="26" x2="22" y2="14" stroke="#a5f3fc" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/><circle cx="24" cy="12" r="4" fill="#ffffff"/></svg>'
+  },
+  {
+    name: 'OVNI',
+    bg: 'linear-gradient(135deg, #065f46, #022c22)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><ellipse cx="18" cy="22" rx="12" ry="3" fill="#cbd5e1"/><path d="M10 20 Q 18 10 26 20 Z" fill="#67e8f9" opacity="0.88"/><circle cx="18" cy="15" r="1.5" fill="#ffffff" opacity="0.85"/></svg>'
+  },
+  {
+    name: 'Astronauta',
+    bg: 'linear-gradient(135deg, #64748b, #0f172a)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="11" fill="#e2e8f0"/><circle cx="18" cy="18" r="8" fill="#0c4a6e"/><ellipse cx="14" cy="15" rx="3" ry="2" fill="#67e8f9" opacity="0.78"/></svg>'
+  },
+  {
+    name: 'Constelación',
+    bg: 'linear-gradient(135deg, #1e1b4b, #020617)',
+    svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none" stroke="#fef9c3" stroke-width="0.8"><line x1="8" y1="14" x2="14" y2="20" opacity="0.5"/><line x1="14" y1="20" x2="20" y2="12" opacity="0.5"/><line x1="20" y1="12" x2="26" y2="22" opacity="0.5"/><line x1="26" y1="22" x2="30" y2="14" opacity="0.5"/><circle cx="8" cy="14" r="1.6" fill="#fef9c3" stroke="none"/><circle cx="14" cy="20" r="2" fill="#fef3c7" stroke="none"/><circle cx="20" cy="12" r="1.6" fill="#fef9c3" stroke="none"/><circle cx="26" cy="22" r="2.2" fill="#fef3c7" stroke="none"/><circle cx="30" cy="14" r="1.4" fill="#fef9c3" stroke="none"/></svg>'
+  }
+];
+
+/** Pick a cosmic avatar deterministically from a user seed (uid/email). */
+function getCosmicAvatar(seed) {
+  const s = String(seed || 'cosmica').toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash |= 0;
+  }
+  return COSMIC_AVATARS[Math.abs(hash) % COSMIC_AVATARS.length];
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const mainContent = document.querySelector('.main-content');
 
@@ -48,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     cleanupExpiredDrafts(); // Sweep stale cosmica_draft_* keys before the session starts
     document.body.classList.add('session-ready');
     renderSidebar(session.profile);
-    renderBottomNav(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
     initCommandPalette();
@@ -79,9 +147,13 @@ function initPerfilButton(session, mainContent) {
   const dropdown = document.getElementById('perfilDropdown');
 
   if (btnPerfil) {
-    const initial = (email.charAt(0) || '?').toUpperCase();
-    btnPerfil.textContent = initial;
-    btnPerfil.setAttribute('aria-label', `Perfil de ${email}`);
+    // Same deterministic cosmic avatar as the sidebar (uid-seeded → stable)
+    const avatarSeed = session.profile?.uid || session.user?.uid || email;
+    const avatar = getCosmicAvatar(avatarSeed);
+    btnPerfil.innerHTML = avatar.svg;
+    btnPerfil.style.setProperty('--perfil-bg', avatar.bg);
+    btnPerfil.setAttribute('aria-label', `Perfil de ${email} (${avatar.name})`);
+    btnPerfil.setAttribute('title', `${email} — ${avatar.name}`);
   }
 
   if (btnPerfil && dropdown) {
@@ -174,13 +246,16 @@ function renderSidebar(profile) {
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));
   const currentHash = window.location.hash || '#dashboard';
-  const initial = profile?.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U';
   const displayName = profile?.nombre || 'Operador';
   const isCompact = document.body.classList.contains('sidebar-compact');
 
+  // Pick deterministic cosmic avatar based on uid (stable across sessions)
+  const avatarSeed = profile?.uid || profile?.email || displayName;
+  const avatar = getCosmicAvatar(avatarSeed);
+
   sidebar.innerHTML = `
     <div class="sidebar-header">
-      <div class="sidebar-avatar" aria-hidden="true">${initial}</div>
+      <div class="sidebar-avatar" style="--avatar-bg:${avatar.bg};" aria-label="Avatar: ${avatar.name}" title="${avatar.name}">${avatar.svg}</div>
       <div class="sidebar-header-info">
         <span class="sidebar-user-name">${displayName}</span>
         <span class="sidebar-user-role">${role}</span>
@@ -201,9 +276,8 @@ function renderSidebar(profile) {
     <div class="sidebar-footer">
       <button class="sidebar-toggle" id="sidebarToggle" type="button"
               aria-label="${isCompact ? 'Expandir menú lateral' : 'Colapsar menú lateral'}"
-              title="${isCompact ? 'Expandir' : 'Colapsar'}">
+              title="${isCompact ? 'Expandir menú' : 'Colapsar menú'}">
         <span class="sidebar-toggle-icon">${TOGGLE_ICON}</span>
-        <span class="sidebar-toggle-label">Colapsar</span>
       </button>
     </div>
   `;

@@ -68,11 +68,6 @@
         font-size: 16px !important;
       }
 
-      body {
-        /* Extra padding-bottom so body content scrolls past the fixed bottom nav */
-        padding-bottom: calc(60px + env(safe-area-inset-bottom, 12px)) !important;
-      }
-
       .main-content {
         overscroll-behavior: none;
         padding: var(--space-sm); /* Maximum density for mobile */
@@ -94,9 +89,7 @@
       .navbar-logo span {
         display: none !important;
       }
-      .menu-toggle {
-        display: none !important; /* Hide hamburger menu in favor of bottom nav "Más" button */
-      }
+      /* Hamburger menu is the only mobile sidebar trigger now (bottom nav removed) */
       .cp-trigger-btn {
         padding: 4px 8px !important;
         font-size: 11px !important;
@@ -249,25 +242,23 @@
         transform: scale(0.9);
       }
 
-      /* Profile avatar button — circular initial instead of text */
+      /* Profile avatar button — cosmic avatar SVG inside circular frame */
       #btnPerfil {
         width: 32px !important;
         height: 32px !important;
         min-height: 32px !important;
         padding: 0 !important;
         border-radius: 50% !important;
-        background: linear-gradient(135deg, var(--accent-blue, #0066ff), var(--accent-cyan)) !important;
-        color: #060A12 !important;
-        font-size: 13px !important;
-        font-weight: 800 !important;
-        letter-spacing: -0.01em !important;
-        line-height: 1 !important;
+        background: var(--perfil-bg, linear-gradient(135deg, var(--accent-blue, #0066ff), var(--accent-cyan))) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         border: none !important;
         flex-shrink: 0;
+        overflow: hidden !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.08) !important;
       }
+      #btnPerfil svg { width: 100%; height: 100%; display: block; }
 
       /* Drawer Fullscreen Mobile */
       .drawer-panel {
@@ -356,10 +347,6 @@
     .sidebar { display: none; }
     .navbar-actions { display: none; }
     .main-content { margin-left: 0; }
-
-    /* Mobile bottom nav — only visible on mobile breakpoints.
-       Without this, the populated <nav> bleeds into desktop layout. */
-    .mobile-bottom-nav { display: none; }
 
     /* Shell visible cuando sesión confirmada */
     body.session-ready .sidebar { display: block; }
@@ -494,17 +481,15 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue, #0066ff));
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #060A12;
-      font-weight: 800;
-      font-size: 14.5px;
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,229,255,0.22);
-      letter-spacing: -0.01em;
+      overflow: hidden;
+      background: var(--avatar-bg, linear-gradient(135deg, var(--accent-cyan), var(--accent-blue, #0066ff)));
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06);
     }
+    .sidebar-avatar svg { width: 100%; height: 100%; display: block; }
     .sidebar-header-info {
       display: flex;
       flex-direction: column;
@@ -792,9 +777,6 @@
 
   <!-- Sidebar Overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-  <!-- Bottom Navigation for Mobile -->
-  <nav class="mobile-bottom-nav" id="bottom-nav"></nav>
 
   <script type="module" src="./core/app.js"></script>
 </body>
