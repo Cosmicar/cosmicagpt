@@ -148,6 +148,9 @@ export class FinanzasView extends AsyncView {
         <!-- ══ AJUSTES CONTABLES ══ -->
         ${ajustes?.movimientos?.length > 0 ? this.renderAjustesSection(ajustes) : ''}
 
+        <!-- ══ COMISIONES DE OPERADORES ══ -->
+        ${this.renderComisiones(ultimosCobrados)}
+
         <!-- ══ HISTORIAL DE CIERRES ══ -->
         ${this.renderHistorialCierres(cajaHistorial)}
       </div>`;
@@ -850,6 +853,140 @@ export class FinanzasView extends AsyncView {
             </thead>
             <tbody>${rows}</tbody>
           </table>
+        </div>
+      </section>`;
+  }
+
+  // ── Comisiones por operador ───────────────────────────────────────────────
+
+  renderComisiones(ultimosCobrados) {
+    // Read percentages from app config (localStorage)
+    let comisionTaller = 30;
+    let comisionRemoto = 20;
+    try {
+      const cfg = JSON.parse(localStorage.getItem('cosmica_config_v1') || '{}');
+      comisionTaller = Number(cfg.comisionTaller ?? 30);
+      comisionRemoto = Number(cfg.comisionRemoto ?? 20);
+    } catch (_) {}
+
+    if (!ultimosCobrados || ultimosCobrados.length === 0) {
+      return `
+        <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
+          <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
+            <span style="opacity:0.8;">👷</span> Comisiones de Operadores
+            <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller ${comisionTaller}% · Remoto ${comisionRemoto}%</span>
+          </h3>
+          <div style="text-align:center;padding:var(--space-xl);color:var(--text-muted);font-size:var(--font-sm);
+                      border:1px dashed var(--border);border-radius:var(--radius-md);">
+            Sin cobros registrados para calcular comisiones.
+          </div>
+        </section>`;
+    }
+
+    // Group by technician (tecnicoAsignadoId / tecnicoAsignadoNombre)
+    const byTecnico = {};
+    for (const t of ultimosCobrados) {
+      const precio = Number(t.precio || 0);
+      if (precio <= 0) continue;
+
+      const tecId    = t.tecnicoAsignadoId || '__sin_asignar__';
+      const tecNombre = t.tecnicoAsignadoNombre || 'Sin asignar';
+      const esRemoto  = String(t.tipoServicio || t.planServicio || '').toLowerCase().includes('remot');
+      const pct       = esRemoto ? comisionRemoto : comisionTaller;
+
+      if (!byTecnico[tecId]) {
+        byTecnico[tecId] = {
+          nombre: tecNombre,
+          totalCobrado: 0,
+          totalComision: 0,
+          count: 0,
+          tickets: [],
+        };
+      }
+      byTecnico[tecId].totalCobrado  += precio;
+      byTecnico[tecId].totalComision += Math.round(precio * pct / 100);
+      byTecnico[tecId].count++;
+      byTecnico[tecId].tickets.push({ ...t, pct });
+    }
+
+    const operadores = Object.values(byTecnico).sort((a, b) => b.totalComision - a.totalComision);
+    const totalComisionGlobal = operadores.reduce((s, o) => s + o.totalComision, 0);
+
+    const rows = operadores.map(op => `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  padding:var(--space-md);border-radius:var(--radius-md);
+                  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+                  margin-bottom:var(--space-sm);">
+        <div style="display:flex;align-items:center;gap:var(--space-md);min-width:0;">
+          <div style="width:36px;height:36px;border-radius:50%;
+                      background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(0,229,255,0.05));
+                      border:1px solid rgba(0,229,255,0.2);
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:16px;flex-shrink:0;">👷</div>
+          <div style="min-width:0;">
+            <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary);
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${op.nombre}</div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);">
+              ${op.count} cobro${op.count !== 1 ? 's' : ''} · base ${ars(op.totalCobrado)}
+            </div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:var(--space-md);">
+          <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-green);">
+            ${ars(op.totalComision)}
+          </div>
+          <div style="font-size:var(--font-xs);color:var(--text-muted);">
+            comisión estimada
+          </div>
+        </div>
+      </div>`).join('');
+
+    return `
+      <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
+        <div class="flex-between" style="margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);">
+          <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;margin:0;">
+            <span style="opacity:0.8;">👷</span> Comisiones de Operadores
+          </h3>
+          <div style="display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap;">
+            <span class="badge" style="font-size:10px;background:rgba(0,229,255,0.1);color:var(--accent-cyan);border:1px solid rgba(0,229,255,0.2);">
+              🏭 Taller ${comisionTaller}%
+            </span>
+            <span class="badge" style="font-size:10px;background:rgba(0,229,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1);">
+              🌐 Remoto ${comisionRemoto}%
+            </span>
+            <a href="#configuracion" class="btn btn-sm btn-secondary" style="font-size:10px;padding:4px 10px;">
+              ⚙️ Ajustar %
+            </a>
+          </div>
+        </div>
+
+        <!-- Total global -->
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:var(--space-md) var(--space-lg);
+                    background:rgba(34,197,94,0.07);
+                    border:1px solid rgba(34,197,94,0.2);
+                    border-radius:var(--radius-md);
+                    margin-bottom:var(--space-md);">
+          <div>
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">
+              TOTAL COMISIONES A LIQUIDAR
+            </div>
+            <div style="font-size:9px;color:var(--text-muted);">
+              Basado en ${ultimosCobrados.filter(t => Number(t.precio) > 0).length} cobros del período
+            </div>
+          </div>
+          <div style="font-size:clamp(20px,4vw,28px);font-weight:900;color:var(--accent-green);">
+            ${ars(totalComisionGlobal)}
+          </div>
+        </div>
+
+        <!-- Por operador -->
+        <div>${rows}</div>
+
+        <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--space-md);
+                    padding-top:var(--space-sm);border-top:1px solid var(--border);opacity:0.7;">
+          ⚠️ Cálculo estimado sobre precio de cobro. No incluye tickets sin precio, repuestos ni descuentos.
+          <a href="#configuracion" style="color:var(--accent-cyan);margin-left:8px;">Modificar porcentajes →</a>
         </div>
       </section>`;
   }

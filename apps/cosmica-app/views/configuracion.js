@@ -25,7 +25,9 @@ export class ConfiguracionView extends BaseView {
       instagram: '',
       colorPrincipal: '#00e5ff',
       textoFooter: 'Garantía de Servicio: El trabajo realizado tiene una garantía de 90 días sobre mano de obra a partir de la fecha de entrega del equipo.',
-      logoUrl: ''
+      logoUrl: '',
+      comisionTaller: 30,
+      comisionRemoto: 20,
     };
   }
 
@@ -117,6 +119,59 @@ export class ConfiguracionView extends BaseView {
           <div class="form-group" style="margin-top: var(--space-sm);">
             <label class="label" style="display:flex;align-items:center;gap:6px;"><span style="opacity:0.7">⚖️</span> Texto legal (Footer tickets)</label>
             <textarea name="textoFooter" class="input" style="min-height: 80px; resize: vertical; line-height: 1.5; padding: 12px;" placeholder="Términos y condiciones de la reparación...">${config.textoFooter || ''}</textarea>
+          </div>
+
+          <!-- ─── Sección Comisiones ─────────────────────────────────────── -->
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: var(--space-lg); margin-top: var(--space-sm);">
+            <div style="margin-bottom: var(--space-md);">
+              <h3 style="font-size: var(--font-md); margin: 0 0 4px 0; color: var(--text-primary); font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px;">
+                <span>👷</span> Comisiones de Operadores
+              </h3>
+              <div style="font-size: var(--font-sm); color: var(--text-muted); opacity: 0.8;">
+                Porcentaje sobre el monto cobrado que le corresponde al técnico. Se calcula en el módulo de Finanzas.
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-lg);">
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">🏭</span> Comisión Taller (%)
+                </label>
+                <div style="position: relative;">
+                  <input type="number" name="comisionTaller" class="input" min="0" max="100" step="0.5"
+                    value="${config.comisionTaller ?? 30}"
+                    placeholder="30"
+                    style="padding-right: 36px; margin: 0;">
+                  <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">%</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; opacity: 0.7;">
+                  Para trabajos en taller presencial
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">🌐</span> Comisión Remoto (%)
+                </label>
+                <div style="position: relative;">
+                  <input type="number" name="comisionRemoto" class="input" min="0" max="100" step="0.5"
+                    value="${config.comisionRemoto ?? 20}"
+                    placeholder="20"
+                    style="padding-right: 36px; margin: 0;">
+                  <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">%</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; opacity: 0.7;">
+                  Para servicios remotos o a domicilio
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(0,229,255,0.04); border: 1px solid rgba(0,229,255,0.12); border-radius: var(--radius-md); font-size: var(--font-sm); color: var(--text-muted); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 18px; opacity: 0.7;">💡</span>
+              <span>
+                Cada técnico puede tener su porcentaje diferenciado por plan (Taller vs. Remoto). El reporte se genera automáticamente en Finanzas usando los tickets entregados del período.
+              </span>
+            </div>
           </div>
 
           <div style="margin-top: var(--space-md); border-top: 1px solid rgba(255,255,255,0.05); padding-top: var(--space-lg); display: flex; justify-content: flex-end;">
