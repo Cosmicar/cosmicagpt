@@ -141,6 +141,30 @@ function computeOperationalIntelligence(tickets, clientes) {
     .sort((a, b) => b.count - a.count)
     .slice(0, n);
 
+  // Province distribution — top 5 + "Otros" grouping (donut-chart ready)
+  const PROV_TOP_N = 5;
+  const allProvincias = Object.entries(provinciasMap)
+    .map(([nombre, count]) => ({ nombre, count }))
+    .sort((a, b) => b.count - a.count);
+  const topProvs   = allProvincias.slice(0, PROV_TOP_N);
+  const otherProvs = allProvincias.slice(PROV_TOP_N);
+  const othersCount = otherProvs.reduce((sum, p) => sum + p.count, 0);
+
+  const provinciasChart = [
+    ...topProvs.map(p => ({
+      nombre: p.nombre,
+      count: p.count,
+      pct: totalServicios > 0 ? (p.count / totalServicios) * 100 : 0,
+      isOthers: false,
+    })),
+    ...(othersCount > 0 ? [{
+      nombre: `Otros (${otherProvs.length})`,
+      count: othersCount,
+      pct: totalServicios > 0 ? (othersCount / totalServicios) * 100 : 0,
+      isOthers: true,
+    }] : []),
+  ];
+
   return {
     totalServicios,
     countEntregados,
@@ -151,10 +175,8 @@ function computeOperationalIntelligence(tickets, clientes) {
     servicioTallerCount: servicioTaller,
     servicioRemotoCount: servicioRemoto,
     clientesActivos,
-    topProvincias: buildRanking(provinciasMap, 5).map(r => ({
-      ...r,
-      pct: totalServicios > 0 ? (r.count / totalServicios) * 100 : 0,
-    })),
+    provinciasChart,
+    distinctProvincias: allProvincias.length,
     topTecnicos:  buildRanking(tecnicosMap, 3),
     topProblemas: buildRanking(problemasMap, 3).map(r => ({
       ...r,

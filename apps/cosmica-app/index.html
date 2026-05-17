@@ -778,12 +778,160 @@
       font-weight: 500;
     }
 
+    /* ── Hero Donut — single premium analytics centerpiece ── */
+    .donut-hero-card {
+      padding: var(--space-lg) var(--space-xl);
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-xl);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .donut-hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .donut-hero-header h4 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+    .donut-hero-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      opacity: 0.65;
+      letter-spacing: 0.02em;
+    }
+    .donut-hero-inner {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-2xl);
+      align-items: center;
+      max-width: 720px;
+      margin: var(--space-sm) auto 0;
+      width: 100%;
+    }
+    .donut-svg-wrap {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .donut-svg-wrap svg {
+      display: block;
+      overflow: visible;
+    }
+    .donut-segment {
+      transition: stroke-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
+      cursor: default;
+    }
+    .donut-hero-inner:hover .donut-segment {
+      opacity: 0.5;
+    }
+    .donut-hero-inner:hover .donut-segment:hover {
+      opacity: 1;
+      stroke-width: 22;
+    }
+    .donut-center-number {
+      font-family: inherit;
+      font-size: 30px;
+      font-weight: 800;
+      fill: var(--text-primary);
+      letter-spacing: -0.03em;
+    }
+    .donut-center-label {
+      font-family: inherit;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      fill: var(--text-muted);
+      opacity: 0.7;
+    }
+    .donut-legend {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .donut-legend-item {
+      display: grid;
+      grid-template-columns: 10px 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+      font-size: 12.5px;
+    }
+    .donut-legend-item:hover { background: rgba(255,255,255,0.025); }
+    .donut-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .donut-legend-name {
+      color: var(--text-primary);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .donut-legend-count {
+      color: var(--text-primary);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+    }
+    .donut-legend-pct {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      opacity: 0.7;
+      min-width: 32px;
+      text-align: right;
+    }
+    .donut-empty {
+      padding: 36px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      opacity: 0.55;
+      font-weight: 500;
+    }
+
+    /* 2-column rankings (after Provincias moved to donut hero) */
+    .rankings-grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     /* Responsive: collapse intelligence section gracefully */
     @media (max-width: 1100px) {
       .executive-kpi-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-      .rankings-grid {
+      .rankings-grid,
+      .rankings-grid-2 {
         grid-template-columns: 1fr;
       }
     }
@@ -796,6 +944,18 @@
       }
       .exec-kpi-value { font-size: 20px; }
       .ops-big-number { font-size: 26px; }
+      .donut-hero-inner {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+        justify-items: center;
+      }
+      .donut-svg-wrap svg {
+        width: 170px;
+        height: 170px;
+      }
+      .donut-center-number { font-size: 26px; }
+      .donut-legend { width: 100%; max-width: 340px; }
+      .donut-hero-card { padding: var(--space-md); }
     }
 
     /* "Ver todos / Ver más" CTA below truncated lists */

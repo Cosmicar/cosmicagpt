@@ -382,18 +382,11 @@ export class DashboardView extends AsyncView {
           </div>
         </div>
 
-        <!-- Rankings (3 compact columns) -->
-        <div class="rankings-grid">
-          <div class="ranking-card">
-            <div class="ranking-header">
-              <span class="ranking-icon">🌍</span>
-              <span>Top Provincias</span>
-            </div>
-            ${renderRanking(intel.topProvincias, 'provincias', (r) => `
-              <strong>${fmtNum(r.count)}</strong>
-              <span class="ranking-pct">${r.pct.toFixed(0)}%</span>
-            `)}
-          </div>
+        <!-- ╔══ HERO ANALYTICS — Province distribution donut (single chart) ══╗ -->
+        ${this.renderProvincesDonut(intel)}
+
+        <!-- Rankings (2 compact columns — Provincias migrated to donut above) -->
+        <div class="rankings-grid rankings-grid-2">
           <div class="ranking-card">
             <div class="ranking-header">
               <span class="ranking-icon">🛠️</span>
@@ -408,6 +401,104 @@ export class DashboardView extends AsyncView {
             </div>
             ${renderRanking(intel.topProblemas, 'problemas', (r) => `<strong>${fmtNum(r.count)}</strong>`)}
           </div>
+        </div>
+      </section>
+    `;
+  }
+
+  /**
+   * Hero donut chart — single executive analytics centerpiece.
+   * Pure SVG (no Chart.js, no dependencies). Stroke-dasharray technique.
+   * Top 5 provinces explicit + "Otros" grouped. Muted, premium palette.
+   */
+  renderProvincesDonut(intel) {
+    const data = intel.provinciasChart || [];
+    const total = data.reduce((s, x) => s + x.count, 0);
+    const fmtNum = (n) => Number(n || 0).toLocaleString('es-AR');
+    const escape = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    if (total === 0 || data.length === 0) {
+      return `
+        <div class="donut-hero-card">
+          <div class="donut-empty">Sin datos geográficos para visualizar.</div>
+        </div>
+      `;
+    }
+
+    // Premium muted palette — Stripe/Linear-inspired, low saturation
+    const PALETTE = ['#00BFD8', '#5B8DEE', '#9384DB', '#4EBA90', '#E8A04F', '#6E7681'];
+
+    // SVG donut geometry — thinner ring, larger hole per brief
+    const size = 200;
+    const stroke = 18;                          // thin ring (premium minimal)
+    const r = (size - stroke) / 2 - 2;          // -2 for breathing room
+    const cx = size / 2;
+    const cy = size / 2;
+    const circumference = 2 * Math.PI * r;
+
+    // Generate ring segments using stroke-dasharray offsets
+    let cumulative = 0;
+    const segments = data.map((item, i) => {
+      const fraction = item.count / total;
+      const segLength = fraction * circumference;
+      const gap = circumference - segLength;
+      const color = PALETTE[i % PALETTE.length];
+      const offset = cumulative;
+      cumulative += segLength;
+      return `
+        <circle
+          cx="${cx}" cy="${cy}" r="${r}"
+          fill="none"
+          stroke="${color}"
+          stroke-width="${stroke}"
+          stroke-dasharray="${segLength.toFixed(2)} ${gap.toFixed(2)}"
+          stroke-dashoffset="${(-offset).toFixed(2)}"
+          stroke-linecap="butt"
+          transform="rotate(-90 ${cx} ${cy})"
+          class="donut-segment"
+          data-name="${escape(item.nombre)}"
+          data-count="${item.count}"
+          data-pct="${item.pct.toFixed(1)}"
+        />
+      `;
+    }).join('');
+
+    // Legend with colour swatches matched to SVG segments
+    const legendItems = data.map((item, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      return `
+        <li class="donut-legend-item">
+          <span class="donut-legend-dot" style="background:${color};"></span>
+          <span class="donut-legend-name" title="${escape(item.nombre)}">${escape(item.nombre)}</span>
+          <span class="donut-legend-count">${fmtNum(item.count)}</span>
+          <span class="donut-legend-pct">${item.pct.toFixed(0)}%</span>
+        </li>
+      `;
+    }).join('');
+
+    return `
+      <section class="donut-hero-card" aria-labelledby="donut-heading">
+        <div class="donut-hero-header">
+          <h4 id="donut-heading">
+            <span style="opacity:0.8;">🌍</span>
+            Servicios por Provincia
+          </h4>
+          <span class="donut-hero-meta">${fmtNum(intel.distinctProvincias)} provincias · cobertura nacional</span>
+        </div>
+        <div class="donut-hero-inner">
+          <div class="donut-svg-wrap">
+            <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Donut: distribución de servicios por provincia">
+              <!-- Faint track behind segments for visual depth -->
+              <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="${stroke}"/>
+              ${segments}
+              <!-- Center text -->
+              <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="donut-center-number" dominant-baseline="central">${fmtNum(total)}</text>
+              <text x="${cx}" y="${cy + 20}" text-anchor="middle" class="donut-center-label" dominant-baseline="central">Servicios</text>
+            </svg>
+          </div>
+          <ul class="donut-legend">
+            ${legendItems}
+          </ul>
         </div>
       </section>
     `;
