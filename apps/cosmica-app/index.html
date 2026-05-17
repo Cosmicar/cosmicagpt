@@ -346,6 +346,10 @@
     .navbar-actions { display: none; }
     .main-content { margin-left: 0; }
 
+    /* Mobile bottom nav — only visible on mobile breakpoints.
+       Without this, the populated <nav> bleeds into desktop layout. */
+    .mobile-bottom-nav { display: none; }
+
     /* Shell visible cuando sesión confirmada */
     body.session-ready .sidebar { display: block; }
     body.session-ready .navbar-actions { display: flex; gap: var(--space-sm); align-items: center; }
