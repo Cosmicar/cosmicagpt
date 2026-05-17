@@ -89,7 +89,33 @@
       .navbar-logo span {
         display: none !important;
       }
-      /* Hamburger menu is the only mobile sidebar trigger now (bottom nav removed) */
+      /* ── Hamburger menu — sole mobile sidebar trigger (bottom nav removed) ── */
+      .menu-toggle {
+        order: -1;               /* render before logo */
+        margin-right: 4px;
+        padding: 8px !important;
+        border-radius: 10px !important;
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        color: var(--text-primary) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer;
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        flex-shrink: 0;
+      }
+      .menu-toggle:hover, .menu-toggle:active {
+        background: rgba(0,229,255,0.1) !important;
+        color: var(--accent-cyan) !important;
+        border-color: rgba(0,229,255,0.25) !important;
+      }
+      .menu-toggle svg { display: block; }
+
+      /* Push the navbar logo right after the hamburger; actions go far right */
+      .navbar-logo {
+        margin-right: auto !important;
+      }
       .cp-trigger-btn {
         padding: 4px 8px !important;
         font-size: 11px !important;
@@ -718,7 +744,9 @@
       <img src="assets/icon.svg" alt="Cósmica" style="height: 32px; width: 32px; object-fit: contain; flex-shrink:0;">
       <span>Cósmica App</span>
     </div>
-    <button class="menu-toggle" aria-label="Abrir menú">☰</button>
+    <button class="menu-toggle" aria-label="Abrir menú lateral" title="Menú">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    </button>
     <div class="navbar-actions">
       <div id="caja-status-indicator" style="display: none; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 0.05em;"></div>
       <button id="cp-trigger-btn" class="cp-trigger-btn" title="Búsqueda global (Ctrl+K)">
