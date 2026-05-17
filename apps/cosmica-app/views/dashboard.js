@@ -192,11 +192,10 @@ export class DashboardView extends AsyncView {
 
           <!-- Primary column: Últimos Movimientos (wider, main attention) -->
           <section class="dashboard-section-primary">
-            <div class="section-divider flex-between">
+            <div class="section-divider">
               <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.7;">🛠️</span> Últimos Movimientos
               </h3>
-              <a href="#tickets" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
             </div>
             <div class="grid-stack" style="grid-template-columns: 1fr; gap: 12px;">
               ${recentTickets.length > 0
@@ -241,11 +240,10 @@ export class DashboardView extends AsyncView {
 
         <!-- ╔══ FULL-WIDTH ROW — Nuevos Clientes (horizontal grid) ══╗ -->
         <section class="dashboard-clients-row" style="margin-top: var(--space-lg);">
-          <div class="section-divider flex-between">
+          <div class="section-divider">
             <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
               <span style="opacity: 0.7;">👥</span> Nuevos Clientes
             </h3>
-            <a href="#clientes" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
           </div>
           <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
             ${recentClients.length > 0
