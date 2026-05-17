@@ -153,7 +153,7 @@ export class DashboardView extends AsyncView {
             </h3>
             <span style="font-size: var(--font-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">Tickets Críticos</span>
           </div>
-          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-lg);">
+          <div class="grid-stack" style="grid-template-columns: 1fr; gap: 8px;">
             ${attentionRequired.map(t => renderTicketCard(t)).join('')}
           </div>
         </section>

@@ -33,150 +33,115 @@ export function render(ticket, selected = false) {
   };
 
   const metodoBadge = getMetodoPagoBadge(ticket.metodoPago);
+  const prioridad = ticket.planServicio || 'estándar';
   
-  const fecha = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString() : '—';
-  const prioridad = ticket.planServicio || 'Estándar';
-
-  const statusOptions = [
-    WORK_STATUS.ingresado,
-    WORK_STATUS.enReparacion,
-    WORK_STATUS.listo,
-    WORK_STATUS.entregado
-  ];
-
   const canEdit = canAccess('edit-ticket');
   const overdue   = isOverdue(ticket);
   const highValue = isHighValue(ticket);
   const showCTA   = hasBudgetApproved(ticket) && canEdit;
 
-  // Aging visual — uses centralized helper from intelligence.js
   const agingBadge = getAgingBadge(ticket);
+
+  // Opacity for "Entregado" to de-emphasize
+  const isEntregado = estado === WORK_STATUS.entregado;
+  const rowOpacity = isEntregado ? '0.6' : '1';
+  const bgHighlight = selected ? 'rgba(255,255,255,0.04)' : 'rgba(8, 15, 28, 0.4)';
+  const borderColor = selected ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.04)';
+
+  // Primary Action Logic
+  let primaryActionHtml = '';
+  let dropdownActions = '';
+
+  if (canEdit) {
+    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado) {
+      primaryActionHtml = `<button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="background:var(--accent-blue); padding: 6px 12px; font-weight: 700; height: 32px;">🙋 Tomar Orden</button>`;
+    } else if (estado === WORK_STATUS.listo) {
+      primaryActionHtml = `<button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px;">💵 Cobrar</button>`;
+    } else if (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) {
+      // If needs budget approval and in repair -> "Listo" ? Wait, if showCTA is true it means budget approved.
+      // Usually the user wants "Listo" for En Reparacion.
+      if (estado === WORK_STATUS.enReparacion) {
+        primaryActionHtml = `<button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px;">✅ Listo</button>`;
+      } else if (showCTA) {
+        primaryActionHtml = `<button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px;">🔧 Reparar</button>`;
+      } else {
+        primaryActionHtml = `<button class="btn btn-sm btn-secondary quick-listo-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px; border-color: var(--accent-cyan); color: var(--accent-cyan);">✅ Listo</button>`;
+      }
+    } else if (estado === WORK_STATUS.entregado) {
+      primaryActionHtml = `<button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px;">♻️ Reingreso</button>`;
+    }
+  }
+
+  // Secondary actions in dropdown
+  dropdownActions += `<button class="btn btn-sm ticket-print-btn" data-id="${ticket.id}">🖨 Imprimir Orden</button>`;
+  if (canEdit) {
+    dropdownActions += `<a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm" style="text-decoration:none;">📝 Editar Ticket</a>`;
+  }
+  if (ticket.telefono) {
+    dropdownActions += `<button class="btn btn-sm ticket-whatsapp-btn" data-id="${ticket.id}" style="color:#25D366;">📲 Contactar WhatsApp</button>`;
+  }
+
+  // Column sizes:
+  // Col 1: ID, Client, Equipo (flex: 2)
+  // Col 2: Status, Aging (flex: 1)
+  // Col 3: Technician, Meta (flex: 1)
+  // Col 4: Actions (fixed)
 
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}"
-      style="display:flex;flex-direction:column;cursor:pointer;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden;">
+      style="display: flex; align-items: center; padding: 12px 16px; margin-bottom: 8px; border-radius: var(--radius-md); background: ${bgHighlight}; border: 1px solid ${borderColor}; opacity: ${rowOpacity}; cursor: pointer; transition: all 0.2s ease; overflow: visible;">
+      
+      <!-- Checkbox -->
+      <div style="margin-right: 16px; display: flex; align-items: center;">
+        <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''} style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+      </div>
 
-      <!-- ── Header row: checkbox │ title │ badge column ───────────────── -->
-      <div class="flex-between tc-card-header" style="align-items:flex-start;margin-bottom:var(--space-sm);gap:6px;flex-wrap:nowrap;">
-
-        <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''}
-          style="flex-shrink:0;margin-top:3px;">
-
-        <!-- Title + order number — must shrink, never overflow -->
-        <div style="flex:1;min-width:0;padding:0 8px;overflow:hidden;box-sizing:border-box;">
-          <h3 class="card-title text-truncate" title="${ticket.nombre || ''} ${ticket.apellido || ''}"
-            style="font-size:var(--font-md); font-weight:800; margin:0; letter-spacing: -0.01em; color: var(--text-primary);">
+      <!-- Column 1: Client & Equipment -->
+      <div style="flex: 2; min-width: 0; padding-right: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em;">#${ticket.numeroOrden || '—'}</span>
+          <span class="text-truncate" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">
             ${ticket.nombre || 'Sin Nombre'} ${ticket.apellido || ''}
-          </h3>
-          <div style="font-size: 10px; color: var(--accent-cyan); margin-top: 2px; font-weight: 800;
-                      text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8;">
-            ORDEN #${ticket.numeroOrden || '—'}
+          </span>
+          ${highValue ? '<span title="Alto Valor">💎</span>' : ''}
+          ${overdue ? '<span title="Demorado">⚠️</span>' : ''}
+        </div>
+        <div class="text-truncate" style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
+          ${ticket.equipo || '—'} ${ticket.marca || ''} <span style="opacity:0.5; margin: 0 4px;">·</span> ${prioridad}
+        </div>
+      </div>
+
+      <!-- Column 2: Status & Aging -->
+      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size: 10px; text-transform: uppercase;">${estado}</div>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          ${agingBadge}
+          ${ticket.isOverloaded ? '<div class="badge badge-danger" style="font-size:10px; animation:pulse 2s infinite;">🔥 CARGADO</div>' : ''}
+        </div>
+      </div>
+
+      <!-- Column 3: Technician & Payment -->
+      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div style="font-size: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+          <span style="opacity:0.7;">👨‍🔧</span> ${ticket.tecnicoAsignadoNombre ? ticket.tecnicoAsignadoNombre.split(' ')[0] : '<span style="color:var(--text-muted);">Sin asignar</span>'}
+        </div>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          ${metodoBadge ? `<div class="badge ${metodoBadge.class}" style="font-size:10px;">${metodoBadge.label}</div>` : ''}
+        </div>
+      </div>
+
+      <!-- Column 4: Actions -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;" onclick="event.stopPropagation()">
+        ${primaryActionHtml}
+        
+        <div class="ticket-dropdown-wrapper">
+          <button class="btn btn-sm btn-secondary" style="padding: 6px 10px; height: 32px; font-weight: 800; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">⋯</button>
+          <div class="ticket-dropdown-content">
+            ${dropdownActions}
           </div>
         </div>
-
-        <!-- Badge column — capped width; never pushes title out of the card -->
-        <div class="tc-badge-col"
-          style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;
-                 flex-shrink:0;min-width:64px;max-width:clamp(64px,38%,148px);
-                 overflow:hidden;box-sizing:border-box;">
-          <div class="badge ${badgeClass}" id="badge-${ticket.id}"
-            style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${estado}</div>
-          ${ticket.reentryRisk  ? `<div class="badge ${ticket.reentryRisk.class}"  style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${ticket.reentryRisk.label}</div>` : ''}
-          ${ticket.clientBadge  ? `<div class="badge ${ticket.clientBadge.class}"  style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${ticket.clientBadge.label}</div>` : ''}
-          ${metodoBadge         ? `<div class="badge ${metodoBadge.class}"          style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${metodoBadge.label}</div>` : ''}
-          ${overdue   ? '<div class="badge badge-orange rule-badge" style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">⚠ DEMORADO</div>' : ''}
-          ${agingBadge}
-          ${highValue ? '<div class="badge badge-gold rule-badge"   style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;">💎 ALTO VALOR</div>' : ''}
-          ${ticket.tecnicoAsignadoId ? `
-            <div class="badge badge-blue" style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;
-                 background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#93c5fd;">
-              👨‍🔧 ${ticket.tecnicoAsignadoNombre || 'Asignado'}
-            </div>` : ''}
-          ${ticket.isOverloaded ? '<div class="badge badge-danger" style="font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;animation:pulse 2s infinite;">🔥 CARGADO</div>' : ''}
-        </div>
       </div>
 
-      <!-- ── Meta + problem ─────────────────────────────────────────────── -->
-      <div style="flex:1;min-width:0;overflow:hidden;box-sizing:border-box; padding: 0 4px;">
-        <p class="vm-meta"
-          style="color:var(--text-muted);font-size:var(--font-sm);margin-bottom:10px;
-                 overflow-wrap:anywhere;word-break:break-word;min-width:0;max-width:100%;box-sizing:border-box; line-height: 1.5;">
-          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Equipo:</span> <span style="color: var(--text-primary); font-weight: 500;">${ticket.equipo || '—'} ${ticket.marca || ''}</span><br>
-          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Fecha:</span> <span style="color: var(--text-primary); font-weight: 500;">${fecha}</span><br>
-          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Prioridad:</span> <span style="color: var(--text-primary); font-weight: 700; text-transform:capitalize;">${prioridad}</span>
-        </p>
-
-        <div class="vm-problema"
-          style="border-top: 1px solid var(--border); padding-top: 6px;
-                 font-size: var(--font-sm); color: var(--text-muted); min-height: 3em;
-                 overflow-wrap: anywhere; word-break: break-word; min-width: 0; max-width: 100%; box-sizing: border-box; line-height: 1.6;">
-          <span style="color:var(--text-muted); opacity: 0.6; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Problema:</span>
-          <span class="vm-problema-text" style="color: var(--text-primary); font-weight: 400;">${ticket.problema || 'No especificado'}</span>
-        </div>
-      </div>
-
-      ${showCTA ? `
-      <div class="quick-repair-wrap" style="margin-top:var(--space-sm);">
-        <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}"
-          style="width:100%;font-size:var(--font-xs);min-height:44px;">
-          🔧 Pasar a Reparación
-        </button>
-      </div>` : ''}
-
-      <!-- ── Action bar — always visible ─────── -->
-      <div style="margin-top:var(--space-sm);border-top:1px solid var(--border);padding-top:var(--space-xs);
-                  display:flex;align-items:center;gap:4px;position:relative;z-index:10;
-                  flex-wrap:wrap;min-width:0;box-sizing:border-box;">
-        <div style="display:flex;gap:4px;flex:1;flex-wrap:wrap;min-width:0;box-sizing:border-box;align-items:center;">
-
-          ${!ticket.tecnicoAsignadoId && canEdit && estado !== WORK_STATUS.entregado ? `
-            <button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}"
-              title="Tomar Ticket"
-              style="padding:6px 8px;flex:1;min-width:56px;font-size:10px;font-weight:700;
-                     background:var(--accent-blue);color:#fff;min-height:36px;">
-              🙋 TOMAR
-            </button>` : ''}
-
-          ${canEdit && estado === WORK_STATUS.listo ? `
-            <button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}"
-              title="Cobrar y Finalizar"
-              style="padding:6px 8px;flex:1;min-width:60px;font-size:10px;font-weight:700;min-height:36px;">
-              💵 COBRAR
-            </button>` : ''}
-
-          ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
-            <button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}"
-              title="Marcar como Listo"
-              style="padding:6px 8px;flex:1;min-width:56px;font-size:10px;font-weight:700;min-height:36px;">
-              ✅ LISTO
-            </button>` : ''}
-
-          ${estado === WORK_STATUS.entregado ? `
-            <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}"
-              title="Generar Reingreso"
-              style="padding:6px 8px;flex:1;min-width:72px;font-size:10px;min-height:36px;
-                     background:rgba(0,229,255,0.1);color:var(--accent-cyan);">
-              ♻️ REINGRESO
-            </button>` : ''}
-
-          <!-- Print — always visible, no permission gate -->
-          <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}"
-            style="padding:6px 10px;flex-shrink:0;min-height:36px;" title="Imprimir orden">🖨</button>
-
-          <!-- Edit — permission-gated -->
-          ${canEdit ? `
-            <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary"
-              style="padding:6px 10px;flex-shrink:0;min-height:36px;" title="Editar">📝</a>` : ''}
-
-          <!-- WhatsApp — always visible when phone exists, no permission gate -->
-          ${ticket.telefono ? `
-            <button class="btn btn-sm ticket-whatsapp-btn" data-id="${ticket.id}"
-              style="padding:6px 8px;flex-shrink:0;min-height:36px;
-                     background:rgba(37,211,102,0.15);color:#25D366;border:1px solid rgba(37,211,102,0.3);"
-              title="WhatsApp rápido">📲</button>` : ''}
-
-        </div>
-      </div>
     </div>
   `;
 }
@@ -195,82 +160,86 @@ function renderMobile(ticket, selected = false) {
   const canEdit = canAccess('edit-ticket');
   const showCTA = hasBudgetApproved(ticket) && canEdit;
 
-  // Determinar la acción rápida primaria en móvil (Táctil, altura exacta de 38px)
+  // Acciones en móvil: Sólo 1 acción primaria y botón de opciones (...)
   let primaryActionHtml = '';
-  if (showCTA) {
-    primaryActionHtml = `
-      <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
-        🔧 Pasar a Reparación
-      </button>`;
-  } else if (!ticket.tecnicoAsignadoId && canEdit && estado !== WORK_STATUS.entregado) {
-    primaryActionHtml = `
-      <button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700; background:var(--accent-blue);">
-        🙋 Tomar Trabajo
-      </button>`;
-  } else if (canEdit && estado === WORK_STATUS.listo) {
-    primaryActionHtml = `
-      <button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
-        💵 Cobrar y Entregar
-      </button>`;
-  } else if (canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion)) {
-    primaryActionHtml = `
-      <button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
-        ✅ Marcar Listo
-      </button>`;
-  } else if (estado === WORK_STATUS.entregado) {
-    primaryActionHtml = `
-      <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700; background:rgba(0,229,255,0.06); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.15);">
-        ♻️ Generar Reingreso
-      </button>`;
+  let dropdownActions = '';
+
+  if (canEdit) {
+    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado) {
+      primaryActionHtml = `<button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700; background:var(--accent-blue);">🙋 Tomar Orden</button>`;
+    } else if (estado === WORK_STATUS.listo) {
+      primaryActionHtml = `<button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700;">💵 Cobrar</button>`;
+    } else if (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) {
+      if (estado === WORK_STATUS.enReparacion) {
+        primaryActionHtml = `<button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700;">✅ Listo</button>`;
+      } else if (showCTA) {
+        primaryActionHtml = `<button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700;">🔧 Reparar</button>`;
+      } else {
+        primaryActionHtml = `<button class="btn btn-sm btn-secondary quick-listo-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700; border-color:var(--accent-cyan); color:var(--accent-cyan);">✅ Listo</button>`;
+      }
+    } else if (estado === WORK_STATUS.entregado) {
+      primaryActionHtml = `<button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700;">♻️ Reingreso</button>`;
+    }
+  }
+
+  // Secondary actions in dropdown
+  dropdownActions += `<button class="btn btn-sm ticket-print-btn" data-id="${ticket.id}" style="font-size: 13px; padding: 10px;">🖨 Imprimir</button>`;
+  if (canEdit) {
+    dropdownActions += `<a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm" style="text-decoration:none; font-size: 13px; padding: 10px;">📝 Editar</a>`;
+  }
+  if (ticket.telefono) {
+    dropdownActions += `<button class="btn btn-sm ticket-whatsapp-btn" data-id="${ticket.id}" style="color:#25D366; font-size: 13px; padding: 10px;">📲 WhatsApp</button>`;
   }
 
   return `
     <div class="card glass-card mobile-ticket-card ${selected ? 'ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}"
-      style="display:flex; flex-direction:column; padding: 12px !important; gap: 8px; border-radius: var(--radius-md); background: rgba(8, 15, 28, 0.6); border: 1px solid rgba(255,255,255,0.06); cursor:pointer; min-width:0; position:relative; overflow:hidden; transition: background 0.15s ease, border-color 0.15s ease;">
+      style="display:flex; flex-direction:column; padding: 14px !important; gap: 10px; border-radius: var(--radius-md); background: rgba(8, 15, 28, 0.6); border: 1px solid rgba(255,255,255,0.06); cursor:pointer; position:relative; overflow:visible; transition: background 0.15s ease;">
       
-      <!-- Fila superior: Orden + Cliente e Indicador de Estado -->
+      <!-- Header -->
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-        <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-          <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''} style="flex-shrink:0; width:16px; height:16px; margin:0;">
+        <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+          <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''} style="flex-shrink:0; width:18px; height:18px; margin:0;">
           <div style="min-width:0; flex:1;">
-            <div style="font-size: 9px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
-              ORDEN #${ticket.numeroOrden || '—'}
+            <div style="font-size: 10px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+              #${ticket.numeroOrden || '—'}
             </div>
-            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${cliente}
             </div>
           </div>
         </div>
-        
         <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-          <span class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size:9.5px; padding: 2px 7px; font-weight:700; text-transform:uppercase;">
+          <span class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size:9.5px; padding: 3px 8px; font-weight:700; text-transform:uppercase;">
             ${estado}
           </span>
           ${ticket.tecnicoAsignadoId ? `
-            <span style="font-size:9px; color:var(--text-muted); opacity:0.8; font-weight:500;">
+            <span style="font-size:10px; color:var(--text-muted); opacity:0.8; font-weight:600;">
               👨‍🔧 ${ticket.tecnicoAsignadoNombre.split(' ')[0]}
             </span>` : ''}
         </div>
       </div>
 
-      <!-- Fila intermedia: Equipo + Fecha -->
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:6px; font-size:11.5px;">
-        <div style="color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px;">
-          <span style="opacity:0.6; font-size:11px;">💻</span>
-          <span style="color: var(--text-primary); font-weight:500; overflow: hidden; text-overflow: ellipsis;">${equipo}</span>
+      <!-- Info Row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:8px; font-size:12px;">
+        <div style="color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">
+          <span style="opacity:0.7;">💻</span> <span style="font-weight:500;">${equipo}</span>
         </div>
-        <div style="color: var(--text-muted); flex-shrink: 0; font-size:11px; display: flex; align-items: center; gap: 4px; padding-left: 8px;">
-          <span style="opacity:0.6; font-size:11px;">📅</span>
-          <span>${fecha}</span>
+        <div style="color: var(--text-muted); flex-shrink: 0; padding-left: 8px;">
+          <span style="opacity:0.7;">📅</span> <span>${fecha}</span>
         </div>
       </div>
 
-      <!-- Acción Rápida Touch -->
-      ${primaryActionHtml ? `
-        <div style="margin-top: 2px;" onclick="event.stopPropagation()">
-          ${primaryActionHtml}
+      <!-- Actions -->
+      <div style="display:flex; gap:8px; align-items:center; margin-top:4px;" onclick="event.stopPropagation()">
+        ${primaryActionHtml}
+        
+        <div class="ticket-dropdown-wrapper">
+          <button class="btn btn-sm btn-secondary" style="padding: 0 12px; height: 36px; font-weight: 800; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">⋯</button>
+          <div class="ticket-dropdown-content" style="right: 0; min-width: 150px; bottom: 100%; top: auto; margin-bottom: 4px;">
+            ${dropdownActions}
+          </div>
         </div>
-      ` : ''}
+      </div>
 
     </div>
   `;
