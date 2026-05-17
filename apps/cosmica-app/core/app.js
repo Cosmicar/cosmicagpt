@@ -70,6 +70,12 @@ function initPerfilButton(session, mainContent) {
   const btnPerfil = document.getElementById('btnPerfil');
   const dropdown = document.getElementById('perfilDropdown');
 
+  if (btnPerfil) {
+    const initial = (email.charAt(0) || '?').toUpperCase();
+    btnPerfil.textContent = initial;
+    btnPerfil.setAttribute('aria-label', `Perfil de ${email}`);
+  }
+
   if (btnPerfil && dropdown) {
     btnPerfil.addEventListener('click', (e) => {
       e.stopPropagation();

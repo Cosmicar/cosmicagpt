@@ -3,6 +3,8 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './assets/icon.svg',
+  './assets/favicon.svg',
   './assets/icon-192.png',
   './assets/icon-512.png',
   '../../styles/design-system.css',

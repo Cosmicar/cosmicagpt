@@ -7,10 +7,22 @@
   
   --accent-cyan: #00e5ff;
   --accent-cyan-glow: rgba(0, 229, 255, 0.3);
-  
+
+  --accent-blue: #0066ff;
+  --accent-blue-glow: rgba(0, 102, 255, 0.3);
+
+  --accent-green: #10b981;
+  --accent-green-glow: rgba(16, 185, 129, 0.3);
+
+  --accent-gold: #f59e0b;
+  --accent-gold-glow: rgba(245, 158, 11, 0.3);
+
+  --accent-magenta: #ff2d78;
+  --accent-magenta-glow: rgba(255, 45, 120, 0.3);
+
   --accent-orange: #ffaa00;
   --accent-orange-glow: rgba(255, 170, 0, 0.3);
-  
+
   --danger: #ff007f;
   --success: #10b981;
   --border: rgba(255, 255, 255, 0.1);

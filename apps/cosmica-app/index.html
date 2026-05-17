@@ -17,7 +17,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cósmica App">
 
-  <!-- Favicon / tab icon -->
+  <!-- Favicon / tab icon — SVG first (sharp at all sizes), PNG fallback -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 
   <!-- Apple touch icon -->
@@ -184,29 +185,69 @@
         color: var(--text-muted);
         text-decoration: none;
         font-family: inherit;
-        transition: all 0.2s ease;
+        transition: color 0.18s ease;
         gap: 3px;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
+        position: relative; /* required for ::before active pip */
       }
       .mobile-nav-icon {
         font-size: 20px;
         font-style: normal;
-        transition: transform 0.2s ease;
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       .mobile-nav-label {
         font-size: 10px;
         font-weight: 600;
         letter-spacing: 0.02em;
       }
+      /* Active pip — top border indicator (native tab-bar feel) */
+      .mobile-nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%) scaleX(0);
+        width: 28px;
+        height: 2px;
+        background: var(--accent-cyan);
+        border-radius: 0 0 3px 3px;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 0.2s ease;
+        opacity: 0;
+      }
+      .mobile-nav-link.active::before {
+        transform: translateX(-50%) scaleX(1);
+        opacity: 1;
+      }
       .mobile-nav-link:active .mobile-nav-icon {
-        transform: scale(0.9);
+        transform: scale(0.88);
       }
       .mobile-nav-link.active {
         color: var(--accent-cyan);
       }
       .mobile-nav-link.active .mobile-nav-icon {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+      }
+
+      /* Profile avatar button — circular initial instead of text */
+      #btnPerfil {
+        width: 32px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, var(--accent-blue, #0066ff), var(--accent-cyan)) !important;
+        color: #060A12 !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: none !important;
+        flex-shrink: 0;
       }
 
       /* Drawer Fullscreen Mobile */
@@ -414,7 +455,7 @@
   <!-- Topbar (Navbar) -->
   <nav class="navbar">
     <div class="navbar-logo">
-      <img src="assets/icon-192.png" alt="Cósmica Logo" style="height: 32px; width: 32px; object-fit: contain;">
+      <img src="assets/icon.svg" alt="Cósmica" style="height: 32px; width: 32px; object-fit: contain; flex-shrink:0;">
       <span>Cósmica App</span>
     </div>
     <button class="menu-toggle" aria-label="Abrir menú">☰</button>

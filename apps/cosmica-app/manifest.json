@@ -1,7 +1,7 @@
 {
   "id": "/apps/cosmica-app/",
   "name": "Cósmica App",
-  "short_name": "Cósmica App",
+  "short_name": "Cósmica",
   "description": "Sistema de gestión para talleres de reparación — tickets, inventario y finanzas.",
   "start_url": "./",
   "scope": "./",
@@ -11,7 +11,7 @@
     "minimal-ui",
     "standalone"
   ],
-  "background_color": "#050b14",
+  "background_color": "#060A12",
   "theme_color": "#00e5ff",
   "orientation": "portrait-primary",
   "lang": "es-AR",
@@ -23,30 +23,60 @@
   "prefer_related_applications": false,
   "icons": [
     {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Nuevo Trabajo",
-      "short_name": "Nuevo Ticket",
+      "short_name": "Nuevo",
       "url": "./#ticket-nuevo",
       "description": "Crear una nueva orden de servicio"
     },
     {
       "name": "Trabajos",
-      "short_name": "Tickets",
+      "short_name": "Trabajos",
       "url": "./#tickets",
       "description": "Ver listado de trabajos"
+    },
+    {
+      "name": "Inventario",
+      "short_name": "Stock",
+      "url": "./#inventario",
+      "description": "Gestión de stock e inventario"
+    },
+    {
+      "name": "Finanzas",
+      "short_name": "Caja",
+      "url": "./#finanzas",
+      "description": "Caja y movimientos financieros"
     }
   ]
 }
