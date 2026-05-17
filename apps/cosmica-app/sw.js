@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cosmica-saas-v2.4';
+const CACHE_NAME = 'cosmica-saas-v2.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

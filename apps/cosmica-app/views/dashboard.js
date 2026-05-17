@@ -200,9 +200,15 @@ export class DashboardView extends AsyncView {
             </div>
             <div class="grid-stack" style="grid-template-columns: 1fr; gap: 12px;">
               ${recentTickets.length > 0
-                ? recentTickets.map(t => renderTicketCard(t)).join('')
+                ? recentTickets.slice(0, 3).map(t => renderTicketCard(t)).join('')
                 : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay actividad reciente.</div>'}
             </div>
+            ${recentTickets.length > 3 ? `
+              <a href="#tickets" class="dashboard-see-more-btn">
+                <span>Ver todos los movimientos</span>
+                <span class="arrow">→</span>
+              </a>
+            ` : ''}
           </section>
 
           <!-- Secondary side panel: Actividad Global (audit log, scrollable) -->
@@ -243,9 +249,15 @@ export class DashboardView extends AsyncView {
           </div>
           <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
             ${recentClients.length > 0
-              ? recentClients.map(c => renderClientCard(c)).join('')
+              ? recentClients.slice(0, 3).map(c => renderClientCard(c)).join('')
               : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay clientes registrados.</div>'}
           </div>
+          ${recentClients.length > 3 ? `
+            <a href="#clientes" class="dashboard-see-more-btn">
+              <span>Ver todos los clientes</span>
+              <span class="arrow">→</span>
+            </a>
+          ` : ''}
         </section>
       </div>
     `;
