@@ -237,8 +237,8 @@ export class TicketsView extends AsyncView {
         <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
-      <div id="tickets-grid" class="grid-stack vm-${this.viewMode}" style="margin-top: var(--space-lg);">
-        ${this.viewMode === 'table'
+      <div id="tickets-grid" class="grid-stack vm-${window.innerWidth < 768 ? 'comfortable' : this.viewMode}" style="margin-top: var(--space-lg);">
+        ${(this.viewMode === 'table' && window.innerWidth >= 768)
           ? this.renderTable(this.getPagedTickets(tickets))
           : this.renderCards(this.getPagedTickets(tickets))}
       </div>
@@ -427,7 +427,8 @@ export class TicketsView extends AsyncView {
         if (wasTable || isTable) {
           const filtered = this.getFilteredTickets();
           const paged    = this.getPagedTickets(filtered);
-          grid.innerHTML = isTable ? this.renderTable(paged) : this.renderCards(paged);
+          const shouldRenderTable = isTable && window.innerWidth >= 768;
+          grid.innerHTML = shouldRenderTable ? this.renderTable(paged) : this.renderCards(paged);
           this.initStatusSelectors();
           this.updatePagination(filtered.length);
         }

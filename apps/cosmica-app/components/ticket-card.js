@@ -10,6 +10,11 @@ import { getAgingBadge } from '../core/intelligence.js';
  * @returns {string} HTML
  */
 export function render(ticket, selected = false) {
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    return renderMobile(ticket, selected);
+  }
+
   let badgeClass = 'badge-cyan';
   const estado = ticket.estado || WORK_STATUS.ingresado;
   
@@ -175,3 +180,99 @@ export function render(ticket, selected = false) {
     </div>
   `;
 }
+
+function renderMobile(ticket, selected = false) {
+  let badgeClass = 'badge-cyan';
+  const estado = ticket.estado || WORK_STATUS.ingresado;
+  
+  if (estado === WORK_STATUS.enReparacion) badgeClass = 'badge-orange';
+  if (estado === WORK_STATUS.listo) badgeClass = 'badge-green';
+  if (estado === WORK_STATUS.entregado) badgeClass = 'badge-gray';
+
+  const fecha = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString('es-AR', {day: '2-digit', month: '2-digit'}) : '—';
+  const cliente = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ') || 'Sin Nombre';
+  const equipo = [ticket.marca, ticket.equipo].filter(Boolean).join(' ') || '—';
+  const canEdit = canAccess('edit-ticket');
+  const showCTA = hasBudgetApproved(ticket) && canEdit;
+
+  // Determinar la acción rápida primaria en móvil (Táctil, altura exacta de 38px)
+  let primaryActionHtml = '';
+  if (showCTA) {
+    primaryActionHtml = `
+      <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
+        🔧 Pasar a Reparación
+      </button>`;
+  } else if (!ticket.tecnicoAsignadoId && canEdit && estado !== WORK_STATUS.entregado) {
+    primaryActionHtml = `
+      <button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700; background:var(--accent-blue);">
+        🙋 Tomar Trabajo
+      </button>`;
+  } else if (canEdit && estado === WORK_STATUS.listo) {
+    primaryActionHtml = `
+      <button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
+        💵 Cobrar y Entregar
+      </button>`;
+  } else if (canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion)) {
+    primaryActionHtml = `
+      <button class="btn btn-sm btn-primary quick-listo-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700;">
+        ✅ Marcar Listo
+      </button>`;
+  } else if (estado === WORK_STATUS.entregado) {
+    primaryActionHtml = `
+      <button class="btn btn-sm btn-secondary reingreso-btn" data-id="${ticket.id}" style="width:100%; min-height:38px; font-size:11px; font-weight:700; background:rgba(0,229,255,0.06); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.15);">
+        ♻️ Generar Reingreso
+      </button>`;
+  }
+
+  return `
+    <div class="card glass-card mobile-ticket-card ${selected ? 'ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}"
+      style="display:flex; flex-direction:column; padding: 12px !important; gap: 8px; border-radius: var(--radius-md); background: rgba(8, 15, 28, 0.6); border: 1px solid rgba(255,255,255,0.06); cursor:pointer; min-width:0; position:relative; overflow:hidden; transition: background 0.15s ease, border-color 0.15s ease;">
+      
+      <!-- Fila superior: Orden + Cliente e Indicador de Estado -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+          <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''} style="flex-shrink:0; width:16px; height:16px; margin:0;">
+          <div style="min-width:0; flex:1;">
+            <div style="font-size: 9px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+              ORDEN #${ticket.numeroOrden || '—'}
+            </div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${cliente}
+            </div>
+          </div>
+        </div>
+        
+        <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+          <span class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size:9.5px; padding: 2px 7px; font-weight:700; text-transform:uppercase;">
+            ${estado}
+          </span>
+          ${ticket.tecnicoAsignadoId ? `
+            <span style="font-size:9px; color:var(--text-muted); opacity:0.8; font-weight:500;">
+              👨‍🔧 ${ticket.tecnicoAsignadoNombre.split(' ')[0]}
+            </span>` : ''}
+        </div>
+      </div>
+
+      <!-- Fila intermedia: Equipo + Fecha -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:6px; font-size:11.5px;">
+        <div style="color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px;">
+          <span style="opacity:0.6; font-size:11px;">💻</span>
+          <span style="color: var(--text-primary); font-weight:500; overflow: hidden; text-overflow: ellipsis;">${equipo}</span>
+        </div>
+        <div style="color: var(--text-muted); flex-shrink: 0; font-size:11px; display: flex; align-items: center; gap: 4px; padding-left: 8px;">
+          <span style="opacity:0.6; font-size:11px;">📅</span>
+          <span>${fecha}</span>
+        </div>
+      </div>
+
+      <!-- Acción Rápida Touch -->
+      ${primaryActionHtml ? `
+        <div style="margin-top: 2px;" onclick="event.stopPropagation()">
+          ${primaryActionHtml}
+        </div>
+      ` : ''}
+
+    </div>
+  `;
+}
+

@@ -111,19 +111,19 @@
         line-height: 1 !important;
       }
 
-      /* Mobile Sidebar Improvement */
+      /* Mobile Sidebar Minimization */
       .sidebar {
         top: 0 !important;
         height: 100vh !important;
-        width: 280px !important;
-        background: rgba(8, 15, 28, 0.72) !important;
+        width: 240px !important; /* Reduced width */
+        background: rgba(6, 11, 20, 0.96) !important; /* Premium dark background */
         backdrop-filter: blur(24px) !important;
         -webkit-backdrop-filter: blur(24px) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.6) !important;
-        transition: transform 0.4s cubic-bezier(0.32, 0.94, 0.6, 1) !important;
-        padding: var(--space-lg) var(--space-md) !important;
-        z-index: 850 !important; /* over navbar but under drawers */
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+        box-shadow: 10px 0 40px rgba(0, 0, 0, 0.6) !important;
+        transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important; /* Faster transition */
+        padding: var(--space-md) !important;
+        z-index: 10000 !important; /* Above bottom nav overlays */
       }
 
       .sidebar-nav {
@@ -142,13 +142,13 @@
       .sidebar-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(5, 11, 20, 0.5);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        z-index: 840; /* right under sidebar */
+        background: rgba(3, 5, 10, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 9998; /* right under sidebar */
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.4s cubic-bezier(0.32, 0.94, 0.6, 1);
+        transition: opacity 0.24s ease;
       }
       .sidebar-overlay.active {
         opacity: 1;
@@ -161,17 +161,17 @@
         bottom: 0;
         left: 0;
         right: 0;
-        height: calc(60px + env(safe-area-inset-bottom, 0px));
-        background: rgba(8, 15, 28, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        height: calc(60px + env(safe-area-inset-bottom, 12px));
+        background: rgba(6, 11, 20, 0.94);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
         display: flex !important;
         justify-content: space-around;
-        align-items: center;
-        z-index: 750;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+        align-items: stretch;
+        z-index: 9999; /* Ensure it is on top of everything */
+        padding-bottom: env(safe-area-inset-bottom, 12px);
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
       }
       .mobile-nav-link {
         display: flex;
@@ -185,49 +185,56 @@
         color: var(--text-muted);
         text-decoration: none;
         font-family: inherit;
-        transition: color 0.18s ease;
+        transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         gap: 3px;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        position: relative; /* required for ::before active pip */
+        position: relative;
+        padding-top: 6px;
       }
       .mobile-nav-icon {
         font-size: 20px;
         font-style: normal;
-        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    color 0.2s ease;
       }
       .mobile-nav-label {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        transition: color 0.2s ease;
       }
-      /* Active pip — top border indicator (native tab-bar feel) */
-      .mobile-nav-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%) scaleX(0);
-        width: 28px;
-        height: 2px;
-        background: var(--accent-cyan);
-        border-radius: 0 0 3px 3px;
-        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-                    opacity 0.2s ease;
-        opacity: 0;
-      }
-      .mobile-nav-link.active::before {
-        transform: translateX(-50%) scaleX(1);
-        opacity: 1;
-      }
-      .mobile-nav-link:active .mobile-nav-icon {
-        transform: scale(0.88);
-      }
+      /* Active state styles */
       .mobile-nav-link.active {
         color: var(--accent-cyan);
       }
       .mobile-nav-link.active .mobile-nav-icon {
-        transform: translateY(-2px);
+        transform: translateY(-2px) scale(1.1);
+        text-shadow: 0 0 12px var(--accent-cyan-glow);
+      }
+      /* Active pip — tiny elegant dot under label instead of top border indicator */
+      .mobile-nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        width: 4px;
+        height: 4px;
+        background: var(--accent-cyan);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--accent-cyan-glow);
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 0.2s ease;
+        opacity: 0;
+      }
+      .mobile-nav-link.active::after {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+      }
+      .mobile-nav-link:active .mobile-nav-icon {
+        transform: scale(0.9);
       }
 
       /* Profile avatar button — circular initial instead of text */

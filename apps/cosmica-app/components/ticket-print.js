@@ -106,7 +106,7 @@ function buildHtml(ticket) {
 
     @page {
       size: A4;
-      margin: 14mm 16mm 16mm 16mm;
+      margin: 0;
     }
 
     html, body {
@@ -153,7 +153,6 @@ function buildHtml(ticket) {
       line-height: 1;
       color: #111111;
     }
-    .logo-name em { font-style: normal; color: #0284c7; }
     .logo-tagline {
       font-size: 7pt;
       letter-spacing: 1.5pt;
@@ -333,7 +332,18 @@ function buildHtml(ticket) {
 
     /* ── Print enforcement ── */
     @media print {
-      html, body { background: white !important; }
+      html, body {
+        width: 210mm;
+        height: 297mm;
+        background: white !important;
+      }
+      .doc {
+        width: 210mm !important;
+        max-width: 210mm !important;
+        padding: 16mm 20mm !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
       * { box-shadow: none !important; }
     }
 
@@ -366,7 +376,7 @@ function buildHtml(ticket) {
     <div class="logo-block">
       <img class="logo-img" src="${LOGO_DATA_URI}" alt="Cósmica" />
       <div class="logo-text-block">
-        <div class="logo-name">CÓS<em>MICA</em></div>
+        <div class="logo-name">CÓSMICA</div>
         <div class="logo-tagline">Servicio Técnico Profesional</div>
       </div>
     </div>
