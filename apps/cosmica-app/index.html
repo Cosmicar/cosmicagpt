@@ -631,6 +631,19 @@
       border-radius: 0 2px 2px 0;
       box-shadow: 0 0 8px var(--accent-cyan-glow);
     }
+    /* Suppress the browser's default focus ring (was bleeding outside the link
+       container and overlapping the avatar separator in compact mode).
+       Keyboard focus still gets a clean inset indicator. */
+    .sidebar-link:focus { outline: none !important; }
+    .sidebar-link:focus-visible {
+      outline: none !important;
+      box-shadow: inset 0 0 0 1.5px rgba(0, 229, 255, 0.55) !important;
+    }
+    .sidebar-toggle:focus { outline: none; }
+    .sidebar-toggle:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 1.5px rgba(0, 229, 255, 0.5);
+    }
     .sidebar-icon {
       display: inline-flex;
       align-items: center;
