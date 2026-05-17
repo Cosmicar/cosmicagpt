@@ -74,13 +74,13 @@
       .main-content {
         overscroll-behavior: none;
         padding: var(--space-sm); /* Maximum density for mobile */
-        padding-top: calc(var(--navbar-h) + 12px);
+        padding-top: calc(var(--navbar-h) + env(safe-area-inset-top, 0px) + 12px) !important;
       }
       
       /* Mobile Navbar Compaction */
       .navbar {
-        padding: 0 var(--space-sm) !important;
-        height: var(--navbar-h) !important;
+        padding: env(safe-area-inset-top, 0px) var(--space-sm) 0 !important;
+        height: calc(var(--navbar-h) + env(safe-area-inset-top, 0px)) !important;
       }
       .navbar-logo {
         font-size: 13px !important;
@@ -430,6 +430,7 @@
   <!-- Dropdown perfil -->
   <div class="perfil-dropdown" id="perfilDropdown">
     <div class="perfil-email" id="perfilEmail"></div>
+    <button class="btn btn-secondary" id="btnInstallPWA" style="width:100%; margin-bottom: 8px; display: none; background: rgba(0,229,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(0,229,255,0.2);">📲 Instalar App</button>
     <button class="btn btn-secondary" id="btnLogout" style="width:100%;">Cerrar sesión</button>
   </div>
 

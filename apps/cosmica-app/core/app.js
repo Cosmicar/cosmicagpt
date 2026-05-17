@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCommandPalette();
     updateCajaStatusIndicator();
     initGlobalShortcuts();
+    initPWAFeatures();
 
     const router = new Router();
 
@@ -308,4 +309,49 @@ function initGlobalShortcuts() {
       }
     }
   });
+}
+
+/**
+ * Inicializa las características PWA del SaaS (registro de SW y gestor de instalación)
+ */
+function initPWAFeatures() {
+  // 1. Registro del Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => {
+        console.log('[PWA] Service Worker registrado exitosamente en el scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('[PWA] Error al registrar el Service Worker del SaaS:', err);
+      });
+  }
+
+  // 2. Escucha de capacidad de instalación (Capturar antes del trigger)
+  let deferredPrompt = null;
+  const btnInstall = document.getElementById('btnInstallPWA');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btnInstall) {
+      btnInstall.style.display = 'block'; // Mostrar botón de instalación sutil en perfil
+    }
+  });
+
+  if (btnInstall) {
+    btnInstall.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      btnInstall.disabled = true;
+      btnInstall.textContent = 'Instalando...';
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`[PWA] Elección del prompt de instalación: ${outcome}`);
+      
+      deferredPrompt = null;
+      btnInstall.style.display = 'none';
+      btnInstall.disabled = false;
+      btnInstall.textContent = '📲 Instalar App';
+    });
+  }
 }

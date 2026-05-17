@@ -1,14 +1,26 @@
 {
+  "id": "/apps/cosmica-app/",
   "name": "Cósmica App",
   "short_name": "Cósmica App",
   "description": "Sistema de gestión para talleres de reparación — tickets, inventario y finanzas.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "minimal-ui",
+    "standalone"
+  ],
   "background_color": "#050b14",
   "theme_color": "#00e5ff",
   "orientation": "portrait-primary",
   "lang": "es-AR",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/icon-192.png",
