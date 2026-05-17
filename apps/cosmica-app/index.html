@@ -522,6 +522,282 @@
       font-weight: 500;
       font-size: var(--font-sm);
     }
+    /* ╔══════════════════════════════════════════════════════════════╗
+       ║  OPERATIONAL INTELLIGENCE — Executive KPIs, rankings, split   ║
+       ║  Migrated from legacy /panel.html "Estadísticas" tab.         ║
+       ║  Premium, compact, no charts. Muted palette. Admin-only.     ║
+       ╚══════════════════════════════════════════════════════════════╝ */
+    .dashboard-intelligence {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+      padding: var(--space-lg);
+      background: rgba(255,255,255,0.015);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-xl);
+    }
+
+    /* Executive 4-column KPI strip */
+    .executive-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .exec-kpi-card {
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+    .exec-kpi-card:hover {
+      background: rgba(255,255,255,0.035);
+      border-color: rgba(0,229,255,0.12);
+    }
+    .exec-kpi-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+    .exec-kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .exec-kpi-value.exec-kpi-money { color: var(--accent-green, #10b981); }
+    .exec-kpi-value.exec-kpi-cyan { color: var(--accent-cyan); }
+    .exec-kpi-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+    .exec-kpi-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      opacity: 0.7;
+      letter-spacing: -0.005em;
+    }
+
+    /* Performance + Distribution row */
+    .ops-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    .ops-card {
+      padding: 18px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ops-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+    .ops-card-main {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .ops-big-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .ops-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .ops-card-sub, .ops-card-empty {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      opacity: 0.65;
+    }
+    .ops-card-split { margin-top: 4px; }
+
+    /* Split bar — clean, no neon. Cyan for Taller, blue for Remoto. */
+    .split-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      margin-bottom: 12px;
+    }
+    .split-segment { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .split-taller { background: var(--accent-cyan); }
+    .split-remoto { background: rgba(99, 179, 237, 0.7); }
+    .split-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .split-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .split-item strong {
+      color: var(--text-primary);
+      font-weight: 700;
+      margin-left: auto;
+    }
+    .split-item .split-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      opacity: 0.7;
+      min-width: 36px;
+      text-align: right;
+    }
+    .split-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .split-dot.dot-taller { background: var(--accent-cyan); }
+    .split-dot.dot-remoto { background: rgba(99, 179, 237, 0.7); }
+    .split-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+
+    /* Rankings — 3 compact columns, no charts */
+    .rankings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .ranking-card {
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-lg);
+    }
+    .ranking-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.85;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ranking-icon {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .ranking-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ranking-item {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+    .ranking-item:hover { background: rgba(255,255,255,0.025); }
+    .ranking-pos {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      opacity: 0.7;
+      text-align: center;
+    }
+    .ranking-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ranking-value {
+      font-size: 12px;
+      color: var(--text-primary);
+      font-weight: 500;
+      text-align: right;
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .ranking-value strong { color: var(--text-primary); font-weight: 700; }
+    .ranking-pct {
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: 0.7;
+      font-weight: 600;
+    }
+    .ranking-empty {
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.55;
+      font-weight: 500;
+    }
+
+    /* Responsive: collapse intelligence section gracefully */
+    @media (max-width: 1100px) {
+      .executive-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .rankings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 720px) {
+      .ops-metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-intelligence {
+        padding: var(--space-md);
+      }
+      .exec-kpi-value { font-size: 20px; }
+      .ops-big-number { font-size: 26px; }
+    }
+
     /* "Ver todos / Ver más" CTA below truncated lists */
     .dashboard-see-more-btn {
       display: flex;

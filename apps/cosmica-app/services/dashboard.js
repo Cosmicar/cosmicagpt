@@ -55,6 +55,114 @@ function computeRecentClients(clientes, limit = 5) {
     .slice(0, limit);
 }
 
+/**
+ * Operational intelligence — historical/aggregate metrics migrated from
+ * the legacy admin Estadísticas tab. Single O(n) pass over the existing
+ * tickets+clientes datasets — zero additional Firestore reads.
+ *
+ * Returns: high-value KPIs (totals, revenue, ticket avg, retention),
+ * performance (avg resolution time), distribution (workshop vs remote),
+ * and top-N rankings (provinces, technicians, problems).
+ */
+function computeOperationalIntelligence(tickets, clientes) {
+  const clientesById = new Map();
+  for (const c of clientes) clientesById.set(c.id, c);
+
+  let facturacionGlobal     = 0;
+  let countEntregados       = 0;
+  let sumResolutionMs       = 0;
+  let validResolutionCount  = 0;
+  let servicioTaller        = 0;
+  let servicioRemoto        = 0;
+
+  const provinciasMap     = Object.create(null);
+  const tecnicosMap       = Object.create(null);
+  const problemasMap      = Object.create(null);
+  const ticketsPerClient  = Object.create(null);
+
+  // Trivial stop-words for problem frequency (skip noise)
+  const STOPWORDS = new Set(['ninguno', 'nada', 'no enciende', 'no anda', 'no funciona', '-', '--', 'sin info']);
+
+  for (const t of tickets) {
+    if (t.clienteId) {
+      ticketsPerClient[t.clienteId] = (ticketsPerClient[t.clienteId] || 0) + 1;
+    }
+
+    // Provincia (denormalised lookup via cliente)
+    const cliente = clientesById.get(t.clienteId);
+    const prov = (cliente?.provincia || 'Sin especificar').trim() || 'Sin especificar';
+    provinciasMap[prov] = (provinciasMap[prov] || 0) + 1;
+
+    // Tipo de servicio
+    if (t.tipo === 'remoto') servicioRemoto++; else servicioTaller++;
+
+    // Top problemas (filtered for signal)
+    const prob = String(t.problema || '').toLowerCase().trim();
+    if (prob.length > 3 && !STOPWORDS.has(prob)) {
+      problemasMap[prob] = (problemasMap[prob] || 0) + 1;
+    }
+
+    // Entregado-only metrics
+    if (t.estado === WORK_STATUS.entregado) {
+      countEntregados++;
+      facturacionGlobal += Number(t.precio || t.presupuesto || 0);
+
+      if (t.fechaIngreso && t.fechaEntregado) {
+        const ms = new Date(t.fechaEntregado).getTime() - new Date(t.fechaIngreso).getTime();
+        if (ms > 0) {
+          sumResolutionMs += ms;
+          validResolutionCount++;
+        }
+      }
+
+      // Técnicos (only credit for completed deliveries — fair attribution)
+      const tecNombre = String(t.tecnicoAsignadoNombre || '').trim();
+      if (tecNombre) tecnicosMap[tecNombre] = (tecnicosMap[tecNombre] || 0) + 1;
+    }
+  }
+
+  const totalServicios          = tickets.length;
+  const ticketPromedio          = countEntregados > 0 ? facturacionGlobal / countEntregados : 0;
+  const tiempoPromedioResolDias = validResolutionCount > 0
+    ? (sumResolutionMs / validResolutionCount) / 86_400_000
+    : 0;
+
+  // Retention rate (% of active clients with > 1 ticket)
+  let clientesActivos    = 0;
+  let clientesRepetidos  = 0;
+  for (const cid in ticketsPerClient) {
+    clientesActivos++;
+    if (ticketsPerClient[cid] > 1) clientesRepetidos++;
+  }
+  const tasaRetencion = clientesActivos > 0 ? (clientesRepetidos / clientesActivos) * 100 : 0;
+
+  const buildRanking = (map, n) => Object.entries(map)
+    .map(([nombre, count]) => ({ nombre, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, n);
+
+  return {
+    totalServicios,
+    countEntregados,
+    facturacionGlobal,
+    ticketPromedio,
+    tasaRetencion,
+    tiempoPromedioResolDias,
+    servicioTallerCount: servicioTaller,
+    servicioRemotoCount: servicioRemoto,
+    clientesActivos,
+    topProvincias: buildRanking(provinciasMap, 5).map(r => ({
+      ...r,
+      pct: totalServicios > 0 ? (r.count / totalServicios) * 100 : 0,
+    })),
+    topTecnicos:  buildRanking(tecnicosMap, 3),
+    topProblemas: buildRanking(problemasMap, 3).map(r => ({
+      ...r,
+      nombre: r.nombre.charAt(0).toUpperCase() + r.nombre.slice(1),
+    })),
+  };
+}
+
 // Límite máximo de eventos en el Activity Feed del dashboard
 const ACTIVITY_LIMIT = 20;
 
@@ -129,6 +237,7 @@ export async function getDashboardData() {
 
   return {
     metrics:           computeMetrics(tickets),
+    intelligence:      computeOperationalIntelligence(tickets, clientes),
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),
     attentionRequired: computeAttentionRequired(tickets).map(enrichTicket),

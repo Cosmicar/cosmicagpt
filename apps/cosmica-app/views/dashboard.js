@@ -107,12 +107,13 @@ export class DashboardView extends AsyncView {
   }
 
   renderContent(data) {
-    const { metrics, recentTickets, recentClients, attentionRequired, activityFeed } = data;
+    const { metrics, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
     this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
     this._followUpItems = this._buildFollowUpList([...(recentTickets || []), ...(attentionRequired || [])]);
     const canCreateTicket = canAccess('create-ticket');
+    const showIntelligence = canAccess('admin-stats') && intelligence;
 
     return `
       <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-lg);">
@@ -186,6 +187,8 @@ export class DashboardView extends AsyncView {
           </div>
         </section>
         ` : ''}
+
+        ${showIntelligence ? this.renderIntelligence(intelligence) : ''}
 
         <!-- ╔══ MAIN OPS AREA — Movements (primary) + Activity feed (side panel) ══╗ -->
         <div class="dashboard-main-grid">
@@ -272,6 +275,141 @@ export class DashboardView extends AsyncView {
         <div class="kpi-value">${value}</div>
         <div style="width: 20px; height: 2px; background: ${color}; opacity: 0.5; border-radius: 2px;"></div>
       </div>
+    `;
+  }
+
+  /**
+   * Renderiza la sección de Inteligencia Operacional — KPIs ejecutivos +
+   * performance + rankings compactos. Solo admin/tester.
+   * Datos pre-computados en services/dashboard.js (single O(n) pass).
+   */
+  renderIntelligence(intel) {
+    const fmtMoney = (n) => '$' + Number(n || 0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+    const fmtNum = (n) => Number(n || 0).toLocaleString('es-AR');
+    const escape = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Distribución Taller / Remoto inline split bar (muted colours, no neon)
+    const renderTipoSplit = () => {
+      const total = intel.servicioTallerCount + intel.servicioRemotoCount;
+      if (total === 0) return '<div class="ops-card-empty">Sin servicios registrados.</div>';
+      const tallerPct = (intel.servicioTallerCount / total) * 100;
+      const remotoPct = 100 - tallerPct;
+      return `
+        <div class="split-bar" role="img" aria-label="Distribución de servicios: Taller ${tallerPct.toFixed(0)}% / Remoto ${remotoPct.toFixed(0)}%">
+          <div class="split-segment split-taller" style="width: ${tallerPct}%;"></div>
+          <div class="split-segment split-remoto" style="width: ${remotoPct}%;"></div>
+        </div>
+        <div class="split-legend">
+          <div class="split-item">
+            <span class="split-dot dot-taller"></span>
+            <span class="split-label">Taller</span>
+            <strong>${tallerPct.toFixed(0)}%</strong>
+            <span class="split-count">${fmtNum(intel.servicioTallerCount)}</span>
+          </div>
+          <div class="split-item">
+            <span class="split-dot dot-remoto"></span>
+            <span class="split-label">Remoto</span>
+            <strong>${remotoPct.toFixed(0)}%</strong>
+            <span class="split-count">${fmtNum(intel.servicioRemotoCount)}</span>
+          </div>
+        </div>
+      `;
+    };
+
+    const renderRanking = (items, label, valueFmt) => {
+      if (!items || items.length === 0) {
+        return '<div class="ranking-empty">Sin datos.</div>';
+      }
+      return `
+        <ol class="ranking-list">
+          ${items.map((r, i) => `
+            <li class="ranking-item">
+              <span class="ranking-pos">${i + 1}</span>
+              <span class="ranking-name" title="${escape(r.nombre)}">${escape(r.nombre)}</span>
+              <span class="ranking-value">${valueFmt(r)}</span>
+            </li>
+          `).join('')}
+        </ol>
+      `;
+    };
+
+    return `
+      <section class="dashboard-intelligence" aria-labelledby="intel-heading">
+        <div class="section-divider flex-between" style="margin-bottom: var(--space-md);">
+          <h3 id="intel-heading" style="font-size: var(--font-lg); font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px;">
+            <span style="opacity:0.8;">📊</span> Inteligencia Operacional
+          </h3>
+          <span style="font-size: var(--font-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.65;">Histórico global · admin</span>
+        </div>
+
+        <!-- Executive KPI strip (4 columns) -->
+        <div class="executive-kpi-grid">
+          <div class="exec-kpi-card">
+            <div class="exec-kpi-label">Total Servicios</div>
+            <div class="exec-kpi-value">${fmtNum(intel.totalServicios)}</div>
+            <div class="exec-kpi-sub">${fmtNum(intel.countEntregados)} entregados</div>
+          </div>
+          <div class="exec-kpi-card">
+            <div class="exec-kpi-label">Facturación Global</div>
+            <div class="exec-kpi-value exec-kpi-money">${fmtMoney(intel.facturacionGlobal)}</div>
+            <div class="exec-kpi-sub">Bruto · entregados</div>
+          </div>
+          <div class="exec-kpi-card">
+            <div class="exec-kpi-label">Ticket Promedio</div>
+            <div class="exec-kpi-value exec-kpi-cyan">${fmtMoney(intel.ticketPromedio)}</div>
+            <div class="exec-kpi-sub">${fmtNum(intel.clientesActivos)} clientes activos</div>
+          </div>
+          <div class="exec-kpi-card">
+            <div class="exec-kpi-label">Retención Clientes</div>
+            <div class="exec-kpi-value">${intel.tasaRetencion.toFixed(1)}<span class="exec-kpi-unit">%</span></div>
+            <div class="exec-kpi-sub">Con &gt; 1 servicio</div>
+          </div>
+        </div>
+
+        <!-- Performance + Distribution row -->
+        <div class="ops-metrics-grid">
+          <div class="ops-card">
+            <div class="ops-card-label">Tiempo Promedio de Resolución</div>
+            <div class="ops-card-main">
+              <span class="ops-big-number">${intel.tiempoPromedioResolDias.toFixed(1)}</span>
+              <span class="ops-unit">días</span>
+            </div>
+            <div class="ops-card-sub">Promedio · ingreso → entrega</div>
+          </div>
+          <div class="ops-card">
+            <div class="ops-card-label">Distribución por Tipo</div>
+            <div class="ops-card-split">${renderTipoSplit()}</div>
+          </div>
+        </div>
+
+        <!-- Rankings (3 compact columns) -->
+        <div class="rankings-grid">
+          <div class="ranking-card">
+            <div class="ranking-header">
+              <span class="ranking-icon">🌍</span>
+              <span>Top Provincias</span>
+            </div>
+            ${renderRanking(intel.topProvincias, 'provincias', (r) => `
+              <strong>${fmtNum(r.count)}</strong>
+              <span class="ranking-pct">${r.pct.toFixed(0)}%</span>
+            `)}
+          </div>
+          <div class="ranking-card">
+            <div class="ranking-header">
+              <span class="ranking-icon">🛠️</span>
+              <span>Top Técnicos</span>
+            </div>
+            ${renderRanking(intel.topTecnicos, 'técnicos', (r) => `<strong>${fmtNum(r.count)}</strong> <span class="ranking-pct">entregas</span>`)}
+          </div>
+          <div class="ranking-card">
+            <div class="ranking-header">
+              <span class="ranking-icon">💡</span>
+              <span>Top Problemas</span>
+            </div>
+            ${renderRanking(intel.topProblemas, 'problemas', (r) => `<strong>${fmtNum(r.count)}</strong>`)}
+          </div>
+        </div>
+      </section>
     `;
   }
 
