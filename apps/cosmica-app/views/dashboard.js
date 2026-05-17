@@ -456,10 +456,13 @@ export class DashboardView extends AsyncView {
           stroke-linecap="butt"
           transform="rotate(-90 ${cx} ${cy})"
           class="donut-segment"
+          data-index="${i}"
           data-name="${escape(item.nombre)}"
           data-count="${item.count}"
           data-pct="${item.pct.toFixed(1)}"
-        />
+        >
+          <title>${escape(item.nombre)}: ${fmtNum(item.count)} servicios · ${item.pct.toFixed(1)}%</title>
+        </circle>
       `;
     }).join('');
 
@@ -467,7 +470,11 @@ export class DashboardView extends AsyncView {
     const legendItems = data.map((item, i) => {
       const color = PALETTE[i % PALETTE.length];
       return `
-        <li class="donut-legend-item">
+        <li class="donut-legend-item"
+            data-index="${i}"
+            data-name="${escape(item.nombre)}"
+            data-count="${item.count}"
+            data-pct="${item.pct.toFixed(1)}">
           <span class="donut-legend-dot" style="background:${color};"></span>
           <span class="donut-legend-name" title="${escape(item.nombre)}">${escape(item.nombre)}</span>
           <span class="donut-legend-count">${fmtNum(item.count)}</span>
@@ -591,6 +598,78 @@ export class DashboardView extends AsyncView {
         const { getCajaEntries } = await import('../services/finanzas.js');
         const movs = await getCajaEntries();
         this.exportToCSV('caja', movs);
+      });
+    }
+
+    // --- Interactive Donut Chart Synchronization & Premium Center Hover Feedback ---
+    const donutSegments = document.querySelectorAll('.donut-segment');
+    const donutLegendItems = document.querySelectorAll('.donut-legend-item');
+    const donutCenterNum = document.querySelector('.donut-center-number');
+    const donutCenterLbl = document.querySelector('.donut-center-label');
+
+    if (donutCenterNum && donutCenterLbl) {
+      const defaultNumber = donutCenterNum.textContent;
+      const defaultLabel = donutCenterLbl.textContent;
+
+      const setActiveItem = (index, name, count, pct) => {
+        // Update center with gorgeous detailed stats
+        donutCenterNum.textContent = count;
+        donutCenterLbl.textContent = `${name} · ${pct}%`;
+        donutCenterLbl.style.fill = 'var(--accent-cyan)';
+        donutCenterLbl.style.opacity = '1';
+
+        // Animate segments
+        donutSegments.forEach((seg, i) => {
+          if (i === index) {
+            seg.classList.add('is-active');
+            seg.classList.remove('is-inactive');
+          } else {
+            seg.classList.remove('is-active');
+            seg.classList.add('is-inactive');
+          }
+        });
+
+        // Highlight matching legend item
+        donutLegendItems.forEach((item, i) => {
+          if (i === index) {
+            item.classList.add('is-active');
+          } else {
+            item.classList.remove('is-active');
+          }
+        });
+      };
+
+      const resetActiveState = () => {
+        donutCenterNum.textContent = defaultNumber;
+        donutCenterLbl.textContent = defaultLabel;
+        donutCenterLbl.style.fill = 'var(--text-muted)';
+        donutCenterLbl.style.opacity = '0.85';
+
+        donutSegments.forEach(seg => {
+          seg.classList.remove('is-active', 'is-inactive');
+        });
+
+        donutLegendItems.forEach(item => {
+          item.classList.remove('is-active');
+        });
+      };
+
+      donutSegments.forEach((seg, idx) => {
+        const name  = seg.getAttribute('data-name');
+        const count = seg.getAttribute('data-count');
+        const pct   = seg.getAttribute('data-pct');
+
+        seg.addEventListener('mouseenter', () => setActiveItem(idx, name, count, pct));
+        seg.addEventListener('mouseleave', resetActiveState);
+      });
+
+      donutLegendItems.forEach((item, idx) => {
+        const name  = item.getAttribute('data-name');
+        const count = item.getAttribute('data-count');
+        const pct   = item.getAttribute('data-pct');
+
+        item.addEventListener('mouseenter', () => setActiveItem(idx, name, count, pct));
+        item.addEventListener('mouseleave', resetActiveState);
       });
     }
   }
