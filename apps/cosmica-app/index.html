@@ -604,6 +604,20 @@
       padding-bottom: 4px;
     }
 
+    /* Hide sidebar scrollbar entirely — 6 items never need a visible track,
+       and the thumb artifact was leaking through in compact mode.
+       Wheel/touch scroll remains functional as a graceful fallback. */
+    .sidebar, .sidebar-nav {
+      scrollbar-width: none;       /* Firefox */
+      -ms-overflow-style: none;    /* IE/legacy Edge */
+    }
+    .sidebar::-webkit-scrollbar,
+    .sidebar-nav::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;               /* Chrome/Safari/modern Edge */
+    }
+
     /* ── Sidebar Footer + Toggle Button ── */
     .sidebar-footer {
       margin-top: auto;
