@@ -46,15 +46,29 @@
       transition: padding var(--transition-fast), opacity var(--transition-normal);
     }
 
-    /* Mobile Overrides (Operational Pass) */
+    /* Mobile Overrides (Operational Pass & Native Feel Pass) */
     @media (max-width: 768px) {
       :root {
-        --navbar-h: 50px; /* Slimmer navbar */
+        --navbar-h: 44px; /* Slimmer navbar - iOS standard height */
+        
+        /* Mobile Spacing Pass: Tighten CSS space variables globally on mobile */
+        --space-xs: 4px;
+        --space-sm: 6px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 20px;
+        --space-2xl: 28px;
+        --space-3xl: 36px;
       }
 
       /* iOS Safari zoom prevention */
       input, select, textarea {
         font-size: 16px !important;
+      }
+
+      body {
+        /* Extra padding-bottom so body content scrolls past the fixed bottom nav */
+        padding-bottom: calc(60px + env(safe-area-inset-bottom, 12px)) !important;
       }
 
       .main-content {
@@ -63,29 +77,211 @@
         padding-top: calc(var(--navbar-h) + 12px);
       }
       
+      /* Mobile Navbar Compaction */
       .navbar {
-        padding: 0 var(--space-sm);
-        height: var(--navbar-h);
+        padding: 0 var(--space-sm) !important;
+        height: var(--navbar-h) !important;
+      }
+      .navbar-logo {
+        font-size: 13px !important;
+        gap: 6px !important;
+      }
+      .navbar-logo img {
+        height: 22px !important;
+        width: 22px !important;
+      }
+      .menu-toggle {
+        display: none !important; /* Hide hamburger menu in favor of bottom nav "Más" button */
+      }
+      .cp-trigger-btn {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+      }
+      .cp-trigger-btn kbd {
+        display: none !important;
+      }
+      #btnPerfil {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        line-height: 1 !important;
       }
 
+      /* Mobile Sidebar Improvement */
       .sidebar {
-        top: var(--navbar-h);
-        height: calc(100vh - var(--navbar-h));
-        width: 260px;
+        top: 0 !important;
+        height: 100vh !important;
+        width: 280px !important;
+        background: rgba(8, 15, 28, 0.72) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 20px 0 50px rgba(0, 0, 0, 0.6) !important;
+        transition: transform 0.4s cubic-bezier(0.32, 0.94, 0.6, 1) !important;
+        padding: var(--space-lg) var(--space-md) !important;
+        z-index: 850 !important; /* over navbar but under drawers */
+      }
+
+      .sidebar-nav {
+        gap: var(--space-xs) !important;
+        padding-top: calc(20px + env(safe-area-inset-top, 0px)) !important;
+      }
+
+      /* Touch ergonomics for sidebar links */
+      .sidebar-link {
+        padding: 12px 16px !important;
+        border-radius: var(--radius-md) !important;
+        margin-bottom: var(--space-xs) !important;
+      }
+
+      /* Sidebar backdrop overlay */
+      .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 11, 20, 0.5);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 840; /* right under sidebar */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.32, 0.94, 0.6, 1);
+      }
+      .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Bottom Mobile Navigation */
+      .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(60px + env(safe-area-inset-bottom, 0px));
+        background: rgba(8, 15, 28, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex !important;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 750;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+      }
+      .mobile-nav-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        height: 100%;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        gap: 3px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mobile-nav-icon {
+        font-size: 20px;
+        font-style: normal;
+        transition: transform 0.2s ease;
+      }
+      .mobile-nav-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .mobile-nav-link:active .mobile-nav-icon {
+        transform: scale(0.9);
+      }
+      .mobile-nav-link.active {
+        color: var(--accent-cyan);
+      }
+      .mobile-nav-link.active .mobile-nav-icon {
+        transform: translateY(-1px);
+      }
+
+      /* Drawer Fullscreen Mobile */
+      .drawer-panel {
+        width: 100% !important;
+        height: 100% !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.4s cubic-bezier(0.32, 0.94, 0.6, 1) !important;
+        z-index: 910 !important;
+      }
+      .drawer-panel.is-open {
+        transform: translateY(0) !important;
+      }
+      .drawer-header {
+        padding-top: calc(var(--space-md) + env(safe-area-inset-top, 16px)) !important;
+        background: rgba(8, 15, 28, 0.98) !important;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .drawer-footer {
+        padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 16px)) !important;
+      }
+      .drawer-body {
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
       }
 
       /* Densidad operacional en cards */
       .glass-card {
-        padding: var(--space-sm) !important;
+        padding: var(--space-md) !important; /* Slightly more precise card padding */
       }
 
-      /* Formularios más compactos */
-      .form-group {
-        margin-bottom: var(--space-sm) !important;
+      /* Mobile Card Pass: Touch targets, single-row actions, hierarchy */
+      .glass-card .btn {
+        min-height: 44px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
       }
       
-      .navbar-logo {
-        font-size: 14px !important;
+      .glass-card > div:last-child > div {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .glass-card > div:last-child > div > button.quick-tomar-btn,
+      .glass-card > div:last-child > div > button.quick-listo-btn,
+      .glass-card > div:last-child > div > button.quick-entregar-btn,
+      .glass-card > div:last-child > div > button.reingreso-btn {
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+
+      /* Hide extra overlays and unnecessary elements on mobile */
+      .space-bg .glow-point {
+        opacity: 0.15 !important; /* Muted background glow to avoid visual chaos */
+        filter: blur(120px) !important;
+      }
+
+      /* Reduce margin under search bar and grid */
+      .operational-controls {
+        margin-bottom: var(--space-sm) !important;
+      }
+      #tickets-grid {
+        margin-top: var(--space-sm) !important;
       }
     }
 
@@ -274,6 +470,12 @@
       <div class="skeleton" style="height:400px;border-radius:var(--radius-lg);"></div>
     </div>
   </main>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Bottom Navigation for Mobile -->
+  <nav class="mobile-bottom-nav" id="bottom-nav"></nav>
 
   <script type="module" src="./core/app.js"></script>
 </body>

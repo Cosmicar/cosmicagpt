@@ -131,7 +131,7 @@ export class Router {
   }
   
   updateActiveLink(route) {
-    document.querySelectorAll('.sidebar-link').forEach(link => {
+    document.querySelectorAll('.sidebar-link, .mobile-nav-link').forEach(link => {
       link.classList.remove('active');
       const href = link.getAttribute('href');
       const linkRoute = href ? href.slice(1) : '';

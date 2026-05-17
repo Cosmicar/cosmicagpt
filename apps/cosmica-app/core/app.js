@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     cleanupExpiredDrafts(); // Sweep stale cosmica_draft_* keys before the session starts
     document.body.classList.add('session-ready');
     renderSidebar(session.profile);
+    renderBottomNav(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
     initCommandPalette();
@@ -97,20 +98,29 @@ function initPerfilButton(session, mainContent) {
 function initSidebarMobile() {
   const menuToggle = document.querySelector('.menu-toggle');
   const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
 
   if (menuToggle && sidebar) {
     menuToggle.addEventListener('click', () => {
       sidebar.classList.toggle('active');
+      if (overlay) overlay.classList.toggle('active');
     });
 
-    // Delegación de eventos para links dinámicos
     sidebar.addEventListener('click', (e) => {
       if (e.target.closest('.sidebar-link')) {
         if (window.innerWidth <= 768) {
           sidebar.classList.remove('active');
+          if (overlay) overlay.classList.remove('active');
         }
       }
     });
+
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+      });
+    }
   }
 }
 
@@ -145,6 +155,67 @@ function renderSidebar(profile) {
       `).join('')}
     </div>
   `;
+}
+
+/**
+ * Renderiza la navegación inferior de forma dinámica según el rol
+ * @param {Object} profile 
+ */
+function renderBottomNav(profile) {
+  const bottomNav = document.getElementById('bottom-nav');
+  if (!bottomNav) return;
+
+  const role = profile?.rol || 'operador';
+
+  const allowed = (id) => {
+    const roles = {
+      'dashboard': ['admin', 'tecnico', 'recepcion', 'operador', 'tester'],
+      'tickets': ['admin', 'tecnico', 'recepcion', 'operador', 'tester'],
+      'clientes': ['admin', 'recepcion', 'operador', 'tester'],
+      'finanzas': ['admin', 'recepcion', 'tecnico', 'operador', 'tester'],
+    };
+    return roles[id] ? roles[id].includes(role) : false;
+  };
+
+  const items = [];
+  if (allowed('dashboard')) items.push({ id: 'dashboard', label: 'Dashboard', icon: '📊' });
+  if (allowed('tickets')) items.push({ id: 'tickets', label: 'Trabajos', icon: '🛠️' });
+  if (allowed('clientes')) items.push({ id: 'clientes', label: 'Clientes', icon: '👥' });
+  if (allowed('finanzas')) items.push({ id: 'finanzas', label: 'Finanzas', icon: '💰' });
+
+  // Siempre agregamos el trigger "Más" al final para abrir el sidebar overlay
+  items.push({ id: 'more', label: 'Más', icon: '☰', isMore: true });
+
+  bottomNav.innerHTML = items.map(item => {
+    if (item.isMore) {
+      return `
+        <button class="mobile-nav-link" id="mobile-more-trigger" aria-label="Abrir menú completo">
+          <i class="mobile-nav-icon">${item.icon}</i>
+          <span class="mobile-nav-label">${item.label}</span>
+        </button>
+      `;
+    }
+    return `
+      <a href="#${item.id}" class="mobile-nav-link ${window.location.hash === '#' + item.id || (item.id === 'dashboard' && !window.location.hash) ? 'active' : ''}">
+        <i class="mobile-nav-icon">${item.icon}</i>
+        <span class="mobile-nav-label">${item.label}</span>
+      </a>
+    `;
+  }).join('');
+
+  // Vincular click del botón "Más"
+  const moreTrigger = document.getElementById('mobile-more-trigger');
+  if (moreTrigger) {
+    moreTrigger.addEventListener('click', (e) => {
+      e.preventDefault();
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      }
+    });
+  }
 }
 
 // Throttle: máximo 1 lectura Firestore de caja cada 30 s para no consumir lecturas
