@@ -479,6 +479,61 @@
     }
 
     /* ╔══════════════════════════════════════════════════════════════╗
+       ║  DASHBOARD LAYOUT — Balanced 2-column + full-width clients   ║
+       ║  Movements (primary, ~60%) + Activity feed (sticky, ~40%)    ║
+       ║  Clients row below in horizontal card grid                   ║
+       ╚══════════════════════════════════════════════════════════════╝ */
+    .dashboard-main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .dashboard-section-primary { min-width: 0; }
+    .dashboard-section-secondary {
+      min-width: 0;
+      position: sticky;
+      top: calc(var(--navbar-h) + var(--space-md));
+    }
+    .dashboard-activity-feed {
+      padding: 0;
+      max-height: 540px;
+      overflow-y: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      /* Same scrollbar hiding pattern as the sidebar — cleaner feed */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+    .dashboard-activity-feed::-webkit-scrollbar { width: 4px; }
+    .dashboard-activity-feed::-webkit-scrollbar-track { background: transparent; }
+    .dashboard-activity-feed::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+    }
+    .dashboard-activity-feed::-webkit-scrollbar-thumb:hover {
+      background: rgba(0,229,255,0.2);
+    }
+    .dashboard-activity-empty {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--text-muted);
+      opacity: 0.55;
+      font-weight: 500;
+      font-size: var(--font-sm);
+    }
+    /* Collapse to single column on medium and narrower viewports */
+    @media (max-width: 1024px) {
+      .dashboard-main-grid {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-section-secondary {
+        position: static; /* sticky doesn't make sense when stacked */
+      }
+      .dashboard-activity-feed { max-height: 380px; }
+    }
+
+    /* ╔══════════════════════════════════════════════════════════════╗
        ║  SIDEBAR COMPACT MODE — Premium operational shell            ║
        ║  Inspired by Linear / Notion / GitHub / Stripe Dashboard     ║
        ╚══════════════════════════════════════════════════════════════╝ */

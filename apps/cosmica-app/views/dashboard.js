@@ -187,65 +187,66 @@ export class DashboardView extends AsyncView {
         </section>
         ` : ''}
 
-        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-lg);">
+        <!-- ╔══ MAIN OPS AREA — Movements (primary) + Activity feed (side panel) ══╗ -->
+        <div class="dashboard-main-grid">
 
-          <!-- Satélite de Actividad Global -->
-          <section>
-            <div class="section-divider flex-between">
-              <h3 style="font-size: var(--font-md); font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
-                <span>🛰️</span> Actividad Global
-              </h3>
-              <span class="badge badge-cyan" style="font-size: 10px;">Audit Pass</span>
-            </div>
-            <div class="glass-card" style="padding: 0; max-height: 520px; overflow-y: auto; border-radius: var(--radius-lg); border: 1px solid var(--border);">
-              ${activityFeed && activityFeed.length > 0 ? activityFeed.map(ev => `
-                <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; gap: 14px; align-items: flex-start; transition: background var(--transition-fast); background: ${ev.source === 'finance' ? 'rgba(16, 185, 129, 0.03)' : 'rgba(255,255,255,0.01)'};">
-                  <span style="font-size: 1.3rem; min-width: 28px; text-align: center; opacity: 0.9; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));">
-                    ${ev.source === 'finance' ? '💰' : (TICKET_EVENT_ICONS[ev.type] || '⚪')}
-                  </span>
-                  <div style="flex: 1; min-width: 0;">
-                    <div style="font-size: var(--font-sm); font-weight: 600; color: var(--text-primary); line-height: 1.5; letter-spacing: -0.01em;">${ev.message}</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between; font-weight: 500;">
-                      <span style="display:flex; align-items:center; gap:4px;"><i style="font-style:normal; opacity:0.6;">👤</i> ${ev.user || 'sistema'}</span>
-                      <span style="opacity:0.8;">${formatRelativeTs(ev.createdAt)}</span>
-                    </div>
-                  </div>
-                </div>
-              `).join('') : '<div style="text-align:center; padding: 60px; color: var(--text-muted); opacity: 0.5; font-weight: 500;">Sin actividad reciente para auditar.</div>'}
-            </div>
-          </section>
-
-          <!-- Actividad Reciente -->
-          <section>
+          <!-- Primary column: Últimos Movimientos (wider, main attention) -->
+          <section class="dashboard-section-primary">
             <div class="section-divider flex-between">
               <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.7;">🛠️</span> Últimos Movimientos
               </h3>
               <a href="#tickets" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
             </div>
-            <div class="grid-stack" style="grid-template-columns: 1fr;">
-              ${recentTickets.length > 0 
-                ? recentTickets.map(t => renderTicketCard(t)).join('') 
+            <div class="grid-stack" style="grid-template-columns: 1fr; gap: 12px;">
+              ${recentTickets.length > 0
+                ? recentTickets.map(t => renderTicketCard(t)).join('')
                 : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay actividad reciente.</div>'}
             </div>
           </section>
 
-          <!-- Clientes Recientes -->
-          <section>
+          <!-- Secondary side panel: Actividad Global (audit log, scrollable) -->
+          <aside class="dashboard-section-secondary">
             <div class="section-divider flex-between">
-              <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                <span style="opacity: 0.7;">👥</span> Nuevos Clientes
+              <h3 style="font-size: var(--font-md); font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+                <span>🛰️</span> Actividad Global
               </h3>
-              <a href="#clientes" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
+              <span class="badge badge-cyan" style="font-size: 10px;">Audit</span>
             </div>
-            <div class="grid-stack" style="grid-template-columns: 1fr;">
-              ${recentClients.length > 0 
-                ? recentClients.map(c => renderClientCard(c)).join('') 
-                : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay clientes registrados.</div>'}
+            <div class="glass-card dashboard-activity-feed">
+              ${activityFeed && activityFeed.length > 0 ? activityFeed.map(ev => `
+                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; transition: background var(--transition-fast); background: ${ev.source === 'finance' ? 'rgba(16, 185, 129, 0.03)' : 'rgba(255,255,255,0.01)'};">
+                  <span style="font-size: 1.15rem; min-width: 24px; text-align: center; opacity: 0.9;">
+                    ${ev.source === 'finance' ? '💰' : (TICKET_EVENT_ICONS[ev.type] || '⚪')}
+                  </span>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); line-height: 1.45; letter-spacing: -0.01em;">${ev.message}</div>
+                    <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between; font-weight: 500;">
+                      <span style="display:flex; align-items:center; gap:4px; opacity:0.85;">👤 ${ev.user || 'sistema'}</span>
+                      <span style="opacity:0.7;">${formatRelativeTs(ev.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              `).join('') : '<div class="dashboard-activity-empty">Sin actividad reciente para auditar.</div>'}
             </div>
-          </section>
+          </aside>
 
         </div>
+
+        <!-- ╔══ FULL-WIDTH ROW — Nuevos Clientes (horizontal grid) ══╗ -->
+        <section class="dashboard-clients-row" style="margin-top: var(--space-lg);">
+          <div class="section-divider flex-between">
+            <h3 style="font-size: var(--font-md); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <span style="opacity: 0.7;">👥</span> Nuevos Clientes
+            </h3>
+            <a href="#clientes" style="font-size: var(--font-xs); color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Ver Todos →</a>
+          </div>
+          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
+            ${recentClients.length > 0
+              ? recentClients.map(c => renderClientCard(c)).join('')
+              : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay clientes registrados.</div>'}
+          </div>
+        </section>
       </div>
     `;
   }
