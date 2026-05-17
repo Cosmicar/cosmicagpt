@@ -89,7 +89,7 @@ export function render(ticket, selected = false) {
 
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}"
-      style="display: flex; align-items: center; padding: 12px 16px; margin-bottom: 8px; border-radius: var(--radius-md); background: ${bgHighlight}; border: 1px solid ${borderColor}; opacity: ${rowOpacity}; cursor: pointer; transition: all 0.2s ease; overflow: visible;">
+      style="display: flex; align-items: center; border-radius: var(--radius-md); background: ${bgHighlight}; border: 1px solid ${borderColor}; opacity: ${rowOpacity}; cursor: pointer; transition: all 0.2s ease; overflow: visible;">
       
       <!-- Checkbox -->
       <div style="margin-right: 16px; display: flex; align-items: center;">
