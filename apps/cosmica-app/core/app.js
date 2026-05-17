@@ -8,6 +8,14 @@ import { cleanupExpiredDrafts } from './chaos-guard.js';
 document.addEventListener('DOMContentLoaded', async () => {
   const mainContent = document.querySelector('.main-content');
 
+  // Restore sidebar compact-mode preference (desktop/tablet UX).
+  // Applied before render to avoid layout flash. Mobile media query overrides.
+  try {
+    if (localStorage.getItem('cosmica_sidebar_compact') === '1') {
+      document.body.classList.add('sidebar-compact');
+    }
+  } catch (_) { /* localStorage unavailable — ignore */ }
+
   if (mainContent) {
     mainContent.innerHTML = renderLoadingState();
   }
@@ -132,47 +140,98 @@ function initSidebarMobile() {
 }
 
 /**
- * Renderiza el sidebar de forma dinámica según el rol
- * @param {Object} profile 
+ * Renderiza el sidebar de forma dinámica según el rol.
+ * Incluye Compact Mode (toggle persistente vía localStorage).
+ * @param {Object} profile
  */
 function renderSidebar(profile) {
   const sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
 
   const role = profile?.rol || 'operador';
-  
+
+  // Lucide-style thin-stroke SVG icons (consistent 20px viewBox, currentColor)
+  const ICONS = {
+    dashboard:     '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>',
+    tickets:       '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+    clientes:      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    inventario:    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+    finanzas:      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+    configuracion: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>'
+  };
+
+  // Chevron-left — rotated 180° via CSS when sidebar-compact is active
+  const TOGGLE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+
   const menuItems = [
-    { id: 'dashboard',     label: 'Dashboard',     icon: '📊', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
-    { id: 'tickets',       label: 'Trabajos',       icon: '🛠️', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
-    { id: 'clientes',      label: 'Clientes',       icon: '👥', roles: ['admin', 'recepcion', 'operador', 'tester'] },
-    { id: 'inventario',    label: 'Inventario',     icon: '📦', roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
-    { id: 'finanzas',      label: 'Finanzas',       icon: '💰', roles: ['admin', 'recepcion', 'tecnico', 'operador', 'tester'] },
-    { id: 'configuracion', label: 'Configuración',  icon: '⚙️', roles: ['admin', 'tester'] }
+    { id: 'dashboard',     label: 'Dashboard',     roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'tickets',       label: 'Trabajos',       roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'clientes',      label: 'Clientes',       roles: ['admin', 'recepcion', 'operador', 'tester'] },
+    { id: 'inventario',    label: 'Inventario',     roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
+    { id: 'finanzas',      label: 'Finanzas',       roles: ['admin', 'recepcion', 'tecnico', 'operador', 'tester'] },
+    { id: 'configuracion', label: 'Configuración',  roles: ['admin', 'tester'] }
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));
-
   const currentHash = window.location.hash || '#dashboard';
+  const initial = profile?.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U';
+  const displayName = profile?.nombre || 'Operador';
+  const isCompact = document.body.classList.contains('sidebar-compact');
 
   sidebar.innerHTML = `
-    <div class="sidebar-header" style="display:flex; align-items:center; gap:12px; padding:8px 12px 16px 12px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06);">
-      <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:16px; flex-shrink:0; box-shadow: 0 4px 12px rgba(0,229,255,0.3);">
-        ${profile?.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U'}
-      </div>
-      <div style="display:flex; flex-direction:column; overflow:hidden;">
-        <span style="font-size:14px; font-weight:700; color:var(--text-primary); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${profile?.nombre || 'Operador'}</span>
-        <span style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">${role}</span>
+    <div class="sidebar-header">
+      <div class="sidebar-avatar" aria-hidden="true">${initial}</div>
+      <div class="sidebar-header-info">
+        <span class="sidebar-user-name">${displayName}</span>
+        <span class="sidebar-user-role">${role}</span>
       </div>
     </div>
-    <div class="sidebar-nav" style="display:flex; flex-direction:column; gap:4px;">
+    <div class="sidebar-nav">
       ${filteredItems.map(item => `
-        <a href="#${item.id}" class="sidebar-link ${(currentHash === '#' + item.id) ? 'active' : ''}">
-          <span class="sidebar-icon" style="font-size:18px; filter:grayscale(0.2);">${item.icon}</span>
-          <span class="sidebar-label" style="font-weight:500; font-size:13.5px; letter-spacing:-0.01em;">${item.label}</span>
+        <a href="#${item.id}"
+           class="sidebar-link ${currentHash === '#' + item.id ? 'active' : ''}"
+           data-tooltip="${item.label}"
+           title="${item.label}"
+           aria-label="${item.label}">
+          <span class="sidebar-icon">${ICONS[item.id] || ''}</span>
+          <span class="sidebar-label">${item.label}</span>
         </a>
       `).join('')}
     </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button"
+              aria-label="${isCompact ? 'Expandir menú lateral' : 'Colapsar menú lateral'}"
+              title="${isCompact ? 'Expandir' : 'Colapsar'}">
+        <span class="sidebar-toggle-icon">${TOGGLE_ICON}</span>
+        <span class="sidebar-toggle-label">Colapsar</span>
+      </button>
+    </div>
   `;
+
+  // Wire up sidebar toggle — persists state in localStorage
+  const toggleBtn = document.getElementById('sidebarToggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nowCompact = document.body.classList.toggle('sidebar-compact');
+      try {
+        localStorage.setItem('cosmica_sidebar_compact', nowCompact ? '1' : '0');
+      } catch (_) { /* storage unavailable — state is in-memory only */ }
+      toggleBtn.setAttribute('aria-label', nowCompact ? 'Expandir menú lateral' : 'Colapsar menú lateral');
+      toggleBtn.setAttribute('title', nowCompact ? 'Expandir' : 'Colapsar');
+    });
+  }
+
+  // Sync active link with route changes (avoid stale active state on hash navigation)
+  const updateActiveLink = () => {
+    const hash = window.location.hash || '#dashboard';
+    sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
+      const isActive = link.getAttribute('href') === hash;
+      link.classList.toggle('active', isActive);
+    });
+  };
+  window.addEventListener('hashchange', updateActiveLink);
 }
 
 /**
@@ -195,14 +254,23 @@ function renderBottomNav(profile) {
     return roles[id] ? roles[id].includes(role) : false;
   };
 
+  // Lucide-style SVG icons — same family as sidebar for visual consistency
+  const NAV_ICONS = {
+    dashboard: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>',
+    tickets:   '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+    clientes:  '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    finanzas:  '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+    more:      '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>'
+  };
+
   const items = [];
-  if (allowed('dashboard')) items.push({ id: 'dashboard', label: 'Dashboard', icon: '📊' });
-  if (allowed('tickets')) items.push({ id: 'tickets', label: 'Trabajos', icon: '🛠️' });
-  if (allowed('clientes')) items.push({ id: 'clientes', label: 'Clientes', icon: '👥' });
-  if (allowed('finanzas')) items.push({ id: 'finanzas', label: 'Finanzas', icon: '💰' });
+  if (allowed('dashboard')) items.push({ id: 'dashboard', label: 'Dashboard', icon: NAV_ICONS.dashboard });
+  if (allowed('tickets'))   items.push({ id: 'tickets',   label: 'Trabajos',  icon: NAV_ICONS.tickets });
+  if (allowed('clientes'))  items.push({ id: 'clientes',  label: 'Clientes',  icon: NAV_ICONS.clientes });
+  if (allowed('finanzas'))  items.push({ id: 'finanzas',  label: 'Finanzas',  icon: NAV_ICONS.finanzas });
 
   // Siempre agregamos el trigger "Más" al final para abrir el sidebar overlay
-  items.push({ id: 'more', label: 'Más', icon: '☰', isMore: true });
+  items.push({ id: 'more', label: 'Más', icon: NAV_ICONS.more, isMore: true });
 
   bottomNav.innerHTML = items.map(item => {
     if (item.isMore) {

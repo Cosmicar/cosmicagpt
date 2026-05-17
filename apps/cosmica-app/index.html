@@ -197,8 +197,17 @@
       .mobile-nav-icon {
         font-size: 20px;
         font-style: normal;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
         transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
                     color 0.2s ease;
+      }
+      .mobile-nav-icon svg {
+        width: 22px;
+        height: 22px;
+        display: block;
       }
       .mobile-nav-label {
         font-size: 9.5px;
@@ -212,7 +221,9 @@
       }
       .mobile-nav-link.active .mobile-nav-icon {
         transform: translateY(-2px) scale(1.1);
-        text-shadow: 0 0 12px var(--accent-cyan-glow);
+      }
+      .mobile-nav-link.active .mobile-nav-icon svg {
+        filter: drop-shadow(0 0 8px var(--accent-cyan-glow));
       }
       /* Active pip — tiny elegant dot under label instead of top border indicator */
       .mobile-nav-link::after {
@@ -452,6 +463,258 @@
        navbar overflow — caja info is accessible in the Finanzas view */
     @media (max-width: 480px) {
       #caja-status-indicator { display: none !important; }
+    }
+
+    /* ╔══════════════════════════════════════════════════════════════╗
+       ║  SIDEBAR COMPACT MODE — Premium operational shell            ║
+       ║  Inspired by Linear / Notion / GitHub / Stripe Dashboard     ║
+       ╚══════════════════════════════════════════════════════════════╝ */
+    :root {
+      --sidebar-w-compact: 72px;
+      --sidebar-transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Smooth transitions on shell shift (desktop only — mobile uses translateX) */
+    @media (min-width: 769px) {
+      .sidebar { transition: width var(--sidebar-transition); }
+      body.session-ready .main-content { transition: margin-left var(--sidebar-transition); }
+    }
+
+    /* ── Sidebar Header (avatar + user info) ── */
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px 16px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue, #0066ff));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #060A12;
+      font-weight: 800;
+      font-size: 14.5px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,229,255,0.22);
+      letter-spacing: -0.01em;
+    }
+    .sidebar-header-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .sidebar-user-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      letter-spacing: -0.01em;
+    }
+    .sidebar-user-role {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    /* ── Sidebar Links — override Sidebar.css for cleaner, modern feel ── */
+    .sidebar-link {
+      gap: 12px !important;
+      padding: 9px 14px !important;
+      margin: 1px 6px !important;
+      border-radius: 8px !important;
+      border-left: none !important;
+      font-size: 13.5px !important;
+      font-weight: 500 !important;
+      letter-spacing: -0.005em;
+      transition: background var(--sidebar-transition), color var(--sidebar-transition) !important;
+      position: relative;
+    }
+    .sidebar-link:hover {
+      transform: none !important;
+      background: rgba(255,255,255,0.04) !important;
+      color: var(--text-primary) !important;
+    }
+    .sidebar-link.active {
+      background: rgba(0, 229, 255, 0.07) !important;
+      color: var(--accent-cyan) !important;
+      border-left: none !important;
+      box-shadow: none !important;
+    }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 18px;
+      background: var(--accent-cyan);
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 8px var(--accent-cyan-glow);
+    }
+    .sidebar-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: currentColor;
+    }
+    .sidebar-icon svg { width: 20px; height: 20px; display: block; }
+    .sidebar-label {
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+    }
+
+    /* Nav fills remaining vertical space; footer sticks bottom */
+    .sidebar-nav {
+      flex: 1 !important;
+      height: auto !important;
+      overflow-y: auto;
+      overflow-x: visible;
+      gap: 2px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      padding-bottom: 4px;
+    }
+
+    /* ── Sidebar Footer + Toggle Button ── */
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 8px 8px 4px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+    .sidebar-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 8px 10px;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all var(--sidebar-transition);
+    }
+    .sidebar-toggle:hover {
+      background: rgba(0,229,255,0.06);
+      color: var(--accent-cyan);
+      border-color: rgba(0,229,255,0.12);
+    }
+    .sidebar-toggle-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle-icon svg {
+      transition: transform var(--sidebar-transition);
+    }
+
+    /* ╔══ COMPACT MODE (desktop/tablet) ══╗ */
+    body.sidebar-compact .sidebar { width: var(--sidebar-w-compact); }
+    body.sidebar-compact.session-ready .main-content { margin-left: var(--sidebar-w-compact); }
+    body.sidebar-compact .sidebar-header {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+      gap: 0;
+    }
+    body.sidebar-compact .sidebar-header-info { display: none; }
+    body.sidebar-compact .sidebar-link {
+      justify-content: center;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      gap: 0 !important;
+      margin: 1px 8px !important;
+    }
+    body.sidebar-compact .sidebar-label { display: none; }
+    body.sidebar-compact .sidebar-link.active::before { left: -4px; }
+    body.sidebar-compact .sidebar-footer { padding-left: 0; padding-right: 0; }
+    body.sidebar-compact .sidebar-toggle {
+      justify-content: center;
+      padding: 8px 0;
+      gap: 0;
+    }
+    body.sidebar-compact .sidebar-toggle-label { display: none; }
+    body.sidebar-compact .sidebar-toggle-icon svg { transform: rotate(180deg); }
+
+    /* ── Tooltips in compact mode (hover reveal) ── */
+    body.sidebar-compact .sidebar-link::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: calc(100% + 14px);
+      top: 50%;
+      transform: translateY(-50%) translateX(-4px);
+      background: rgba(8, 15, 28, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      z-index: 9999;
+      letter-spacing: 0.01em;
+    }
+    body.sidebar-compact .sidebar-link:hover::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    /* ╔══ MOBILE — compact mode MUST NOT affect mobile shell ══╗ */
+    @media (max-width: 768px) {
+      body.sidebar-compact .sidebar { width: 240px !important; }
+      body.sidebar-compact.session-ready .main-content { margin-left: 0 !important; }
+      body.sidebar-compact .sidebar-header {
+        justify-content: flex-start !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        gap: 12px !important;
+      }
+      body.sidebar-compact .sidebar-header-info { display: flex !important; }
+      body.sidebar-compact .sidebar-link {
+        justify-content: flex-start !important;
+        padding: 12px 16px !important;
+        gap: 12px !important;
+        margin: 0 !important;
+      }
+      body.sidebar-compact .sidebar-label { display: inline !important; }
+      body.sidebar-compact .sidebar-link::after { display: none !important; }
+      body.sidebar-compact .sidebar-toggle-icon svg { transform: none !important; }
+
+      /* Bottom nav serves as mobile navigation — sidebar footer/toggle hidden */
+      .sidebar-footer { display: none !important; }
     }
   </style>
 </head>
