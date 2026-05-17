@@ -300,7 +300,7 @@ export class TicketsView extends AsyncView {
     const estado     = ticket.estado || WORK_STATUS.ingresado;
     const bc         = badgeClass(estado);
     const isSelected = this.selectedTickets.has(ticket.id);
-    const fecha      = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString('es-AR') : '—';
+    const fecha      = ticket.fechaIngreso ? new Date(ticket.fechaIngreso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
     const equipo     = [ticket.equipo, ticket.marca].filter(Boolean).join(' ') || '—';
     const cliente    = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ') || 'Sin nombre';
     const plan       = ticket.planServicio
@@ -311,37 +311,43 @@ export class TicketsView extends AsyncView {
     const highValue  = isHighValue(ticket);
     const showCTA    = hasBudgetApproved(ticket) && canEdit;
 
+    // Compact indicators inline to avoid vertical stacking
+    let indicators = '';
+    if (ticket.tecnicoAsignadoId) indicators += `<span title="Técnico: ${ticket.tecnicoAsignadoNombre}" style="font-size:12px;">👨‍🔧</span>`;
+    if (ticket.isOverloaded) indicators += `<span title="Sobrecargado" style="font-size:12px;">🔥</span>`;
+    if (ticket.reentryRisk) indicators += `<span title="${ticket.reentryRisk.label}" style="font-size:12px;">♻️</span>`;
+    if (overdue) indicators += `<span title="Demorado" style="font-size:12px;">⚠</span>`;
+    if (highValue) indicators += `<span title="Alto Valor" style="font-size:12px;">💎</span>`;
+
     return `
-      <tr data-ticket-id="${ticket.id}" style="cursor:pointer;" class="${isSelected ? 'ticket-selected' : ''}">
-        <td class="tt-check">
+      <tr data-ticket-id="${ticket.id}" class="${isSelected ? 'ticket-selected' : ''}">
+        <td class="tt-check" style="width:40px; text-align:center; padding:0 8px;">
           <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${isSelected ? 'checked' : ''}>
         </td>
-        <td class="tt-orden">#${ticket.numeroOrden || '—'}</td>
-        <td class="tt-cliente" title="${cliente}">${cliente}</td>
-        <td>
-          <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
-            <span class="badge ${bc}" id="badge-${ticket.id}">${estado}</span>
-            ${ticket.tecnicoAsignadoId ? `<span class="badge" style="background:rgba(59,130,246,0.1);color:#93c5fd;border:1px solid rgba(59,130,246,0.2);font-size:10px;">👨‍🔧 ${ticket.tecnicoAsignadoNombre}</span>` : ''}
-            ${ticket.isOverloaded ? '<span class="badge badge-danger" style="font-size:10px;">🔥 SOBRECARGADO</span>' : ''}
-            ${ticket.reentryRisk ? `<span class="badge ${ticket.reentryRisk.class}">${ticket.reentryRisk.label}</span>` : ''}
-            ${overdue   ? '<span class="badge badge-orange rule-badge">⚠ DEMORADO</span>'  : ''}
-            ${highValue ? '<span class="badge badge-gold rule-badge">💎 ALTO VALOR</span>' : ''}
+        <td class="tt-orden" style="width:100px;">#${ticket.numeroOrden || '—'}</td>
+        <td class="tt-cliente" title="${cliente}">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span>${cliente}</span>
+            ${indicators ? `<div style="display:flex; gap:2px; opacity:0.85;">${indicators}</div>` : ''}
           </div>
         </td>
-        <td class="tt-equipo">${equipo}</td>
-        <td class="tt-fecha">${fecha}</td>
-        <td class="tt-plan">${plan}</td>
-        <td class="tt-acciones tt-cta" data-id="${ticket.id}">
-          <div style="display:flex;align-items:center;gap:6px;">
+        <td style="width:130px;">
+          <span class="badge ${bc}" id="badge-${ticket.id}" style="white-space:nowrap; padding:4px 8px; font-size:10px; font-weight:700; border-radius:4px; letter-spacing:0.02em;">${estado}</span>
+        </td>
+        <td class="tt-equipo" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${equipo}</td>
+        <td class="tt-fecha" style="width:100px;">${fecha}</td>
+        <td class="tt-plan" style="width:90px;">${plan}</td>
+        <td class="tt-acciones tt-cta" data-id="${ticket.id}" style="width:170px;">
+          <div style="display:flex; align-items:center; gap:6px;">
             ${showCTA ? `
-              <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="white-space:nowrap;font-size:var(--font-xs);">🔧 Pasar a Reparación</button>
+              <button class="btn btn-sm btn-primary quick-repair-btn" data-id="${ticket.id}" style="white-space:nowrap; font-size:11px; padding:4px 10px; border-radius:4px; min-height:28px;">🔧 Reparar</button>
             ` : canEdit ? `
-              <select class="status-selector" data-id="${ticket.id}">
+              <select class="status-selector" data-id="${ticket.id}" style="white-space:nowrap;">
                 ${statusOptions.map(opt => `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`).join('')}
               </select>
-              <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px;" title="Editar">📝</a>
+              <a href="#ticket-edit?id=${ticket.id}" class="btn btn-sm btn-secondary" style="padding:4px 8px; border-radius:4px; min-height:28px; display:flex; align-items:center; justify-content:center;" title="Editar">📝</a>
             ` : ''}
-            <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding:4px 8px;" title="Imprimir orden">🖨</button>
+            <button class="btn btn-sm btn-secondary ticket-print-btn" data-id="${ticket.id}" style="padding:4px 8px; border-radius:4px; min-height:28px; display:flex; align-items:center; justify-content:center;" title="Imprimir orden">🖨</button>
           </div>
         </td>
       </tr>`;

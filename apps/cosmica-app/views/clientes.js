@@ -165,13 +165,17 @@ export class ClientesView extends AsyncView {
     const start      = Math.min((this._page - 1) * this._pageSize + 1, total || 1);
     const end        = Math.min(this._page * this._pageSize, total);
 
-    if (totalPages <= 1) { bar.innerHTML = ''; return; }
+    if (totalPages <= 1) {
+      bar.innerHTML = `<div style="padding-bottom: calc(var(--space-xl) + 80px + env(safe-area-inset-bottom, 20px));"></div>`;
+      return;
+    }
 
     bar.innerHTML = `
       <div style="
         display:flex;align-items:center;gap:var(--space-md);flex-wrap:wrap;
         justify-content:center;padding:var(--space-md) var(--space-lg);
-        border-top:1px solid var(--border);margin-top:var(--space-md);
+        padding-bottom: calc(var(--space-xl) + 80px + env(safe-area-inset-bottom, 20px));
+        border-top:1px solid rgba(255,255,255,0.06); margin-top:var(--space-lg);
       ">
         <button class="btn btn-sm btn-secondary" id="clpg-prev" ${hasPrev ? '' : 'disabled'}>← Anterior</button>
         <span style="font-size:var(--font-sm);color:var(--text-muted);">
