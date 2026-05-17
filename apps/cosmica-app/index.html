@@ -607,9 +607,10 @@
     /* ── Sidebar Footer + Toggle Button ── */
     .sidebar-footer {
       margin-top: auto;
-      padding: 8px 8px 4px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 6px 8px 8px;
       flex-shrink: 0;
+      /* No separator line — the toggle button is a standalone affordance,
+         not a section divider. Keeps compact mode visually clean. */
     }
     .sidebar-toggle {
       display: flex;
