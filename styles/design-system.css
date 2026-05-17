@@ -486,6 +486,28 @@ td, th {
   .vm-btn[data-mode="table"] { display: none; }
 }
 
+/* ── View Mode Buttons: Active State ────────────────────────────────────────── */
+.vm-btn {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: all 0.18s ease;
+  opacity: 0.7;
+}
+.vm-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+}
+.vm-btn.active {
+  color: var(--accent-cyan) !important;
+  background: rgba(0, 229, 255, 0.1) !important;
+  border-color: rgba(0, 229, 255, 0.25) !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.15);
+}
+
 .render-kpi-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1484,28 +1506,75 @@ textarea {
   background: rgba(255,255,255,0.06);
 }
 
-/* --- Tickets Grid View Modes (Density Control) --- */
+/* --- Tickets Grid View Modes (Density Control for Operational Rows) --- */
+
+/* COMPACT: ultra-tight, command center mode, minimum info */
 #tickets-grid.vm-compact {
-  gap: 4px !important;
+  gap: 2px !important;
 }
 #tickets-grid.vm-compact .card.glass-card {
-  padding: 8px 12px !important;
-  min-height: 48px;
+  padding: 6px 14px !important;
+  min-height: 44px;
+  border-radius: 4px !important;
+}
+#tickets-grid.vm-compact .card.glass-card > div:nth-child(3) {
+  /* hide technician/meta column in compact */
+  display: none !important;
+}
+#tickets-grid.vm-compact .card.glass-card > div:nth-child(2) > div:last-child {
+  /* hide aging badges row in compact */
+  display: none !important;
 }
 
+/* COMFORTABLE (default): balanced, operational clarity */
 #tickets-grid.vm-comfortable {
-  gap: 8px !important;
+  gap: 6px !important;
 }
 #tickets-grid.vm-comfortable .card.glass-card {
-  padding: 12px 16px !important;
-  min-height: 64px;
+  padding: 11px 16px !important;
+  min-height: 60px;
 }
 
+/* EXPANDED: shows extra detail — ideal for review or slow periods */
 #tickets-grid.vm-expanded {
-  gap: 16px !important;
+  gap: 12px !important;
 }
 #tickets-grid.vm-expanded .card.glass-card {
-  padding: 18px 24px !important;
+  padding: 16px 20px !important;
   min-height: 80px;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+#tickets-grid.vm-expanded .card.glass-card > div:nth-child(2) {
+  flex: 1 !important;
+  width: 100% !important;
+  padding-right: 0 !important;
+  padding-bottom: 10px !important;
+}
+#tickets-grid.vm-expanded .card.glass-card > div:nth-child(2) > div:first-child > span.text-truncate {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  white-space: normal !important;
+}
+/* In expanded mode, show the problema text visually (injected via data-problema attribute) */
+#tickets-grid.vm-expanded .card.glass-card::after {
+  content: attr(data-problema);
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  opacity: 0.75;
+  padding: 0 20px 12px 52px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.5;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  margin-top: -4px;
+}
+#tickets-grid.vm-expanded .card.glass-card > div:last-child {
+  width: 100%;
+  padding-left: 52px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 8px;
+  flex-wrap: wrap;
 }
 
