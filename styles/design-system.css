@@ -336,134 +336,149 @@ td, th {
 .tickets-table-wrapper {
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - 220px); /* Leave space for navbar and ops bar */
+  max-height: calc(100vh - 220px);
   overflow-x: auto;
-  overflow-y: auto; /* Enable vertical scrolling within the wrapper */
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(5, 9, 17, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .tickets-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--font-sm);
+  font-size: 13px;
+  text-align: left;
 }
 
-/* Sticky thead was removed — overflow-x:auto on .tickets-table-wrapper creates
- * a block formatting context that traps position:sticky, causing the header to
- * appear between data rows. Table header now scrolls with the table. */
 .tickets-table thead {
   z-index: 10;
 }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 6px; /* Optimized for density */
-  border-radius: 3px; /* Sharper, more professional */
-  font-size: 9px; /* Reduced from 10 */
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  min-height: 16px; /* Reduced from 18 */
-  gap: 3px; /* Reduced from 4 */
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all var(--transition-fast);
-}
-
-.badge i {
-  font-size: 1.1em;
-  font-style: normal;
-}
 
 .tickets-table thead th {
-  background: rgba(8, 15, 28, 0.98); /* Match drawer/darker background */
-  color: var(--text-muted);
-  font-weight: 700;
-  font-size: 9px; /* Reduced from 10 */
+  background: rgba(6, 11, 20, 0.95);
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 10px 14px; /* Reduced vertical padding */
-  text-align: left;
-  border-bottom: 1px solid var(--border); /* Thinner border */
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: sticky;
   top: 0;
   z-index: 20;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05); /* Precise divider */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
-
-.tickets-table tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.01);
-}
-
-.tickets-table tbody tr:hover {
-  background: rgba(0, 229, 255, 0.05) !important;
-  cursor: pointer;
-}
-
 
 .tickets-table-wrapper::-webkit-scrollbar {
   height: 6px;
+  width: 6px;
+}
+.tickets-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
 /* Body rows */
 .tickets-table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background 0.12s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s ease;
 }
-.tickets-table tbody tr:last-child { border-bottom: none; }
-.tickets-table tbody tr:hover { background: rgba(0, 229, 255, 0.04); }
+
+.tickets-table tbody tr:last-child { 
+  border-bottom: none; 
+}
+
+.tickets-table tbody tr:hover { 
+  background: rgba(255, 255, 255, 0.02) !important; 
+  cursor: pointer;
+}
 
 .tickets-table tbody td {
-  padding: 6px 12px; /* Compressed for maximum density */
+  padding: 10px 16px;
   color: var(--text-primary);
+  vertical-align: middle;
+}
+
+/* Checkboxes */
+.ticket-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent-cyan);
+  margin: 0;
   vertical-align: middle;
 }
 
 /* Column-specific styles */
 .tt-orden {
-  font-family: 'Rajdhani', monospace;
-  font-weight: 700;
-  font-size: var(--font-md);
-  color: var(--accent-cyan) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75) !important;
   white-space: nowrap;
 }
+
 .tt-cliente {
-  font-weight: 500;
-  max-width: 180px;
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.tt-equipo, .tt-plan, .tt-fecha {
-  color: var(--text-muted);
+
+.tt-equipo {
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.tt-fecha { 
+  font-size: 12px; 
+  color: rgba(255, 255, 255, 0.5); 
   white-space: nowrap;
 }
-.tt-fecha { font-size: var(--font-xs); }
-.tt-plan  { font-size: var(--font-xs); text-transform: capitalize; }
+
+.tt-plan { 
+  font-size: 12px; 
+  color: rgba(255, 255, 255, 0.5); 
+  text-transform: capitalize; 
+  white-space: nowrap;
+}
 
 /* Status selector inside table */
 .tt-acciones .status-selector {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: var(--font-xs);
-  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
   outline: none;
-  min-width: 120px;
+  min-width: 130px;
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  position: relative;
-  z-index: 5;
+  transition: all 0.2s ease;
+}
+
+.tt-acciones .status-selector:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tt-acciones .status-selector:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
 }
 
 /* Mobile: hide table button; JS handles the render fallback */

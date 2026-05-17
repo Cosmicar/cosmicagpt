@@ -152,12 +152,23 @@ function renderSidebar(profile) {
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));
 
+  const currentHash = window.location.hash || '#dashboard';
+
   sidebar.innerHTML = `
-    <div class="sidebar-nav">
+    <div class="sidebar-header" style="display:flex; align-items:center; gap:12px; padding:8px 12px 16px 12px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:16px; flex-shrink:0; box-shadow: 0 4px 12px rgba(0,229,255,0.3);">
+        ${profile?.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U'}
+      </div>
+      <div style="display:flex; flex-direction:column; overflow:hidden;">
+        <span style="font-size:14px; font-weight:700; color:var(--text-primary); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${profile?.nombre || 'Operador'}</span>
+        <span style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">${role}</span>
+      </div>
+    </div>
+    <div class="sidebar-nav" style="display:flex; flex-direction:column; gap:4px;">
       ${filteredItems.map(item => `
-        <a href="#${item.id}" class="sidebar-link ${window.location.hash === '#' + item.id || (item.id === 'dashboard' && !window.location.hash) ? 'active' : ''}">
-          <i class="sidebar-icon">${item.icon}</i>
-          <span class="sidebar-label">${item.label}</span>
+        <a href="#${item.id}" class="sidebar-link ${(currentHash === '#' + item.id) ? 'active' : ''}">
+          <span class="sidebar-icon" style="font-size:18px; filter:grayscale(0.2);">${item.icon}</span>
+          <span class="sidebar-label" style="font-weight:500; font-size:13.5px; letter-spacing:-0.01em;">${item.label}</span>
         </a>
       `).join('')}
     </div>
