@@ -113,15 +113,15 @@ export function render(ticket, selected = false) {
 
   return `
     <div class="card glass-card${selected ? ' ticket-selected' : ''}" id="ticket-card-${ticket.id}" data-ticket-id="${ticket.id}" data-problema="${(ticket.problema || '').replace(/"/g, '&quot;').slice(0, 120)}"
-      style="display: flex; align-items: center; border-radius: var(--radius-md); background: ${bgHighlight}; border: 1px solid ${borderColor}; opacity: ${rowOpacity}; cursor: pointer; transition: all 0.2s ease; overflow: visible;">
+      style="display: flex; align-items: center; border-radius: var(--radius-md); background: ${bgHighlight}; border: 1px solid ${borderColor}; cursor: pointer; transition: all 0.2s ease; overflow: visible;">
       
       <!-- Checkbox -->
-      <div style="margin-right: 16px; display: flex; align-items: center;">
+      <div style="margin-right: 16px; display: flex; align-items: center; opacity: ${rowOpacity};">
         <input type="checkbox" class="ticket-checkbox" data-id="${ticket.id}" ${selected ? 'checked' : ''} style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
       </div>
 
       <!-- Column 1: Client & Equipment -->
-      <div style="flex: 2; min-width: 0; padding-right: 16px;">
+      <div style="flex: 2; min-width: 0; padding-right: 16px; opacity: ${rowOpacity};">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
           <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em;">#${ticket.numeroOrden || '—'}</span>
           <span class="text-truncate" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">
@@ -137,7 +137,7 @@ export function render(ticket, selected = false) {
       </div>
 
       <!-- Column 2: Status & Aging -->
-      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; opacity: ${rowOpacity};">
         <div class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size: 10px; text-transform: uppercase;">${estado}</div>
         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
           ${agingBadge}
@@ -147,7 +147,7 @@ export function render(ticket, selected = false) {
       </div>
 
       <!-- Column 3: Technician & Payment -->
-      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+      <div style="flex: 1; min-width: 0; padding-right: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; opacity: ${rowOpacity};">
         <div style="font-size: 12px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 4px;">
           <span style="opacity:0.7;">👨‍🔧</span> ${ticket.tecnicoAsignadoNombre ? ticket.tecnicoAsignadoNombre.split(' ')[0] : '<span style="color:var(--text-muted);">Sin asignar</span>'}
         </div>
@@ -158,7 +158,9 @@ export function render(ticket, selected = false) {
 
       <!-- Column 4: Actions -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;" onclick="event.stopPropagation()">
-        ${primaryActionHtml}
+        <div style="opacity: ${rowOpacity}; display: inline-flex; align-items: center;">
+          ${primaryActionHtml}
+        </div>
         
         <div class="ticket-dropdown-wrapper">
           <button class="btn btn-sm btn-secondary" style="padding: 6px 10px; height: 32px; font-weight: 800; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">⋯</button>
