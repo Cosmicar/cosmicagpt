@@ -149,6 +149,8 @@ export function canAccess(action) {
       return true; // All staff roles
     case 'finanzas-write': // register cash movements
       return ['recepcion', 'operador'].includes(role);
+    case 'facturar': // emitir factura AFIP — admin (early-return) + operador
+      return role === 'operador';
     default:
       return false;
   }

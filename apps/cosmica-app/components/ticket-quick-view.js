@@ -311,6 +311,14 @@ function renderBody(ticket) {
       ` : ''}
       <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="height:34px; font-size:11px;">🖨 A4</button>
       <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="height:34px; font-size:11px;">🧾 Ticket</button>
+      ${canAccess('facturar') ? `
+        <button class="btn btn-secondary qv-facturar-btn" data-id="${ticket.id}"
+                style="grid-column: 1 / -1; height:36px; font-size:12px; font-weight:700;
+                       background:rgba(16,185,129,0.08); color:var(--accent-green);
+                       border-color:rgba(16,185,129,0.28);">
+          🧾 EMITIR FACTURA AFIP
+        </button>
+      ` : ''}
       <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="grid-column: 1 / -1; height:34px; line-height:34px; padding:0; font-size:11px; text-align:center;">
         📝 EDITAR COMPLETO
       </a>
@@ -549,6 +557,35 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
           openTicketPrint(ticket, btn.dataset.mode || 'a4');
         });
       });
+
+      // Facturar AFIP — lazy-load del modal (no se carga si nadie hace click)
+      const facturarBtn = bodyEl.querySelector('.qv-facturar-btn');
+      if (facturarBtn) {
+        facturarBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          facturarBtn.disabled = true;
+          const origText = facturarBtn.innerHTML;
+          facturarBtn.innerHTML = '⏳ Abriendo emisor...';
+          try {
+            const { openFacturaModal } = await import('./factura-modal.js');
+            openFacturaModal({
+              ticket,
+              onSuccess: (factura) => {
+                showToast(`Factura ${factura.numero} emitida correctamente`, 'success');
+              },
+              onClose: () => {
+                facturarBtn.innerHTML = origText;
+                facturarBtn.disabled = false;
+              },
+            });
+          } catch (err) {
+            console.error('[qv-facturar] failed to load modal:', err);
+            showToast('Error al abrir emisor: ' + err.message, 'error');
+            facturarBtn.innerHTML = origText;
+            facturarBtn.disabled = false;
+          }
+        });
+      }
 
       // ── Status selector handler — guard scoped to THIS block only ──────────
       // WARNING: do NOT add an early return here; handlers below must always run.

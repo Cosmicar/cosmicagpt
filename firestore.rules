@@ -209,6 +209,20 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────
+    // COLECCIÓN: facturas
+    // Append-only: solo admin y operador pueden crear facturas.
+    // Lectura: admin y operador (para ver historial).
+    // Update/delete: NUNCA (auditoría fiscal).
+    // ─────────────────────────────────────────────
+    match /facturas/{facturaId} {
+      allow read:   if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester'];
+      allow create: if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester'];
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
     // COLECCIONES SANDBOX (modo tester)
     // Totalmente aisladas de producción.
     // Admin también tiene acceso para supervisar.

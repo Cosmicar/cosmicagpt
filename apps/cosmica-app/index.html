@@ -1125,6 +1125,191 @@
       .login-title { font-size: 22px; }
     }
 
+    /* ╔══════════════════════════════════════════════════════════════╗
+       ║  FACTURA MODAL — emisión AFIP desde el SaaS                  ║
+       ╚══════════════════════════════════════════════════════════════╝ */
+    .factura-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 12, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 11000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      pointer-events: none;
+    }
+    .factura-modal-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .factura-modal-card {
+      background: rgba(8, 14, 24, 0.98);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 229, 255, 0.06);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: var(--space-xl);
+      transform: translateY(12px);
+      transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .factura-modal-overlay.is-open .factura-modal-card { transform: translateY(0); }
+
+    .fm-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .fm-header h2 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .fm-icon { font-size: 22px; }
+    .fm-close {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      transition: all 0.15s ease;
+    }
+    .fm-close:hover {
+      background: rgba(255, 0, 127, 0.12);
+      color: var(--danger);
+      border-color: rgba(255, 0, 127, 0.3);
+    }
+
+    .fm-ticket-context {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      margin-bottom: var(--space-md);
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.18);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+    }
+    .fm-ticket-label { color: var(--text-muted); font-weight: 600; }
+    .fm-ticket-value { color: var(--accent-cyan); font-weight: 700; }
+
+    .fm-form { display: flex; flex-direction: column; gap: var(--space-md); }
+    .fm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    @media (max-width: 480px) {
+      .fm-grid { grid-template-columns: 1fr; }
+    }
+
+    .fm-form .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.85;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .fm-form .input {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+    .fm-form .input:focus {
+      border-color: rgba(0, 229, 255, 0.4);
+      background: rgba(0, 0, 0, 0.35);
+      outline: none;
+    }
+
+    .fm-feedback {
+      padding: 0;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      line-height: 1.5;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, opacity 0.25s ease, padding 0.25s ease;
+    }
+    .fm-feedback.fm-feedback-error,
+    .fm-feedback.fm-feedback-success {
+      max-height: 600px;
+      opacity: 1;
+      padding: 14px 16px;
+    }
+    .fm-feedback-error {
+      background: rgba(255, 0, 127, 0.06);
+      border: 1px solid rgba(255, 0, 127, 0.22);
+      color: var(--danger);
+    }
+    .fm-feedback-success {
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.22);
+      color: var(--text-primary);
+    }
+    .fm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+    }
+    .fm-row:last-child { border-bottom: none; }
+    .fm-row > span:first-child {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .fm-row > span:last-child {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .fm-mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+    .fm-footer {
+      display: flex;
+      gap: var(--space-sm);
+      justify-content: flex-end;
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .fm-footer .btn {
+      padding: 10px 18px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+    .fm-footer .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     /* ── Deep-link filter chip — shows WHY tickets list is filtered when
        arrived via dashboard KPI shortcut. Clear with × or any filter button. */
     .deeplink-filter-chip {
