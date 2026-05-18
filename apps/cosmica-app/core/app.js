@@ -2,11 +2,7 @@ import { Router } from './router.js';
 import { initializeSession, logout } from './session.js';
 import { LoginView } from '../views/login.js';
 import { renderLoadingState, renderErrorState } from '../components/app-state.js';
-import { initCommandPalette, openPalette } from '../components/command-palette.js';
 import { cleanupExpiredDrafts } from './chaos-guard.js';
-
-// Expose globally for UI triggers
-window.openCommandPalette = openPalette;
 
 /* ╔══════════════════════════════════════════════════════════════╗
    ║  COSMIC AVATAR GALLERY                                       ║
@@ -122,7 +118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSidebar(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
-    initCommandPalette();
     updateCajaStatusIndicator();
     initGlobalShortcuts();
     initPWAFeatures();
