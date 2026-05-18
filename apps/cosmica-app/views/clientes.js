@@ -8,6 +8,7 @@ import { seedPaletteCache } from '../components/command-palette.js';
 import { showToast } from '../components/toast.js';
 import { getTickets } from '../services/tickets.js';
 import { getClientBadge } from '../core/intelligence.js';
+import { canAccess } from '../core/session.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -16,6 +17,7 @@ const VIEW_MODES = [
   { key: 'compact',     label: '⊟',  title: 'Compacto'  },
   { key: 'comfortable', label: '⊞',  title: 'Normal'    },
   { key: 'expanded',    label: '▦',  title: 'Expandido' },
+  { key: 'table',       label: '☰',  title: 'Tabla'     },
 ];
 const VM_STORAGE_KEY = 'clientsViewMode';
 
@@ -139,6 +141,53 @@ export class ClientesView extends AsyncView {
         </div>
       `;
     }
+
+    if (this.viewMode === 'table') {
+      const canEdit = canAccess('create-client');
+      return `
+        <div class="tickets-table-wrapper" style="height: auto; max-height: calc(100vh - 310px);">
+          <table class="tickets-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Cliente</th>
+                <th style="width: 15%;">DNI</th>
+                <th style="width: 15%;">Teléfono</th>
+                <th style="width: 20%;">Email</th>
+                <th style="width: 10%;">Provincia</th>
+                <th style="width: 5%; text-align: center;">Etiquetas</th>
+                <th style="width: 10%; text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${clientes.map(c => `
+                <tr data-id="${c.id}">
+                  <td class="tt-cliente" title="${c.nombre || ''} ${c.apellido || ''}">
+                    ${c.nombre || 'Sin Nombre'} ${c.apellido || ''}
+                  </td>
+                  <td class="tt-equipo">${c.dni || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 150px;">${c.telefono || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 200px;">${c.email || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 150px;">${c.provincia || '—'}</td>
+                  <td style="text-align: center;">
+                    ${c.badge ? `<div class="badge ${c.badge.class}" style="font-size: 10px; display: inline-block;">${c.badge.label}</div>` : '—'}
+                  </td>
+                  <td style="text-align: right;">
+                    ${canEdit ? `
+                      <div class="client-actions" style="display: flex; justify-content: flex-end; gap: 4px;">
+                        <a href="#cliente-edit?id=${c.id}" class="btn btn-sm btn-secondary client-edit-btn" style="padding: 4px 8px; font-size: 12px;" title="Editar">📝</a>
+                        <button class="btn btn-sm btn-secondary client-merge-btn" data-id="${c.id}" style="padding: 4px 8px; font-size: 12px; color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.1);" title="Fusionar">🔗</button>
+                        <button class="btn btn-sm btn-secondary client-delete-btn" data-id="${c.id}" style="padding: 4px 8px; font-size: 12px; color: var(--danger); border-color: rgba(255, 71, 87, 0.1);" title="Eliminar">🗑</button>
+                      </div>
+                    ` : '—'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
     return clientes.map(c => renderClientCard(c)).join('');
   }
 
@@ -230,7 +279,10 @@ export class ClientesView extends AsyncView {
         if (mode === this.viewMode) return;
         this.viewMode = mode;
         localStorage.setItem(VM_STORAGE_KEY, mode);
-        grid?.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded');
+        
+        if (grid) this.applyClientFilter(grid);
+        
+        grid?.classList.remove('vm-compact', 'vm-comfortable', 'vm-expanded', 'vm-table');
         grid?.classList.add(`vm-${mode}`);
         document.querySelectorAll('.vm-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
