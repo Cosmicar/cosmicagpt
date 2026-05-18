@@ -302,7 +302,7 @@ export class TicketFormView extends AsyncView {
                 id: 'tipo',
                 type: 'select',
                 options: typeOptions,
-                value: ticket?.tipo || 'taller',
+                value: ticket?.tipo || (admin ? 'remoto' : 'taller'),
                 required: true,
                 disabled: !admin
               })}
@@ -1000,11 +1000,15 @@ export class TicketFormView extends AsyncView {
         const selectMetodo = document.getElementById('metodoPago');
         const metodoFieldDisabled = selectMetodo?.disabled ?? false;
 
+        const session = getCurrentSession();
+        const admin = isAdmin(session?.profile);
+        const defaultTipo = admin ? 'remoto' : 'taller';
+
         const data = {
           ...rawData,
           tipo: tipoFieldDisabled
-            ? (this._ticket?.tipo || 'taller')
-            : (rawData.tipo || 'taller'),
+            ? (this._ticket?.tipo || defaultTipo)
+            : (rawData.tipo || defaultTipo),
           precio: precioFieldDisabled
             ? (this._ticket?.precio || '')
             : (rawData.precio || ''),
