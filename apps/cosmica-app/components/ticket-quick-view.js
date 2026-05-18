@@ -558,30 +558,31 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
         });
       });
 
-      // Facturar AFIP — lazy-load del modal (no se carga si nadie hace click)
+      // Facturar AFIP — lazy-load del modal (no se carga si nadie hace click).
+      // Cerramos el drawer antes de abrir el modal: el operador trabaja sobre
+      // la factura sin distracciones visuales del ticket detrás.
       const facturarBtn = bodyEl.querySelector('.qv-facturar-btn');
       if (facturarBtn) {
         facturarBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           facturarBtn.disabled = true;
-          const origText = facturarBtn.innerHTML;
           facturarBtn.innerHTML = '⏳ Abriendo emisor...';
           try {
             const { openFacturaModal } = await import('./factura-modal.js');
+            const { closeDrawer } = await import('./drawer.js');
+            // Cerramos el drawer del ticket — el modal toma el foco
+            closeDrawer();
             openFacturaModal({
               ticket,
               onSuccess: (factura) => {
                 showToast(`Factura ${factura.numero} emitida correctamente`, 'success');
               },
-              onClose: () => {
-                facturarBtn.innerHTML = origText;
-                facturarBtn.disabled = false;
-              },
+              // onClose no necesario: el drawer ya fue desmontado
             });
           } catch (err) {
             console.error('[qv-facturar] failed to load modal:', err);
             showToast('Error al abrir emisor: ' + err.message, 'error');
-            facturarBtn.innerHTML = origText;
+            facturarBtn.innerHTML = '🧾 EMITIR FACTURA AFIP';
             facturarBtn.disabled = false;
           }
         });
