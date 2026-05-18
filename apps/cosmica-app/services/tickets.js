@@ -1,11 +1,26 @@
-import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy, limit, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, addDoc, updateDoc, doc, query, where, orderBy, limit, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
-import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
+import { COLLECTIONS, WORK_STATUS, SERVICE_TYPES } from "../../../js/domain.js";
 import { getNextOrderNumber, publishPublicOrder, getTrabajo } from "../../../js/work-repository.js";
 import { addTicketHistoryEvent, TICKET_EVENT_TYPES } from "./ticket-history.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
 import { getCurrentSession } from "../core/session.js";
 import { isAdmin } from "../../../js/domain.js";
+
+/**
+ * Returns the role-aware query constraints for the trabajos collection.
+ * Operadores are restricted by Firestore Rules to read only `tipo == 'taller'`.
+ * Without this filter, list queries are denied with "Missing or insufficient permissions".
+ * Mirrors the same pattern used in legacy /js/work-repository.js → listTrabajos().
+ */
+function _buildTrabajosQueryConstraints() {
+  const session = getCurrentSession();
+  const role = session?.profile?.rol;
+  if (role === 'operador') {
+    return [where('tipo', '==', SERVICE_TYPES.taller)];
+  }
+  return [];
+}
 
 const CACHE_KEY = 'tickets:list';
 
@@ -25,8 +40,10 @@ let _hasMoreTickets = false; // true si la última lectura llegó al límite
  */
 export function getTickets() {
   return cacheWrap(CACHE_KEY, async () => {
+    const roleFilter = _buildTrabajosQueryConstraints();
     const q = query(
       collection(db, COLLECTIONS.trabajos),
+      ...roleFilter,
       orderBy('fechaIngreso', 'desc'),
       limit(FETCH_LIMIT)
     );
@@ -53,8 +70,10 @@ export function hasMoreTickets() {
  */
 export async function getTicketsNextPage() {
   if (!_lastTicketDoc || !_hasMoreTickets) return [];
+  const roleFilter = _buildTrabajosQueryConstraints();
   const q = query(
     collection(db, COLLECTIONS.trabajos),
+    ...roleFilter,
     orderBy('fechaIngreso', 'desc'),
     startAfter(_lastTicketDoc),
     limit(FETCH_LIMIT)
