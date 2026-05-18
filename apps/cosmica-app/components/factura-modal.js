@@ -159,7 +159,9 @@ function renderModalContent(prefill, ticket) {
         <div id="fm-feedback" class="fm-feedback"></div>
 
         <footer class="fm-footer">
-          <button type="button" class="btn btn-secondary" id="fm-cancel-btn">Cancelar</button>
+          <button type="button" class="btn btn-secondary" id="fm-cancel-btn">
+            <span id="fm-cancel-text">Cancelar</span>
+          </button>
           <button type="submit" class="btn btn-primary" id="fm-submit-btn">
             <span id="fm-submit-icon">⚡</span>
             <span id="fm-submit-text">Generar Factura</span>
@@ -287,10 +289,23 @@ function wireModalEvents(overlay, { ticket, onSuccess }) {
       }
     });
 
-    // Reset submit button to "emit another"
+    // Post-success UX: la factura ya está emitida — cambiamos labels para
+    // que el operador entienda que puede salir (la operación ya se cerró).
     submitBtn.disabled = false;
-    submitIcon.textContent = '⚡';
-    submitText.textContent = 'Emitir otra';
+    submitIcon.textContent = '🧾';
+    submitText.textContent = 'Emitir otra factura';
+
+    const cancelText = overlay.querySelector('#fm-cancel-text');
+    const cancelBtnEl = overlay.querySelector('#fm-cancel-btn');
+    if (cancelText) cancelText.textContent = '✓ Listo, cerrar';
+    if (cancelBtnEl) {
+      cancelBtnEl.classList.remove('btn-secondary');
+      cancelBtnEl.classList.add('btn-success');
+      cancelBtnEl.style.background = 'rgba(16, 185, 129, 0.12)';
+      cancelBtnEl.style.color = 'var(--accent-green)';
+      cancelBtnEl.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+      cancelBtnEl.style.fontWeight = '700';
+    }
 
     if (onSuccess) onSuccess(factura);
   });
