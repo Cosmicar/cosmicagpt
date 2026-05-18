@@ -159,40 +159,12 @@ function initPerfilButton(session, mainContent) {
 
   const btnEditProfile = document.getElementById('btnEditProfile');
   if (btnEditProfile) {
-    btnEditProfile.addEventListener('click', async (e) => {
+    btnEditProfile.addEventListener('click', (e) => {
       e.stopPropagation();
       if (dropdown) dropdown.classList.remove('open');
       
-      const currentName = session.profile?.nombre || '';
-      const newName = prompt("Ingresá tu nombre de usuario para mostrar en tu perfil:", currentName);
-      
-      if (newName !== null && newName.trim() !== '') {
-        try {
-          const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js");
-          const { db } = await import("../../../js/firebase.js");
-          const { COLLECTIONS } = await import("../../../js/domain.js");
-          
-          await setDoc(doc(db, COLLECTIONS.usuarios, session.user.uid), {
-            nombre: newName.trim()
-          }, { merge: true });
-          
-          if (!session.profile) session.profile = {};
-          session.profile.nombre = newName.trim();
-          
-          if (userEmailEl) userEmailEl.textContent = newName.trim();
-          if (perfilEmailEl) perfilEmailEl.textContent = newName.trim();
-          
-          const { showToast } = await import('../components/toast.js');
-          showToast("Perfil actualizado correctamente", "success");
-          
-          // Re-render sidebar if needed to update the name there
-          renderSidebar(session.profile);
-        } catch (err) {
-          console.error('[Perfil] Error al actualizar el perfil:', err);
-          const { showToast } = await import('../components/toast.js');
-          showToast("Hubo un error al actualizar el perfil", "error");
-        }
-      }
+      // Route to profile configuration tab
+      window.location.hash = '#configuracion?tab=perfil';
     });
   }
 

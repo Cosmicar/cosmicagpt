@@ -73,8 +73,7 @@ export class Router {
       'inventario':      'inventario-read',
       'inventario-nuevo': 'inventario-write',
       'inventario-edit':  'inventario-write',
-      'finanzas':        'finanzas-read',
-      'configuracion':    'config'
+      'finanzas':        'finanzas-read'
     };
 
     const requiredAction = routePermissions[path];

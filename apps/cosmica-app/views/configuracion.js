@@ -9,7 +9,10 @@ export class ConfiguracionView extends BaseView {
     super(params);
     this.containerId = 'config-container';
     this.configKey = 'cosmica_config_v1';
-    this._activeTab = 'taller';
+    
+    const session = getCurrentSession();
+    const isAdmin = session?.profile?.rol === 'admin' || session?.profile?.rol === 'tester';
+    this._activeTab = params?.get('tab') || (isAdmin ? 'taller' : 'perfil');
   }
 
   loadConfig() {
