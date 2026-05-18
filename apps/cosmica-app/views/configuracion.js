@@ -28,6 +28,11 @@ export class ConfiguracionView extends BaseView {
       logoUrl: '',
       comisionTaller: 30,
       comisionRemoto: 20,
+      // Migrated from legacy admin panel — remote service plan pricing
+      precioBronce: 0,
+      precioOro: 0,
+      precioPlatinum: 0,
+      precioReset: 0,
     };
   }
 
@@ -170,6 +175,79 @@ export class ConfiguracionView extends BaseView {
               <span style="font-size: 18px; opacity: 0.7;">💡</span>
               <span>
                 Cada técnico puede tener su porcentaje diferenciado por plan (Taller vs. Remoto). El reporte se genera automáticamente en Finanzas usando los tickets entregados del período.
+              </span>
+            </div>
+          </div>
+
+          <!-- ─── Sección Precios de Planes Remotos (migrada desde admin legacy) ─── -->
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: var(--space-lg); margin-top: var(--space-sm);">
+            <div style="margin-bottom: var(--space-md);">
+              <h3 style="font-size: var(--font-md); margin: 0 0 4px 0; color: var(--text-primary); font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px;">
+                <span>💎</span> Precios de Planes Remotos
+              </h3>
+              <div style="font-size: var(--font-sm); color: var(--text-muted); opacity: 0.8;">
+                Tarifas sugeridas para los planes de servicio remoto. Se pueden usar como referencia al crear tickets.
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md);">
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">🥉</span> Bronce
+                </label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">$</span>
+                  <input type="number" name="precioBronce" class="input" min="0" step="100"
+                    value="${config.precioBronce ?? 0}"
+                    placeholder="5000"
+                    style="padding-left: 28px; margin: 0;">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">🥇</span> Oro
+                </label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">$</span>
+                  <input type="number" name="precioOro" class="input" min="0" step="100"
+                    value="${config.precioOro ?? 0}"
+                    placeholder="10000"
+                    style="padding-left: 28px; margin: 0;">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">💎</span> Platinum
+                </label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">$</span>
+                  <input type="number" name="precioPlatinum" class="input" min="0" step="100"
+                    value="${config.precioPlatinum ?? 0}"
+                    placeholder="15000"
+                    style="padding-left: 28px; margin: 0;">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="label" style="display:flex;align-items:center;gap:6px;">
+                  <span style="opacity:0.7">🔄</span> Reset Impresoras
+                </label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none;">$</span>
+                  <input type="number" name="precioReset" class="input" min="0" step="100"
+                    value="${config.precioReset ?? 0}"
+                    placeholder="3000"
+                    style="padding-left: 28px; margin: 0;">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-md); padding: var(--space-md); background: rgba(139, 92, 246, 0.04); border: 1px solid rgba(139, 92, 246, 0.12); border-radius: var(--radius-md); font-size: var(--font-sm); color: var(--text-muted); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 18px; opacity: 0.7;">📦</span>
+              <span>
+                Estos precios quedan disponibles para autocompletar al crear servicios remotos. Cero impacto en tickets existentes.
               </span>
             </div>
           </div>

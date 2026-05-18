@@ -143,19 +143,22 @@ export class ClientesView extends AsyncView {
     }
 
     if (this.viewMode === 'table') {
-      const canEdit = canAccess('create-client');
+      const canEdit  = canAccess('create-client');
+      // Merge is a destructive admin tool — gate it behind admin/tester role only.
+      // Non-admin roles (operador, recepcion, tecnico) cannot fuse client records.
+      const canMerge = canAccess('merge-clientes');
       return `
         <div class="tickets-table-wrapper" style="height: auto; max-height: calc(100vh - 310px);">
           <table class="tickets-table">
             <thead>
               <tr>
-                <th style="width: 25%;">Cliente</th>
-                <th style="width: 15%;">DNI</th>
-                <th style="width: 15%;">Teléfono</th>
-                <th style="width: 20%;">Email</th>
-                <th style="width: 10%;">Provincia</th>
-                <th style="width: 5%; text-align: center;">Etiquetas</th>
-                <th style="width: 10%; text-align: right;">Acciones</th>
+                <th style="width: 22%; white-space: nowrap;">Cliente</th>
+                <th style="width: 12%; white-space: nowrap;">DNI</th>
+                <th style="width: 14%; white-space: nowrap;">Teléfono</th>
+                <th style="width: 18%; white-space: nowrap;">Email</th>
+                <th style="width: 12%; white-space: nowrap;">Provincia</th>
+                <th style="width: 10%; min-width: 100px; white-space: nowrap; text-align: center;">Etiquetas</th>
+                <th style="width: 12%; min-width: 130px; white-space: nowrap; text-align: right;">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -164,18 +167,20 @@ export class ClientesView extends AsyncView {
                   <td class="tt-cliente" title="${c.nombre || ''} ${c.apellido || ''}">
                     ${c.nombre || 'Sin Nombre'} ${c.apellido || ''}
                   </td>
-                  <td class="tt-equipo">${c.dni || '—'}</td>
-                  <td class="tt-equipo text-truncate" style="max-width: 150px;">${c.telefono || '—'}</td>
-                  <td class="tt-equipo text-truncate" style="max-width: 200px;">${c.email || '—'}</td>
-                  <td class="tt-equipo text-truncate" style="max-width: 150px;">${c.provincia || '—'}</td>
-                  <td style="text-align: center;">
+                  <td class="tt-equipo" style="white-space: nowrap;">${c.dni || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 150px; white-space: nowrap;">${c.telefono || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 200px; white-space: nowrap;">${c.email || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 150px; white-space: nowrap;">${c.provincia || '—'}</td>
+                  <td style="text-align: center; white-space: nowrap;">
                     ${c.badge ? `<div class="badge ${c.badge.class}" style="font-size: 10px; display: inline-block;">${c.badge.label}</div>` : '—'}
                   </td>
-                  <td style="text-align: right;">
+                  <td style="text-align: right; white-space: nowrap;">
                     ${canEdit ? `
                       <div class="client-actions" style="display: flex; justify-content: flex-end; gap: 4px;">
                         <a href="#cliente-edit?id=${c.id}" class="btn btn-sm btn-secondary client-edit-btn" style="padding: 4px 8px; font-size: 12px;" title="Editar">📝</a>
-                        <button class="btn btn-sm btn-secondary client-merge-btn" data-id="${c.id}" style="padding: 4px 8px; font-size: 12px; color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.1);" title="Fusionar">🔗</button>
+                        ${canMerge ? `
+                          <button class="btn btn-sm btn-secondary client-merge-btn" data-id="${c.id}" style="padding: 4px 8px; font-size: 12px; color: var(--accent-cyan); border-color: rgba(0, 229, 255, 0.1);" title="Fusionar (admin)">🔗</button>
+                        ` : ''}
                         <button class="btn btn-sm btn-secondary client-delete-btn" data-id="${c.id}" style="padding: 4px 8px; font-size: 12px; color: var(--danger); border-color: rgba(255, 71, 87, 0.1);" title="Eliminar">🗑</button>
                       </div>
                     ` : '—'}
@@ -313,6 +318,12 @@ export class ClientesView extends AsyncView {
   }
 
   async handleMerge(sourceId) {
+    // Defense-in-depth: even if the button somehow surfaces for non-admin roles
+    // (DOM manipulation, stale cache), the handler refuses to execute.
+    if (!canAccess('merge-clientes')) {
+      showToast('Acción reservada para administradores', 'error');
+      return;
+    }
     const targetId = prompt('Ingrese el ID del cliente principal (Donde se fusionará este registro):');
     if (!targetId || targetId === sourceId) return;
     if (!confirm('Esta acción eliminará el cliente actual y mantendrá el principal. ¿Continuar?')) return;
