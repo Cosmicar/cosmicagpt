@@ -136,12 +136,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function initPerfilButton(session, mainContent) {
   const email = session.user?.email || '';
+  const displayName = session.profile?.nombre || email;
 
   const userEmailEl = document.getElementById('userEmail');
-  if (userEmailEl) userEmailEl.textContent = email;
+  if (userEmailEl) userEmailEl.textContent = displayName;
 
   const perfilEmailEl = document.getElementById('perfilEmail');
-  if (perfilEmailEl) perfilEmailEl.textContent = email;
+  if (perfilEmailEl) perfilEmailEl.textContent = displayName;
 
   const btnPerfil = document.getElementById('btnPerfil');
   const dropdown = document.getElementById('perfilDropdown');
@@ -152,8 +153,47 @@ function initPerfilButton(session, mainContent) {
     const avatar = getCosmicAvatar(avatarSeed);
     btnPerfil.innerHTML = avatar.svg;
     btnPerfil.style.setProperty('--perfil-bg', avatar.bg);
-    btnPerfil.setAttribute('aria-label', `Perfil de ${email} (${avatar.name})`);
-    btnPerfil.setAttribute('title', `${email} — ${avatar.name}`);
+    btnPerfil.setAttribute('aria-label', `Perfil de ${displayName} (${avatar.name})`);
+    btnPerfil.setAttribute('title', `${displayName} — ${avatar.name}`);
+  }
+
+  const btnEditProfile = document.getElementById('btnEditProfile');
+  if (btnEditProfile) {
+    btnEditProfile.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (dropdown) dropdown.classList.remove('open');
+      
+      const currentName = session.profile?.nombre || '';
+      const newName = prompt("Ingresá tu nombre de usuario para mostrar en tu perfil:", currentName);
+      
+      if (newName !== null && newName.trim() !== '') {
+        try {
+          const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js");
+          const { db } = await import("../../../js/firebase.js");
+          const { COLLECTIONS } = await import("../../../js/domain.js");
+          
+          await setDoc(doc(db, COLLECTIONS.usuarios, session.user.uid), {
+            nombre: newName.trim()
+          }, { merge: true });
+          
+          if (!session.profile) session.profile = {};
+          session.profile.nombre = newName.trim();
+          
+          if (userEmailEl) userEmailEl.textContent = newName.trim();
+          if (perfilEmailEl) perfilEmailEl.textContent = newName.trim();
+          
+          const { showToast } = await import('../components/toast.js');
+          showToast("Perfil actualizado correctamente", "success");
+          
+          // Re-render sidebar if needed to update the name there
+          renderSidebar(session.profile);
+        } catch (err) {
+          console.error('[Perfil] Error al actualizar el perfil:', err);
+          const { showToast } = await import('../components/toast.js');
+          showToast("Hubo un error al actualizar el perfil", "error");
+        }
+      }
+    });
   }
 
   if (btnPerfil && dropdown) {

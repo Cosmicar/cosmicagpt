@@ -356,7 +356,9 @@ export function initCommandPalette() {
 
   const triggerBtn = document.getElementById('cp-trigger-btn');
   if (triggerBtn) {
-    triggerBtn.addEventListener('click', () => {
+    triggerBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       if (_isOpen) closePalette();
       else openPalette();
     });
