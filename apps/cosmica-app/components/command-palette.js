@@ -190,10 +190,90 @@ function _setActive(idx) {
   _scrollActive();
 }
 
+// ── CSS injection (self-contained — no external CSS file needed) ────────────
+
+function _injectStyles() {
+  if (document.getElementById('cp-styles')) return;
+  const s = document.createElement('style');
+  s.id = 'cp-styles';
+  s.textContent = `
+    .cp-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 12vh;
+      box-sizing: border-box;
+    }
+    .cp-overlay.is-open { display: flex; }
+    .cp-modal {
+      background: rgba(8,15,28,0.97);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      width: 100%; max-width: 640px;
+      margin: 0 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      max-height: 70vh;
+    }
+    .cp-search-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .cp-search-icon { font-size: 18px; flex-shrink:0; }
+    .cp-search-row input {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-size: 16px; color: #fff;
+      font-family: 'Inter', sans-serif;
+    }
+    .cp-search-row input::placeholder { color: rgba(255,255,255,0.35); }
+    .cp-esc-hint {
+      font-size: 11px; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px; padding: 3px 8px;
+      color: rgba(255,255,255,0.45); font-family: monospace;
+      flex-shrink: 0;
+    }
+    .cp-results { overflow-y: auto; max-height: calc(70vh - 130px); }
+    .cp-group { padding: 8px 0; }
+    .cp-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+      padding: 4px 20px 4px;
+    }
+    .cp-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px; cursor: pointer;
+      transition: background 0.12s;
+    }
+    .cp-item:hover, .cp-item.is-active {
+      background: rgba(0,229,255,0.08);
+    }
+    .cp-item-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink:0; }
+    .cp-item-text { flex: 1; min-width: 0; }
+    .cp-item-label { font-size: 14px; color: #fff; font-weight: 500; }
+    .cp-item-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .cp-empty { padding: 32px 20px; text-align: center; color: rgba(255,255,255,0.35); font-size: 14px; }
+    .cp-footer {
+      display: flex; gap: 20px; justify-content: center;
+      padding: 10px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 11px; color: rgba(255,255,255,0.3);
+    }
+  `;
+  document.head.appendChild(s);
+}
+
 // ── DOM ───────────────────────────────────────────────────────────────────────
 
 function ensureDom() {
   if (_overlay) return;
+  _injectStyles();
 
   _overlay = document.createElement('div');
   _overlay.className = 'cp-overlay';
@@ -226,7 +306,7 @@ function ensureDom() {
     </div>
   `;
 
-  _input    = _modal.querySelector('#cp-input');
+  _input     = _modal.querySelector('#cp-input');
   _resultsEl = _modal.querySelector('#cp-results');
 
   _overlay.appendChild(_modal);
@@ -352,6 +432,11 @@ export function initCommandPalette() {
       if (_isOpen) closePalette();
       else openPalette();
     }
+  });
+
+  // Safety valve: always close (and unlock body) when navigating
+  window.addEventListener('hashchange', () => {
+    if (_isOpen) closePalette();
   });
 
   const triggerBtn = document.getElementById('cp-trigger-btn');
