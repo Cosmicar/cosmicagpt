@@ -161,7 +161,7 @@ export async function getFacturasMapByTicket(maxFacturas = 500) {
   } catch (err) {
     // Si las rules bloquean (ej. rol no autorizado) devolvemos map vacío —
     // la UI se degrada limpiamente y no muestra el badge "Facturado".
-    console.warn('[facturacion] getFacturasMapByTicket failed:', err);
+    // Silenciado: es comportamiento esperado para roles sin permiso.
     return new Map();
   }
 }

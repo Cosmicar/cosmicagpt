@@ -349,16 +349,21 @@ function _onModalKey(e) {
 export async function openPalette() {
   try {
     ensureDom();
-    if (_isOpen) {
-      console.log('[CommandPalette] Already open, returning.');
-      return;
+
+    // Derive real state from DOM — never trust _isOpen alone.
+    // If flag says open but overlay is actually hidden, reset and proceed.
+    const actuallyVisible = _overlay && _overlay.style.display === 'flex';
+    if (_isOpen && actuallyVisible) return; // genuinely open — nothing to do
+    if (_isOpen && !actuallyVisible) {
+      // Stale flag from a previous broken open — force reset
+      _isOpen = false;
     }
 
     _isOpen    = true;
     _activeIdx = 0;
     _prevActiveElement = document.activeElement;
 
-    // Force display directly via style — bypasses any CSS specificity war
+    // Force display via inline style — highest CSS specificity possible
     _overlay.style.display = 'flex';
     _overlay.removeAttribute('aria-hidden');
     _overlay.classList.add('is-open');
@@ -381,7 +386,8 @@ export async function openPalette() {
     _modal.addEventListener('keydown', _onModalKey);
     _input.addEventListener('input', _onInput);
   } catch (err) {
-    console.error('Palette Error:', err);
+    _isOpen = false; // Always reset on error
+    console.error('[CommandPalette] Error:', err);
     import('../components/toast.js').then(({ showToast }) => {
       showToast('Error al abrir buscador: ' + err.message, 'error');
     });
@@ -389,13 +395,14 @@ export async function openPalette() {
 }
 
 export function closePalette() {
-  if (!_isOpen || !_overlay) return;
+  // Always reset state — even if _isOpen is false (stale state recovery)
   _isOpen = false;
 
-  // Force hide via inline style
-  _overlay.style.display = 'none';
-  _overlay.classList.remove('is-open');
-  _overlay.setAttribute('aria-hidden', 'true');
+  if (_overlay) {
+    _overlay.style.display = 'none';
+    _overlay.classList.remove('is-open');
+    _overlay.setAttribute('aria-hidden', 'true');
+  }
   
   if (_prevActiveElement && typeof _prevActiveElement.focus === 'function') {
     _prevActiveElement.focus();
@@ -420,17 +427,17 @@ export function closePalette() {
  */
 export function initCommandPalette() {
   document.addEventListener('keydown', (e) => {
-    // Escuchar Ctrl+K o Cmd+K
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-      console.log('[CommandPalette] Ctrl+K detectado');
       e.preventDefault();
-      if (_isOpen) closePalette();
+      // Toggle: derive real state from overlay visibility
+      const isVisible = _overlay && _overlay.style.display === 'flex';
+      if (isVisible) closePalette();
       else openPalette();
     }
   });
 
-  // Safety valve: always close (and unlock body) when navigating
+  // Safety valve: always close when navigating
   window.addEventListener('hashchange', () => {
-    if (_isOpen) closePalette();
+    closePalette();
   });
 }
