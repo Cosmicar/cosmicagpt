@@ -965,6 +965,166 @@
       .donut-hero-card { padding: var(--space-md); }
     }
 
+    /* ╔══════════════════════════════════════════════════════════════╗
+       ║  LOGIN — Production-ready premium experience                  ║
+       ╚══════════════════════════════════════════════════════════════╝ */
+    .login-shell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - var(--navbar-h) - 32px);
+      padding: var(--space-lg);
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      padding: var(--space-2xl) var(--space-xl) var(--space-xl);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 200px;
+      height: 200px;
+      background: var(--accent-cyan);
+      filter: blur(100px);
+      opacity: 0.16;
+      pointer-events: none;
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+      position: relative;
+    }
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: var(--space-md);
+    }
+    .login-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.04em;
+      margin: 0 0 4px;
+      line-height: 1.1;
+    }
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0;
+      letter-spacing: -0.005em;
+      opacity: 0.85;
+    }
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      position: relative;
+    }
+    .login-form .form-group { margin: 0; }
+    .login-form .input {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+    .login-form .input:focus {
+      border-color: rgba(0, 229, 255, 0.4);
+      background: rgba(0, 0, 0, 0.35);
+      outline: none;
+    }
+    .login-submit {
+      width: 100%;
+      padding: 13px 16px;
+      margin-top: var(--space-xs);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .login-submit:active { transform: translateY(1px); }
+    .login-submit-loading { opacity: 0.7; cursor: progress; }
+    .login-submit:disabled { opacity: 0.6; }
+
+    .login-error {
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 0, 127, 0.08);
+      border: 1px solid rgba(255, 0, 127, 0.22);
+      color: var(--danger);
+      font-size: 12.5px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: -0.005em;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+      transition: max-height 0.22s ease, opacity 0.22s ease, padding 0.22s ease, border-width 0.22s ease;
+    }
+    .login-error.is-visible {
+      max-height: 60px;
+      opacity: 1;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      border-width: 1px;
+    }
+
+    .login-install-btn {
+      width: 100%;
+      margin-top: var(--space-md);
+      padding: 10px 14px;
+      background: rgba(0, 229, 255, 0.06);
+      border: 1px dashed rgba(0, 229, 255, 0.22);
+      border-radius: var(--radius-md);
+      color: var(--accent-cyan);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .login-install-btn:hover {
+      background: rgba(0, 229, 255, 0.1);
+      border-style: solid;
+    }
+    .login-install-btn[hidden] { display: none !important; }
+
+    .login-footer {
+      margin-top: var(--space-xl);
+      padding-top: var(--space-md);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+    .login-footer p {
+      font-size: 11px;
+      color: var(--text-muted);
+      opacity: 0.65;
+      margin: 0;
+      letter-spacing: -0.005em;
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: var(--space-xl) var(--space-lg);
+        border-radius: var(--radius-lg);
+      }
+      .login-logo { width: 56px; height: 56px; }
+      .login-title { font-size: 22px; }
+    }
+
     /* ── Deep-link filter chip — shows WHY tickets list is filtered when
        arrived via dashboard KPI shortcut. Clear with × or any filter button. */
     .deeplink-filter-chip {

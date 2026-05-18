@@ -1,0 +1,10 @@
+# Service account credentials — NEVER commit
+service-account.json
+service-account-*.json
+
+# Generated reports and backups
+reports/
+backups/
+
+# Node
+node_modules/

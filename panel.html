@@ -481,6 +481,75 @@
   </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════════════
+     LEGACY SUNSET BANNER — Cósmica SaaS es ahora la plataforma oficial
+     ════════════════════════════════════════════════════════════════ -->
+<div id="legacy-sunset-banner" style="
+  background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(255,45,120,0.04));
+  border-bottom: 1px solid rgba(0,229,255,0.25);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+">
+  <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px;">
+    <span style="font-size: 18px;">🚀</span>
+    <div style="display: flex; flex-direction: column; min-width: 0;">
+      <strong style="color: #00e5ff; font-size: 13px; font-weight: 700; letter-spacing: -0.01em;">
+        Sistema migrado a Cósmica App SaaS
+      </strong>
+      <span style="font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 500;">
+        Este panel se mantiene como histórico de consulta. Para crear y gestionar tickets, usá la nueva app.
+      </span>
+    </div>
+  </div>
+  <a href="/apps/cosmica-app/" style="
+    background: linear-gradient(135deg, #00e5ff, #0066ff);
+    color: #060A12;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 14px rgba(0,229,255,0.25);
+    white-space: nowrap;
+    transition: transform 0.15s ease;
+  " onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+    Ir a Cósmica App →
+  </a>
+  <button onclick="this.parentElement.style.display='none'; localStorage.setItem('cosmica_legacy_banner_dismissed', Date.now());" style="
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  " title="Ocultar este aviso por esta sesión">✕</button>
+</div>
+<script>
+  // Banner stays dismissed for 7 days after click
+  (function() {
+    try {
+      const dismissed = parseInt(localStorage.getItem('cosmica_legacy_banner_dismissed') || '0', 10);
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (dismissed && (Date.now() - dismissed) < sevenDays) {
+        const el = document.getElementById('legacy-sunset-banner');
+        if (el) el.style.display = 'none';
+      }
+    } catch (_) { /* localStorage unavailable */ }
+  })();
+</script>
+
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active"     onclick="showTab('trabajos')">🛠️ Trabajos</div>
