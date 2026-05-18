@@ -345,33 +345,40 @@ function _onModalKey(e) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export async function openPalette() {
-  ensureDom();
-  if (_isOpen) return;
+  try {
+    ensureDom();
+    if (_isOpen) return;
 
-  _isOpen    = true;
-  _activeIdx = 0;
-  _prevActiveElement = document.activeElement;
+    _isOpen    = true;
+    _activeIdx = 0;
+    _prevActiveElement = document.activeElement;
 
-  _overlay.removeAttribute('aria-hidden');
-  _overlay.classList.add('is-open');
+    _overlay.removeAttribute('aria-hidden');
+    _overlay.classList.add('is-open');
 
-  // Render immediately with actions while data possibly loads
-  _updateResults(search(''));
+    // Render immediately with actions while data possibly loads
+    _updateResults(search(''));
 
-  // Lazy fetch if cache empty — re-render when done
-  if (_cache.tickets === null || _cache.clients === null) {
-    ensureCache().then(() => {
-      if (_isOpen) _updateResults(search(_input?.value || ''));
+    // Lazy fetch if cache empty — re-render when done
+    if (_cache.tickets === null || _cache.clients === null) {
+      ensureCache().then(() => {
+        if (_isOpen) _updateResults(search(_input?.value || ''));
+      });
+    }
+
+    _input.value = '';
+    requestAnimationFrame(() => _input?.focus());
+
+    _offEsc = (e) => { if (e.key === 'Escape') closePalette(); };
+    document.addEventListener('keydown', _offEsc);
+    _modal.addEventListener('keydown', _onModalKey);
+    _input.addEventListener('input', _onInput);
+  } catch (err) {
+    console.error('Palette Error:', err);
+    import('../components/toast.js').then(({ showToast }) => {
+      showToast('Error al abrir buscador: ' + err.message, 'error');
     });
   }
-
-  _input.value = '';
-  requestAnimationFrame(() => _input?.focus());
-
-  _offEsc = (e) => { if (e.key === 'Escape') closePalette(); };
-  document.addEventListener('keydown', _offEsc);
-  _modal.addEventListener('keydown', _onModalKey);
-  _input.addEventListener('input', _onInput);
 }
 
 export function closePalette() {
@@ -415,14 +422,4 @@ export function initCommandPalette() {
   window.addEventListener('hashchange', () => {
     if (_isOpen) closePalette();
   });
-
-  const triggerBtn = document.getElementById('cp-trigger-btn');
-  if (triggerBtn) {
-    triggerBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (_isOpen) closePalette();
-      else openPalette();
-    });
-  }
 }
