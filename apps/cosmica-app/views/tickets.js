@@ -317,13 +317,13 @@ export class TicketsView extends AsyncView {
           <thead>
             <tr>
               <th class="tt-check"></th>
-              <th>Orden</th>
-               <th>Cliente</th>
-              <th>Estado</th>
-              <th>Equipo</th>
-              <th>Fecha</th>
-              <th>Plan</th>
-              <th>Acciones</th>
+              <th style="width:100px; white-space:nowrap;">Orden</th>
+              <th style="white-space:nowrap;">Cliente</th>
+              <th style="width:130px; white-space:nowrap;">Estado</th>
+              <th class="tt-equipo" style="min-width:110px; white-space:nowrap;">Equipo</th>
+              <th style="width:100px; white-space:nowrap;">Fecha</th>
+              <th style="width:90px; white-space:nowrap;">Plan</th>
+              <th style="width:170px; white-space:nowrap;">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -371,7 +371,7 @@ export class TicketsView extends AsyncView {
         <td style="width:130px;">
           <span class="badge ${bc}" id="badge-${ticket.id}" style="white-space:nowrap; padding:4px 8px; font-size:10px; font-weight:700; border-radius:4px; letter-spacing:0.02em;">${estado}</span>
         </td>
-        <td class="tt-equipo" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${equipo}</td>
+        <td class="tt-equipo" style="min-width:110px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${equipo}</td>
         <td class="tt-fecha" style="width:100px;">${fecha}</td>
         <td class="tt-plan" style="width:90px;">${plan}</td>
         <td class="tt-acciones tt-cta" data-id="${ticket.id}" style="width:170px;">
