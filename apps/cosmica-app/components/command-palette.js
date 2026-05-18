@@ -177,8 +177,8 @@ function _injectStyles() {
   s.id = 'cp-styles';
   s.textContent = `
     .cp-overlay {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,0.65);
+      position: fixed; inset: 0; z-index: 2147483647;
+      background: rgba(0,0,0,0.85);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       display: none;
@@ -187,17 +187,18 @@ function _injectStyles() {
       padding-top: 12vh;
       box-sizing: border-box;
     }
-    .cp-overlay.is-open { display: flex; }
+    .cp-overlay.is-open { display: flex !important; }
     .cp-modal {
-      background: rgba(8,15,28,0.97);
-      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(8,15,28,1);
+      border: 2px solid #00e5ff;
       border-radius: 16px;
       width: 100%; max-width: 640px;
       margin: 0 16px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      box-shadow: 0 24px 64px rgba(0,229,255,0.3);
       overflow: hidden;
       display: flex; flex-direction: column;
       max-height: 70vh;
+      z-index: 2147483647;
     }
     .cp-search-row {
       display: flex; align-items: center; gap: 12px;
