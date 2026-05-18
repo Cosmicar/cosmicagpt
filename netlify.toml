@@ -1,26 +1,10 @@
+# ════════════════════════════════════════════════════════════════
+#   ⚠️  NOT THE ACTIVE DEPLOY CONFIG
+# ════════════════════════════════════════════════════════════════
+# Production hosting is on Vercel — see `vercel.json` at the repo root.
+# This file is kept as historical reference only.
+# Editing it WILL NOT affect production.
+# ════════════════════════════════════════════════════════════════
+
 [build]
   publish = "."
-
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-
-# ─── Clean URLs for the official Cósmica SaaS ───────────────────
-# Operators can use any of these short aliases instead of /apps/cosmica-app/
-[[redirects]]
-  from = "/staff"
-  to = "/apps/cosmica-app/"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "/staff/*"
-  to = "/apps/cosmica-app/:splat"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "/app"
-  to = "/apps/cosmica-app/"
-  status = 301
-  force = true

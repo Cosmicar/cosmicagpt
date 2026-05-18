@@ -1,0 +1,99 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "//": "CÓSMICA — Vercel deploy config. Active production config.",
+  "//1": "When request comes to app.cosmica.ar, serve the SaaS from /apps/cosmica-app/",
+  "//2": "while keeping the clean URL (app.cosmica.ar/...) in the browser address bar.",
+  "//3": "Other domains (cosmica.ar, cosmicagpt.vercel.app) continue serving the public landing.",
+
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/index.html"
+    },
+    {
+      "source": "/components/ui/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/components/ui/:path*"
+    },
+    {
+      "source": "/core/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/core/:path*"
+    },
+    {
+      "source": "/views/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/views/:path*"
+    },
+    {
+      "source": "/services/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/services/:path*"
+    },
+    {
+      "source": "/components/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/components/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/assets/:path*"
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/sw.js"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/manifest.json"
+    }
+  ],
+
+  "redirects": [
+    {
+      "source": "/staff",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/staff/:path*",
+      "destination": "https://app.cosmica.ar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/cosmica-app",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/cosmica-app/",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    }
+  ],
+
+  "headers": [
+    {
+      "source": "/apps/cosmica-app/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}
