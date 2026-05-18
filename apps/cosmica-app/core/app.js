@@ -411,11 +411,61 @@ export async function updateCajaStatusIndicator() {
     if (session) {
       el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
       el.style.display = 'flex';
+      el.style.cursor = 'default';
       el.title = `Abierta por ${session.openedByName || 'alguien'}`;
+      el.dataset.cajaStatus = 'open';
     } else {
       el.innerHTML = `<span style="color:var(--danger);">●</span> Caja Cerrada`;
       el.style.display = 'flex';
-      el.title = 'No hay una sesión de caja activa';
+      el.style.cursor = 'pointer';
+      el.title = 'No hay una sesión de caja activa. Hacé clic para abrirla.';
+      el.dataset.cajaStatus = 'closed';
+    }
+
+    // Bind click listener once to allow direct opening when closed
+    if (!el._hasClickListener) {
+      el._hasClickListener = true;
+      el.addEventListener('click', async () => {
+        if (el.dataset.cajaStatus === 'closed') {
+          const { canAccess } = await import('./session.js');
+          if (!canAccess('finanzas-write')) {
+            const { showToast } = await import('../components/toast.js');
+            showToast('No tenés permisos para abrir la caja', 'error');
+            return;
+          }
+
+          const input = prompt("¿Confirmás la apertura de la caja?\n\nIngresá el saldo inicial ($):", "0");
+          if (input !== null) {
+            const saldo = Number(input.trim());
+            if (isNaN(saldo) || saldo < 0) {
+              const { showToast } = await import('../components/toast.js');
+              showToast('Monto de saldo inicial inválido', 'error');
+              return;
+            }
+
+            try {
+              const { abrirCaja } = await import('../services/finanzas.js');
+              const { showToast } = await import('../components/toast.js');
+              const res = await abrirCaja(saldo);
+              if (res.success) {
+                showToast('Caja abierta correctamente con $' + saldo.toLocaleString('es-AR'), 'success');
+                invalidateCajaStatusCache();
+                await updateCajaStatusIndicator();
+                
+                // Refresh active finanzas view if the user is currently on it
+                if (window.location.hash === '#finanzas') {
+                  window.dispatchEvent(new HashChangeEvent('hashchange'));
+                }
+              } else {
+                showToast(res.error || 'Error al abrir caja', 'error');
+              }
+            } catch (err) {
+              const { showToast } = await import('../components/toast.js');
+              showToast(err.message || 'Error al abrir caja', 'error');
+            }
+          }
+        }
+      });
     }
   } catch (err) {
     console.warn('[app] updateCajaStatusIndicator failed:', err);
