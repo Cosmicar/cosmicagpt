@@ -265,7 +265,7 @@ function renderSidebar(profile) {
 
   sidebar.innerHTML = `
     <div class="sidebar-header">
-      <div class="sidebar-avatar" style="--avatar-bg:${avatar.bg};" aria-label="Avatar: ${avatar.name}" title="${avatar.name}">${avatar.svg}</div>
+      <a href="#dashboard" class="sidebar-avatar" style="--avatar-bg:${avatar.bg}; transition: transform 0.18s ease, filter 0.18s ease;" aria-label="Avatar: ${avatar.name}" title="Ir al Dashboard">${avatar.svg}</a>
       <div class="sidebar-header-info">
         <span class="sidebar-user-name">${displayName}</span>
         <span class="sidebar-user-role">${role}</span>
