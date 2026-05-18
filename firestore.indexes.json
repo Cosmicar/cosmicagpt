@@ -7,6 +7,14 @@
         { "fieldPath": "status",   "order": "ASCENDING"  },
         { "fieldPath": "closedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "trabajos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tipo",          "order": "ASCENDING"  },
+        { "fieldPath": "fechaIngreso",  "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
