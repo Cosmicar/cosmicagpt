@@ -54,12 +54,23 @@ export class TicketsView extends AsyncView {
     const session = getCurrentSession();
     const isTecnico = session?.profile?.rol === 'tecnico';
     const isOperador = session?.profile?.rol === 'operador';
-    
-    this.currentFilter = persisted.filter || (isTecnico ? 'mis-tickets' : (isOperador ? 'activos' : 'all'));
+
+    // Deep-link filter via URL hash (e.g. #tickets?filter=pendiente from KPI shortcuts).
+    // Takes precedence over sessionStorage so dashboard navigation always honours intent.
+    const VALID_FILTERS = new Set(['all', 'activos', 'mis-tickets', 'sin-asignar',
+                                    'finalizado', 'pendiente', 'proceso',
+                                    'listo', 'entregado-hoy', 'demorado']);
+    const paramFilter = params?.get?.('filter');
+    const linkFilter = paramFilter && VALID_FILTERS.has(paramFilter) ? paramFilter : null;
+
+    this.currentFilter = linkFilter || persisted.filter || (isTecnico ? 'mis-tickets' : (isOperador ? 'activos' : 'all'));
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
     this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
-    this._page = persisted.page || 1;
+    // Reset page to 1 when arriving via deep-link filter; otherwise honour persisted page
+    this._page = linkFilter ? 1 : (persisted.page || 1);
+    // Flag for in-view banner indicating a deep-link is active (cleared by clicking any filter button)
+    this._deepLinkFilter = linkFilter;
 
     const isMobile = window.innerWidth < 768;
     if (this.viewMode === 'table' && isMobile) this.viewMode = 'comfortable';
@@ -781,7 +792,14 @@ export class TicketsView extends AsyncView {
         if (this.currentFilter === 'sin-asignar') return !t.tecnicoAsignadoId && estado !== WORK_STATUS.entregado;
         if (this.currentFilter === 'pendiente')  return estado === WORK_STATUS.ingresado;
         if (this.currentFilter === 'proceso')    return estado === WORK_STATUS.enReparacion;
+        if (this.currentFilter === 'listo')      return estado === WORK_STATUS.listo;
         if (this.currentFilter === 'finalizado') return [WORK_STATUS.listo, WORK_STATUS.entregado].includes(estado);
+        if (this.currentFilter === 'entregado-hoy') {
+          if (estado !== WORK_STATUS.entregado) return false;
+          const todayStr = new Date().toISOString().split('T')[0];
+          return t.fechaEntregado?.split('T')[0] === todayStr;
+        }
+        if (this.currentFilter === 'demorado')   return isOverdue(t);
         return true;
       });
     }

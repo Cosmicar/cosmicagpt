@@ -135,13 +135,13 @@ export class DashboardView extends AsyncView {
           </div>
         </header>
 
-        <!-- KPIs Principales -->
+        <!-- KPIs Principales (atajos clickeables al listado filtrado de Trabajos) -->
         <section class="kpi-grid" style="margin-bottom: var(--space-lg);">
-          ${this.renderKPI('PENDIENTES', metrics.pending, 'var(--accent-orange)', '⏳')}
-          ${this.renderKPI('EN REPARACIÓN', metrics.inRepair, 'var(--accent-cyan)', '🔧')}
-          ${this.renderKPI('LISTOS', metrics.ready, 'var(--accent-green)', '✅')}
-          ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)', '📦')}
-          ${this.renderKPI('DEMORADOS', metrics.overdue, 'var(--danger)', '⚠️')}
+          ${this.renderKPI('PENDIENTES',     metrics.pending,        'var(--accent-orange)', '⏳', 'pendiente')}
+          ${this.renderKPI('EN REPARACIÓN',  metrics.inRepair,       'var(--accent-cyan)',   '🔧', 'proceso')}
+          ${this.renderKPI('LISTOS',         metrics.ready,          'var(--accent-green)',  '✅', 'listo')}
+          ${this.renderKPI('ENTREGADOS HOY', metrics.deliveredToday, 'var(--text-muted)',    '📦', 'entregado-hoy')}
+          ${this.renderKPI('DEMORADOS',      metrics.overdue,        'var(--danger)',        '⚠️', 'demorado')}
         </section>
         
         <!-- Atención Requerida -->
@@ -265,15 +265,37 @@ export class DashboardView extends AsyncView {
   }
 
   /**
-   * Renderiza una card de KPI individual
+   * Renderiza una card de KPI individual.
+   * @param {string} label - Etiqueta UPPERCASE
+   * @param {number} value - Valor a mostrar
+   * @param {string} color - CSS color (var() or hex) para acento
+   * @param {string} icon  - Emoji o glyph decorativo
+   * @param {string|null} filterKey - Si se provee, la card se vuelve un atajo
+   *        clickeable hacia #tickets?filter=<filterKey> (Pendientes, Demorados, etc.)
    */
-  renderKPI(label, value, color, icon) {
+  renderKPI(label, value, color, icon, filterKey = null) {
+    const inner = `
+      <div class="kpi-icon">${icon}</div>
+      <div class="kpi-label">${label}</div>
+      <div class="kpi-value">${value}</div>
+      <div class="kpi-accent-bar" style="width: 20px; height: 2px; background: ${color}; opacity: 0.5; border-radius: 2px;"></div>
+    `;
+
+    if (filterKey) {
+      return `
+        <a href="#tickets?filter=${filterKey}"
+           class="card glass-card kpi-card kpi-card-link"
+           style="border-left-color: ${color};"
+           aria-label="Ver ${label.toLowerCase()}: ${value} tickets"
+           title="Ver tickets en estado ${label.toLowerCase()}">
+          ${inner}
+          <span class="kpi-card-arrow" aria-hidden="true">→</span>
+        </a>
+      `;
+    }
     return `
       <div class="card glass-card kpi-card" style="border-left-color: ${color};">
-        <div class="kpi-icon">${icon}</div>
-        <div class="kpi-label">${label}</div>
-        <div class="kpi-value">${value}</div>
-        <div style="width: 20px; height: 2px; background: ${color}; opacity: 0.5; border-radius: 2px;"></div>
+        ${inner}
       </div>
     `;
   }
