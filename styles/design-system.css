@@ -87,10 +87,12 @@ td, th {
   pointer-events: none;
 }
 
-.glass-card:hover {
+.glass-card:hover,
+.glass-card:focus-within {
   border-color: rgba(0, 229, 255, 0.4);
   box-shadow: 0 4px 20px rgba(0, 229, 255, 0.08), var(--shadow-glow);
   transform: translateY(-1px); /* More subtle elevation */
+  z-index: 50 !important;
 }
 
 .glass-card:active {
@@ -1468,17 +1470,15 @@ textarea {
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: rgba(8, 15, 28, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
+  background: #0d1527 !important; /* Solid dark theme background */
+  border: 1px solid rgba(0, 229, 255, 0.25) !important; /* Visible active cyan border */
   border-radius: var(--radius-md);
-  padding: 4px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 130px;
-  box-shadow: var(--shadow-lg);
+  gap: 4px;
+  min-width: 160px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.1) !important;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-5px);
@@ -1494,16 +1494,24 @@ textarea {
 .ticket-dropdown-content .btn {
   justify-content: flex-start;
   width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-size: 11.5px;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-size: 12px;
   font-weight: 600;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  transition: background var(--transition-fast), color var(--transition-fast) !important;
 }
 .ticket-dropdown-content .btn:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--accent-cyan) !important;
 }
 
 /* --- Tickets Grid View Modes (Density Control for Operational Rows) --- */
