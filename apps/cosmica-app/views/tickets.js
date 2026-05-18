@@ -298,8 +298,6 @@ export class TicketsView extends AsyncView {
         <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
         <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
         <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tipoFilteredTickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
-      </div>6,185,129,0.4);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
       <div id="tickets-grid" class="grid-stack vm-${window.innerWidth < 768 ? 'comfortable' : this.viewMode}" style="margin-top: var(--space-lg); ${window.innerWidth >= 768 && this.viewMode !== 'table' ? 'grid-template-columns: 1fr;' : ''}">
