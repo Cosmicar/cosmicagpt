@@ -258,6 +258,7 @@ function ensureDom() {
   _overlay = document.createElement('div');
   _overlay.className = 'cp-overlay';
   _overlay.setAttribute('aria-hidden', 'true');
+  _overlay.style.display = 'none'; // controlled via JS, not just CSS class
 
   _modal = document.createElement('div');
   _modal.className = 'cp-modal';
@@ -346,8 +347,6 @@ function _onModalKey(e) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export async function openPalette() {
-  console.log('[CommandPalette] openPalette() called');
-  alert('Se disparó openPalette()');
   try {
     ensureDom();
     if (_isOpen) {
@@ -359,6 +358,8 @@ export async function openPalette() {
     _activeIdx = 0;
     _prevActiveElement = document.activeElement;
 
+    // Force display directly via style — bypasses any CSS specificity war
+    _overlay.style.display = 'flex';
     _overlay.removeAttribute('aria-hidden');
     _overlay.classList.add('is-open');
 
@@ -391,6 +392,8 @@ export function closePalette() {
   if (!_isOpen || !_overlay) return;
   _isOpen = false;
 
+  // Force hide via inline style
+  _overlay.style.display = 'none';
   _overlay.classList.remove('is-open');
   _overlay.setAttribute('aria-hidden', 'true');
   
