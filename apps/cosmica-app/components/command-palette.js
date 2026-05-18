@@ -346,9 +346,14 @@ function _onModalKey(e) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export async function openPalette() {
+  console.log('[CommandPalette] openPalette() called');
+  alert('Se disparó openPalette()');
   try {
     ensureDom();
-    if (_isOpen) return;
+    if (_isOpen) {
+      console.log('[CommandPalette] Already open, returning.');
+      return;
+    }
 
     _isOpen    = true;
     _activeIdx = 0;
@@ -412,7 +417,9 @@ export function closePalette() {
  */
 export function initCommandPalette() {
   document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    // Escuchar Ctrl+K o Cmd+K
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      console.log('[CommandPalette] Ctrl+K detectado');
       e.preventDefault();
       if (_isOpen) closePalette();
       else openPalette();

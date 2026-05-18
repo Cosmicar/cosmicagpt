@@ -2,7 +2,7 @@ import { getTickets, isOverdue } from './tickets.js';
 import { getClientes } from './clientes.js';
 import { WORK_STATUS, COLLECTIONS } from '../../../js/domain.js';
 import { getClientBadge, getReentryRisk } from '../core/intelligence.js';
-import { collectionGroup, query, orderBy, limit, getDocs, collection } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collectionGroup, query, limit, getDocs, collection, orderBy } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -193,18 +193,18 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
   const safeLimit = Math.min(limitCount, ACTIVITY_LIMIT);
 
   try {
-    // 1. Fetch recent ticket history via collectionGroup
+    // 1. Fetch recent ticket history via collectionGroup — sin orderBy para evitar
+    //    requerir un índice compuesto en Firestore. Ordenamos client-side.
     const historyQuery = query(
       collectionGroup(db, 'history'),
-      orderBy('createdAt', 'desc'),
-      limit(safeLimit)
+      limit(safeLimit * 3) // fetch más y filtramos/ordenamos en memoria
     );
     const historySnap = await getDocs(historyQuery);
     const historyEvents = historySnap.docs.map(d => ({
       id: d.id, ...d.data(), source: 'ticket'
     }));
 
-    // 2. Fetch recent finance/caja movements — same limit
+    // 2. Fetch recent finance/caja movements
     const cajaQuery = query(
       collection(db, COLLECTIONS.caja),
       orderBy('createdAt', 'desc'),
@@ -218,7 +218,7 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
       source: 'finance'
     }));
 
-    // 3. Merge, sort, slice final
+    // 3. Merge, sort client-side, slice final
     return [...historyEvents, ...cajaEvents]
       .sort((a, b) => {
         const dA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
@@ -227,7 +227,7 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
       })
       .slice(0, safeLimit);
   } catch (err) {
-    console.error('[dashboard-service] Activity feed failed:', err);
+    console.warn('[dashboard-service] Activity feed no disponible:', err.message);
     return [];
   }
 }
