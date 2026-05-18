@@ -5,7 +5,7 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderEmptyState, renderCardSkeletonList } from '../components/app-state.js';
-import { WORK_STATUS } from '../../../js/domain.js';
+import { WORK_STATUS, isAdmin } from '../../../js/domain.js';
 import { showToast, showActionToast } from '../components/toast.js';
 import { openWhatsApp, getDefaultWhatsAppAction, buildReadyMessage, buildReminderMessage } from '../core/message-templates.js';
 import { canAccess, getCurrentSession } from '../core/session.js';
@@ -64,6 +64,7 @@ export class TicketsView extends AsyncView {
     const linkFilter = paramFilter && VALID_FILTERS.has(paramFilter) ? paramFilter : null;
 
     this.currentFilter = linkFilter || persisted.filter || (isTecnico ? 'mis-tickets' : (isOperador ? 'activos' : 'all'));
+    this.currentTipoFilter = persisted.tipoFilter || 'all';
     this.currentTerm = persisted.term || '';
     this.savedScroll = persisted.scroll || 0;
     this.viewMode = persisted.viewMode || localStorage.getItem(VM_STORAGE_KEY) || 'comfortable';
@@ -215,6 +216,14 @@ export class TicketsView extends AsyncView {
   }
 
   renderContent(tickets) {
+    const session = getCurrentSession();
+    const admin = isAdmin(session?.profile);
+
+    let tipoFilteredTickets = tickets;
+    if (admin && this.currentTipoFilter && this.currentTipoFilter !== 'all') {
+      tipoFilteredTickets = tickets.filter(t => (t.tipo || 'taller').toLowerCase() === this.currentTipoFilter);
+    }
+
     // Apply current filter (deep-link or persisted) for the initial paint.
     // Previously the grid rendered unfiltered until a button click — bug fixed.
     const filteredTickets = this.getFilteredTickets();
@@ -266,6 +275,14 @@ export class TicketsView extends AsyncView {
               <button class="btn btn-sm btn-filter ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todos</button>
             </div>
 
+            ${admin ? `
+            <div class="tipo-filter-wrapper" style="display: flex; gap: 4px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap;">
+              <button class="btn btn-sm btn-tipo-filter ${this.currentTipoFilter === 'all' ? 'active' : ''}" data-tipo="all">📊 Todos</button>
+              <button class="btn btn-sm btn-tipo-filter ${this.currentTipoFilter === 'taller' ? 'active' : ''}" data-tipo="taller">🏭 Taller</button>
+              <button class="btn btn-sm btn-tipo-filter ${this.currentTipoFilter === 'remoto' ? 'active' : ''}" data-tipo="remoto">🌐 Remoto</button>
+            </div>
+            ` : ''}
+
             ${this.renderViewModeSelector()}
 
             <a href="#ticket-nuevo" class="btn btn-primary btn-sm" style="box-shadow: var(--shadow-glow);">
@@ -277,9 +294,11 @@ export class TicketsView extends AsyncView {
       </div>
 
       <div class="sticky-ops-bar" style="position: sticky; top: var(--navbar-h); z-index: 100; background: rgba(8, 15, 28, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 8px var(--space-lg); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-lg); margin: 10px calc(-1 * var(--space-md)) 0; overflow-x: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan-glow);">●</span> Activos: ${tickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${tickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan-glow);">●</span> Activos: ${tipoFilteredTickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tipoFilteredTickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
+      </div>6,185,129,0.4);">●</span> Listos: ${tickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
         <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
@@ -481,6 +500,17 @@ export class TicketsView extends AsyncView {
       });
     });
 
+    const tipoFilterButtons = document.querySelectorAll('.btn-tipo-filter');
+    tipoFilterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tipoFilterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentTipoFilter = btn.dataset.tipo;
+        this.saveState();
+        this.applyFilters(grid, true); // resetPage: nuevo filtro → página 1
+      });
+    });
+
     document.querySelectorAll('.vm-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const mode = btn.dataset.mode;
@@ -572,7 +602,7 @@ export class TicketsView extends AsyncView {
         openWhatsApp(ticket.telefono, message);
         return;
       }
-      if (e.target.closest('select, .btn, a, button')) return;
+      if (e.target.closest('select, .btn, a, button, .ticket-actions-col, .ticket-dropdown-content')) return;
       const node = e.target.closest('[data-ticket-id]');
       if (!node) return;
       const ticket = this.allTickets.find(t => t.id === node.dataset.ticketId);
@@ -831,16 +861,25 @@ export class TicketsView extends AsyncView {
   saveState() {
     this.savedScroll = window.scrollY;
     sessionStorage.setItem('ticketsViewState', JSON.stringify({
-      filter:   this.currentFilter,
-      term:     this.currentTerm,
-      viewMode: this.viewMode,
-      scroll:   this.savedScroll,
-      page:     this._page,
+      filter:     this.currentFilter,
+      tipoFilter: this.currentTipoFilter,
+      term:       this.currentTerm,
+      viewMode:   this.viewMode,
+      scroll:     this.savedScroll,
+      page:       this._page,
     }));
   }
 
   getFilteredTickets() {
     let filtered = this.allTickets;
+
+    // Filter by Service Type (Taller vs Remoto) for admin
+    const session = getCurrentSession();
+    const admin = isAdmin(session?.profile);
+    if (admin && this.currentTipoFilter && this.currentTipoFilter !== 'all') {
+      filtered = filtered.filter(t => (t.tipo || 'taller').toLowerCase() === this.currentTipoFilter);
+    }
+
     if (this.currentFilter !== 'all') {
       filtered = filtered.filter(t => {
         const estado = t.estado;

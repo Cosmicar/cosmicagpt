@@ -157,7 +157,7 @@ export function render(ticket, selected = false) {
       </div>
 
       <!-- Column 4: Actions -->
-      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;" onclick="event.stopPropagation()">
+      <div class="ticket-actions-col" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
         <div style="opacity: ${rowOpacity}; display: inline-flex; align-items: center;">
           ${primaryActionHtml}
         </div>
@@ -260,7 +260,7 @@ function renderMobile(ticket, selected = false) {
       </div>
 
       <!-- Actions -->
-      <div style="display:flex; gap:8px; align-items:center; margin-top:4px;" onclick="event.stopPropagation()">
+      <div class="ticket-actions-col" style="display:flex; gap:8px; align-items:center; margin-top:4px;">
         ${primaryActionHtml}
         
         <div class="ticket-dropdown-wrapper">

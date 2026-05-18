@@ -303,7 +303,8 @@ export class TicketFormView extends AsyncView {
                 type: 'select',
                 options: typeOptions,
                 value: ticket?.tipo || 'taller',
-                required: true
+                required: true,
+                disabled: !admin
               })}
 
               ${renderFormField({
@@ -988,11 +989,28 @@ export class TicketFormView extends AsyncView {
         const rawData = Object.fromEntries(formData.entries());
         
         const selectTecnico = document.getElementById('tecnicoAsignadoId');
-        // When the select is disabled the browser excludes it from FormData.
-        // Fall back to the existing ticket values so we never overwrite with null.
         const tecnicoFieldDisabled = selectTecnico?.disabled ?? false;
+
+        const selectTipo = document.getElementById('tipo');
+        const tipoFieldDisabled = selectTipo?.disabled ?? false;
+
+        const inputPrecio = document.getElementById('precio');
+        const precioFieldDisabled = inputPrecio?.disabled ?? false;
+
+        const selectMetodo = document.getElementById('metodoPago');
+        const metodoFieldDisabled = selectMetodo?.disabled ?? false;
+
         const data = {
           ...rawData,
+          tipo: tipoFieldDisabled
+            ? (this._ticket?.tipo || 'taller')
+            : (rawData.tipo || 'taller'),
+          precio: precioFieldDisabled
+            ? (this._ticket?.precio || '')
+            : (rawData.precio || ''),
+          metodoPago: metodoFieldDisabled
+            ? (this._ticket?.metodoPago || 'efectivo')
+            : (rawData.metodoPago || 'efectivo'),
           marca: rawData.marca_modelo || '',
           modelo: '',
           tecnicoAsignadoId: tecnicoFieldDisabled
