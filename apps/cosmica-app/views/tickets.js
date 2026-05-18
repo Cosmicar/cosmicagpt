@@ -80,11 +80,17 @@ export class TicketsView extends AsyncView {
 
   async loadData() {
     const { getClientes } = await import('../services/clientes.js');
-    const [tickets, clients] = await Promise.all([getTickets(), getClientes()]);
-    
+    const { getFacturasMapByTicket } = await import('../services/facturacion.js');
+    const [tickets, clients, facturasMap] = await Promise.all([
+      getTickets(),
+      getClientes(),
+      getFacturasMapByTicket(),
+    ]);
+
     // Join client data for smart search (Phone, DNI)
     const clientMap = clients.reduce((acc, c) => { acc[c.id] = c; return acc; }, {});
     this._clientMap = clientMap; // guardado para reutilizar en load-more
+    this._facturasMap = facturasMap;
 
     // Technician Load calculation
     const techLoad = {};
@@ -108,9 +114,12 @@ export class TicketsView extends AsyncView {
       const telefono = t.telefono || clientMap[t.clienteId]?.telefono || '';
       const dni      = t.dni      || clientMap[t.clienteId]?.dni      || '';
 
+      const facturasDelTicket = facturasMap.get(t.id) || [];
       const enriched = {
         ...t, nombre, apellido, telefono, dni,
-        isOverloaded: t.tecnicoAsignadoId && techLoad[t.tecnicoAsignadoId] > 15
+        isOverloaded: t.tecnicoAsignadoId && techLoad[t.tecnicoAsignadoId] > 15,
+        facturada:     facturasDelTicket.length > 0,
+        facturasCount: facturasDelTicket.length,
       };
 
       // Reentry Risk — lookup O(1) con mapa pre-construido
@@ -333,6 +342,21 @@ export class TicketsView extends AsyncView {
       </div>`;
   }
 
+  /**
+   * Pequeño badge "Taller"/"Remoto" — solo para admin/tester (los operadores
+   * solo ven taller de todas formas, sería redundante).
+   */
+  _renderTipoBadge(ticket) {
+    const session = getCurrentSession();
+    const role = session?.profile?.rol;
+    if (role !== 'admin' && role !== 'tester') return '';
+    const tipo = (ticket.tipo || 'taller').toLowerCase();
+    if (tipo === 'remoto') {
+      return '<span class="badge badge-violet" style="font-size:9px; padding:2px 6px;" title="Servicio remoto">🌐 REMOTO</span>';
+    }
+    return '<span class="badge badge-cyan" style="font-size:9px; padding:2px 6px;" title="Servicio en taller">🏭 TALLER</span>';
+  }
+
   renderTableRow(ticket, statusOptions) {
     const estado     = ticket.estado || WORK_STATUS.ingresado;
     const bc         = badgeClass(estado);
@@ -363,8 +387,10 @@ export class TicketsView extends AsyncView {
         </td>
         <td class="tt-orden" style="width:100px;">#${ticket.numeroOrden || '—'}</td>
         <td class="tt-cliente" title="${cliente}">
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <span>${cliente}</span>
+            ${this._renderTipoBadge(ticket)}
+            ${ticket.facturada ? `<span class="badge badge-success" style="font-size:9px; padding:2px 6px;" title="Factura AFIP emitida">🧾 Facturado</span>` : ''}
             ${indicators ? `<div style="display:flex; gap:2px; opacity:0.85;">${indicators}</div>` : ''}
           </div>
         </td>

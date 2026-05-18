@@ -239,7 +239,13 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
  * Previously required 3× getTickets() calls; now uses each dataset exactly once.
  */
 export async function getDashboardData() {
-  const [tickets, clientes] = await Promise.all([getTickets(), getClientes()]);
+  // Lazy-import facturas service: si las rules bloquean al rol, devuelve map vacío
+  const { getFacturasMapByTicket } = await import('./facturacion.js');
+  const [tickets, clientes, facturasMap] = await Promise.all([
+    getTickets(),
+    getClientes(),
+    getFacturasMapByTicket(),
+  ]);
 
   // Pre-agrupa tickets por clienteId — O(n) en vez de O(n²) por ticket enriquecido
   const clientTicketMap = new Map();
@@ -250,10 +256,13 @@ export async function getDashboardData() {
 
   const enrichTicket = (t) => {
     const clientTickets = clientTicketMap.get(t.clienteId) || [];
+    const facturasDel  = facturasMap.get(t.id) || [];
     return {
       ...t,
-      clientBadge: getClientBadge(clientTickets.length),
-      reentryRisk: getReentryRisk(clientTickets)
+      clientBadge:   getClientBadge(clientTickets.length),
+      reentryRisk:   getReentryRisk(clientTickets),
+      facturada:     facturasDel.length > 0,
+      facturasCount: facturasDel.length,
     };
   };
 

@@ -136,6 +136,37 @@ export async function getFacturasByTicket(ticketId) {
 }
 
 /**
+ * Devuelve un Map<ticketId, factura[]> con las últimas N facturas que tienen
+ * ticketId. Útil para enriquecer la lista de trabajos con un badge "Facturado"
+ * en una sola lectura Firestore (en vez de una por ticket).
+ *
+ * El query NO requiere index compuesto: ordena solo por createdAt.
+ */
+export async function getFacturasMapByTicket(maxFacturas = 500) {
+  try {
+    const q = query(
+      collection(db, FACTURAS_COLLECTION),
+      orderBy('createdAt', 'desc'),
+      limit(maxFacturas)
+    );
+    const snap = await getDocs(q);
+    const map = new Map();
+    snap.docs.forEach(d => {
+      const data = d.data();
+      if (!data.ticketId) return;
+      if (!map.has(data.ticketId)) map.set(data.ticketId, []);
+      map.get(data.ticketId).push({ id: d.id, ...data });
+    });
+    return map;
+  } catch (err) {
+    // Si las rules bloquean (ej. rol no autorizado) devolvemos map vacío —
+    // la UI se degrada limpiamente y no muestra el badge "Facturado".
+    console.warn('[facturacion] getFacturasMapByTicket failed:', err);
+    return new Map();
+  }
+}
+
+/**
  * Devuelve las facturas más recientes para historial general.
  */
 export async function getRecentFacturas(n = 50) {

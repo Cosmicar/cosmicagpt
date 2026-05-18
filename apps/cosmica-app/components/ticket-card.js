@@ -1,7 +1,31 @@
 import { WORK_STATUS } from '../../../js/domain.js';
-import { canAccess } from '../core/session.js';
+import { canAccess, getCurrentSession } from '../core/session.js';
 import { isOverdue, isHighValue, hasBudgetApproved } from '../services/tickets.js';
 import { getAgingBadge } from '../core/intelligence.js';
+
+/**
+ * Badge "Taller" / "Remoto" — solo se muestra para admin/tester porque los
+ * operadores solo ven taller (filtrado por Firestore rules) y mostrarlo sería
+ * redundante. Mantiene paridad con la diferenciación que tenía el legacy.
+ */
+function getTipoBadge(ticket) {
+  const session = getCurrentSession();
+  const role = session?.profile?.rol;
+  if (role !== 'admin' && role !== 'tester') return '';
+  const tipo = (ticket.tipo || 'taller').toLowerCase();
+  if (tipo === 'remoto') {
+    return '<span class="badge badge-violet" style="font-size:9px; padding:2px 6px; letter-spacing:0.04em;" title="Servicio remoto">🌐 REMOTO</span>';
+  }
+  return '<span class="badge badge-cyan" style="font-size:9px; padding:2px 6px; letter-spacing:0.04em;" title="Servicio en taller">🏭 TALLER</span>';
+}
+
+/** Badge "Facturado" — verde, visible para todos los roles que vean el ticket. */
+function getFacturadaBadge(ticket) {
+  if (!ticket.facturada) return '';
+  const n = ticket.facturasCount || 1;
+  const label = n > 1 ? `🧾 ${n} facturas` : '🧾 Facturado';
+  return `<span class="badge badge-success" style="font-size:9px; padding:2px 6px; letter-spacing:0.03em;" title="Tiene ${n} factura(s) AFIP emitida(s)">${label}</span>`;
+}
 
 /**
  * Componente para renderizar una card de ticket
@@ -98,11 +122,12 @@ export function render(ticket, selected = false) {
 
       <!-- Column 1: Client & Equipment -->
       <div style="flex: 2; min-width: 0; padding-right: 16px;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
           <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.05em;">#${ticket.numeroOrden || '—'}</span>
           <span class="text-truncate" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">
             ${ticket.nombre || 'Sin Nombre'} ${ticket.apellido || ''}
           </span>
+          ${getTipoBadge(ticket)}
           ${highValue ? '<span title="Alto Valor">💎</span>' : ''}
           ${overdue ? '<span title="Demorado">⚠️</span>' : ''}
         </div>
@@ -116,6 +141,7 @@ export function render(ticket, selected = false) {
         <div class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size: 10px; text-transform: uppercase;">${estado}</div>
         <div style="display: flex; gap: 4px; flex-wrap: wrap;">
           ${agingBadge}
+          ${getFacturadaBadge(ticket)}
           ${ticket.isOverloaded ? '<div class="badge badge-danger" style="font-size:10px; animation:pulse 2s infinite;">🔥 CARGADO</div>' : ''}
         </div>
       </div>
@@ -212,6 +238,8 @@ function renderMobile(ticket, selected = false) {
           <span class="badge ${badgeClass}" id="badge-${ticket.id}" style="font-size:9.5px; padding: 3px 8px; font-weight:700; text-transform:uppercase;">
             ${estado}
           </span>
+          ${getTipoBadge(ticket)}
+          ${getFacturadaBadge(ticket)}
           ${ticket.tecnicoAsignadoId ? `
             <span style="font-size:10px; color:var(--text-muted); opacity:0.8; font-weight:600;">
               👨‍🔧 ${ticket.tecnicoAsignadoNombre.split(' ')[0]}
