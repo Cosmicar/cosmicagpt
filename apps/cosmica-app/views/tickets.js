@@ -206,6 +206,23 @@ export class TicketsView extends AsyncView {
   }
 
   renderContent(tickets) {
+    // Apply current filter (deep-link or persisted) for the initial paint.
+    // Previously the grid rendered unfiltered until a button click — bug fixed.
+    const filteredTickets = this.getFilteredTickets();
+    const pagedTickets    = this.getPagedTickets(filteredTickets);
+
+    // Deep-link filter chip (visible when arrived from a KPI shortcut on dashboard).
+    // None of the standard filter buttons (Activos/Mis tickets/...) match these custom
+    // filters, so the chip is what tells the user WHY they see what they see.
+    const DEEP_LINK_LABELS = {
+      'pendiente':     { label: 'Pendientes',     icon: '⏳' },
+      'proceso':       { label: 'En Reparación', icon: '🔧' },
+      'listo':         { label: 'Listos',          icon: '✅' },
+      'entregado-hoy': { label: 'Entregados Hoy', icon: '📦' },
+      'demorado':      { label: 'Demorados',       icon: '⚠️' },
+    };
+    const deepLinkInfo = this._deepLinkFilter ? DEEP_LINK_LABELS[this._deepLinkFilter] : null;
+
     let html = renderBreadcrumb([
       { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
       { label: 'Trabajos', href: '#tickets', icon: '🛠️' }
@@ -215,6 +232,15 @@ export class TicketsView extends AsyncView {
 
     html += `
       <div style="margin-top: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);" class="animate-fade-in">
+
+        ${deepLinkInfo ? `
+          <div class="deeplink-filter-chip" role="status" aria-live="polite">
+            <span class="deeplink-prefix">Filtrando por:</span>
+            <span class="deeplink-label"><span class="deeplink-icon">${deepLinkInfo.icon}</span>${deepLinkInfo.label}</span>
+            <span class="deeplink-count">${filteredTickets.length} ${filteredTickets.length === 1 ? 'ticket' : 'tickets'}</span>
+            <a href="#tickets" class="deeplink-clear" title="Limpiar filtro" aria-label="Limpiar filtro de ${deepLinkInfo.label}">✕</a>
+          </div>
+        ` : ''}
 
         <div class="flex-between" style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); backdrop-filter: blur(8px);">
           <div style="position: relative; flex: 1; min-width: 250px; max-width: 500px;">
@@ -250,8 +276,8 @@ export class TicketsView extends AsyncView {
 
       <div id="tickets-grid" class="grid-stack vm-${window.innerWidth < 768 ? 'comfortable' : this.viewMode}" style="margin-top: var(--space-lg); ${window.innerWidth >= 768 && this.viewMode !== 'table' ? 'grid-template-columns: 1fr;' : ''}">
         ${(this.viewMode === 'table' && window.innerWidth >= 768)
-          ? this.renderTable(this.getPagedTickets(tickets))
-          : this.renderCards(this.getPagedTickets(tickets))}
+          ? this.renderTable(pagedTickets)
+          : this.renderCards(pagedTickets)}
       </div>
 
       <div id="pagination-bar"></div>
@@ -418,6 +444,12 @@ export class TicketsView extends AsyncView {
         filterButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.currentFilter = btn.dataset.filter;
+        // Switching to a standard filter clears the deep-link chip.
+        if (this._deepLinkFilter) {
+          this._deepLinkFilter = null;
+          const chip = document.querySelector('.deeplink-filter-chip');
+          if (chip) chip.remove();
+        }
         this.saveState();
         this.applyFilters(grid, true); // resetPage: nuevo filtro → página 1
       });
