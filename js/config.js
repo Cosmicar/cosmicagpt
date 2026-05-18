@@ -9,5 +9,9 @@ export const firebaseConfig = {
 
 export const APP_ROUTES = {
   login: "login.html",
-  panel: "panel.html"
+  // After successful login, send operators to the SaaS (official platform).
+  // Legacy /panel.html stays accessible at its URL for historical consultation.
+  panel: "apps/cosmica-app/",
+  saas:  "apps/cosmica-app/",
+  legacy: "panel.html"
 };

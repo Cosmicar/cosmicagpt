@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@afipsdk/afip.js": "^1.2.3"
+    "@afipsdk/afip.js": "^1.2.3",
+    "firebase-admin": "^13.10.0"
   }
 }
