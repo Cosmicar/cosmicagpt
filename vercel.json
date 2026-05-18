@@ -1,10 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "//": "CÓSMICA — Vercel deploy config. Active production config.",
-  "//1": "When request comes to app.cosmica.ar, serve the SaaS from /apps/cosmica-app/",
-  "//2": "while keeping the clean URL (app.cosmica.ar/...) in the browser address bar.",
-  "//3": "Other domains (cosmica.ar, cosmicagpt.vercel.app) continue serving the public landing.",
-
   "rewrites": [
     {
       "source": "/",
@@ -52,7 +47,6 @@
       "destination": "/apps/cosmica-app/manifest.json"
     }
   ],
-
   "redirects": [
     {
       "source": "/staff",
@@ -80,7 +74,6 @@
       "permanent": true
     }
   ],
-
   "headers": [
     {
       "source": "/apps/cosmica-app/sw.js",
