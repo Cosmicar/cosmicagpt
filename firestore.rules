@@ -50,8 +50,12 @@ service cloud.firestore {
     match /usuarios/{userId} {
       // Lectura propia: no requiere isAdmin() para evitar ciclo
       allow read: if isAuthenticated() && request.auth.uid == userId;
-      // Lectura de otros perfiles: solo admin
-      allow read: if isAdmin();
+      // Staff puede listar usuarios (para asignar técnicos en formularios).
+      // Usamos el hotfix .get('rol','') con fallback seguro para evitar
+      // permission-denied en list queries. Datos sensibles (passwords) viven
+      // en Firebase Auth, no en este doc — Firestore solo guarda metadata.
+      allow read: if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       // Escritura: solo admin, y el rol debe ser válido
       allow create, update: if isAdmin()
         && request.resource.data.rol in ['admin', 'operador', 'tester'];

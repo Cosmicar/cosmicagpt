@@ -12,16 +12,25 @@ const CACHE_KEY = 'usuarios:list';
  */
 export async function getUsuarios() {
   return cacheWrap(CACHE_KEY, async () => {
-    const q = query(
-      collection(db, COLLECTIONS.usuarios), 
-      where('activo', '!=', false)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ 
-      id: d.id, 
-      ...d.data(),
-      displayName: d.data().nombre || d.data().email || 'Usuario sin nombre'
-    })).sort((a, b) => a.displayName.localeCompare(b.displayName));
+    try {
+      const q = query(
+        collection(db, COLLECTIONS.usuarios),
+        where('activo', '!=', false)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+        displayName: d.data().nombre || d.data().email || 'Usuario sin nombre'
+      })).sort((a, b) => a.displayName.localeCompare(b.displayName));
+    } catch (err) {
+      // Graceful degradation: si las rules bloquean al rol (ej. operador
+      // antes del rules-deploy), devolvemos lista vacía. La UI del formulario
+      // mostrará "Sin asignar" en el selector de técnico — el usuario aún
+      // puede crear el ticket.
+      console.warn('[usuarios] getUsuarios() denied by rules — returning empty list:', err.message);
+      return [];
+    }
   });
 }
 
