@@ -3,6 +3,7 @@ import { initializeSession, logout } from './session.js';
 import { LoginView } from '../views/login.js';
 import { renderLoadingState, renderErrorState } from '../components/app-state.js';
 import { cleanupExpiredDrafts } from './chaos-guard.js';
+import { suscribirseAlInbox, marcarLeida } from '../services/notificaciones.js';
 
 /* ╔══════════════════════════════════════════════════════════════╗
    ║  COSMIC AVATAR GALLERY                                       ║
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCajaStatusIndicator();
     initGlobalShortcuts();
     initPWAFeatures();
+    initNotificacionesInbox(session);
 
     const router = new Router();
 
@@ -132,9 +134,70 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+/**
+ * Suscribe al inbox Firestore del usuario y muestra toasts cuando llegan
+ * notificaciones nuevas (puntos, penalidades, etc.).
+ */
+function initNotificacionesInbox(session) {
+  const uid = session?.user?.uid;
+  if (!uid) return;
+
+  suscribirseAlInbox(uid, async (docSnap) => {
+    const data = docSnap.data();
+    const tipo = data.tipo || 'info';
+
+    // Importación dinámica para no aumentar el bundle inicial
+    const { showToast } = await import('../components/toast.js');
+
+    // Color y emoji según tipo
+    const esPositivo = tipo === 'puntos';
+    const esNegativo = tipo === 'penalidad';
+    const toastTipo  = esPositivo ? 'success' : (esNegativo ? 'error' : 'info');
+
+    showToast(`${data.titulo}\n${data.cuerpo}`, toastTipo, 6000);
+
+    // Actualizar el badge de puntos en sidebar si es el propio usuario
+    if (esPositivo || esNegativo) {
+      await refreshPuntosEnSidebar(uid);
+    }
+
+    // Marcar como leída (best-effort)
+    marcarLeida(uid, docSnap.id).catch(() => {});
+  });
+}
+
+/**
+ * Lee el campo `puntos` del perfil del usuario desde Firestore y actualiza
+ * el badge del sidebar en tiempo real, sin recargar la vista.
+ */
+async function refreshPuntosEnSidebar(uid) {
+  try {
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
+    const { db } = await import('../../../js/firebase.js');
+    const { COLLECTIONS } = await import('../../../js/domain.js');
+
+    const snap = await getDoc(doc(db, COLLECTIONS.usuarios, uid));
+    if (!snap.exists()) return;
+    const puntos = snap.data()?.puntos ?? 0;
+
+    const badge = document.getElementById('sidebar-puntos-badge');
+    if (!badge) return;
+
+    const esPositivo = puntos >= 0;
+    badge.textContent = `⭐ ${esPositivo ? '+' : ''}${puntos} pts`;
+    badge.style.background = esPositivo ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+    badge.style.color       = esPositivo ? '#10B981' : '#EF4444';
+    badge.style.borderColor = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+  } catch (err) {
+    console.warn('[app] refreshPuntosEnSidebar failed:', err.message);
+  }
+}
+
+
 function initPerfilButton(session, mainContent) {
   const email = session.user?.email || '';
   const displayName = session.profile?.nombre || email;
+
 
   const userEmailEl = document.getElementById('userEmail');
   if (userEmailEl) userEmailEl.textContent = displayName;
@@ -270,9 +333,24 @@ function renderSidebar(profile) {
       <a href="#dashboard" class="sidebar-avatar" style="--avatar-bg:${avatar.bg}; transition: transform 0.18s ease, filter 0.18s ease;" aria-label="Avatar: ${avatar.name}" title="Ir al Dashboard">${avatar.svg}</a>
       <div class="sidebar-header-info">
         <span class="sidebar-user-name">${displayName}</span>
-        <span class="sidebar-user-role">${role}</span>
+        <span class="sidebar-user-role" style="display:flex;align-items:center;gap:6px;">
+          ${role}
+          ${(role !== 'admin') ? (() => {
+            const puntos = profile?.puntos ?? 0;
+            const esPos  = puntos >= 0;
+            return `<span id="sidebar-puntos-badge" style="
+              display:inline-flex;align-items:center;gap:3px;
+              background:${esPos ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};
+              color:${esPos ? '#10B981' : '#EF4444'};
+              border:1px solid ${esPos ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};
+              border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;
+              letter-spacing:.04em;white-space:nowrap;
+            ">⭐ ${esPos ? '+' : ''}${puntos} pts</span>`;
+          })() : ''}
+        </span>
       </div>
     </div>
+
     <div class="sidebar-nav">
       ${filteredItems.map(item => `
         <a href="#${item.id}"

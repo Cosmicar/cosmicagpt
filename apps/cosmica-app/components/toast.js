@@ -103,10 +103,17 @@ export function showToast(message, type = 'info', duration = 3500) {
     info:    '✨',
     warning: '⚠️'
   };
+
+  // Soporte para mensajes con título y cuerpo separados por \n
+  const parts = message.split('\n');
+  const hasMultiLine = parts.length > 1;
+  const messageHtml = hasMultiLine
+    ? `<strong style="display:block;margin-bottom:2px;">${parts[0]}</strong><span style="font-weight:500;opacity:0.9;font-size:0.9em;">${parts.slice(1).join(' ')}</span>`
+    : message;
   
   toast.innerHTML = `
     <span class="toast-icon">${iconMap[type] || 'ℹ️'}</span>
-    <span class="toast-message">${message}</span>
+    <span class="toast-message">${messageHtml}</span>
   `;
 
   toastContainer.appendChild(toast);

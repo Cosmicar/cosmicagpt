@@ -8,6 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import { db, createSecondaryFirebaseApp } from "../../../js/firebase.js";
 import { COLLECTIONS } from "../../../js/domain.js";
+import { enviarNotificacion } from "./notificaciones.js";
 
 // ── Colecciones admin ────────────────────────────────────────────
 export const ADMIN_COLS = Object.freeze({
@@ -99,24 +100,13 @@ export async function updateUser(uid, data) {
 
 // ── Puntos ───────────────────────────────────────────────────────
 
-const PUSH_URL = "/.netlify/functions/send-push";
-
 async function notificarPuntos(uid, puntos, motivo) {
-  try {
-    const positivo = puntos > 0;
-    await fetch(PUSH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uid,
-        title: positivo ? "⭐ Puntos acreditados" : "⚠️ Puntos descontados",
-        body: `${positivo ? "+" : ""}${puntos} pts — ${motivo}`
-      })
-    });
-  } catch (err) {
-    // No-op: la notificación es best-effort, no bloquea la operación
-    console.warn("[admin] notificarPuntos failed:", err.message);
-  }
+  const positivo = puntos > 0;
+  const titulo = positivo ? "⭐ Puntos acreditados" : "⚠️ Puntos descontados";
+  const cuerpo = `${positivo ? "+" : ""}${puntos} pts — ${motivo}`;
+  const tipo   = positivo ? "puntos" : "penalidad";
+  // Notificación in-app via Firestore (sin dependencia externa)
+  await enviarNotificacion(uid, titulo, cuerpo, tipo);
 }
 
 export async function agregarPuntos(uid, puntos, motivo, tipo = "manual") {
@@ -128,7 +118,10 @@ export async function agregarPuntos(uid, puntos, motivo, tipo = "manual") {
     tipo,
     creadoEn: serverTimestamp()
   });
-  notificarPuntos(uid, puntos, motivo?.trim() || "Sin motivo");
+  // Notificar al operador (best-effort — no bloquea si falla)
+  notificarPuntos(uid, puntos, motivo?.trim() || "Sin motivo").catch((err) =>
+    console.warn("[admin] notificarPuntos failed:", err.message)
+  );
 }
 
 export async function getPuntosLog(uid) {

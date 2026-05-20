@@ -296,10 +296,13 @@ service cloud.firestore {
 
     // ─────────────────────────────────────────────
     // COLECCIÓN: puntos_log
-    // Append-only. Solo admin puede leer y crear.
+    // Append-only. Admin crea. Cada usuario puede leer solo sus propios registros.
     // ─────────────────────────────────────────────
     match /puntos_log/{docId} {
-      allow read, create: if isAdmin();
+      allow create: if isAdmin();
+      // Cada usuario puede leer su propio log (para el modal de puntos en perfil)
+      allow read: if isAdmin() ||
+        (isAuthenticated() && resource.data.uid == request.auth.uid);
       allow update, delete: if false;
     }
 
@@ -319,6 +322,20 @@ service cloud.firestore {
     match /penalidades/{docId} {
       allow read: if isStaff();
       allow create, update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: notificaciones/{uid}/inbox
+    // Sistema de notificaciones in-app (reemplaza push Netlify).
+    // Cada usuario solo puede leer/actualizar su propio inbox.
+    // Admin y staff pueden crear notificaciones para cualquier usuario.
+    // ─────────────────────────────────────────────
+    match /notificaciones/{uid}/inbox/{notifId} {
+      // Lectura y actualización (marcar como leído): solo el propio usuario
+      allow read, update: if isAuthenticated() && request.auth.uid == uid;
+      // Creación: staff autenticado puede crear notificaciones para cualquier uid
+      allow create: if isStaff();
+      allow delete: if false;
     }
 
     // ─────────────────────────────────────────────
