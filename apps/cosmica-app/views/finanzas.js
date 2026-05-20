@@ -152,6 +152,9 @@ export class FinanzasView extends AsyncView {
             </div>
           </section>
 
+          <!-- Rendimiento Operador -->
+          ${this.renderRendimientoOperador(kpis, comisiones)}
+
           <!-- Resumen operacional -->
           ${this.renderResumenDiario(cajaDia, cajaSem, entregadosHoy, cajaSessionEntries)}
 
@@ -998,6 +1001,82 @@ export class FinanzasView extends AsyncView {
                       border:1px solid rgba(0,229,255,0.2);
                       display:flex;align-items:center;justify-content:center;
                       font-size:16px;flex-shrink:0;">👷</div>
+        <div style="min-width:0;">
+          <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${op.nombre}
+          </div>
+          <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">
+            ${op.count} cobro${op.count !== 1 ? 's' : ''} · Base: ${ars(op.totalCobrado)}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:var(--font-sm);font-weight:800;color:var(--accent-green);">
+          ${ars(op.totalComision)}
+        </div>
+        <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;">Comisión</div>
+      </div>
+    </div>
+  `).join('');
+
+  return \`
+    <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
+      <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
+        <span style="opacity:0.8;">👷</span> Comisiones de Operadores
+        <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller \${comisionTaller}% · Remoto \${comisionRemoto}%</span>
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        \${rows}
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:var(--space-md);margin-top:var(--space-sm);
+                  display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">TOTAL COMISIONES</span>
+        <span style="font-size:var(--font-md);font-weight:800;color:var(--accent-green);">
+          \${ars(totalComisionGlobal)}
+        </span>
+      </div>
+    </section>\`;
+}
+
+  // ── Rendimiento Operador ──────────────────────────────────────────────────
+  renderRendimientoOperador(kpis, comisiones) {
+    const pctOperador = Number(comisiones?.taller ?? 30);
+    const pctNegocio  = 100 - pctOperador;
+    
+    const facturado = kpis.facturacionConcretada || 0;
+    const miGanancia = facturado * (pctOperador / 100);
+    const aporteNegocio = facturado * (pctNegocio / 100);
+
+    return \`
+      <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
+        <div class="section-divider" style="margin-bottom:var(--space-lg);">
+          <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;">
+            <span style="opacity:0.8;">📊</span> Mi Rendimiento (Taller)
+          </h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);">
+          <div style="padding:var(--space-lg);background:rgba(34,197,94,0.07);
+                      border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (\${pctOperador}%)</div>
+            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-green);">
+              \${ars(miGanancia)}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que me quedo</div>
+          </div>
+          <div style="padding:var(--space-lg);background:rgba(249,115,22,0.07);
+                      border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">APORTE AL NEGOCIO (\${pctNegocio}%)</div>
+            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-orange);">
+              \${ars(aporteNegocio)}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que pongo en la empresa</div>
+          </div>
+        </div>
+      </section>
+    \`;
+  }
+
           <div style="min-width:0;">
             <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary);
                         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${op.nombre}</div>

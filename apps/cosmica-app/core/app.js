@@ -190,13 +190,25 @@ async function refreshPuntosEnSidebar(uid) {
     const puntos = snap.data()?.puntos ?? 0;
 
     const badge = document.getElementById('sidebar-puntos-badge');
-    if (!badge) return;
+    const navBadge = document.getElementById('navbar-puntos-badge');
 
     const esPositivo = puntos >= 0;
-    badge.textContent = `⭐ ${esPositivo ? '+' : ''}${puntos} pts`;
-    badge.style.background = esPositivo ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
-    badge.style.color       = esPositivo ? '#10B981' : '#EF4444';
-    badge.style.borderColor = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+    const text = `⭐ ${esPositivo ? '+' : ''}${puntos} pts`;
+    const bg = esPositivo ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+    const color = esPositivo ? '#10B981' : '#EF4444';
+    const border = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+
+    if (badge) {
+      badge.textContent = text;
+      badge.style.background = bg;
+      badge.style.color = color;
+      badge.style.borderColor = border;
+    }
+    if (navBadge) {
+      navBadge.textContent = text;
+      navBadge.style.color = color;
+      navBadge.style.borderColor = border;
+    }
   } catch (err) {
     console.warn('[app] refreshPuntosEnSidebar failed:', err.message);
   }
@@ -206,10 +218,15 @@ async function refreshPuntosEnSidebar(uid) {
 function initPerfilButton(session, mainContent) {
   const email = session.user?.email || '';
   const displayName = session.profile?.nombre || email;
-
+  const puntos = session.profile?.puntos ?? 0;
 
   const userEmailEl = document.getElementById('userEmail');
-  if (userEmailEl) userEmailEl.textContent = displayName;
+  if (userEmailEl) {
+    const esPositivo = puntos >= 0;
+    const color = esPositivo ? '#10B981' : '#EF4444';
+    const border = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+    userEmailEl.innerHTML = `${displayName} <span id="navbar-puntos-badge" style="margin-left: 6px; font-size: 10px; font-weight: 700; color: ${color}; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 12px; border: 1px solid ${border};">⭐ ${esPositivo ? '+' : ''}${puntos} pts</span>`;
+  }
 
   const perfilEmailEl = document.getElementById('perfilEmail');
   if (perfilEmailEl) perfilEmailEl.textContent = displayName;
@@ -684,7 +701,7 @@ function initPWAFeatures() {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    showInstallBanner();
+    // showInstallBanner(); // Ocultada según requerimiento
   });
 
   function showInstallBanner() {
