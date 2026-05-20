@@ -1,6 +1,15 @@
 import { APP_ROUTES } from "./config.js";
 import { createOperatorUser, getSession, logout, requirePanelSession } from "./auth-service.js";
 import { canReenterWork, isAdmin, WORK_STATUS } from "./domain.js";
+import {
+  listAllUsers, createUser, updateUser,
+  agregarPuntos, getPuntosLog,
+  listBeneficios, saveBeneficio, deleteBeneficio,
+  listPenalidades, savePenalidad, deletePenalidad,
+  aplicarPreset,
+  PERMISOS, PERMISOS_LABEL, PERMISOS_POR_ROL,
+  ADMIN_COLLECTIONS
+} from "./admin-service.js";
 import { printTicket } from "./ticket.js?v=20260503-public-bridge";
 import {
   activarPush,
@@ -1306,6 +1315,8 @@ function showTab(id) {
   // Activar la pestaña del menú que llamó a este tab
   const tabBtn = document.querySelector(".tab[onclick*=\"'" + id + "'\"]");
   if (tabBtn) tabBtn.classList.add("active");
+
+  if (id === "admin") initAdminPanel();
 }
 
 function badgeEstado(estado) {
@@ -2733,6 +2744,726 @@ function abrirModalMergeClientes() {
       btn.innerText = "Confirmar Unión";
     }
   };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO ADMIN: usuarios, puntos, beneficios, penalidades
+// ═══════════════════════════════════════════════════════════════
+
+const ROLES_LABEL = {
+  admin:     "Admin",
+  operador:  "Operador",
+  tecnico:   "Técnico",
+  recepcion: "Recepción",
+  tester:    "Tester"
+};
+
+const ROLES_COLOR = {
+  admin:     "var(--accent)",
+  operador:  "var(--accent2)",
+  tecnico:   "var(--success)",
+  recepcion: "var(--purple)",
+  tester:    "var(--warning)"
+};
+
+async function initAdminPanel() {
+  await Promise.all([
+    refreshAdminUsuarios(),
+    refreshBeneficios(),
+    refreshPenalidades()
+  ]);
+}
+window.initAdminPanel = initAdminPanel;
+
+// ── USUARIOS ─────────────────────────────────────────────────────
+
+async function refreshAdminUsuarios() {
+  const container = document.getElementById("adminUsuariosContainer");
+  if (!container) return;
+  container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px;">Cargando...</div>`;
+  try {
+    const users = await listAllUsers();
+    renderTablaUsuarios(users, container);
+  } catch (err) {
+    container.innerHTML = `<div style="color:var(--danger);padding:16px;">Error: ${escapeHtml(err.message)}</div>`;
+  }
+}
+window.refreshAdminUsuarios = refreshAdminUsuarios;
+
+function renderTablaUsuarios(users, container) {
+  if (!users.length) {
+    container.innerHTML = `<div style="color:var(--muted);padding:20px;text-align:center;">Sin usuarios registrados.</div>`;
+    return;
+  }
+
+  const rows = users.map(u => {
+    const rolColor = ROLES_COLOR[u.rol] || "var(--muted)";
+    const rolLabel = ROLES_LABEL[u.rol] || u.rol || "—";
+    const estado = u.activo !== false
+      ? `<span style="color:var(--success);font-size:11px;font-weight:600;">● Activo</span>`
+      : `<span style="color:var(--danger);font-size:11px;font-weight:600;">● Inactivo</span>`;
+    const puntos = u.puntos ?? 0;
+    const puntosColor = puntos >= 0 ? "var(--success)" : "var(--danger)";
+    const nombre = escapeHtml(u.nombre || u.email?.split("@")[0] || "—");
+
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:12px 8px;">
+        <div style="font-weight:600;">${nombre}</div>
+        <div style="font-size:11px;color:var(--muted);">${escapeHtml(u.email || "")}</div>
+      </td>
+      <td style="padding:12px 8px;">
+        <span style="color:${rolColor};font-weight:600;font-size:12px;">${rolLabel}</span>
+      </td>
+      <td style="padding:12px 8px;">${estado}</td>
+      <td style="padding:12px 8px;font-weight:700;color:${puntosColor};">${puntos >= 0 ? "+" : ""}${puntos}</td>
+      <td style="padding:12px 8px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="abrirModalEditarUsuario('${u.id}')" class="btn btn-secondary"
+            style="padding:4px 10px;font-size:11px;">✏️ Editar</button>
+          <button onclick="abrirModalPuntos('${u.id}')" class="btn btn-secondary"
+            style="padding:4px 10px;font-size:11px;border-color:var(--accent2);color:var(--accent2);">⭐ Puntos</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  container.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="color:var(--muted);text-align:left;border-bottom:1px solid var(--border);">
+            <th style="padding:10px 8px;">Usuario</th>
+            <th style="padding:10px 8px;">Rol</th>
+            <th style="padding:10px 8px;">Estado</th>
+            <th style="padding:10px 8px;">Puntos</th>
+            <th style="padding:10px 8px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── MODAL CREAR USUARIO ──────────────────────────────────────────
+
+function abrirModalCrearUsuario() {
+  const modalId = "modalCrearUsuario";
+  document.getElementById(modalId)?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;overflow-y:auto;padding:20px;";
+
+  const rolOptions = Object.entries(ROLES_LABEL).map(([v, l]) =>
+    `<option value="${v}">${l}</option>`
+  ).join("");
+
+  const permisosCheckboxes = Object.entries(PERMISOS_LABEL).map(([k, label]) =>
+    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted);">
+      <input type="checkbox" class="perm-check" value="${k}" style="accent-color:var(--accent2);width:14px;height:14px;">
+      ${label}
+    </label>`
+  ).join("");
+
+  modal.innerHTML = `
+    <div style="background:#0D1626;padding:28px;border-radius:14px;width:100%;max-width:520px;border:1px solid var(--border);">
+      <h3 style="margin:0 0 20px;color:var(--text);">+ Crear nuevo usuario</h3>
+
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input id="cu-nombre" type="text" placeholder="Ej: Juan García"
+            style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input id="cu-email" type="email" placeholder="usuario@cosmica.ar"
+            style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input id="cu-pass" type="password" placeholder="Mínimo 6 caracteres"
+            style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="cu-rol" onchange="actualizarPermisosDefecto()"
+            style="width:100%;padding:10px;background:#0D1626;border:1px solid var(--border);border-radius:8px;color:var(--text);">
+            ${rolOptions}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.05em;">PERMISOS</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${permisosCheckboxes}
+        </div>
+      </div>
+
+      <div id="cu-error" style="display:none;color:var(--danger);font-size:12px;margin-bottom:12px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+        <button class="btn btn-primary" id="cu-btnGuardar" onclick="submitCrearUsuario()">Crear usuario</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  actualizarPermisosDefecto();
+}
+window.abrirModalCrearUsuario = abrirModalCrearUsuario;
+
+window.actualizarPermisosDefecto = function() {
+  const rol = document.getElementById("cu-rol")?.value;
+  if (!rol) return;
+  const defaults = PERMISOS_POR_ROL[rol] || [];
+  document.querySelectorAll(".perm-check").forEach(cb => {
+    cb.checked = defaults.includes(cb.value);
+  });
+};
+
+window.submitCrearUsuario = async function() {
+  const nombre = document.getElementById("cu-nombre")?.value.trim();
+  const email  = document.getElementById("cu-email")?.value.trim();
+  const pass   = document.getElementById("cu-pass")?.value;
+  const rol    = document.getElementById("cu-rol")?.value;
+  const permisos = [...document.querySelectorAll(".perm-check:checked")].map(cb => cb.value);
+  const errDiv = document.getElementById("cu-error");
+  const btn    = document.getElementById("cu-btnGuardar");
+
+  if (!email || !pass) { errDiv.textContent = "Email y contraseña son requeridos."; errDiv.style.display="block"; return; }
+  if (pass.length < 6) { errDiv.textContent = "La contraseña debe tener al menos 6 caracteres."; errDiv.style.display="block"; return; }
+  errDiv.style.display = "none";
+
+  btn.disabled = true;
+  btn.textContent = "Creando...";
+  try {
+    await createUser({ email, password: pass, nombre, rol, permisos, adminProfile: getSession().profile });
+    document.getElementById("modalCrearUsuario")?.remove();
+    await refreshAdminUsuarios();
+  } catch (err) {
+    errDiv.textContent = err.message;
+    errDiv.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Crear usuario";
+  }
+};
+
+// ── MODAL EDITAR USUARIO ─────────────────────────────────────────
+
+async function abrirModalEditarUsuario(uid) {
+  const users = await listAllUsers();
+  const u = users.find(x => x.id === uid);
+  if (!u) { alert("Usuario no encontrado."); return; }
+
+  const modalId = "modalEditarUsuario";
+  document.getElementById(modalId)?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;overflow-y:auto;padding:20px;";
+
+  const rolOptions = Object.entries(ROLES_LABEL).map(([v, l]) =>
+    `<option value="${v}" ${u.rol === v ? "selected" : ""}>${l}</option>`
+  ).join("");
+
+  const permisosActuales = u.permisos || PERMISOS_POR_ROL[u.rol] || [];
+  const permisosCheckboxes = Object.entries(PERMISOS_LABEL).map(([k, label]) =>
+    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted);">
+      <input type="checkbox" class="eu-perm-check" value="${k}" ${permisosActuales.includes(k) ? "checked" : ""}
+        style="accent-color:var(--accent2);width:14px;height:14px;">
+      ${label}
+    </label>`
+  ).join("");
+
+  const estadoChecked = u.activo !== false ? "checked" : "";
+
+  modal.innerHTML = `
+    <div style="background:#0D1626;padding:28px;border-radius:14px;width:100%;max-width:520px;border:1px solid var(--border);">
+      <h3 style="margin:0 0 4px;color:var(--text);">✏️ Editar usuario</h3>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">${escapeHtml(u.email)}</div>
+
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input id="eu-nombre" type="text" value="${escapeHtml(u.nombre || "")}"
+            style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="eu-rol" onchange="actualizarPermisosDefectoEditar()"
+            style="width:100%;padding:10px;background:#0D1626;border:1px solid var(--border);border-radius:8px;color:var(--text);">
+            ${rolOptions}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.05em;">PERMISOS</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          ${permisosCheckboxes}
+        </div>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:20px;">
+        <input type="checkbox" id="eu-activo" ${estadoChecked}
+          style="accent-color:var(--success);width:16px;height:16px;">
+        <span style="font-size:14px;">Usuario activo</span>
+      </label>
+
+      <div id="eu-error" style="display:none;color:var(--danger);font-size:12px;margin-bottom:12px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+        <button class="btn btn-primary" id="eu-btnGuardar" onclick="submitEditarUsuario('${uid}')">Guardar cambios</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+window.abrirModalEditarUsuario = abrirModalEditarUsuario;
+
+window.actualizarPermisosDefectoEditar = function() {
+  const rol = document.getElementById("eu-rol")?.value;
+  if (!rol) return;
+  const defaults = PERMISOS_POR_ROL[rol] || [];
+  document.querySelectorAll(".eu-perm-check").forEach(cb => {
+    cb.checked = defaults.includes(cb.value);
+  });
+};
+
+window.submitEditarUsuario = async function(uid) {
+  const nombre  = document.getElementById("eu-nombre")?.value.trim();
+  const rol     = document.getElementById("eu-rol")?.value;
+  const activo  = document.getElementById("eu-activo")?.checked;
+  const permisos = [...document.querySelectorAll(".eu-perm-check:checked")].map(cb => cb.value);
+  const errDiv  = document.getElementById("eu-error");
+  const btn     = document.getElementById("eu-btnGuardar");
+
+  errDiv.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+  try {
+    await updateUser({ uid, data: { nombre, rol, activo, permisos }, adminProfile: getSession().profile });
+    document.getElementById("modalEditarUsuario")?.remove();
+    await refreshAdminUsuarios();
+  } catch (err) {
+    errDiv.textContent = err.message;
+    errDiv.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Guardar cambios";
+  }
+};
+
+// ── MODAL PUNTOS ─────────────────────────────────────────────────
+
+async function abrirModalPuntos(uid) {
+  const users = await listAllUsers();
+  const u = users.find(x => x.id === uid);
+  if (!u) { alert("Usuario no encontrado."); return; }
+
+  const modalId = "modalPuntos";
+  document.getElementById(modalId)?.remove();
+
+  const [log, beneficios, penalidades] = await Promise.all([
+    getPuntosLog(uid),
+    listBeneficios(),
+    listPenalidades()
+  ]);
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;overflow-y:auto;padding:20px;";
+
+  const logRows = log.length
+    ? log.map(e => {
+        const pts = e.puntos;
+        const color = pts > 0 ? "var(--success)" : "var(--danger)";
+        const sign  = pts > 0 ? "+" : "";
+        const fecha = e.creadoEn?.toDate ? e.creadoEn.toDate().toLocaleDateString("es-AR") : "—";
+        return `<tr style="border-bottom:1px solid var(--border);font-size:12px;">
+          <td style="padding:8px 6px;">${fecha}</td>
+          <td style="padding:8px 6px;">${escapeHtml(e.motivo)}</td>
+          <td style="padding:8px 6px;font-weight:700;color:${color};">${sign}${pts}</td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--muted);">Sin movimientos</td></tr>`;
+
+  const beneficiosOptions = beneficios.filter(b => b.activo !== false).map(b =>
+    `<option value="${b.id}">🎁 ${escapeHtml(b.nombre)} (+${b.puntos} pts)</option>`
+  ).join("");
+
+  const penalidadesOptions = penalidades.filter(p => p.activo !== false).map(p =>
+    `<option value="${p.id}">⚠️ ${escapeHtml(p.nombre)} (${p.puntos} pts)</option>`
+  ).join("");
+
+  modal.innerHTML = `
+    <div style="background:#0D1626;padding:28px;border-radius:14px;width:100%;max-width:580px;border:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div>
+          <h3 style="margin:0 0 4px;">⭐ Gestión de Puntos</h3>
+          <div style="font-size:12px;color:var(--muted);">${escapeHtml(u.nombre || u.email)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:28px;font-weight:700;color:${(u.puntos||0) >= 0 ? "var(--success)" : "var(--danger)"};">
+            ${(u.puntos||0) >= 0 ? "+" : ""}${u.puntos || 0}
+          </div>
+          <div style="font-size:11px;color:var(--muted);">puntos actuales</div>
+        </div>
+      </div>
+
+      <!-- Ajuste manual -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;letter-spacing:.05em;">AJUSTE MANUAL</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:10px;margin-bottom:10px;">
+          <input id="mp-puntos" type="number" placeholder="±pts"
+            style="padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+          <input id="mp-motivo" type="text" placeholder="Motivo del ajuste"
+            style="padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        </div>
+        <button class="btn btn-primary" onclick="submitAgregarPuntos('${uid}')" style="width:100%;padding:9px;">Aplicar ajuste</button>
+      </div>
+
+      <!-- Aplicar preset -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px;letter-spacing:.05em;">APLICAR BENEFICIO / PENALIDAD</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;">
+          <select id="mp-preset"
+            style="padding:9px;background:#0D1626;border:1px solid var(--border);border-radius:8px;color:var(--text);">
+            ${beneficiosOptions}
+            ${penalidadesOptions}
+            ${!beneficiosOptions && !penalidadesOptions ? '<option disabled>Sin presets disponibles</option>' : ""}
+          </select>
+          <button class="btn btn-secondary" onclick="submitAplicarPreset('${uid}')" style="padding:9px 16px;">Aplicar</button>
+        </div>
+      </div>
+
+      <!-- Historial -->
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:.05em;">HISTORIAL (últimos 50)</div>
+      <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead style="position:sticky;top:0;background:#0D1626;">
+            <tr style="color:var(--muted);text-align:left;border-bottom:1px solid var(--border);">
+              <th style="padding:8px 6px;font-size:11px;">Fecha</th>
+              <th style="padding:8px 6px;font-size:11px;">Motivo</th>
+              <th style="padding:8px 6px;font-size:11px;">Pts</th>
+            </tr>
+          </thead>
+          <tbody>${logRows}</tbody>
+        </table>
+      </div>
+
+      <div id="mp-error" style="display:none;color:var(--danger);font-size:12px;margin-top:12px;"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cerrar</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+window.abrirModalPuntos = abrirModalPuntos;
+
+window.submitAgregarPuntos = async function(uid) {
+  const puntos = Number(document.getElementById("mp-puntos")?.value);
+  const motivo = document.getElementById("mp-motivo")?.value.trim();
+  const errDiv = document.getElementById("mp-error");
+  if (!puntos || isNaN(puntos)) { errDiv.textContent = "Ingresá un valor de puntos válido (puede ser negativo)."; errDiv.style.display="block"; return; }
+  if (!motivo) { errDiv.textContent = "El motivo es requerido."; errDiv.style.display="block"; return; }
+  errDiv.style.display = "none";
+  try {
+    await agregarPuntos({ uid, puntos, motivo, adminProfile: getSession().profile });
+    document.getElementById("modalPuntos")?.remove();
+    await refreshAdminUsuarios();
+  } catch (err) {
+    errDiv.textContent = err.message;
+    errDiv.style.display = "block";
+  }
+};
+
+window.submitAplicarPreset = async function(uid) {
+  const select = document.getElementById("mp-preset");
+  const itemId = select?.value;
+  const errDiv = document.getElementById("mp-error");
+  if (!itemId) return;
+  const selectedText = select.options[select.selectedIndex]?.text || "";
+  const tipo = selectedText.startsWith("🎁") ? "beneficio" : "penalidad";
+  errDiv.style.display = "none";
+  try {
+    await aplicarPreset({ uid, itemId, tipo, adminProfile: getSession().profile });
+    document.getElementById("modalPuntos")?.remove();
+    await refreshAdminUsuarios();
+  } catch (err) {
+    errDiv.textContent = err.message;
+    errDiv.style.display = "block";
+  }
+};
+
+// ── BENEFICIOS ───────────────────────────────────────────────────
+
+async function refreshBeneficios() {
+  const container = document.getElementById("adminBeneficiosContainer");
+  if (!container) return;
+  try {
+    const items = await listBeneficios();
+    renderTablaBeneficios(items, container);
+  } catch (err) {
+    container.innerHTML = `<div style="color:var(--danger);">Error: ${escapeHtml(err.message)}</div>`;
+  }
+}
+window.refreshBeneficios = refreshBeneficios;
+
+function renderTablaBeneficios(items, container) {
+  if (!items.length) {
+    container.innerHTML = `<div style="color:var(--muted);padding:16px;text-align:center;">Sin beneficios registrados.</div>`;
+    return;
+  }
+  const rows = items.map(b => `
+    <tr style="border-bottom:1px solid var(--border);font-size:13px;">
+      <td style="padding:10px 8px;font-weight:600;">${escapeHtml(b.nombre)}</td>
+      <td style="padding:10px 8px;color:var(--muted);">${escapeHtml(b.descripcion || "—")}</td>
+      <td style="padding:10px 8px;color:var(--success);font-weight:700;">+${b.puntos} pts</td>
+      <td style="padding:10px 8px;">
+        ${b.activo !== false
+          ? `<span style="color:var(--success);font-size:11px;">● Activo</span>`
+          : `<span style="color:var(--muted);font-size:11px;">● Inactivo</span>`}
+      </td>
+      <td style="padding:10px 8px;">
+        <div style="display:flex;gap:6px;">
+          <button onclick="abrirModalBeneficio('${b.id}', ${JSON.stringify(b).replace(/"/g, '&quot;')})"
+            class="btn btn-secondary" style="padding:3px 9px;font-size:11px;">✏️</button>
+          <button onclick="eliminarBeneficio('${b.id}')"
+            class="btn btn-secondary" style="padding:3px 9px;font-size:11px;border-color:var(--danger);color:var(--danger);">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  container.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="color:var(--muted);text-align:left;border-bottom:1px solid var(--border);">
+            <th style="padding:10px 8px;">Nombre</th>
+            <th style="padding:10px 8px;">Descripción</th>
+            <th style="padding:10px 8px;">Puntos</th>
+            <th style="padding:10px 8px;">Estado</th>
+            <th style="padding:10px 8px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function abrirModalBeneficio(id, data) {
+  const modalId = "modalBeneficio";
+  document.getElementById(modalId)?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+
+  const activoChecked = !data || data.activo !== false ? "checked" : "";
+
+  modal.innerHTML = `
+    <div style="background:#0D1626;padding:28px;border-radius:14px;width:100%;max-width:420px;border:1px solid rgba(16,185,129,0.3);">
+      <h3 style="margin:0 0 20px;color:var(--success);">${id ? "✏️ Editar" : "+"} Beneficio</h3>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Nombre</label>
+        <input id="ben-nombre" value="${escapeHtml(data?.nombre || "")}"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Descripción</label>
+        <input id="ben-desc" value="${escapeHtml(data?.descripcion || "")}"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Puntos que otorga</label>
+        <input id="ben-pts" type="number" min="1" value="${data?.puntos || ""}"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:20px;">
+        <input type="checkbox" id="ben-activo" ${activoChecked} style="accent-color:var(--success);">
+        <span style="font-size:13px;">Activo (disponible para aplicar)</span>
+      </label>
+      <div id="ben-error" style="display:none;color:var(--danger);font-size:12px;margin-bottom:10px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+        <button class="btn btn-primary" id="ben-btn" onclick="submitGuardarBeneficio(${id ? `'${id}'` : "null"})"
+          style="background:var(--success);border-color:var(--success);color:#000;">Guardar</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+window.abrirModalBeneficio = abrirModalBeneficio;
+
+window.submitGuardarBeneficio = async function(id) {
+  const nombre = document.getElementById("ben-nombre")?.value.trim();
+  const descripcion = document.getElementById("ben-desc")?.value.trim();
+  const puntos = Number(document.getElementById("ben-pts")?.value);
+  const activo = document.getElementById("ben-activo")?.checked;
+  const errDiv = document.getElementById("ben-error");
+  const btn = document.getElementById("ben-btn");
+  if (!nombre) { errDiv.textContent = "El nombre es requerido."; errDiv.style.display="block"; return; }
+  if (!puntos || puntos <= 0) { errDiv.textContent = "Ingresá una cantidad de puntos válida."; errDiv.style.display="block"; return; }
+  errDiv.style.display = "none";
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    await saveBeneficio({ id, nombre, descripcion, puntos, activo }, getSession().profile);
+    document.getElementById("modalBeneficio")?.remove();
+    await refreshBeneficios();
+  } catch (err) {
+    errDiv.textContent = err.message; errDiv.style.display="block";
+    btn.disabled = false; btn.textContent = "Guardar";
+  }
+};
+
+window.eliminarBeneficio = async function(id) {
+  if (!confirm("¿Eliminar este beneficio?")) return;
+  try {
+    await deleteBeneficio(id, getSession().profile);
+    await refreshBeneficios();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+};
+
+// ── PENALIDADES ───────────────────────────────────────────────────
+
+async function refreshPenalidades() {
+  const container = document.getElementById("adminPenalidadesContainer");
+  if (!container) return;
+  try {
+    const items = await listPenalidades();
+    renderTablaPenalidades(items, container);
+  } catch (err) {
+    container.innerHTML = `<div style="color:var(--danger);">Error: ${escapeHtml(err.message)}</div>`;
+  }
+}
+window.refreshPenalidades = refreshPenalidades;
+
+function renderTablaPenalidades(items, container) {
+  if (!items.length) {
+    container.innerHTML = `<div style="color:var(--muted);padding:16px;text-align:center;">Sin penalidades registradas.</div>`;
+    return;
+  }
+  const rows = items.map(p => `
+    <tr style="border-bottom:1px solid var(--border);font-size:13px;">
+      <td style="padding:10px 8px;font-weight:600;">${escapeHtml(p.nombre)}</td>
+      <td style="padding:10px 8px;color:var(--muted);">${escapeHtml(p.descripcion || "—")}</td>
+      <td style="padding:10px 8px;color:var(--danger);font-weight:700;">${p.puntos} pts</td>
+      <td style="padding:10px 8px;">
+        ${p.activo !== false
+          ? `<span style="color:var(--success);font-size:11px;">● Activo</span>`
+          : `<span style="color:var(--muted);font-size:11px;">● Inactivo</span>`}
+      </td>
+      <td style="padding:10px 8px;">
+        <div style="display:flex;gap:6px;">
+          <button onclick="abrirModalPenalidad('${p.id}', ${JSON.stringify(p).replace(/"/g, '&quot;')})"
+            class="btn btn-secondary" style="padding:3px 9px;font-size:11px;">✏️</button>
+          <button onclick="eliminarPenalidad('${p.id}')"
+            class="btn btn-secondary" style="padding:3px 9px;font-size:11px;border-color:var(--danger);color:var(--danger);">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  container.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="color:var(--muted);text-align:left;border-bottom:1px solid var(--border);">
+            <th style="padding:10px 8px;">Nombre</th>
+            <th style="padding:10px 8px;">Descripción</th>
+            <th style="padding:10px 8px;">Puntos</th>
+            <th style="padding:10px 8px;">Estado</th>
+            <th style="padding:10px 8px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function abrirModalPenalidad(id, data) {
+  const modalId = "modalPenalidad";
+  document.getElementById(modalId)?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = modalId;
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;";
+
+  const activoChecked = !data || data.activo !== false ? "checked" : "";
+  const pts = data?.puntos ? Math.abs(data.puntos) : "";
+
+  modal.innerHTML = `
+    <div style="background:#0D1626;padding:28px;border-radius:14px;width:100%;max-width:420px;border:1px solid rgba(255,0,127,0.3);">
+      <h3 style="margin:0 0 20px;color:var(--danger);">${id ? "✏️ Editar" : "+"} Penalidad</h3>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Nombre</label>
+        <input id="pen-nombre" value="${escapeHtml(data?.nombre || "")}"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Descripción</label>
+        <input id="pen-desc" value="${escapeHtml(data?.descripcion || "")}"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Puntos que descuenta</label>
+        <input id="pen-pts" type="number" min="1" value="${pts}"
+          placeholder="Ej: 50 (se guardarán como -50)"
+          style="width:100%;padding:9px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:20px;">
+        <input type="checkbox" id="pen-activo" ${activoChecked} style="accent-color:var(--success);">
+        <span style="font-size:13px;">Activo (disponible para aplicar)</span>
+      </label>
+      <div id="pen-error" style="display:none;color:var(--danger);font-size:12px;margin-bottom:10px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('${modalId}').remove()">Cancelar</button>
+        <button class="btn btn-primary" id="pen-btn" onclick="submitGuardarPenalidad(${id ? `'${id}'` : "null"})"
+          style="background:var(--danger);border-color:var(--danger);color:#fff;">Guardar</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+window.abrirModalPenalidad = abrirModalPenalidad;
+
+window.submitGuardarPenalidad = async function(id) {
+  const nombre = document.getElementById("pen-nombre")?.value.trim();
+  const descripcion = document.getElementById("pen-desc")?.value.trim();
+  const puntos = Number(document.getElementById("pen-pts")?.value);
+  const activo = document.getElementById("pen-activo")?.checked;
+  const errDiv = document.getElementById("pen-error");
+  const btn = document.getElementById("pen-btn");
+  if (!nombre) { errDiv.textContent = "El nombre es requerido."; errDiv.style.display="block"; return; }
+  if (!puntos || puntos <= 0) { errDiv.textContent = "Ingresá una cantidad de puntos válida (positiva)."; errDiv.style.display="block"; return; }
+  errDiv.style.display = "none";
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    await savePenalidad({ id, nombre, descripcion, puntos, activo }, getSession().profile);
+    document.getElementById("modalPenalidad")?.remove();
+    await refreshPenalidades();
+  } catch (err) {
+    errDiv.textContent = err.message; errDiv.style.display="block";
+    btn.disabled = false; btn.textContent = "Guardar";
+  }
+};
+
+window.eliminarPenalidad = async function(id) {
+  if (!confirm("¿Eliminar esta penalidad?")) return;
+  try {
+    await deletePenalidad(id, getSession().profile);
+    await refreshPenalidades();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+};
+
+// ── Reemplazar función crearUsuario legacy (ya no se usa desde HTML) ───
+async function crearUsuario() {
+  abrirModalCrearUsuario();
 }
 
 boot();

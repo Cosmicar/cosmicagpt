@@ -875,24 +875,42 @@
 
   <!-- ══════════════════════════════════════════ TAB: ADMIN -->
   <div class="tab-content admin-section" id="tab-admin" style="display: none;">
+
+    <!-- GESTIÓN DE USUARIOS -->
     <div class="section">
-      <div class="section-title">⚙️ Crear usuario operador</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">
-        Los usuarios creados aquí tendrán rol <b style="color:var(--accent2)">operador</b> —
-        pueden gestionar trabajos, pero no borrar órdenes ni acceder a esta sección.
-      </p>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Email del nuevo usuario</label>
-          <input id="newEmail" type="email" placeholder="operador@cosmica.ar">
-        </div>
-        <div class="form-group">
-          <label>Contraseña</label>
-          <input id="newPass" type="password" placeholder="Mínimo 6 caracteres">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <div class="section-title" style="margin-bottom:0;">👥 Gestión de Usuarios</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" onclick="refreshAdminUsuarios()" style="padding:8px 14px;font-size:13px;">↺ Actualizar</button>
+          <button class="btn btn-primary" onclick="abrirModalCrearUsuario()" style="padding:8px 16px;font-size:13px;">+ Nuevo usuario</button>
         </div>
       </div>
-      <div style="margin-top:16px;">
-        <button class="btn btn-primary" onclick="crearUsuario()">✅ Crear usuario</button>
+      <div id="adminUsuariosContainer">
+        <div style="text-align:center;color:var(--muted);padding:40px;">Cargando usuarios...</div>
+      </div>
+    </div>
+
+    <!-- BENEFICIOS -->
+    <div class="form-section admin-section" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.02);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div class="form-section-title" style="color:var(--success);margin-bottom:0;">🎁 Catálogo de Beneficios</div>
+        <button class="btn btn-secondary" onclick="abrirModalBeneficio(null,null)"
+          style="padding:7px 14px;font-size:13px;border-color:var(--success);color:var(--success);">+ Agregar beneficio</button>
+      </div>
+      <div id="adminBeneficiosContainer">
+        <div style="text-align:center;color:var(--muted);padding:24px;">Cargando beneficios...</div>
+      </div>
+    </div>
+
+    <!-- PENALIDADES -->
+    <div class="form-section admin-section" style="border-color:rgba(255,0,127,0.3);background:rgba(255,0,127,0.02);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div class="form-section-title" style="color:var(--danger);margin-bottom:0;">⚠️ Catálogo de Penalidades</div>
+        <button class="btn btn-secondary" onclick="abrirModalPenalidad(null,null)"
+          style="padding:7px 14px;font-size:13px;border-color:var(--danger);color:var(--danger);">+ Agregar penalidad</button>
+      </div>
+      <div id="adminPenalidadesContainer">
+        <div style="text-align:center;color:var(--muted);padding:24px;">Cargando penalidades...</div>
       </div>
     </div>
 

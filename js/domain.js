@@ -12,7 +12,12 @@ export const COLLECTIONS = Object.freeze({
   movimientos_stock: "movimientos_stock",
   inventario:    "inventario",
   caja:          "caja",
-  cajaSesiones:  "cajaSesiones"
+  cajaSesiones:  "cajaSesiones",
+
+  // Admin
+  puntos_log:  "puntos_log",
+  beneficios:  "beneficios",
+  penalidades: "penalidades"
 });
 
 export const TIPO_ITEM = Object.freeze({

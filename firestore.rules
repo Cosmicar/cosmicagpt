@@ -58,9 +58,9 @@ service cloud.firestore {
         && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       // Escritura: solo admin puede crear o editar cualquier perfil.
       allow create: if isAdmin()
-        && request.resource.data.rol in ['admin', 'operador', 'tester'];
+        && request.resource.data.rol in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       allow update: if isAdmin()
-        && request.resource.data.rol in ['admin', 'operador', 'tester'];
+        && request.resource.data.rol in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
       // El propio usuario puede actualizar sus datos personales
       // sin poder cambiar su rol ni estado activo.
       allow update: if isAuthenticated() && request.auth.uid == userId
@@ -292,6 +292,33 @@ service cloud.firestore {
       allow write: if isAuthenticated();
       // Lectura: solo admins (usada desde el backend via firebase-admin, no desde el cliente)
       allow read: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: puntos_log
+    // Append-only. Solo admin puede leer y crear.
+    // ─────────────────────────────────────────────
+    match /puntos_log/{docId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: beneficios
+    // Admin puede leer y escribir. Staff puede leer.
+    // ─────────────────────────────────────────────
+    match /beneficios/{docId} {
+      allow read: if isStaff();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────
+    // COLECCIÓN: penalidades
+    // Admin puede leer y escribir. Staff puede leer.
+    // ─────────────────────────────────────────────
+    match /penalidades/{docId} {
+      allow read: if isStaff();
+      allow create, update, delete: if isAdmin();
     }
 
     // ─────────────────────────────────────────────

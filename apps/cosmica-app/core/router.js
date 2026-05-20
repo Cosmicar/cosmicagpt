@@ -7,6 +7,7 @@ import { InventarioView } from '../views/inventario.js';
 import { InventarioFormView } from '../views/inventario-form.js';
 import { FinanzasView } from '../views/finanzas.js';
 import { ConfiguracionView } from '../views/configuracion.js';
+import { UsuariosView } from '../views/usuarios.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession, canAccess } from './session.js';
@@ -31,7 +32,8 @@ export class Router {
       'finanzas':         'Finanzas | Cósmica App',
       'inventario-nuevo': 'Nuevo Repuesto | Cósmica App',
       'inventario-edit':  'Editar Repuesto | Cósmica App',
-      'configuracion':    'Configuración | Cósmica App'
+      'configuracion':    'Configuración | Cósmica App',
+      'usuarios':         'Operadores | Cósmica App'
     };
 
     // Mapeo de rutas a Clases de Vista
@@ -47,7 +49,8 @@ export class Router {
       'inventario-nuevo': InventarioFormView,
       'inventario-edit':  InventarioFormView,
       'finanzas':        FinanzasView,
-      'configuracion':    ConfiguracionView
+      'configuracion':    ConfiguracionView,
+      'usuarios':         UsuariosView
     };
     
     // Escuchar cambios de ruta
@@ -73,7 +76,8 @@ export class Router {
       'inventario':      'inventario-read',
       'inventario-nuevo': 'inventario-write',
       'inventario-edit':  'inventario-write',
-      'finanzas':        'finanzas-read'
+      'finanzas':        'finanzas-read',
+      'usuarios':        'admin-usuarios'
     };
 
     const requiredAction = routePermissions[path];

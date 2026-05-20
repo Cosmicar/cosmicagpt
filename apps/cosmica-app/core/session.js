@@ -131,6 +131,7 @@ export function canAccess(action) {
 
   switch (action) {
     case 'config':
+    case 'admin-usuarios':
       return false; // Admin-only
     case 'edit-ticket':
       // tecnico: technical repairs; operador: workshop orders; recepcion: at creation
