@@ -578,34 +578,67 @@ function initPWAFeatures() {
       .catch((err) => {
         console.warn('[PWA] Error al registrar el Service Worker del SaaS:', err);
       });
+
+    // Auto-update silencioso: cuando sw.js cambia y se instala, recarga la pestaña para aplicar
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
   }
 
-  // 2. Escucha de capacidad de instalación (Capturar antes del trigger)
+  // 2. Escucha de capacidad de instalación (UI Agradable tipo Legacy)
   let deferredPrompt = null;
-  const btnInstall = document.getElementById('btnInstallPWA');
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    if (btnInstall) {
-      btnInstall.style.display = 'block'; // Mostrar botón de instalación sutil en perfil
-    }
+    showInstallBanner();
   });
 
-  if (btnInstall) {
-    btnInstall.addEventListener('click', async () => {
+  function showInstallBanner() {
+    if (document.getElementById('pwa-install-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwa-install-banner';
+    banner.style.cssText = `
+      position: fixed; bottom: env(safe-area-inset-bottom, 20px); left: 50%; transform: translateX(-50%);
+      background: rgba(17, 24, 39, 0.95); border: 1px solid var(--accent-cyan);
+      backdrop-filter: blur(10px); padding: 14px 20px; border-radius: var(--radius-lg);
+      z-index: 9999; display: flex; align-items: center; gap: 16px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6); width: calc(100% - 32px); max-width: 400px;
+      animation: slideUpPwa 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      margin-bottom: 20px;
+    `;
+    banner.innerHTML = `
+      <div style="font-size:24px;">📲</div>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#fff; font-size:14px; margin-bottom:2px;">Instalá Cósmica App</div>
+        <div style="font-size:12px; color:var(--text-muted);">Acceso rápido y offline</div>
+      </div>
+      <button id="pwa-install-btn" style="background:var(--accent-cyan); color:#000; border:none; padding:8px 16px; border-radius:var(--radius-md); font-weight:700; font-size:13px; cursor:pointer;">Instalar</button>
+      <button id="pwa-dismiss-btn" style="background:transparent; border:none; color:var(--text-muted); font-size:20px; cursor:pointer; padding:4px;">×</button>
+    `;
+    document.body.appendChild(banner);
+
+    if (!document.getElementById('pwa-keyframes')) {
+      const style = document.createElement('style');
+      style.id = 'pwa-keyframes';
+      style.textContent = '@keyframes slideUpPwa { from { bottom: -100px; opacity: 0; } to { bottom: env(safe-area-inset-bottom, 20px); opacity: 1; } }';
+      document.head.appendChild(style);
+    }
+
+    document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+      banner.style.display = 'none';
       if (!deferredPrompt) return;
-      btnInstall.disabled = true;
-      btnInstall.textContent = 'Instalando...';
-      
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`[PWA] Elección del prompt de instalación: ${outcome}`);
-      
+      await deferredPrompt.userChoice;
       deferredPrompt = null;
-      btnInstall.style.display = 'none';
-      btnInstall.disabled = false;
-      btnInstall.textContent = '📲 Instalar App';
+    });
+
+    document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+      banner.style.display = 'none';
     });
   }
 }

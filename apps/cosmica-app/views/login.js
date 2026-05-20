@@ -62,6 +62,7 @@ export class LoginView extends BaseView {
 
           <div class="login-footer">
             <p>¿Olvidaste tu contraseña? Contactá al administrador del taller.</p>
+            <p style="margin-top: 8px; font-size: 10px; opacity: 0.5; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;">V1 By Astra</p>
           </div>
         </div>
       </div>
