@@ -120,8 +120,9 @@ function renderRepuestosSection(ticket) {
           </div>
           <div id="repuesto-suggestions"
               style="position:absolute;z-index:200;top:calc(100% + 4px);left:0;right:0;
-                     background:var(--surface, #1a1a2e);border:1px solid var(--border);
-                     border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;">
+                     background:#1a1f2e;border:1px solid rgba(255,255,255,0.15);
+                     border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;
+                     box-shadow:0 8px 32px rgba(0,0,0,0.6);">
           </div>
         </div>` : ''}
 
@@ -284,11 +285,11 @@ export class TicketFormView extends AsyncView {
                   autocomplete: 'off'
                 })}
                 <input type="hidden" name="clienteId" id="clienteId" value="${ticket?.clienteId || ''}">
-                <div id="cliente-suggestions" 
+                <div id="cliente-suggestions"
                      style="position:absolute;z-index:9999;top:calc(100% - 15px);left:0;right:0;
-                            background:var(--surface);border:1px solid var(--border);
+                            background:#1a1f2e;border:1px solid rgba(255,255,255,0.15);
                             border-radius:var(--radius-md);max-height:240px;overflow-y:auto;display:none;
-                            box-shadow: var(--shadow-lg);">
+                            box-shadow:0 8px 32px rgba(0,0,0,0.6);">
                 </div>
               </div>
 
@@ -560,7 +561,7 @@ export class TicketFormView extends AsyncView {
             const badge = getClientBadge(ticketCount);
             return `
             <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${c.nombre} ${c.apellido}" data-index="${i}" 
-                 style="padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);">
+                 style="padding:10px 15px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;background:#1a1f2e;">
               <div>
                 <div style="font-weight:600;font-size:var(--font-sm);color:var(--text-primary);">${c.nombre} ${c.apellido}</div>
                 <div style="font-size:var(--font-xs);color:var(--text-muted);">${c.telefono || ''} ${c.dni ? `• DNI: ${c.dni}` : ''}</div>
