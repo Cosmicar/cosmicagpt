@@ -142,9 +142,13 @@ function initNotificacionesInbox(session) {
   const uid = session?.user?.uid;
   if (!uid) return;
 
+  let toastCount = 0;
   suscribirseAlInbox(uid, async (docSnap) => {
     const data = docSnap.data();
     const tipo = data.tipo || 'info';
+
+    // Marcar como leída de inmediato (best-effort) para que no se quede pendiente en Firestore
+    marcarLeida(uid, docSnap.id).catch(() => {});
 
     // Importación dinámica para no aumentar el bundle inicial
     const { showToast } = await import('../components/toast.js');
@@ -154,17 +158,22 @@ function initNotificacionesInbox(session) {
     const esNegativo = tipo === 'penalidad';
     const toastTipo  = esPositivo ? 'success' : (esNegativo ? 'error' : 'info');
 
-    showToast(`${data.titulo}\n${data.cuerpo}`, toastTipo, 6000);
+    // Limitar la cantidad de toasts simultáneos a 3 para no saturar al operador
+    if (toastCount < 3) {
+      showToast(`${data.titulo}\n${data.cuerpo}`, toastTipo, 6000);
+      toastCount++;
+      setTimeout(() => {
+        toastCount = Math.max(0, toastCount - 1);
+      }, 6000);
+    }
 
     // Actualizar el badge de puntos en sidebar si es el propio usuario
     if (esPositivo || esNegativo) {
       await refreshPuntosEnSidebar(uid);
     }
-
-    // Marcar como leída (best-effort)
-    marcarLeida(uid, docSnap.id).catch(() => {});
   });
 }
+
 
 /**
  * Lee el campo `puntos` del perfil del usuario desde Firestore y actualiza

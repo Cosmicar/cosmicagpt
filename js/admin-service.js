@@ -105,6 +105,24 @@ export async function updateUser({ uid, data, adminProfile }) {
 }
 
 // ── SISTEMA DE PUNTOS ────────────────────────────────────────────
+async function notificarPuntos(uid, puntos, motivo) {
+  try {
+    const positivo = puntos > 0;
+    const titulo = positivo ? "⭐ Puntos acreditados" : "⚠️ Puntos descontados";
+    const cuerpo = `${positivo ? "+" : ""}${puntos} pts — ${motivo}`;
+    const tipo   = positivo ? "puntos" : "penalidad";
+    await addDoc(collection(db, "notificaciones", uid, "inbox"), {
+      titulo,
+      cuerpo,
+      tipo,
+      leido: false,
+      creadoEn: serverTimestamp()
+    });
+  } catch (err) {
+    console.warn("[admin-service] notificarPuntos failed:", err.message);
+  }
+}
+
 export async function agregarPuntos({ uid, puntos, motivo, tipo = "manual", adminProfile }) {
   if (!isAdmin(adminProfile)) {
     throw new Error("Solo un administrador puede gestionar puntos.");
@@ -123,7 +141,13 @@ export async function agregarPuntos({ uid, puntos, motivo, tipo = "manual", admi
     creadoEn: serverTimestamp(),
     creadoPor: adminProfile.email || adminProfile.id
   });
+
+  // Notificar al operador
+  notificarPuntos(uid, puntos, motivo?.trim() || "Sin motivo").catch((err) =>
+    console.warn("[admin-service] notificarPuntos promise failed:", err.message)
+  );
 }
+
 
 export async function getPuntosLog(uid) {
   const q = query(

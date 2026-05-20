@@ -52,18 +52,11 @@ export function suscribirseAlInbox(uid, onNueva) {
   const q = query(
     COL(uid),
     where('leido', '==', false),
-    orderBy('creadoEn', 'desc'),
     limit(20)
   );
 
-  let primeraLectura = true;
-  const unsub = onSnapshot(q, (snap) => {
-    // Ignorar la carga inicial para no re-mostrar notificaciones viejas
-    if (primeraLectura) {
-      primeraLectura = false;
-      return;
-    }
 
+  const unsub = onSnapshot(q, (snap) => {
     snap.docChanges().forEach((change) => {
       if (change.type === 'added') {
         onNueva(change.doc);
@@ -75,6 +68,7 @@ export function suscribirseAlInbox(uid, onNueva) {
 
   return unsub;
 }
+
 
 /**
  * Marca una notificación como leída.
