@@ -1020,130 +1020,61 @@ export class FinanzasView extends AsyncView {
     </div>
   `).join('');
 
-  return \`
-    <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
-      <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
-        <span style="opacity:0.8;">👷</span> Comisiones de Operadores
-        <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller \${comisionTaller}% · Remoto \${comisionRemoto}%</span>
-      </h3>
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        \${rows}
-      </div>
-      <div style="border-top:1px solid var(--border);padding-top:var(--space-md);margin-top:var(--space-sm);
-                  display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">TOTAL COMISIONES</span>
-        <span style="font-size:var(--font-md);font-weight:800;color:var(--accent-green);">
-          \${ars(totalComisionGlobal)}
-        </span>
-      </div>
-    </section>\`;
-}
+    return `
+      <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
+        <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
+          <span style="opacity:0.8;">👷</span> Comisiones de Operadores
+          <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller ${comisionTaller}% · Remoto ${comisionRemoto}%</span>
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${rows}
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:var(--space-md);margin-top:var(--space-sm);
+                    display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:var(--font-xs);color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">TOTAL COMISIONES</span>
+          <span style="font-size:var(--font-md);font-weight:800;color:var(--accent-green);">
+            ${ars(totalComisionGlobal)}
+          </span>
+        </div>
+      </section>`;
+  }
 
   // ── Rendimiento Operador ──────────────────────────────────────────────────
   renderRendimientoOperador(kpis, comisiones) {
     const pctOperador = Number(comisiones?.taller ?? 30);
     const pctNegocio  = 100 - pctOperador;
-    
-    const facturado = kpis.facturacionConcretada || 0;
-    const miGanancia = facturado * (pctOperador / 100);
+
+    const facturado     = kpis.facturacionConcretada || 0;
+    const miGanancia    = facturado * (pctOperador / 100);
     const aporteNegocio = facturado * (pctNegocio / 100);
 
-    return \`
+    return `
       <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
-        <div class="section-divider" style="margin-bottom:var(--space-lg);">
-          <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;">
-            <span style="opacity:0.8;">📊</span> Mi Rendimiento (Taller)
-          </h3>
-        </div>
+        <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
+          <span style="opacity:0.8;">📊</span> Mi Rendimiento (Taller)
+        </h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);">
           <div style="padding:var(--space-lg);background:rgba(34,197,94,0.07);
                       border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (\${pctOperador}%)</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (${pctOperador}%)</div>
             <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-green);">
-              \${ars(miGanancia)}
+              ${ars(miGanancia)}
             </div>
             <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que me quedo</div>
           </div>
           <div style="padding:var(--space-lg);background:rgba(249,115,22,0.07);
                       border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">APORTE AL NEGOCIO (\${pctNegocio}%)</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">APORTE AL NEGOCIO (${pctNegocio}%)</div>
             <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-orange);">
-              \${ars(aporteNegocio)}
+              ${ars(aporteNegocio)}
             </div>
             <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que pongo en la empresa</div>
           </div>
         </div>
       </section>
-    \`;
+    `;
   }
 
-          <div style="min-width:0;">
-            <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary);
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${op.nombre}</div>
-            <div style="font-size:var(--font-xs);color:var(--text-muted);">
-              ${op.count} cobro${op.count !== 1 ? 's' : ''} · base ${ars(op.totalCobrado)}
-            </div>
-          </div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:var(--space-md);">
-          <div style="font-size:var(--font-lg);font-weight:800;color:var(--accent-green);">
-            ${ars(op.totalComision)}
-          </div>
-          <div style="font-size:var(--font-xs);color:var(--text-muted);">
-            comisión estimada
-          </div>
-        </div>
-      </div>`).join('');
-
-    return `
-      <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
-        <div class="flex-between" style="margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-sm);">
-          <h3 style="font-size:var(--font-md);font-weight:700;display:flex;align-items:center;gap:8px;margin:0;">
-            <span style="opacity:0.8;">👷</span> Comisiones de Operadores
-          </h3>
-          <div style="display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap;">
-            <span class="badge" style="font-size:10px;background:rgba(0,229,255,0.1);color:var(--accent-cyan);border:1px solid rgba(0,229,255,0.2);">
-              🏭 Taller ${comisionTaller}%
-            </span>
-            <span class="badge" style="font-size:10px;background:rgba(0,229,255,0.06);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1);">
-              🌐 Remoto ${comisionRemoto}%
-            </span>
-            <a href="#configuracion" class="btn btn-sm btn-secondary" style="font-size:10px;padding:4px 10px;">
-              ⚙️ Ajustar %
-            </a>
-          </div>
-        </div>
-
-        <!-- Total global -->
-        <div style="display:flex;justify-content:space-between;align-items:center;
-                    padding:var(--space-md) var(--space-lg);
-                    background:rgba(34,197,94,0.07);
-                    border:1px solid rgba(34,197,94,0.2);
-                    border-radius:var(--radius-md);
-                    margin-bottom:var(--space-md);">
-          <div>
-            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">
-              TOTAL COMISIONES A LIQUIDAR
-            </div>
-            <div style="font-size:9px;color:var(--text-muted);">
-              Basado en ${ultimosCobrados.filter(t => Number(t.precio) > 0).length} cobros del período
-            </div>
-          </div>
-          <div style="font-size:clamp(20px,4vw,28px);font-weight:900;color:var(--accent-green);">
-            ${ars(totalComisionGlobal)}
-          </div>
-        </div>
-
-        <!-- Por operador -->
-        <div>${rows}</div>
-
-        <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--space-md);
-                    padding-top:var(--space-sm);border-top:1px solid var(--border);opacity:0.7;">
-          ⚠️ Cálculo estimado sobre precio de cobro. No incluye tickets sin precio, repuestos ni descuentos.
-          <a href="#configuracion" style="color:var(--accent-cyan);margin-left:8px;">Modificar porcentajes →</a>
-        </div>
-      </section>`;
-  }
 
   // ── Events ────────────────────────────────────────────────────────────────
 
