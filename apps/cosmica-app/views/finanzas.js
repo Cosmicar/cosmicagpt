@@ -1080,12 +1080,21 @@ export class FinanzasView extends AsyncView {
     const formCierre       = document.getElementById('cierre-form');
 
     if (btnToggleCierre && cierrePanel) {
+      const showCierre = () => {
+        cierrePanel.style.display = 'block';
+        btnToggleCierre.textContent = '✖ Cancelar cierre';
+        cierrePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('cierre-contado')?.focus();
+      };
+      const hideCierre = () => {
+        cierrePanel.style.display = 'none';
+        btnToggleCierre.innerHTML = '🔒 Cerrar Caja';
+      };
       btnToggleCierre.addEventListener('click', () => {
-        const visible = cierrePanel.style.display !== 'none';
-        cierrePanel.style.display = visible ? 'none' : 'block';
+        if (cierrePanel.style.display !== 'none') hideCierre(); else showCierre();
       });
-    }
-    if (btnCancelCierre && cierrePanel) {
+      if (btnCancelCierre) btnCancelCierre.addEventListener('click', hideCierre);
+    } else if (btnCancelCierre && cierrePanel) {
       btnCancelCierre.addEventListener('click', () => { cierrePanel.style.display = 'none'; });
     }
     if (formCierre) this._initCierreForm(formCierre);
