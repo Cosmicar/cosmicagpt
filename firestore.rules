@@ -56,9 +56,16 @@ service cloud.firestore {
       // en Firebase Auth, no en este doc — Firestore solo guarda metadata.
       allow read: if isAuthenticated()
         && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
-      // Escritura: solo admin, y el rol debe ser válido
-      allow create, update: if isAdmin()
+      // Escritura: solo admin puede crear o editar cualquier perfil.
+      allow create: if isAdmin()
         && request.resource.data.rol in ['admin', 'operador', 'tester'];
+      allow update: if isAdmin()
+        && request.resource.data.rol in ['admin', 'operador', 'tester'];
+      // El propio usuario puede actualizar sus datos personales
+      // sin poder cambiar su rol ni estado activo.
+      allow update: if isAuthenticated() && request.auth.uid == userId
+        && !('rol' in request.resource.data.diff(resource.data).affectedKeys())
+        && !('activo' in request.resource.data.diff(resource.data).affectedKeys());
       allow delete: if isAdmin() && request.auth.uid != userId;
     }
 
