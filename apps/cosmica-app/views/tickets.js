@@ -85,7 +85,7 @@ export class TicketsView extends AsyncView {
     const [tickets, clients, facturasMap] = await Promise.all([
       getTickets(),
       getClientes(),
-      getFacturasMapByTicket(),
+      getFacturasMapByTicket().catch(() => new Map()),
     ]);
 
     // Join client data for smart search (Phone, DNI)
@@ -294,10 +294,10 @@ export class TicketsView extends AsyncView {
       </div>
 
       <div class="sticky-ops-bar" style="position: sticky; top: var(--navbar-h); z-index: 100; background: rgba(8, 15, 28, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 8px var(--space-lg); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-lg); margin: 10px calc(-1 * var(--space-md)) 0; overflow-x: auto; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan-glow);">●</span> Activos: ${tipoFilteredTickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${tipoFilteredTickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
-        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${tipoFilteredTickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-cyan); text-shadow: 0 0 8px var(--accent-cyan-glow);">●</span> Activos: ${filteredTickets.filter(t => t.estado !== WORK_STATUS.entregado).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange-glow);">●</span> Repuesto: ${filteredTickets.filter(t => t.estado === WORK_STATUS.esperandoRepuesto).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--accent-green); text-shadow: 0 0 8px rgba(16,185,129,0.4);">●</span> Listos: ${filteredTickets.filter(t => t.estado === WORK_STATUS.listo).length}</div>
+        <div style="display:flex; align-items:center; gap:6px; color:var(--text-primary);"><span style="color:var(--danger); text-shadow: 0 0 8px rgba(255,0,127,0.4);">●</span> Críticos: ${filteredTickets.filter(t => t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)).length}</div>
       </div>
 
       <div id="tickets-grid" class="grid-stack vm-${window.innerWidth < 768 ? 'comfortable' : this.viewMode}" style="margin-top: var(--space-lg); ${window.innerWidth >= 768 && this.viewMode !== 'table' ? 'grid-template-columns: 1fr;' : ''}">
@@ -724,7 +724,7 @@ export class TicketsView extends AsyncView {
       const session = getCurrentSession();
       const result = await assignTechnician(id, {
         id: session.user.uid,
-        nombre: session.profile.nombre || session.user.email
+        nombre: session.profile?.nombre || session.user.email
       });
 
       if (result.success) {
@@ -732,7 +732,7 @@ export class TicketsView extends AsyncView {
         const ticket = this.allTickets.find(t => t.id === id);
         if (ticket) {
           ticket.tecnicoAsignadoId = session.user.uid;
-          ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+          ticket.tecnicoAsignadoNombre = session.profile?.nombre || session.user.email;
         }
         const grid = document.getElementById('tickets-grid');
         if (grid) this.applyFilters(grid);

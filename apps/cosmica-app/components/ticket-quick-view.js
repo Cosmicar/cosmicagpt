@@ -385,14 +385,14 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
         takeBtn.addEventListener('click', async () => {
           takeBtn.disabled = true;
           const session = getCurrentSession();
-          const res = await assignTechnician(ticket.id, { 
-            id: session.user.uid, 
-            nombre: session.profile.nombre || session.user.email 
+          const res = await assignTechnician(ticket.id, {
+            id: session.user.uid,
+            nombre: session.profile?.nombre || session.user.email
           });
           if (res.success) {
             showToast('Ticket asignado a ti', 'success');
             ticket.tecnicoAsignadoId = session.user.uid;
-            ticket.tecnicoAsignadoNombre = session.profile.nombre || session.user.email;
+            ticket.tecnicoAsignadoNombre = session.profile?.nombre || session.user.email;
             if (onStatusChange) onStatusChange(ticket.id, ticket.estado);
             refreshQuickView();
           } else {
@@ -500,6 +500,7 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
       const entregarBtn = bodyEl.querySelector('.qv-entregar-btn');
       if (entregarBtn) {
         entregarBtn.addEventListener('click', async () => {
+          if (!Number(ticket.precio) && !confirm('El ticket no tiene precio asignado. ¿Entregar de todas formas?')) return;
           entregarBtn.disabled = true;
           entregarBtn.textContent = '⏳ Procesando...';
           const result = await updateTicketStatus(ticket.id, WORK_STATUS.entregado);
@@ -702,11 +703,11 @@ function canUndo(event) {
   
   if (diffMinutes > 2) return false; // Max 2 minutes
   
-  const reversibleTypes = [TICKET_EVENT_TYPES.statusChanged, TICKET_EVENT_TYPES.edited];
+  const reversibleTypes = [TICKET_EVENT_TYPES.statusChanged];
   if (!reversibleTypes.includes(event.type)) return false;
-  
+
   const meta = event.metadata || {};
-  return meta.from !== undefined || meta.presupuesto !== undefined;
+  return meta.from !== undefined;
 }
 
 async function handleUndo(ticket, event, onStatusChange) {

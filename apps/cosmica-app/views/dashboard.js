@@ -128,7 +128,7 @@ export class DashboardView extends AsyncView {
           </div>
           <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
              <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.03); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-               <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar tickets visibles a CSV" style="font-size: 11px; padding: 6px 12px;">📥 Tickets</button>
+               <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar últimos movimientos del dashboard a CSV" style="font-size: 11px; padding: 6px 12px;">📥 Recientes</button>
                <button id="export-caja-btn" class="btn btn-sm btn-secondary" title="Exportar caja diaria a CSV" style="font-size: 11px; padding: 6px 12px;">📊 Caja</button>
              </div>
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
@@ -652,8 +652,8 @@ export class DashboardView extends AsyncView {
         try {
           const session = getCurrentSession();
           const result = await assignTechnician(btn.dataset.id, {
-            id: session.user.uid,
-            nombre: session.profile?.nombre || session.user.email
+            id:     session.user.uid,
+            nombre: session.profile?.nombre || session.user.email,
           });
           if (result.success) {
             showToast('Ticket asignado a ti', 'success');
@@ -705,15 +705,20 @@ export class DashboardView extends AsyncView {
     document.querySelectorAll('.reingreso-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm('¿Generar un reingreso para este equipo?')) return;
         if (btn.disabled) return;
+        if (!confirm('¿Generar un reingreso para este equipo?')) return;
         btn.disabled = true;
         const orig = btn.textContent;
         btn.textContent = '⏳...';
         try {
           const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
           const ticket = allTickets.find(t => t.id === btn.dataset.id);
-          if (!ticket) return;
+          if (!ticket) {
+            showToast('Error: ticket no encontrado. Actualizá el panel.', 'error');
+            btn.disabled = false;
+            btn.textContent = orig;
+            return;
+          }
           const result = await reingresoTicket(ticket);
           if (result.success) {
             showToast(`Reingreso ${result.numeroOrden} creado`, 'success');
