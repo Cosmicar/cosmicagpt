@@ -110,7 +110,7 @@ export class FinanzasView extends AsyncView {
       kpis, ticketsMasRentables, ultimosCobrados, distribucionPlanes,
       cajaHoy, cajaSemana, cajaDia, cajaSem, entregadosHoy,
       cajaSession, cajaSessionEntries, cajaSessionData, cajaHistorial,
-      ajustes,
+      ajustes, comisiones,
     } = data;
     const canWrite   = canAccess('finanzas-write');
     const rol        = getCurrentSession()?.profile?.rol;
@@ -229,7 +229,7 @@ export class FinanzasView extends AsyncView {
         ${ajustes?.movimientos?.length > 0 ? this.renderAjustesSection(ajustes) : ''}
 
         <!-- ══ COMISIONES DE OPERADORES ══ -->
-        ${this.renderComisiones(ultimosCobrados)}
+        ${this.renderComisiones(ultimosCobrados, comisiones)}
 
         <!-- ══ HISTORIAL DE CIERRES ══ -->
         ${this.renderHistorialCierres(cajaHistorial)}
@@ -939,15 +939,10 @@ export class FinanzasView extends AsyncView {
 
   // ── Comisiones por operador ───────────────────────────────────────────────
 
-  renderComisiones(ultimosCobrados) {
-    // Read percentages from app config (localStorage)
-    let comisionTaller = 30;
-    let comisionRemoto = 20;
-    try {
-      const cfg = JSON.parse(localStorage.getItem('cosmica_config_v1') || '{}');
-      comisionTaller = Number(cfg.comisionTaller ?? 30);
-      comisionRemoto = Number(cfg.comisionRemoto ?? 20);
-    } catch (_) {}
+  renderComisiones(ultimosCobrados, comisionesConfig) {
+    // Read percentages from app config
+    let comisionTaller = Number(comisionesConfig?.taller ?? 30);
+    let comisionRemoto = Number(comisionesConfig?.remoto ?? 20);
 
     if (!ultimosCobrados || ultimosCobrados.length === 0) {
       return `

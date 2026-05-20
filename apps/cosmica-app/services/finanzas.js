@@ -1,6 +1,6 @@
 import {
   collection, getDocs, addDoc, updateDoc, getDoc, doc,
-  query, orderBy, where, limit, serverTimestamp
+  query, orderBy, where, limit, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
@@ -15,6 +15,7 @@ const CACHE_HISTORIAL = 'finanzas:historial';
 // In-memory Set prevents two simultaneous async calls from both passing the
 // Firestore dedup check and inserting duplicate income entries.
 const _cajaInFlight = new Set();
+let _comisionesCache = null;
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
@@ -71,51 +72,49 @@ export async function getCajaSession() {
   }
 }
 
-/**
- * Opens a new caja session.
- * Throws if one is already open.
- */
 export async function abrirCaja(saldoInicial) {
   const existing = await getCajaSession();
   if (existing) throw new Error('Ya existe una caja abierta. Cerrala antes de abrir una nueva.');
 
-  const ref = await addDoc(collection(db, COLLECTIONS.cajaSesiones), {
-    openedAt:            serverTimestamp(),
-    openedBy:            sessionUid(),
-    openedByName:        sessionName(),
-    saldoInicial:        Number(saldoInicial) || 0,
-    status:              'open',
-    closedAt:            null,
-    closedBy:            null,
-    closedByName:        null,
-    saldoFinalDeclarado: null,
-    saldoFinalSistema:   null,
-    diferencia:          null,
-    totalIngresos:       null,
-    totalEgresos:        null,
-    movimientosCount:    null,
+  const configRef = doc(db, 'config', 'caja_status');
+
+  const id = await runTransaction(db, async (t) => {
+    const configSnap = await t.get(configRef);
+    if (configSnap.exists() && configSnap.data().isOpen) {
+      throw new Error('Ya existe una caja abierta. Cerrala antes de abrir una nueva.');
+    }
+
+    const newRef = doc(collection(db, COLLECTIONS.cajaSesiones));
+    t.set(newRef, {
+      openedAt:            serverTimestamp(),
+      openedBy:            sessionUid(),
+      openedByName:        sessionName(),
+      saldoInicial:        Number(saldoInicial) || 0,
+      status:              'open',
+      closedAt:            null,
+      closedBy:            null,
+      closedByName:        null,
+      saldoFinalDeclarado: null,
+      saldoFinalSistema:   null,
+      diferencia:          null,
+      totalIngresos:       null,
+      totalEgresos:        null,
+      movimientosCount:    null,
+    });
+
+    t.set(configRef, { isOpen: true, currentSessionId: newRef.id }, { merge: true });
+    return newRef.id;
   });
 
-  return { success: true, id: ref.id };
+  return { success: true, id };
 }
 
-/**
- * Closes the open caja session with a declared cash amount.
- * Computes the system-expected balance and the difference.
- */
 export async function cerrarCaja(sesionId, saldoDeclarado) {
   if (!sesionId) throw new Error('ID de sesión requerido.');
   const declared = Number(saldoDeclarado);
   if (isNaN(declared)) throw new Error('Monto declarado inválido.');
 
-  const sesionRef  = doc(db, COLLECTIONS.cajaSesiones, sesionId);
-  const sesionSnap = await getDoc(sesionRef);
-  if (!sesionSnap.exists()) throw new Error('Sesión de caja no encontrada.');
-  if (sesionSnap.data().status === 'closed') throw new Error('Esta caja ya está cerrada.');
-
-  const saldoInicial = Number(sesionSnap.data().saldoInicial || 0);
-
-  // Fetch all movements for this session
+  // Fetch all movements for this session outside the transaction
   const movSnap = await getDocs(
     query(collection(db, COLLECTIONS.caja), where('sesionId', '==', sesionId))
   );
@@ -127,9 +126,6 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
   const totalEgresos = entries
     .filter(e => e.tipo === 'egreso' || (e.tipo === 'ajuste' && Number(e.monto || 0) < 0))
     .reduce((s, e) => s + Math.abs(Number(e.monto || 0)), 0);
-
-  const saldoFinalSistema = saldoInicial + totalIngresos - totalEgresos;
-  const diferencia        = declared - saldoFinalSistema;
 
   const calcTotalByMethod = (method) => entries
     .filter(e => e.metodoPago === method)
@@ -144,26 +140,43 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
   const totalDebito        = calcTotalByMethod('debito');
   const totalCredito       = calcTotalByMethod('credito');
 
-  await updateDoc(sesionRef, {
-    status:              'closed',
-    closedAt:            serverTimestamp(),
-    closedBy:            sessionUid(),
-    closedByName:        sessionName(),
-    saldoFinalDeclarado: declared,
-    saldoFinalSistema,
-    diferencia,
-    totalIngresos,
-    totalEgresos,
-    totalEfectivo,
-    totalTransferencia,
-    totalMP,
-    totalDebito,
-    totalCredito,
-    movimientosCount:    entries.length,
+  const configRef = doc(db, 'config', 'caja_status');
+  const sesionRef = doc(db, COLLECTIONS.cajaSesiones, sesionId);
+
+  const res = await runTransaction(db, async (t) => {
+    const sesionSnap = await t.get(sesionRef);
+    if (!sesionSnap.exists()) throw new Error('Sesión de caja no encontrada.');
+    if (sesionSnap.data().status === 'closed') throw new Error('Esta caja ya está cerrada.');
+
+    const saldoInicial = Number(sesionSnap.data().saldoInicial || 0);
+    const saldoFinalSistema = saldoInicial + totalIngresos - totalEgresos;
+    const diferencia        = declared - saldoFinalSistema;
+
+    t.update(sesionRef, {
+      status:              'closed',
+      closedAt:            serverTimestamp(),
+      closedBy:            sessionUid(),
+      closedByName:        sessionName(),
+      saldoFinalDeclarado: declared,
+      saldoFinalSistema,
+      diferencia,
+      totalIngresos,
+      totalEgresos,
+      totalEfectivo,
+      totalTransferencia,
+      totalMP,
+      totalDebito,
+      totalCredito,
+      movimientosCount:    entries.length,
+    });
+
+    t.set(configRef, { isOpen: false, currentSessionId: null }, { merge: true });
+
+    return { saldoFinalSistema, diferencia, totalIngresos, totalEgresos };
   });
 
   cacheInvalidate(CACHE_HISTORIAL, CACHE_CAJA);
-  return { success: true, saldoFinalSistema, diferencia, totalIngresos, totalEgresos };
+  return { success: true, ...res };
 }
 
 /**
@@ -397,6 +410,22 @@ export async function getFinanzasData() {
     pendientes:       ajustePendientes,
   };
 
+  let comisiones = _comisionesCache;
+  if (!comisiones) {
+    try {
+      const cfgSnap = await getDoc(doc(db, 'config', 'comisiones'));
+      if (cfgSnap.exists()) {
+        comisiones = cfgSnap.data();
+      } else {
+        comisiones = { taller: 30, remoto: 20 };
+      }
+      _comisionesCache = comisiones;
+    } catch (e) {
+      console.warn('[finanzas] Fallback a config default:', e);
+      comisiones = { taller: 30, remoto: 20 };
+    }
+  }
+
   return {
     kpis: {
       facturacionConcretada,
@@ -419,11 +448,11 @@ export async function getFinanzasData() {
     cajaDia,
     cajaSem,
     entregadosHoy,
-    // ── New fields ────────────────────────────────────────────────────────
     cajaSession,
     cajaSessionEntries,
     cajaSessionData,
     cajaHistorial,
     ajustes,
+    comisiones,
   };
 }

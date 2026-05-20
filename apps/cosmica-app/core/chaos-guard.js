@@ -51,12 +51,16 @@ export async function guardBtn(btn, asyncFn) {
 // ─── 2. Unsaved Changes Guard ────────────────────────────────────────────────
 
 let isDirty = false;
+let _guardInitialized = false;
 
 export function setDirty(dirty = true) {
   isDirty = dirty;
 }
 
 export function initUnsavedChangesGuard() {
+  if (_guardInitialized) return;
+  _guardInitialized = true;
+
   window.addEventListener('beforeunload', (e) => {
     if (isDirty) {
       e.preventDefault();
