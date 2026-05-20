@@ -227,6 +227,19 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────
+    // COLECCIÓN: cierres_caja
+    // Registro de auditoría del cierre semanal de caja taller.
+    // Solo admin/tester pueden crear y leer. Append-only (immutable).
+    // ─────────────────────────────────────────────
+    match /cierres_caja/{cierreId} {
+      allow read:   if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'tester'];
+      allow create: if isAuthenticated()
+        && get(userDocRef()).data.get('rol', '') in ['admin', 'tester'];
+      allow update, delete: if false;
+    }
+
+    // ─────────────────────────────────────────────
     // COLECCIONES SANDBOX (modo tester)
     // Totalmente aisladas de producción.
     // Admin también tiene acceso para supervisar.

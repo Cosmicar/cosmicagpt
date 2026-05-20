@@ -106,8 +106,17 @@ export class FinanzasView extends AsyncView {
         <!-- Header -->
         <div class="flex-between" style="align-items:flex-end;flex-wrap:wrap;gap:var(--space-md);">
           <div style="flex:1;">${header}</div>
-          <div style="display:flex;gap:var(--space-sm);">
+          <div style="display:flex;gap:var(--space-sm);align-items:center;flex-wrap:wrap;">
             ${kpis.margenPct !== null ? this.renderMargenBadge(kpis.margenPct) : ''}
+            ${canAccess('cierre-caja-taller') ? `
+              <button class="btn btn-sm" id="fin-cierre-taller-btn"
+                      style="background:linear-gradient(135deg,#10b981,#0ea371);color:#052e16;
+                             font-weight:800;letter-spacing:-0.005em;border:none;
+                             padding:8px 16px;box-shadow:0 6px 18px rgba(16,185,129,0.28);"
+                      title="Cierre semanal de caja taller (admin)">
+                🧾 Cierre de Caja Taller
+              </button>
+            ` : ''}
             <button class="btn btn-secondary btn-sm" id="fin-refresh">🔄 Actualizar</button>
           </div>
         </div>
@@ -999,6 +1008,30 @@ export class FinanzasView extends AsyncView {
 
     // Refresh
     document.getElementById('fin-refresh')?.addEventListener('click', () => this.fetchAndRender());
+
+    // Cierre de Caja Taller (admin/tester only) — lazy-load del modal
+    const cierreBtn = document.getElementById('fin-cierre-taller-btn');
+    if (cierreBtn) {
+      cierreBtn.addEventListener('click', async () => {
+        const origText = cierreBtn.innerHTML;
+        cierreBtn.disabled = true;
+        cierreBtn.innerHTML = '⏳ Abriendo...';
+        try {
+          const { openCierreCajaModal } = await import('../components/cierre-caja-modal.js');
+          openCierreCajaModal({
+            onSuccess: () => this.fetchAndRender(), // refrescar KPIs después de liquidar
+            onClose: () => {
+              cierreBtn.innerHTML = origText;
+              cierreBtn.disabled = false;
+            },
+          });
+        } catch (err) {
+          console.error('[finanzas] cierre modal failed to load:', err);
+          cierreBtn.innerHTML = origText;
+          cierreBtn.disabled = false;
+        }
+      });
+    }
 
     // Period toggle
     document.querySelectorAll('.caja-period-btn').forEach(btn => {

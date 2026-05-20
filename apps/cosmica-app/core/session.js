@@ -151,6 +151,8 @@ export function canAccess(action) {
       return ['recepcion', 'operador'].includes(role);
     case 'facturar': // emitir factura AFIP — admin (early-return) + operador
       return role === 'operador';
+    case 'cierre-caja-taller': // cierre semanal de caja — admin/tester only (early-return)
+      return false; // non-admin/tester always denied
     default:
       return false;
   }
