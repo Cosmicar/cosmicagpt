@@ -6,13 +6,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "minimal-ui",
-    "standalone"
-  ],
   "background_color": "#060A12",
-  "theme_color": "#00e5ff",
+  "theme_color": "#060A12",
   "orientation": "portrait-primary",
   "lang": "es-AR",
   "dir": "ltr",
