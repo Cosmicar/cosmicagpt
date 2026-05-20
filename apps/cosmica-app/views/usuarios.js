@@ -209,13 +209,29 @@ export class UsuariosView extends BaseView {
   }
 
   async afterRender() {
-    // Cargar datos en paralelo
-    try {
-      [this._users, this._beneficios, this._penalidades] = await Promise.all([
-        listAllUsers(), listBeneficios(), listPenalidades()
-      ]);
-    } catch (err) {
-      showToast('Error al cargar datos: ' + err.message, 'error');
+    // Cargar datos en paralelo — cada uno falla de forma independiente
+    const [usersResult, benResult, penResult] = await Promise.allSettled([
+      listAllUsers(), listBeneficios(), listPenalidades()
+    ]);
+
+    if (usersResult.status === 'fulfilled') {
+      this._users = usersResult.value;
+    } else {
+      console.warn('[Usuarios] listAllUsers:', usersResult.reason?.message);
+      showToast('No se pudieron cargar los usuarios: ' + usersResult.reason?.message, 'error');
+    }
+
+    if (benResult.status === 'fulfilled') {
+      this._beneficios = benResult.value;
+    } else {
+      console.warn('[Usuarios] listBeneficios:', benResult.reason?.message);
+      showToast('Beneficios no disponibles — desplegá las reglas de Firestore.', 'info');
+    }
+
+    if (penResult.status === 'fulfilled') {
+      this._penalidades = penResult.value;
+    } else {
+      console.warn('[Usuarios] listPenalidades:', penResult.reason?.message);
     }
 
     this._renderAllPanels();
