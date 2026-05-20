@@ -124,8 +124,8 @@ function renderBody(ticket) {
        ${isAdminOrOp ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:9px; min-height:22px;">Cambiar</button>` : ''}
     </div>
     <div id="qv-tech-selector-wrap" style="display:none; margin-top:var(--space-sm);">
-       <select id="qv-tech-select" style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px;">
-         <option value="">Cargando técnicos...</option>
+       <select id="qv-tech-select" style="width:100%; background:#0d1117; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px; appearance:none; -webkit-appearance:none;">
+         <option value="" style="background:#0d1117;color:#e2e8f0;">Cargando técnicos...</option>
        </select>
     </div>
   `;
@@ -161,7 +161,7 @@ function renderBody(ticket) {
       <div class="qv-section-label">Cambiar estado</div>
       <select id="qv-status-select" data-id="${ticket.id}" style="
         width:100%;
-        background:rgba(255,255,255,0.05);
+        background:#0d1117;
         border:1px solid var(--border);
         border-radius:var(--radius-md);
         color:var(--text-primary);
@@ -169,9 +169,11 @@ function renderBody(ticket) {
         padding:8px 10px;
         outline:none;
         cursor:pointer;
+        appearance:none;
+        -webkit-appearance:none;
       ">
         ${STATUS_OPTIONS.map(opt =>
-          `<option value="${opt}" ${estado === opt ? 'selected' : ''}>${opt}</option>`
+          `<option value="${opt}" ${estado === opt ? 'selected' : ''} style="background:#0d1117;color:#e2e8f0;">${opt}</option>`
         ).join('')}
       </select>
     </div>` : '';
@@ -407,7 +409,8 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
           techWrap.style.display = techWrap.style.display === 'none' ? 'block' : 'none';
           if (techWrap.style.display === 'block') {
             const techs = await getTecnicos();
-            techSelect.innerHTML = `<option value="">Sin asignar</option>` + techs.map(t => `<option value="${t.id}" ${t.id === ticket.tecnicoAsignadoId ? 'selected' : ''}>${t.displayName}</option>`).join('');
+            const optStyle = 'style="background:#0d1117;color:#e2e8f0;"';
+            techSelect.innerHTML = `<option value="" ${optStyle}>Sin asignar</option>` + techs.map(t => `<option value="${t.id}" ${t.id === ticket.tecnicoAsignadoId ? 'selected' : ''} ${optStyle}>${t.displayName}</option>`).join('');
           }
         });
 

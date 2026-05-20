@@ -22,11 +22,30 @@ export class ClienteFormView extends BaseView {
 
   render() {
     const provinces = [
+      { value: 'jujuy', label: 'Jujuy' },
       { value: 'buenos_aires', label: 'Buenos Aires' },
       { value: 'caba', label: 'CABA' },
       { value: 'cordoba', label: 'Córdoba' },
       { value: 'santa_fe', label: 'Santa Fe' },
-      { value: 'mendoza', label: 'Mendoza' }
+      { value: 'mendoza', label: 'Mendoza' },
+      { value: 'salta', label: 'Salta' },
+      { value: 'tucuman', label: 'Tucumán' },
+      { value: 'santiago_del_estero', label: 'Santiago del Estero' },
+      { value: 'catamarca', label: 'Catamarca' },
+      { value: 'la_rioja', label: 'La Rioja' },
+      { value: 'san_juan', label: 'San Juan' },
+      { value: 'san_luis', label: 'San Luis' },
+      { value: 'entre_rios', label: 'Entre Ríos' },
+      { value: 'corrientes', label: 'Corrientes' },
+      { value: 'misiones', label: 'Misiones' },
+      { value: 'chaco', label: 'Chaco' },
+      { value: 'formosa', label: 'Formosa' },
+      { value: 'la_pampa', label: 'La Pampa' },
+      { value: 'neuquen', label: 'Neuquén' },
+      { value: 'rio_negro', label: 'Río Negro' },
+      { value: 'chubut', label: 'Chubut' },
+      { value: 'santa_cruz', label: 'Santa Cruz' },
+      { value: 'tierra_del_fuego', label: 'Tierra del Fuego' },
     ];
 
     const breadcrumbHtml = renderBreadcrumb([
@@ -78,6 +97,7 @@ export class ClienteFormView extends BaseView {
                 id: 'provincia',
                 type: 'select',
                 options: provinces,
+                value: 'jujuy',
                 required: true
               })}
 
@@ -150,7 +170,7 @@ export class ClienteFormView extends BaseView {
         form.nombre.value = cliente.nombre || '';
         form.dni.value = cliente.dni || '';
         form.telefono.value = cliente.telefono || '';
-        form.provincia.value = cliente.provincia || 'buenos_aires';
+        form.provincia.value = cliente.provincia || 'jujuy';
         form.observaciones.value = cliente.observaciones || '';
       }
     } catch (error) {

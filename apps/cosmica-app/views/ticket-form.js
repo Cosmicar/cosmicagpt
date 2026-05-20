@@ -322,14 +322,14 @@ export class TicketFormView extends AsyncView {
                 value: ticket?.marca || ticket?.modelo ? `${ticket.marca} ${ticket.modelo}`.trim() : ''
               })}
 
-              ${renderFormField({
+              ${admin ? renderFormField({
                 label: 'Plan de Servicio',
                 id: 'planServicio',
                 type: 'select',
                 options: planOptions,
                 value: ticket?.planServicio || 'estandar',
                 required: true
-              })}
+              }) : `<input type="hidden" name="planServicio" id="planServicio" value="${ticket?.planServicio || 'estandar'}">`}
 
               ${isEntregado && Number(ticket?.precio || 0) > 0 ? `
               <div style="grid-column:1/-1;
@@ -1004,8 +1004,12 @@ export class TicketFormView extends AsyncView {
         const admin = isAdmin(session?.profile);
         const defaultTipo = admin ? 'remoto' : 'taller';
 
+        const selectedClient = this._clientesCache?.find(c => c.id === rawData.clienteId);
+
         const data = {
           ...rawData,
+          nombre: selectedClient ? (selectedClient.nombre || '') : (this._ticket?.nombre || ''),
+          apellido: selectedClient ? '' : (this._ticket?.apellido || ''),
           tipo: tipoFieldDisabled
             ? (this._ticket?.tipo || defaultTipo)
             : (rawData.tipo || defaultTipo),

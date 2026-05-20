@@ -1,6 +1,7 @@
 import { AsyncView } from '../core/async-view.js';
 import { getDashboardData } from '../services/dashboard.js';
-import { updateTicketStatus } from '../services/tickets.js';
+import { updateTicketStatus, assignTechnician, reingresoTicket } from '../services/tickets.js';
+import { getCurrentSession } from '../core/session.js';
 import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
 import { render as renderTicketCard } from '../components/ticket-card.js';
 import { render as renderClientCard } from '../components/client-card.js';
@@ -170,7 +171,7 @@ export class DashboardView extends AsyncView {
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             ${this._followUpItems.slice(0, 10).map(({ ticket: t, reason, days }) => `
-              <div class="glass-card" style="padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap; border: 1px solid rgba(255,255,255,0.02);" data-followup-id="${t.id}">
+              <div class="glass-card" style="padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap; border: 1px solid rgba(255,255,255,0.02); cursor: pointer; transition: all 0.2s ease;" data-followup-id="${t.id}" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background=''">
                 <div style="flex:1;min-width:0;">
                   <div style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary); letter-spacing: -0.01em;">${[t.nombre, t.apellido].filter(Boolean).join(' ') || 'Sin nombre'} · <span style="color: var(--accent-cyan); opacity: 0.8;">#${t.numeroOrden || '—'}</span></div>
                   <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px; font-weight: 500;">${[t.equipo, t.marca].filter(Boolean).join(' ') || '—'} · <span style="color:var(--accent-orange); opacity: 0.9;">${reason}</span> · <span style="opacity: 0.7;">hace ${days}d</span></div>
@@ -537,6 +538,38 @@ export class DashboardView extends AsyncView {
    * Manejo de eventos post-render
    */
   onContentReady() {
+    // Click on ticket card to open drawer
+    const dashboardWrapper = document.querySelector('.dashboard-wrapper');
+    if (dashboardWrapper) {
+      dashboardWrapper.addEventListener('click', async (e) => {
+        // Ignore clicks on buttons, links, selects, dropdowns, inputs, checkboxes
+        if (e.target.closest('select, .btn, a, button, .ticket-actions-col, .ticket-dropdown-content, input[type="checkbox"]')) {
+          return;
+        }
+
+        const card = e.target.closest('[data-ticket-id]');
+        const followup = e.target.closest('[data-followup-id]');
+        const ticketId = card?.dataset.ticketId || followup?.dataset.followupId;
+
+        if (ticketId) {
+          const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
+          let ticket = allTickets.find(t => t.id === ticketId);
+          if (!ticket) {
+            const { getTicket } = await import('../services/tickets.js');
+            try {
+              ticket = await getTicket(ticketId);
+            } catch (err) {
+              console.error('Error fetching ticket for quick view:', err);
+            }
+          }
+          if (ticket) {
+            const { openTicketQuickView } = await import('../components/ticket-quick-view.js');
+            openTicketQuickView(ticket, () => this.fetchAndRender());
+          }
+        }
+      });
+    }
+
     // Botón de refresh
     const btnRefresh = document.getElementById('btn-refresh');
     if (btnRefresh) {
@@ -604,6 +637,93 @@ export class DashboardView extends AsyncView {
           showToast(result.error || 'Error al actualizar', 'error');
           btn.disabled = false;
           btn.textContent = '🔧 Pasar a Reparación';
+        }
+      });
+    });
+
+    // Quick Tomar — asigna el ticket al usuario actual
+    document.querySelectorAll('.quick-tomar-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (btn.disabled) return;
+        btn.disabled = true;
+        const orig = btn.textContent;
+        btn.textContent = '⏳...';
+        try {
+          const session = getCurrentSession();
+          const result = await assignTechnician(btn.dataset.id, {
+            id: session.user.uid,
+            nombre: session.profile?.nombre || session.user.email
+          });
+          if (result.success) {
+            showToast('Ticket asignado a ti', 'success');
+            this.fetchAndRender();
+          } else {
+            showToast(result.error || 'Error al tomar ticket', 'error');
+          }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
+      });
+    });
+
+    // Quick Listo — marca el ticket como Listo
+    document.querySelectorAll('.quick-listo-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (btn.disabled) return;
+        btn.disabled = true;
+        const orig = btn.textContent;
+        btn.textContent = '⏳...';
+        const result = await updateTicketStatus(btn.dataset.id, 'Listo');
+        if (result.success) {
+          showToast('Estado actualizado a Listo', 'success');
+          this.fetchAndRender();
+        } else {
+          showToast(result.error || 'Error al actualizar estado', 'error');
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
+      });
+    });
+
+    // Quick Cobrar / Entregar — abre la vista de cobro
+    document.querySelectorAll('.quick-entregar-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
+        const ticket = allTickets.find(t => t.id === btn.dataset.id);
+        if (ticket) {
+          const { openTicketQuickView } = await import('../components/ticket-quick-view.js');
+          openTicketQuickView(ticket, () => this.fetchAndRender());
+        }
+      });
+    });
+
+    // Reingreso
+    document.querySelectorAll('.reingreso-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('¿Generar un reingreso para este equipo?')) return;
+        if (btn.disabled) return;
+        btn.disabled = true;
+        const orig = btn.textContent;
+        btn.textContent = '⏳...';
+        try {
+          const allTickets = [...(this._recentTickets || []), ...(this._attentionTickets || [])];
+          const ticket = allTickets.find(t => t.id === btn.dataset.id);
+          if (!ticket) return;
+          const result = await reingresoTicket(ticket);
+          if (result.success) {
+            showToast(`Reingreso ${result.numeroOrden} creado`, 'success');
+            this.fetchAndRender();
+          } else {
+            showToast(result.error || 'Error al crear reingreso', 'error');
+          }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = orig;
         }
       });
     });

@@ -52,9 +52,15 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       // Lectura de otros perfiles: solo admin
       allow read: if isAdmin();
-      // Escritura: solo admin, y el rol debe ser válido
-      allow create, update: if isAdmin()
+      // Escritura: solo admin puede crear/editar cualquier perfil.
+      // El propio usuario puede actualizar sus datos personales sin tocar rol ni activo.
+      allow create: if isAdmin()
         && request.resource.data.rol in ['admin', 'operador', 'tester'];
+      allow update: if isAdmin()
+        && request.resource.data.rol in ['admin', 'operador', 'tester'];
+      allow update: if isAuthenticated() && request.auth.uid == userId
+        && !('rol' in request.resource.data.diff(resource.data).affectedKeys())
+        && !('activo' in request.resource.data.diff(resource.data).affectedKeys());
       allow delete: if isAdmin() && request.auth.uid != userId;
     }
 
@@ -134,6 +140,21 @@ service cloud.firestore {
     match /inventario/{docId} {
       allow read: if isAuthenticated()
         && get(userDocRef()).data.get('rol', '') in ['admin', 'operador', 'tester', 'tecnico', 'recepcion'];
+      allow write: if isStaff();
+    }
+
+    match /caja/{entryId} {
+      allow read: if isStaff();
+      allow write: if isStaff();
+    }
+
+    match /cajaSesiones/{sesionId} {
+      allow read: if isStaff();
+      allow write: if isStaff();
+    }
+
+    match /facturacion/{docId} {
+      allow read: if isStaff();
       allow write: if isStaff();
     }
 

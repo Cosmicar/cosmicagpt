@@ -254,11 +254,19 @@ export async function getDashboardData() {
     clientTicketMap.get(t.clienteId).push(t);
   });
 
+  // Index clients by id for O(1) name lookup
+  const clienteById = new Map(clientes.map(c => [c.id, c]));
+
   const enrichTicket = (t) => {
     const clientTickets = clientTicketMap.get(t.clienteId) || [];
     const facturasDel  = facturasMap.get(t.id) || [];
+    const cliente      = clienteById.get(t.clienteId);
     return {
       ...t,
+      // Fill in nombre/apellido from the clientes collection if the ticket doesn't have them
+      nombre:        t.nombre  || cliente?.nombre  || '',
+      apellido:      t.apellido || cliente?.apellido || '',
+      telefono:      t.telefono || cliente?.telefono || '',
       clientBadge:   getClientBadge(clientTickets.length),
       reentryRisk:   getReentryRisk(clientTickets),
       facturada:     facturasDel.length > 0,

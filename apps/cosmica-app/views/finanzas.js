@@ -3,6 +3,7 @@ import {
   getFinanzasData, createCajaEntry,
   abrirCaja, cerrarCaja,
 } from '../services/finanzas.js';
+import { getClientes } from '../services/clientes.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
@@ -57,7 +58,31 @@ export class FinanzasView extends AsyncView {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   async loadData() {
-    this._data = await getFinanzasData();
+    const [finanzasData, clientes] = await Promise.all([
+      getFinanzasData(),
+      getClientes()
+    ]);
+
+    const clientMap = (clientes || []).reduce((acc, c) => {
+      acc[c.id] = c.nombre || '';
+      return acc;
+    }, {});
+
+    if (finanzasData?.ticketsMasRentables) {
+      finanzasData.ticketsMasRentables = finanzasData.ticketsMasRentables.map(t => {
+        const nombre = t.nombre || clientMap[t.clienteId] || '';
+        return { ...t, nombre };
+      });
+    }
+
+    if (finanzasData?.ultimosCobrados) {
+      finanzasData.ultimosCobrados = finanzasData.ultimosCobrados.map(t => {
+        const nombre = t.nombre || clientMap[t.clienteId] || '';
+        return { ...t, nombre };
+      });
+    }
+
+    this._data = finanzasData;
     return this._data;
   }
 

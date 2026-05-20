@@ -277,6 +277,8 @@ export async function updateTicket(id, data) {
 
     const updateData = {
       clienteId: data.clienteId,
+      nombre: data.nombre || '',
+      apellido: data.apellido || '',
       tipo: data.tipo,
       equipo: data.equipo.trim(),
       marca: data.marca ? data.marca.trim() : "",

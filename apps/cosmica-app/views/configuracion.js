@@ -218,6 +218,23 @@ export class ConfiguracionView extends BaseView {
 
       ${this._infoBox('🔒', `Rol asignado: <strong>${rolLabels[rol] || rol}</strong>. El rol solo puede ser modificado por un Administrador del sistema desde el panel de operadores.`)}
 
+      <!-- Cambio de contraseña -->
+      <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:var(--space-lg);margin-top:var(--space-md);">
+        ${this._sectionTitle('🔑', 'Cambiar Contraseña', 'Requiere tu contraseña actual para confirmar el cambio.')}
+        <div id="pwd-error" class="alert alert-danger" style="display:none;margin-bottom:var(--space-md);"></div>
+        <div id="pwd-success" class="alert alert-success" style="display:none;margin-bottom:var(--space-md);"></div>
+        ${this._row([
+          this._field('🔒', 'Contraseña Actual', `<input type="password" id="pwd-actual" class="input" placeholder="Tu contraseña actual" autocomplete="current-password">`),
+          this._field('🔑', 'Nueva Contraseña', `<input type="password" id="pwd-nueva" class="input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">`),
+          this._field('✅', 'Confirmar Nueva', `<input type="password" id="pwd-confirm" class="input" placeholder="Repetí la nueva contraseña" autocomplete="new-password">`),
+        ])}
+        <div style="display:flex;justify-content:flex-end;margin-top:var(--space-md);">
+          <button type="button" id="change-pwd-btn" class="btn btn-secondary" style="padding:10px 24px;font-weight:600;">
+            🔑 Cambiar Contraseña
+          </button>
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:flex-end;padding-top:var(--space-md);border-top:1px solid rgba(255,255,255,0.05);">
         <button type="button" id="save-profile-btn" class="btn btn-primary" style="padding:10px 28px;font-weight:600;box-shadow:0 4px 14px rgba(0,229,255,0.2);">
           💾 Guardar Perfil
@@ -376,6 +393,68 @@ export class ConfiguracionView extends BaseView {
         } finally {
           saveProfileBtn.disabled = false;
           saveProfileBtn.textContent = '💾 Guardar Perfil';
+        }
+      });
+    }
+
+    // ── Change password ───────────────────────────────────────────────────────
+    const changePwdBtn = document.getElementById('change-pwd-btn');
+    if (changePwdBtn) {
+      changePwdBtn.addEventListener('click', async () => {
+        const errEl     = document.getElementById('pwd-error');
+        const successEl = document.getElementById('pwd-success');
+        const actual    = document.getElementById('pwd-actual')?.value?.trim() ?? '';
+        const nueva     = document.getElementById('pwd-nueva')?.value?.trim() ?? '';
+        const confirm   = document.getElementById('pwd-confirm')?.value?.trim() ?? '';
+
+        if (errEl)     errEl.style.display = 'none';
+        if (successEl) successEl.style.display = 'none';
+
+        if (!actual || !nueva || !confirm) {
+          if (errEl) { errEl.textContent = 'Completá todos los campos de contraseña.'; errEl.style.display = 'block'; }
+          return;
+        }
+        if (nueva.length < 6) {
+          if (errEl) { errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.'; errEl.style.display = 'block'; }
+          return;
+        }
+        if (nueva !== confirm) {
+          if (errEl) { errEl.textContent = 'Las contraseñas nuevas no coinciden.'; errEl.style.display = 'block'; }
+          return;
+        }
+
+        changePwdBtn.disabled = true;
+        changePwdBtn.textContent = 'Cambiando…';
+
+        try {
+          const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } =
+            await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js');
+          const { auth } = await import('../../../js/firebase.js');
+
+          const user = auth.currentUser;
+          if (!user) throw new Error('No hay sesión activa.');
+
+          const credential = EmailAuthProvider.credential(user.email, actual);
+          await reauthenticateWithCredential(user, credential);
+          await updatePassword(user, nueva);
+
+          // Clear fields
+          ['pwd-actual', 'pwd-nueva', 'pwd-confirm'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+          });
+          if (successEl) { successEl.textContent = 'Contraseña actualizada correctamente.'; successEl.style.display = 'block'; }
+          showToast('Contraseña cambiada ✓', 'success');
+        } catch (err) {
+          console.error('[Perfil] change password error:', err);
+          let msg = 'Error al cambiar la contraseña.';
+          if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'La contraseña actual es incorrecta.';
+          if (err.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intentá más tarde.';
+          if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+          showToast(msg, 'error');
+        } finally {
+          changePwdBtn.disabled = false;
+          changePwdBtn.textContent = '🔑 Cambiar Contraseña';
         }
       });
     }
