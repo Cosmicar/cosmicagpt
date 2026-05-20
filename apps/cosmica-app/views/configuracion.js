@@ -3,6 +3,7 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { showToast } from '../components/toast.js';
 import { getCurrentSession } from '../core/session.js';
+import { activarPush, desactivarPush, pushActivo } from '../services/push.js';
 
 export class ConfiguracionView extends BaseView {
   constructor(params) {
@@ -235,6 +236,24 @@ export class ConfiguracionView extends BaseView {
         </div>
       </div>
 
+      <!-- Notificaciones Push -->
+      <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:var(--space-lg);margin-top:var(--space-md);">
+        ${this._sectionTitle('🔔', 'Notificaciones Push', 'Recibí alertas de puntos, penalidades y novedades en este dispositivo.')}
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+          padding:16px;background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.1);border-radius:var(--radius-md);">
+          <div>
+            <div id="push-status-label" style="font-size:13px;font-weight:600;color:var(--text-primary);">Cargando estado...</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">
+              Activá para recibir alertas de puntos y novedades aunque la app esté en segundo plano.
+            </div>
+          </div>
+          <button type="button" id="push-toggle-btn" class="btn btn-secondary"
+            style="padding:9px 20px;font-size:13px;font-weight:600;white-space:nowrap;">
+            Cargando…
+          </button>
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:flex-end;padding-top:var(--space-md);border-top:1px solid rgba(255,255,255,0.05);">
         <button type="button" id="save-profile-btn" class="btn btn-primary" style="padding:10px 28px;font-weight:600;box-shadow:0 4px 14px rgba(0,229,255,0.2);">
           💾 Guardar Perfil
@@ -393,6 +412,46 @@ export class ConfiguracionView extends BaseView {
         } finally {
           saveProfileBtn.disabled = false;
           saveProfileBtn.textContent = '💾 Guardar Perfil';
+        }
+      });
+    }
+
+    // ── Push notifications toggle ─────────────────────────────────────────────
+    const pushToggleBtn  = document.getElementById('push-toggle-btn');
+    const pushStatusLabel = document.getElementById('push-status-label');
+
+    function updatePushUI() {
+      const activo = pushActivo();
+      if (pushStatusLabel) {
+        pushStatusLabel.innerHTML = activo
+          ? '🔔 <span style="color:#10B981;">Notificaciones activadas</span> en este dispositivo'
+          : '🔕 Notificaciones <span style="color:var(--text-muted);">desactivadas</span>';
+      }
+      if (pushToggleBtn) {
+        pushToggleBtn.textContent = activo ? 'Desactivar notificaciones' : 'Activar notificaciones';
+        pushToggleBtn.style.borderColor = activo ? '#EF4444' : 'var(--accent-cyan)';
+        pushToggleBtn.style.color       = activo ? '#EF4444' : 'var(--accent-cyan)';
+      }
+    }
+    updatePushUI();
+
+    if (pushToggleBtn) {
+      pushToggleBtn.addEventListener('click', async () => {
+        pushToggleBtn.disabled = true;
+        pushToggleBtn.textContent = 'Procesando…';
+        try {
+          if (pushActivo()) {
+            await desactivarPush();
+            showToast('Notificaciones desactivadas', 'info');
+          } else {
+            await activarPush();
+            showToast('🔔 Notificaciones activadas correctamente', 'success');
+          }
+        } catch (err) {
+          showToast('Error: ' + err.message, 'error');
+        } finally {
+          pushToggleBtn.disabled = false;
+          updatePushUI();
         }
       });
     }
