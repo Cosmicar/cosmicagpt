@@ -106,14 +106,16 @@ function renderBody(ticket) {
 
   // Technician section
   const session = getCurrentSession();
-  const isAdminOrOp = ['admin', 'operador'].includes(session?.profile?.rol);
+  const userRole = session?.profile?.rol;
+  const isOnlyAdmin = userRole === 'admin';
+  const isNotOperator = userRole !== 'operador';
   const assignedName = ticket.tecnicoAsignadoNombre || 'Sin asignar';
   
   const techBlock = `
     <div class="qv-separator"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
       <div class="qv-section-label" style="margin:0;">🛠️ Técnico Asignado</div>
-      ${!ticket.tecnicoAsignadoId ? `
+      ${!ticket.tecnicoAsignadoId && isNotOperator ? `
         <button class="btn btn-sm btn-primary qv-take-btn" data-id="${ticket.id}" style="font-size:9px; padding:3px 8px; min-height:24px;">Tomar ticket</button>
       ` : ''}
     </div>
@@ -121,7 +123,7 @@ function renderBody(ticket) {
        <div id="qv-tech-display" style="font-size:var(--font-sm); color:var(--text-primary); font-weight:600;">
          ${ticket.tecnicoAsignadoId ? `👨‍🔧 ${assignedName}` : '<span style="color:var(--text-muted); font-weight:400;">Sin técnico</span>'}
        </div>
-       ${isAdminOrOp ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:9px; min-height:22px;">Cambiar</button>` : ''}
+       ${isOnlyAdmin ? `<button class="btn btn-sm btn-secondary qv-edit-tech-btn" style="padding:2px 6px; font-size:9px; min-height:22px;">Cambiar</button>` : ''}
     </div>
     <div id="qv-tech-selector-wrap" style="display:none; margin-top:var(--space-sm);">
        <select id="qv-tech-select" style="width:100%; background:#0d1117; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:var(--font-sm); padding:6px; appearance:none; -webkit-appearance:none;">

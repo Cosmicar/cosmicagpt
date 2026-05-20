@@ -75,9 +75,11 @@ export function render(ticket, selected = false) {
   // Primary Action Logic
   let primaryActionHtml = '';
   let dropdownActions = '';
+  const session = getCurrentSession();
+  const isOperator = session?.profile?.rol === 'operador';
 
   if (canEdit) {
-    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado) {
+    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado && !isOperator) {
       primaryActionHtml = `<button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="background:var(--accent-blue); padding: 6px 12px; font-weight: 700; height: 32px;">🙋 Tomar Orden</button>`;
     } else if (estado === WORK_STATUS.listo) {
       primaryActionHtml = `<button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="padding: 6px 12px; font-weight: 700; height: 32px;">💵 Cobrar</button>`;
@@ -192,8 +194,11 @@ function renderMobile(ticket, selected = false) {
   let primaryActionHtml = '';
   let dropdownActions = '';
 
+  const session = getCurrentSession();
+  const isOperator = session?.profile?.rol === 'operador';
+
   if (canEdit) {
-    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado) {
+    if (!ticket.tecnicoAsignadoId && estado !== WORK_STATUS.entregado && !isOperator) {
       primaryActionHtml = `<button class="btn btn-sm btn-primary quick-tomar-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700; background:var(--accent-blue);">🙋 Tomar Orden</button>`;
     } else if (estado === WORK_STATUS.listo) {
       primaryActionHtml = `<button class="btn btn-sm btn-success quick-entregar-btn" data-id="${ticket.id}" style="flex:1; min-height:36px; font-size:12px; font-weight:700;">💵 Cobrar</button>`;

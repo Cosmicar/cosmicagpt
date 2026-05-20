@@ -378,7 +378,7 @@ export class TicketFormView extends AsyncView {
                 placeholder: '90',
                 value: ticket?.garantiaDias ?? 90
               })}
-
+              ${userRole !== 'operador' ? `
               <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-lg); margin-top: var(--space-sm);">
                 ${renderFormField({
                   label: '🛠️ Técnico Asignado',
@@ -390,6 +390,7 @@ export class TicketFormView extends AsyncView {
                   helpText: tecnicoMessage
                 })}
               </div>
+              ` : ''}
 
             </div>
 
@@ -1002,6 +1003,9 @@ export class TicketFormView extends AsyncView {
 
         const session = getCurrentSession();
         const admin = isAdmin(session?.profile);
+        const userRole = session?.profile?.rol;
+        const userId = session?.user?.uid;
+        const userDisplayName = session?.profile?.nombre || session?.user?.email;
         const defaultTipo = admin ? 'remoto' : 'taller';
 
         const selectedClient = this._clientesCache?.find(c => c.id === rawData.clienteId);
@@ -1021,12 +1025,16 @@ export class TicketFormView extends AsyncView {
             : (rawData.metodoPago || 'efectivo'),
           marca: rawData.marca_modelo || '',
           modelo: '',
-          tecnicoAsignadoId: tecnicoFieldDisabled
-            ? (this._ticket?.tecnicoAsignadoId ?? null)
-            : (rawData.tecnicoAsignadoId || null),
-          tecnicoAsignadoNombre: tecnicoFieldDisabled
-            ? (this._ticket?.tecnicoAsignadoNombre ?? null)
-            : (selectTecnico?.options[selectTecnico.selectedIndex]?.text || null),
+          tecnicoAsignadoId: userRole === 'operador'
+            ? (this._ticket?.tecnicoAsignadoId || userId)
+            : (tecnicoFieldDisabled
+              ? (this._ticket?.tecnicoAsignadoId ?? null)
+              : (rawData.tecnicoAsignadoId || null)),
+          tecnicoAsignadoNombre: userRole === 'operador'
+            ? (this._ticket?.tecnicoAsignadoNombre || userDisplayName)
+            : (tecnicoFieldDisabled
+              ? (this._ticket?.tecnicoAsignadoNombre ?? null)
+              : (selectTecnico?.options[selectTecnico.selectedIndex]?.text || null)),
         };
         
         // Si seleccionó "Sin asignar", limpiar campos
