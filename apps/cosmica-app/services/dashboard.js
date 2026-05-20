@@ -64,6 +64,96 @@ function computeRecentClients(clientes, limit = 5) {
  * performance (avg resolution time), distribution (workshop vs remote),
  * and top-N rankings (provinces, technicians, problems).
  */
+/**
+ * Spanish stopwords + noise tokens — palabras comunes que NO sirven como
+ * "anchor" para agrupar problemas/equipos. Filtramos para que el algoritmo
+ * de keyword extraction encuentre el sustantivo realmente relevante.
+ */
+const SPANISH_STOPWORDS = new Set([
+  // artículos
+  'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
+  // preposiciones
+  'de', 'del', 'al', 'en', 'con', 'por', 'para', 'sin', 'sobre', 'tras', 'entre',
+  'desde', 'hacia', 'hasta', 'segun', 'según',
+  // conjunciones
+  'y', 'o', 'u', 'e', 'pero', 'ni', 'sino', 'aunque', 'porque', 'pues',
+  // pronombres
+  'que', 'qué', 'cual', 'cuál', 'quien', 'quién', 'donde', 'dónde', 'cuando', 'cuándo',
+  'su', 'sus', 'mi', 'mis', 'tu', 'tus', 'me', 'te', 'se', 'le', 'les', 'lo', 'las',
+  // verbos de relleno
+  'es', 'son', 'esta', 'está', 'estan', 'están', 'ser', 'estar', 'esta', 'este', 'esto',
+  'fue', 'fueron', 'sido', 'tiene', 'tienen', 'tenia', 'tenía', 'hay', 'haber',
+  'hace', 'hacer', 'esta', 'está',
+  // adverbios comunes
+  'no', 'si', 'sí', 'tambien', 'también', 'muy', 'mas', 'más', 'menos',
+  'solo', 'solo', 'sólo', 'mucho', 'poco', 'todo', 'todos', 'toda', 'todas',
+  // ruido específico de tickets
+  'problema', 'falla', 'fallas', 'cuestion', 'cuestión', 'servicio', 'cliente',
+  'ninguno', 'nada', 'info',
+]);
+
+/**
+ * Tokeniza un string a palabras significativas (≥4 chars, sin stopwords).
+ */
+function tokenize(text) {
+  if (!text) return [];
+  return String(text)
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // remove accents for dedup
+    .replace(/[^a-zñ0-9\s]/g, ' ')                    // strip punctuation
+    .split(/\s+/)
+    .filter(w => w.length >= 4 && !SPANISH_STOPWORDS.has(w));
+}
+
+/**
+ * Frequency-anchor ranking: agrupa items por el token más globalmente frecuente.
+ *
+ * Ejemplo: ["Almohadillas", "Reset almohadillas", "Almohadillas llenas"]
+ * → globalFreq: { almohadillas: 3, reset: 1, llenas: 1 }
+ * → cada ticket anclado a "almohadillas" (mayor freq)
+ * → ranking: [{ nombre: 'Almohadillas', count: 3 }]
+ *
+ * Esto resuelve el problema de variaciones del mismo concepto sin necesidad
+ * de stemming complejo o NLP.
+ */
+function buildAnchorRanking(items, n) {
+  // Pass 1: tokenizar y contar frecuencia global de cada token
+  const globalFreq = new Map();
+  const itemTokens = [];
+  for (const raw of items) {
+    const tokens = tokenize(raw);
+    if (tokens.length === 0) continue;
+    itemTokens.push(tokens);
+    for (const tok of tokens) {
+      globalFreq.set(tok, (globalFreq.get(tok) || 0) + 1);
+    }
+  }
+
+  // Pass 2: para cada item, asignarle su "anchor" (token con mayor freq global)
+  const anchorCounts = new Map();
+  for (const tokens of itemTokens) {
+    let bestAnchor = tokens[0];
+    let bestFreq = globalFreq.get(bestAnchor) || 0;
+    for (const tok of tokens) {
+      const freq = globalFreq.get(tok);
+      if (freq > bestFreq) {
+        bestAnchor = tok;
+        bestFreq = freq;
+      }
+    }
+    anchorCounts.set(bestAnchor, (anchorCounts.get(bestAnchor) || 0) + 1);
+  }
+
+  // Pass 3: construir ranking y capitalizar
+  return [...anchorCounts.entries()]
+    .map(([anchor, count]) => ({
+      nombre: anchor.charAt(0).toUpperCase() + anchor.slice(1),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, n);
+}
+
 function computeOperationalIntelligence(tickets, clientes) {
   const clientesById = new Map();
   for (const c of clientes) clientesById.set(c.id, c);
@@ -76,12 +166,10 @@ function computeOperationalIntelligence(tickets, clientes) {
   let servicioRemoto        = 0;
 
   const provinciasMap     = Object.create(null);
-  const tecnicosMap       = Object.create(null);
-  const problemasMap      = Object.create(null);
   const ticketsPerClient  = Object.create(null);
-
-  // Trivial stop-words for problem frequency (skip noise)
-  const STOPWORDS = new Set(['ninguno', 'nada', 'no enciende', 'no anda', 'no funciona', '-', '--', 'sin info']);
+  // Raw strings for anchor-based ranking (deduplicado por frecuencia global)
+  const problemasRaw      = [];
+  const equiposRaw        = [];
 
   for (const t of tickets) {
     if (t.clienteId) {
@@ -96,11 +184,11 @@ function computeOperationalIntelligence(tickets, clientes) {
     // Tipo de servicio
     if (t.tipo === 'remoto') servicioRemoto++; else servicioTaller++;
 
-    // Top problemas (filtered for signal)
-    const prob = String(t.problema || '').toLowerCase().trim();
-    if (prob.length > 3 && !STOPWORDS.has(prob)) {
-      problemasMap[prob] = (problemasMap[prob] || 0) + 1;
-    }
+    // Recolección de strings raw para ranking por frecuencia-anchor
+    if (t.problema) problemasRaw.push(t.problema);
+    // Top equipos: combinamos equipo + marca para mejor signal
+    const equipoFull = [t.equipo, t.marca].filter(Boolean).join(' ').trim();
+    if (equipoFull) equiposRaw.push(equipoFull);
 
     // Entregado-only metrics
     if (t.estado === WORK_STATUS.entregado) {
@@ -114,10 +202,6 @@ function computeOperationalIntelligence(tickets, clientes) {
           validResolutionCount++;
         }
       }
-
-      // Técnicos (only credit for completed deliveries — fair attribution)
-      const tecNombre = String(t.tecnicoAsignadoNombre || '').trim();
-      if (tecNombre) tecnicosMap[tecNombre] = (tecnicosMap[tecNombre] || 0) + 1;
     }
   }
 
@@ -135,11 +219,6 @@ function computeOperationalIntelligence(tickets, clientes) {
     if (ticketsPerClient[cid] > 1) clientesRepetidos++;
   }
   const tasaRetencion = clientesActivos > 0 ? (clientesRepetidos / clientesActivos) * 100 : 0;
-
-  const buildRanking = (map, n) => Object.entries(map)
-    .map(([nombre, count]) => ({ nombre, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, n);
 
   // Province distribution — top 5 + "Otros" grouping (donut-chart ready)
   const PROV_TOP_N = 5;
@@ -177,11 +256,11 @@ function computeOperationalIntelligence(tickets, clientes) {
     clientesActivos,
     provinciasChart,
     distinctProvincias: allProvincias.length,
-    topTecnicos:  buildRanking(tecnicosMap, 3),
-    topProblemas: buildRanking(problemasMap, 3).map(r => ({
-      ...r,
-      nombre: r.nombre.charAt(0).toUpperCase() + r.nombre.slice(1),
-    })),
+    // Anchor-based rankings — agrupa variaciones del mismo concepto por
+    // frecuencia global del keyword (ej. "Reset almohadillas",
+    // "Almohadillas llenas" y "Almohadillas" → 1 sola entrada).
+    topEquipos:   buildAnchorRanking(equiposRaw, 3),
+    topProblemas: buildAnchorRanking(problemasRaw, 3),
   };
 }
 

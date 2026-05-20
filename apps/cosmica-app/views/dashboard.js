@@ -412,15 +412,17 @@ export class DashboardView extends AsyncView {
         <div class="rankings-grid rankings-grid-2">
           <div class="ranking-card">
             <div class="ranking-header">
-              <span class="ranking-icon">🛠️</span>
-              <span>Top Técnicos</span>
+              <span class="ranking-icon">💻</span>
+              <span>Top Equipos</span>
+              <span class="ranking-header-hint" title="Dispositivos más frecuentes — útil para decidir stock de repuestos y especialización del taller.">ⓘ</span>
             </div>
-            ${renderRanking(intel.topTecnicos, 'técnicos', (r) => `<strong>${fmtNum(r.count)}</strong> <span class="ranking-pct">entregas</span>`)}
+            ${renderRanking(intel.topEquipos, 'equipos', (r) => `<strong>${fmtNum(r.count)}</strong> <span class="ranking-pct">ingresos</span>`)}
           </div>
           <div class="ranking-card">
             <div class="ranking-header">
               <span class="ranking-icon">💡</span>
               <span>Top Problemas</span>
+              <span class="ranking-header-hint" title="Agrupados automáticamente por palabra clave para deduplicar variaciones del mismo problema.">ⓘ</span>
             </div>
             ${renderRanking(intel.topProblemas, 'problemas', (r) => `<strong>${fmtNum(r.count)}</strong>`)}
           </div>
