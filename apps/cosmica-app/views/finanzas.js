@@ -8,7 +8,7 @@ import { render as renderSectionHeader } from '../components/section-header.js';
 import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { renderKPISkeletons, renderCardSkeletonList } from '../components/app-state.js';
 import { showToast } from '../components/toast.js';
-import { canAccess } from '../core/session.js';
+import { canAccess, getCurrentSession } from '../core/session.js';
 import { guardBtn, initUnsavedChangesGuard, setDirty } from '../core/chaos-guard.js';
 
 // ── Format helpers ────────────────────────────────────────────────────────────
@@ -112,12 +112,58 @@ export class FinanzasView extends AsyncView {
       cajaSession, cajaSessionEntries, cajaSessionData, cajaHistorial,
       ajustes,
     } = data;
-    const canWrite = canAccess('finanzas-write');
+    const canWrite   = canAccess('finanzas-write');
+    const rol        = getCurrentSession()?.profile?.rol;
+    const isOperador = rol === 'operador';
 
     const breadcrumb = renderBreadcrumb([
       { label: 'Operaciones', href: '#dashboard', icon: '⚙️' },
       { label: 'Finanzas',   href: '#finanzas',  icon: '💰' },
     ]);
+
+    // ── Vista Operador (solo caja taller) ────────────────────────────────────
+    if (isOperador) {
+      const header = renderSectionHeader(
+        'Caja Taller',
+        `Movimientos del día · ${new Date().toLocaleDateString('es-AR')}`,
+        '🏦 Caja'
+      );
+      return `
+        <div class="animate-fade-in" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+          ${breadcrumb}
+
+          <div class="flex-between" style="align-items:flex-end;flex-wrap:wrap;gap:var(--space-md);">
+            <div style="flex:1;">${header}</div>
+            <button class="btn btn-secondary btn-sm" id="fin-refresh">🔄 Actualizar</button>
+          </div>
+
+          <!-- ══ CAJA STATUS BAR ══ -->
+          ${this.renderCajaStatusBar(cajaSession, cajaSessionData, canWrite)}
+
+          <!-- KPIs operador -->
+          <section>
+            <div class="kpi-grid">
+              ${this.renderKPI('X COBRAR', String(kpis.ticketsPendientesCobro), 'var(--accent-orange)', '⏳',
+                `ticket${kpis.ticketsPendientesCobro !== 1 ? 's' : ''} listo${kpis.ticketsPendientesCobro !== 1 ? 's' : ''}`)}
+              ${this.renderKPI('FACTURADO', ars(kpis.facturacionConcretada), 'var(--accent-cyan)', '💰',
+                `${kpis.totalConPrecio} cobro${kpis.totalConPrecio !== 1 ? 's' : ''}`)}
+              ${this.renderKPI('ENTREGAS HOY', String(entregadosHoy.length), 'var(--accent-green)', '📦',
+                'equipos entregados')}
+            </div>
+          </section>
+
+          <!-- Resumen operacional -->
+          ${this.renderResumenDiario(cajaDia, cajaSem, entregadosHoy, cajaSessionEntries)}
+
+          <!-- ══ CAJA SECTION ══ -->
+          ${this.renderCajaSection(cajaSession, cajaSessionEntries, cajaSessionData, cajaHoy, cajaSemana, cajaDia, cajaSem, canWrite)}
+
+          <!-- ══ HISTORIAL DE CIERRES ══ -->
+          ${this.renderHistorialCierres(cajaHistorial)}
+        </div>`;
+    }
+
+    // ── Vista Admin / Tester (completa) ──────────────────────────────────────
     const header = renderSectionHeader(
       'Centro Financiero',
       `Resumen operacional al ${new Date().toLocaleDateString('es-AR')}`,
