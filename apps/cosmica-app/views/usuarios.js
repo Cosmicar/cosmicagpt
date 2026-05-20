@@ -492,8 +492,15 @@ export class UsuariosView extends BaseView {
   // ── Modal: puntos ─────────────────────────────────────────────
 
   async _modalPuntos(u) {
-    let log = [];
-    try { log = await getPuntosLog(u.id); } catch (_) {}
+    // Recargar siempre datos frescos para que aparezcan presets recién creados
+    const [log, beneficiosFrescos, penalidadesFrescas] = await Promise.all([
+      getPuntosLog(u.id).catch(() => []),
+      listBeneficios().catch(() => this._beneficios),
+      listPenalidades().catch(() => this._penalidades)
+    ]);
+    // Actualizar cache de la vista
+    this._beneficios  = beneficiosFrescos;
+    this._penalidades = penalidadesFrescas;
 
     const pts = u.puntos ?? 0;
     const ptsColor = pts >= 0 ? '#10B981' : '#EF4444';
@@ -513,12 +520,22 @@ export class UsuariosView extends BaseView {
         }).join('')
       : `<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">Sin movimientos</td></tr>`;
 
-    const benOpts = this._beneficios.filter(b => b.activo !== false).map(b =>
-      `<option value="${b.id}" data-tipo="beneficio">🎁 ${b.nombre} (+${b.puntos} pts)</option>`
-    ).join('');
-    const penOpts = this._penalidades.filter(p => p.activo !== false).map(p =>
-      `<option value="${p.id}" data-tipo="penalidad">⚠️ ${p.nombre} (${p.puntos} pts)</option>`
-    ).join('');
+    const benActivos = this._beneficios.filter(b => b.activo !== false);
+    const penActivas = this._penalidades.filter(p => p.activo !== false);
+
+    const benOpts = benActivos.length
+      ? `<optgroup label="🎁 Beneficios">` +
+        benActivos.map(b =>
+          `<option value="${b.id}" data-tipo="beneficio">🎁 ${b.nombre} (+${b.puntos} pts)</option>`
+        ).join('') + `</optgroup>`
+      : '';
+
+    const penOpts = penActivas.length
+      ? `<optgroup label="⚠️ Penalidades">` +
+        penActivas.map(p =>
+          `<option value="${p.id}" data-tipo="penalidad">⚠️ ${p.nombre} (${p.puntos} pts)</option>`
+        ).join('') + `</optgroup>`
+      : '';
 
     const modal = this._modal('m-puntos', `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
