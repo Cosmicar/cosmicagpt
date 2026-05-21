@@ -332,21 +332,31 @@
         align-items: center !important;
         justify-content: center !important;
       }
-      
-      .glass-card > div:last-child > div {
+
+      /* ── Mobile ticket card actions — scoped, no leak a otras cards ─── */
+      .mobile-ticket-card {
+        overflow: hidden !important; /* containment — botones no salen del card */
+      }
+      .mobile-ticket-card .ticket-actions-col {
         display: flex !important;
         flex-wrap: nowrap !important;
         gap: 6px !important;
         width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
       }
-
-      .glass-card > div:last-child > div > button.quick-tomar-btn,
-      .glass-card > div:last-child > div > button.quick-listo-btn,
-      .glass-card > div:last-child > div > button.quick-entregar-btn,
-      .glass-card > div:last-child > div > button.reingreso-btn {
-        flex: 1 !important;
+      .mobile-ticket-card .ticket-actions-col > button {
+        flex: 1 1 0% !important;
         min-width: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      .mobile-ticket-card .ticket-dropdown-wrapper {
+        flex: 0 0 auto !important; /* el "⋯" mantiene su ancho */
+        width: auto !important;
+        position: relative;
       }
 
       /* Hide extra overlays and unnecessary elements on mobile */
