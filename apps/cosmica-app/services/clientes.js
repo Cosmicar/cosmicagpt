@@ -45,15 +45,17 @@ export async function getCliente(id) {
  */
 export async function createCliente(data) {
   try {
-    // 1. Validación básica de datos mínimos requeridos
-    if (!data.nombre || !data.dni || !data.telefono) {
-      throw new Error("Nombre, DNI y Teléfono son campos obligatorios.");
+    // 1. Validación básica — paridad con legacy: solo nombre y teléfono son
+    //    obligatorios. DNI quedó opcional para permitir cargas rápidas.
+    if (!data.nombre || !data.telefono) {
+      throw new Error("Nombre y Teléfono son campos obligatorios.");
     }
 
     // 2. Preparar objeto para guardar (Sanitización y metadatos)
     const newCliente = {
       nombre: data.nombre.trim(),
-      dni: data.dni.trim(),
+      apellido: (data.apellido || '').trim(),
+      dni: (data.dni || '').trim(),
       telefono: data.telefono.trim(),
       provincia: data.provincia || 'no_definida',
       observaciones: data.observaciones ? data.observaciones.trim() : '',

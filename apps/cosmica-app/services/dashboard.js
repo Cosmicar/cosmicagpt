@@ -10,12 +10,26 @@ import { db } from "../../../js/firebase.js";
 
 function computeMetrics(tickets) {
   const todayStr = new Date().toISOString().split('T')[0];
+  const isAbandonedTicket = (t) => {
+    if (t.estado === WORK_STATUS.entregado) return false;
+    const ref = t.updatedAt || t.fechaIngreso || t.createdAt;
+    if (!ref) return false;
+    const d = ref.toDate ? ref.toDate() : new Date(ref);
+    return (Date.now() - d.getTime()) > 30 * 24 * 60 * 60 * 1000;
+  };
+
   return tickets.reduce((acc, t) => {
     if (t.estado === WORK_STATUS.ingresado)    acc.pending++;
     if (t.estado === WORK_STATUS.enReparacion) acc.inRepair++;
     if (t.estado === WORK_STATUS.listo)        acc.ready++;
-    if (isOverdue(t))                          acc.overdue++;
-    if (t.estado === WORK_STATUS.entregado && t.fechaEntregado?.split('T')[0] === todayStr) {
+    // Demorados = activos >7 días pero NO abandonados (>30 días). Los abandonados
+    // son ruido — aparecen en la sección "Atención Requerida" como tickets fantasma.
+    if (isOverdue(t) && !isAbandonedTicket(t))    acc.overdue++;
+    // Entregados HOY = entregado HOY Y ingresado HOY (same-day close). Excluye
+    // tickets viejos cerrados hoy (ej. REM-0043 ingresado 14/05, entregado hoy).
+    if (t.estado === WORK_STATUS.entregado
+        && t.fechaEntregado?.split('T')[0] === todayStr
+        && t.fechaIngreso?.split('T')[0] === todayStr) {
       acc.deliveredToday++;
     }
     return acc;

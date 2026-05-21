@@ -194,7 +194,10 @@ export class TicketFormView extends AsyncView {
       { value: 'remoto', label: 'Soporte Remoto' }
     ];
 
+    // Planes premium — paridad con legacy panel.html (l.733-739).
+    // "Ninguno" es la opción default: precio manual sin sugerencia.
     const planOptions = [
+      { value: '',         label: 'Ninguno / Estándar' },
       { value: 'bronce',   label: 'Bronce' },
       { value: 'oro',      label: 'Oro (Prioridad)' },
       { value: 'platinum', label: 'Platinum (Urgente)' },
@@ -324,14 +327,19 @@ export class TicketFormView extends AsyncView {
                 value: ticket?.marca || ticket?.modelo ? `${ticket.marca} ${ticket.modelo}`.trim() : ''
               })}
 
-              ${admin ? renderFormField({
-                label: 'Plan de Servicio',
-                id: 'planServicio',
-                type: 'select',
-                options: planOptions,
-                value: ticket?.planServicio || 'bronce',
-                required: true
-              }) : `<input type="hidden" name="planServicio" id="planServicio" value="${ticket?.planServicio || 'estandar'}">`}
+              <!-- Plan de Servicio: solo visible para tipo=remoto (paridad con legacy) -->
+              ${admin ? `
+                <div id="containerPlanServicio" style="display:${(ticket?.tipo || (admin ? 'remoto' : 'taller')) === 'remoto' ? 'block' : 'none'};">
+                  ${renderFormField({
+                    label: 'Plan de Servicio',
+                    id: 'planServicio',
+                    type: 'select',
+                    options: planOptions,
+                    value: ticket?.planServicio || '',
+                    required: false
+                  })}
+                </div>
+              ` : `<input type="hidden" name="planServicio" id="planServicio" value="${ticket?.planServicio || ''}">`}
 
               ${isEntregado && Number(ticket?.precio || 0) > 0 ? `
               <div style="grid-column:1/-1;
@@ -599,9 +607,9 @@ export class TicketFormView extends AsyncView {
                   style="margin:0;font-size:13px;padding:7px 10px;">
                 <input id="nc-apellido" type="text" class="input" placeholder="Apellido" value="${preApellido}"
                   style="margin:0;font-size:13px;padding:7px 10px;">
-                <input id="nc-dni" type="text" class="input" placeholder="DNI *"
-                  style="margin:0;font-size:13px;padding:7px 10px;">
                 <input id="nc-telefono" type="text" class="input" placeholder="Teléfono *"
+                  style="margin:0;font-size:13px;padding:7px 10px;">
+                <input id="nc-dni" type="text" class="input" placeholder="DNI (opcional)"
                   style="margin:0;font-size:13px;padding:7px 10px;">
               </div>
               <button type="button" id="nc-save-btn" class="btn btn-primary"
@@ -620,8 +628,10 @@ export class TicketFormView extends AsyncView {
             const ncDni      = document.getElementById('nc-dni')?.value.trim();
             const ncTelefono = document.getElementById('nc-telefono')?.value.trim();
             const ncError    = document.getElementById('nc-error');
-            if (!ncNombre || !ncDni || !ncTelefono) {
-              if (ncError) { ncError.textContent = 'Nombre, DNI y Teléfono son obligatorios.'; ncError.style.display = 'block'; }
+            // Paridad con legacy: nombre y teléfono son los únicos obligatorios.
+            // DNI es opcional para permitir cargas rápidas en mostrador.
+            if (!ncNombre || !ncTelefono) {
+              if (ncError) { ncError.textContent = 'Nombre y Teléfono son obligatorios.'; ncError.style.display = 'block'; }
               return;
             }
             const saveBtn = document.getElementById('nc-save-btn');
@@ -1022,6 +1032,19 @@ export class TicketFormView extends AsyncView {
   initFormHandlers() {
     const form = document.getElementById('ticket-form');
     if (!form) return;
+
+    // ── Tipo de servicio → mostrar/ocultar Plan (solo aplica a remoto) ───────
+    // Paridad con legacy panel.js (l.482-505): plan premium solo para remoto.
+    const tipoSelect = document.getElementById('tipo');
+    if (tipoSelect) {
+      tipoSelect.addEventListener('change', (e) => {
+        const cont = document.getElementById('containerPlanServicio');
+        const plan = document.getElementById('planServicio');
+        const esRemoto = e.target.value === 'remoto';
+        if (cont) cont.style.display = esRemoto ? 'block' : 'none';
+        if (!esRemoto && plan) plan.value = ''; // limpiar plan al pasar a taller
+      });
+    }
 
     // ── Plan de servicio → autocompletar precio desde config ─────────────────
     const planSelect  = document.getElementById('planServicio');
