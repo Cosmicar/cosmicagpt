@@ -291,42 +291,84 @@ function renderBody(ticket) {
       <div id="qv-timeline-events">${renderTimelineSkeleton()}</div>
     </div>
 
-    <!-- Actions -->
-    <div class="drawer-footer" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-      ${canEdit && estado === WORK_STATUS.listo ? `
-        <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; font-weight:700; height:36px; font-size:12px;">
-          💵 COBRAR Y FINALIZAR
+    <!-- Actions — CTA expandible -->
+    <div class="drawer-footer" style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;">
+
+      <!-- Botón CTA principal: acción más importante según estado -->
+      <div style="display:flex;gap:6px;">
+        ${canEdit && estado === WORK_STATUS.listo ? `
+          <button class="btn btn-success qv-entregar-btn" data-id="${ticket.id}"
+            style="flex:1;font-weight:700;height:38px;font-size:13px;letter-spacing:.02em;">
+            💵 Cobrar y Finalizar
+          </button>
+        ` : canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
+          <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}"
+            style="flex:1;font-weight:700;height:38px;font-size:13px;">
+            ✅ Marcar como Listo
+          </button>
+        ` : estado === WORK_STATUS.entregado ? `
+          <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}"
+            style="flex:1;height:38px;font-size:12px;color:var(--accent-cyan);border-color:rgba(0,229,255,0.2);background:rgba(0,229,255,0.05);">
+            ♻️ Reingreso (Garantía)
+          </button>
+        ` : `
+          <div style="flex:1;height:38px;display:flex;align-items:center;justify-content:center;
+            font-size:11px;color:var(--text-muted);background:rgba(255,255,255,0.03);
+            border:1px solid var(--border);border-radius:var(--radius-md);">
+            ${estado}
+          </div>
+        `}
+
+        <!-- Toggle de opciones -->
+        <button id="qv-actions-toggle"
+          style="padding:0 14px;height:38px;border:1px solid var(--border);border-radius:var(--radius-md);
+                 background:rgba(255,255,255,0.04);color:var(--text-muted);cursor:pointer;
+                 display:flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;
+                 transition:background 0.15s,color 0.15s;">
+          <span>⋯</span>
+          <span id="qv-actions-chevron" style="font-size:9px;transition:transform 0.2s;display:inline-block;">▾</span>
         </button>
-      ` : ''}
-      ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.enReparacion) ? `
-        <button class="btn btn-primary qv-listo-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; font-weight:700; height:36px; font-size:12px;">
-          ✅ MARCAR COMO LISTO
-        </button>
-      ` : ''}
-      ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.esperandoRepuesto) ? `
-        <button class="btn btn-secondary qv-reparacion-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; height:36px; background:rgba(251,146,60,0.1); color:#fb923c; border-color:rgba(251,146,60,0.35); font-weight:600; font-size:12px;">
-          🔧 REPARACIÓN
-        </button>
-      ` : ''}
-      ${estado === WORK_STATUS.entregado ? `
-        <button class="btn btn-secondary qv-reingreso-btn" data-id="${ticket.id}" style="grid-column: 1 / -1; background:rgba(0,229,255,0.05); color:var(--accent-cyan); border-color:rgba(0,229,255,0.2); height:36px; font-size:12px;">
-          ♻️ REINGRESO (GARANTÍA)
-        </button>
-      ` : ''}
-      <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}" style="height:34px; font-size:11px;">🖨 A4</button>
-      <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}" style="height:34px; font-size:11px;">🧾 Ticket</button>
-      ${canAccess('facturar') ? `
-        <button class="btn btn-secondary qv-facturar-btn" data-id="${ticket.id}"
-                style="grid-column: 1 / -1; height:36px; font-size:12px; font-weight:700;
-                       background:rgba(16,185,129,0.08); color:var(--accent-green);
-                       border-color:rgba(16,185,129,0.28);">
-          🧾 EMITIR FACTURA AFIP
-        </button>
-      ` : ''}
-      <a href="#ticket-edit?id=${ticket.id}" class="btn btn-primary" style="grid-column: 1 / -1; height:34px; line-height:34px; padding:0; font-size:11px; text-align:center;">
-        📝 EDITAR COMPLETO
-      </a>
-      <div id="qv-undo-container" style="grid-column: 1 / -1;"></div>
+      </div>
+
+      <!-- Panel de opciones expandible -->
+      <div id="qv-actions-panel" style="display:none;flex-direction:column;gap:5px;
+           border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-md);
+           padding:8px;background:rgba(0,0,0,0.2);">
+
+        ${canEdit && (estado === WORK_STATUS.ingresado || estado === WORK_STATUS.esperandoRepuesto) ? `
+          <button class="btn btn-secondary qv-reparacion-btn" data-id="${ticket.id}"
+            style="width:100%;height:34px;background:rgba(251,146,60,0.1);color:#fb923c;
+                   border-color:rgba(251,146,60,0.3);font-size:12px;font-weight:600;">
+            🔧 Pasar a Reparación
+          </button>
+        ` : ''}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+          <button class="btn btn-secondary qv-print-btn" data-mode="a4" data-id="${ticket.id}"
+            style="height:32px;font-size:11px;">🖨 Imprimir A4</button>
+          <button class="btn btn-secondary qv-print-btn" data-mode="thermal" data-id="${ticket.id}"
+            style="height:32px;font-size:11px;">🧾 Ticket térmico</button>
+        </div>
+
+        ${canAccess('facturar') ? `
+          <button class="btn btn-secondary qv-facturar-btn" data-id="${ticket.id}"
+            style="width:100%;height:34px;font-size:12px;font-weight:600;
+                   background:rgba(16,185,129,0.07);color:var(--accent-green);
+                   border-color:rgba(16,185,129,0.25);">
+            🧾 Emitir Factura AFIP
+          </button>
+        ` : ''}
+
+        <a href="#ticket-edit?id=${ticket.id}" class="btn btn-secondary"
+          style="width:100%;height:32px;line-height:32px;padding:0;font-size:11px;
+                 text-align:center;color:var(--accent-cyan);border-color:rgba(0,229,255,0.18);
+                 background:rgba(0,229,255,0.04);">
+          📝 Editar Completo
+        </a>
+      </div>
+
+      <!-- Deshacer (siempre visible si aplica) -->
+      <div id="qv-undo-container"></div>
     </div>
   `;
 }
@@ -354,6 +396,20 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
     renderHeader(ticket),
     renderBody(ticket),
     async (bodyEl) => {
+      // ── Toggle panel de opciones ──────────────────────────────────────────
+      const actionsToggle = bodyEl.querySelector('#qv-actions-toggle');
+      const actionsPanel  = bodyEl.querySelector('#qv-actions-panel');
+      const actionsChevron = bodyEl.querySelector('#qv-actions-chevron');
+      if (actionsToggle && actionsPanel) {
+        actionsToggle.addEventListener('click', () => {
+          const open = actionsPanel.style.display !== 'none';
+          actionsPanel.style.display = open ? 'none' : 'flex';
+          if (actionsChevron) actionsChevron.style.transform = open ? '' : 'rotate(180deg)';
+          actionsToggle.style.background = open ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)';
+          actionsToggle.style.color = open ? 'var(--text-muted)' : 'var(--text-primary)';
+        });
+      }
+
       // Lazy-load timeline
       mountQvTimeline(ticket.id);
 
