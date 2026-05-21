@@ -120,19 +120,19 @@ export class DashboardView extends AsyncView {
       <div class="dashboard-wrapper animate-fade-in" style="display: flex; flex-direction: column; gap: var(--space-lg);">
         
         <!-- Header del Dashboard -->
-        <header class="flex-between" style="margin-bottom: var(--space-md);">
-          <div>
+        <header class="dashboard-header flex-between" style="margin-bottom: var(--space-md); gap: var(--space-md);">
+          <div class="dashboard-header__title" style="min-width: 0;">
             <div class="badge badge-cyan" style="margin-bottom: var(--space-sm); opacity: 0.8;">Operativo</div>
             <h1 style="font-size: var(--font-3xl); font-weight: 800; letter-spacing: -0.03em;">Panel de Control</h1>
             <p style="color: var(--text-muted); font-size: var(--font-sm); font-weight: 500;">Monitor de actividad en tiempo real · ${new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
-          <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-             <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.03); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <div class="dashboard-header__actions" style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+             <div class="dashboard-header__exports" style="display: flex; gap: 6px; background: rgba(255,255,255,0.03); padding: 6px; border-radius: var(--radius-md); border: 1px solid var(--border);">
                <button id="export-tickets-btn" class="btn btn-sm btn-secondary" title="Exportar últimos movimientos del dashboard a CSV" style="font-size: 11px; padding: 6px 12px;">📥 Recientes</button>
                <button id="export-caja-btn" class="btn btn-sm btn-secondary" title="Exportar caja diaria a CSV" style="font-size: 11px; padding: 6px 12px;">📊 Caja</button>
              </div>
              <button class="btn btn-secondary btn-sm" id="btn-refresh">🔄 Actualizar</button>
-             ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>' : ''}
+             ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm dashboard-header__cta">➕ Nuevo Trabajo</a>' : ''}
           </div>
         </header>
 
@@ -143,24 +143,24 @@ export class DashboardView extends AsyncView {
           const totalEntregados   = hoy.entregadosTaller + hoy.entregadosRemoto;
           const totalFacturacion  = hoy.facturacionTaller + hoy.facturacionRemoto;
           const cell = (label, val, sub, color = 'var(--accent-cyan)') =>
-            `<div style="display:flex;flex-direction:column;gap:2px;min-width:90px;">
+            `<div class="hoy-cell" style="display:flex;flex-direction:column;gap:2px;min-width:90px;">
               <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">${label}</div>
               <div style="font-size:18px;font-weight:800;color:${color};letter-spacing:-.02em;">${val}</div>
               <div style="font-size:10px;color:var(--text-muted);opacity:.7;">${sub}</div>
             </div>`;
           return `
-          <section style="background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.1);
+          <section class="hoy-band" style="background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.1);
             border-radius:var(--radius-lg);padding:14px 20px;display:flex;align-items:center;
             gap:0;flex-wrap:wrap;margin-bottom:var(--space-md);">
-            <div style="font-size:11px;font-weight:800;color:var(--accent-cyan);text-transform:uppercase;
+            <div class="hoy-band__label" style="font-size:11px;font-weight:800;color:var(--accent-cyan);text-transform:uppercase;
               letter-spacing:.08em;min-width:48px;margin-right:24px;">HOY</div>
-            <div style="display:flex;gap:28px;flex-wrap:wrap;flex:1;">
+            <div class="hoy-band__cells" style="display:flex;gap:28px;flex-wrap:wrap;flex:1;">
               ${cell('Ingresados', totalIngresados,
                 `🏭 ${hoy.ingresadosTaller} taller · 🌐 ${hoy.ingresadosRemoto} remoto`)}
-              <div style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
+              <div class="hoy-band__divider" style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
               ${cell('Entregados', totalEntregados,
                 `🏭 ${hoy.entregadosTaller} taller · 🌐 ${hoy.entregadosRemoto} remoto`)}
-              <div style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
+              <div class="hoy-band__divider" style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
               ${cell('Facturado hoy', ars(totalFacturacion),
                 `🏭 ${ars(hoy.facturacionTaller)} · 🌐 ${ars(hoy.facturacionRemoto)}`,
                 totalFacturacion > 0 ? 'var(--accent-green)' : 'var(--text-muted)')}

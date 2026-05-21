@@ -381,6 +381,58 @@
         position: static !important; /* Quitar sticky en mobile */
       }
 
+      /* Dashboard header — stackeado en mobile */
+      .dashboard-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .dashboard-header__title h1 {
+        font-size: var(--font-2xl) !important; /* baja de 3xl a 2xl */
+      }
+      .dashboard-header__actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+      }
+      .dashboard-header__exports { flex: 1 1 auto !important; }
+      .dashboard-header__exports .btn { flex: 1; }
+      .dashboard-header__cta {
+        width: 100% !important;
+        order: -1; /* CTA arriba del todo en mobile */
+        margin-bottom: 4px;
+        text-align: center;
+      }
+
+      /* Banda HOY — label arriba, métricas en grid 3-col */
+      .hoy-band {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 12px 14px !important;
+        gap: 10px !important;
+      }
+      .hoy-band__label {
+        margin-right: 0 !important;
+        min-width: 0 !important;
+      }
+      .hoy-band__cells {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 10px !important;
+      }
+      .hoy-band__cells .hoy-cell {
+        min-width: 0 !important;
+      }
+      .hoy-band__cells .hoy-cell > div:nth-child(2) {
+        font-size: 16px !important; /* valor principal: más compacto */
+      }
+      .hoy-band__cells .hoy-cell > div:nth-child(3) {
+        font-size: 9px !important; /* subtítulo: más chico para evitar wrap */
+        line-height: 1.3;
+      }
+      .hoy-band__divider {
+        display: none !important; /* en grid no hacen falta */
+      }
+
       /* Executive KPI strip: 4 cols → 2 cols */
       .executive-kpi-grid {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -631,10 +683,12 @@
       .cp-trigger-btn kbd { display: none; }
       .navbar-actions { gap: var(--space-xs) !important; }
     }
-    /* Hide caja status indicator on very small phones (≤480px) to prevent
-       navbar overflow — caja info is accessible in the Finanzas view */
-    @media (max-width: 480px) {
-      #caja-status-indicator { display: none !important; }
+    /* Ocultar las pills de caja en mobile — pisan el botón de perfil.
+       La info ya aparece en la banda HOY del dashboard y en la vista Finanzas. */
+    @media (max-width: 768px) {
+      #caja-status-indicator,
+      #caja-taller-indicator,
+      #caja-remoto-indicator { display: none !important; }
     }
 
     /* ╔══════════════════════════════════════════════════════════════╗
