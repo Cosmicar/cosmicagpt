@@ -232,6 +232,35 @@ function initPerfilButton(session, mainContent) {
     };
     btnPerfil.setAttribute('aria-label', `Perfil de ${displayName} (${avatar.name})`);
     btnPerfil.setAttribute('title', `${displayName} — ${avatar.name}`);
+
+    // ── Inject large avatar header at the top of the dropdown ──────────
+    if (dropdown && !dropdown.querySelector('.perfil-avatar-header')) {
+      // Hide the legacy small name display — replaced by the new header
+      const perfilEmailLegacy = document.getElementById('perfilEmail');
+      if (perfilEmailLegacy) perfilEmailLegacy.style.display = 'none';
+
+      const rolLabel = session.profile?.rol
+        ? `<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(0,229,255,0.1);color:var(--accent-cyan);border:1px solid rgba(0,229,255,0.25);margin-top:4px;">${session.profile.rol}</span>`
+        : '';
+
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'perfil-avatar-header';
+      headerDiv.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 14px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="position:relative;width:96px;height:96px;border-radius:50%;overflow:hidden;background:#020617;border:2px solid rgba(0,229,255,0.5);box-shadow:0 0 28px rgba(0,229,255,0.25),inset 0 0 0 1px rgba(255,255,255,0.08);">
+            <img src="${avatar.url}" alt="${avatar.name}"
+              style="width:100%;height:100%;object-fit:cover;display:block;"
+              onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1e1b4b,#020617)'">
+          </div>
+          <div style="text-align:center;line-height:1.25;">
+            <div style="font-weight:700;font-size:14px;color:var(--text-primary);letter-spacing:-.005em;">${displayName}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:3px;opacity:.7;letter-spacing:.04em;">${avatar.name}</div>
+            ${rolLabel}
+          </div>
+        </div>
+      `;
+      dropdown.insertBefore(headerDiv, dropdown.firstChild);
+    }
   }
 
   const btnEditProfile = document.getElementById('btnEditProfile');
