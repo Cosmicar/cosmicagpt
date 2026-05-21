@@ -9,7 +9,7 @@ import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot, getCriticalAlert, getDaysInStatus, getLifecycleStage, getAgingBadge } from '../core/intelligence.js';
-import { openWhatsApp, buildReadyMessage, buildLastWarningMessage } from '../core/message-templates.js';
+import { openWhatsApp, buildIngresadoMessage, buildReadyMessage, buildLastWarningMessage } from '../core/message-templates.js';
 import { getTickets } from '../services/tickets.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -257,12 +257,14 @@ function renderBody(ticket) {
             style="height:32px;padding:0 12px;font-size:11px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);display:inline-flex;align-items:center;gap:6px;" title="Llamar">📱 Llamar</a>
         </div>
       </div>
-      <!-- WhatsApp action buttons — solo avisos clave -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <!-- WhatsApp action buttons — avisos clave -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-sm qv-wa-btn" data-action="ingresado"
+          style="height:34px;font-size:10px;font-weight:700;background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.2);">📥 Ingreso</button>
         <button class="btn btn-sm qv-wa-btn" data-action="listo"
-          style="height:34px;font-size:11px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">✅ Avisar listo</button>
+          style="height:34px;font-size:10px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">✅ Listo</button>
         <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"
-          style="height:34px;font-size:11px;font-weight:700;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);">⚠️ Último aviso</button>
+          style="height:34px;font-size:10px;font-weight:700;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);">⚠️ Último aviso</button>
       </div>
       <!-- Link de seguimiento público -->
       ${ticket.numeroOrden ? (() => {
@@ -710,7 +712,8 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
           e.stopPropagation();
           const action = btn.dataset.action;
           const msgMap = {
-            listo:      () => buildReadyMessage(ticket),
+            ingresado:   () => buildIngresadoMessage(ticket),
+            listo:       () => buildReadyMessage(ticket),
             ultimoaviso: () => buildLastWarningMessage(ticket),
           };
           const build = msgMap[action];

@@ -88,6 +88,25 @@ function linkSeguimiento(ticket) {
 }
 
 /**
+ * "Confirmación de ingreso" — sent right after the device is checked in.
+ */
+export function buildIngresadoMessage(ticket) {
+  const link  = linkSeguimiento(ticket);
+  const orden = ticket?.numeroOrden ? ` (Orden *${ticket.numeroOrden}*)` : '';
+  const lines = [
+    `Hola ${nombre(ticket)} 👋`,
+    ``,
+    `Confirmamos que recibimos tu *${equipo(ticket)}*${orden} en nuestro taller ✅`,
+    ``,
+    `Te avisaremos por este medio cuando tengamos novedades.`,
+    link ? `\n📍 Podés seguir el estado de tu equipo en:\n${link}` : '',
+    ``,
+    `_${BRAND_NAME}_`,
+  ].filter(l => l !== null);
+  return lines.join('\n');
+}
+
+/**
  * "Listo para retirar" — sent when status → listo.
  */
 export function buildReadyMessage(ticket) {
