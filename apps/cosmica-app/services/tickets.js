@@ -196,10 +196,12 @@ export async function updateTicketStatus(id, newStatus) {
     //    vez de un ticket entregado sin cobro registrado — drift detectable es muchísimo
     //    mejor que dinero invisible.
     if (newStatus === WORK_STATUS.entregado) {
-      const { getCajaSession } = await import('./finanzas.js');
-      cajaSession = await getCajaSession();
+      const { getCajaSessionByTipo } = await import('./finanzas.js');
+      const tipoTicket = trabajo.tipo || 'taller';
+      cajaSession = await getCajaSessionByTipo(tipoTicket);
       if (!cajaSession) {
-        throw new Error("Debe existir una caja abierta para registrar el cobro.");
+        const label = tipoTicket === 'remoto' ? 'remota' : 'de taller';
+        throw new Error(`Debe existir una caja ${label} abierta para registrar el cobro.`);
       }
     }
 
@@ -457,19 +459,8 @@ export function hasBudgetApproved(ticket) {
 export async function updateMultipleTicketStatus(ids, status) {
   if (!ids.length) return { success: true, updated: 0 };
 
-  // DELIVERY GUARD: If bulk includes 'entregado', must have open caja
-  if (status === WORK_STATUS.entregado) {
-    const { getCajaSession } = await import('./finanzas.js');
-    const cajaSession = await getCajaSession();
-    if (!cajaSession) {
-      return { 
-        success: false, 
-        updated: 0, 
-        error: "No hay una caja abierta para registrar entregas." 
-      };
-    }
-  }
-
+  // Nota: la validación de caja abierta se hace dentro de updateTicketStatus
+  // para respetar el tipo de cada ticket (taller vs remoto).
   const results = await Promise.all(ids.map(id => updateTicketStatus(id, status)));
   const failed  = results.filter(r => !r.success);
 
