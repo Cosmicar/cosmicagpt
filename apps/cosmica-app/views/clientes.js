@@ -89,7 +89,7 @@ export class ClientesView extends AsyncView {
     return `
       <div style="margin-top: var(--space-xl);">
         <div class="skeleton" style="width: 200px; height: 32px; margin-bottom: var(--space-lg);"></div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: var(--space-lg);">
           ${renderCardSkeletonList(6)}
         </div>
       </div>

@@ -69,7 +69,7 @@ export class ClienteFormView extends BaseView {
           <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
           
           <form id="cliente-form">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--space-lg);">
               
               ${renderFormField({
                 label: 'Nombre Completo',

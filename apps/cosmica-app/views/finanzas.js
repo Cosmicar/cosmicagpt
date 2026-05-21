@@ -96,7 +96,7 @@ export class FinanzasView extends AsyncView {
           </div>
         </div>
         ${renderKPISkeletons()}
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:var(--space-xl);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:var(--space-xl);">
           <div>${renderCardSkeletonList(3)}</div>
           <div>${renderCardSkeletonList(3)}</div>
         </div>
@@ -217,13 +217,13 @@ export class FinanzasView extends AsyncView {
         ${this.renderBannerRendicion(kpis)}
 
         <!-- Top tickets + Últimos cobrados -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:var(--space-xl);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:var(--space-xl);">
           ${this.renderTopTickets(ticketsMasRentables)}
           ${this.renderUltimosCobrados(ultimosCobrados)}
         </div>
 
         <!-- Plan distribution + Resumen diario -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-xl);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:var(--space-xl);">
           ${this.renderPlanDistribucion(distribucionPlanes, kpis.totalTickets)}
           ${this.renderResumenDiario(cajaDia, cajaSem, entregadosHoy, data.cajaSessionEntries)}
         </div>

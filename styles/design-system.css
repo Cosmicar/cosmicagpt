@@ -696,9 +696,12 @@ td, th {
   margin-bottom: var(--space-sm);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .drawer-panel { width: 100%; border-left: none; }
-  .qv-meta-grid { grid-template-columns: 1fr; }
+  .qv-meta-grid { grid-template-columns: 1fr 1fr; } /* 2 col en drawer fullscreen */
+}
+@media (max-width: 480px) {
+  .qv-meta-grid { grid-template-columns: 1fr; } /* 1 col en pantallas muy pequeñas */
 }
 
 /* ── Command Palette ─────────────────────────────────────────── */

@@ -171,7 +171,7 @@ export class TicketsView extends AsyncView {
     return `
       <div style="margin-top: var(--space-xl);">
         <div class="skeleton" style="width: 250px; height: 32px; margin-bottom: var(--space-lg);"></div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--space-lg);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(270px, 100%), 1fr)); gap: var(--space-lg);">
           ${renderCardSkeletonList(6)}
         </div>
       </div>

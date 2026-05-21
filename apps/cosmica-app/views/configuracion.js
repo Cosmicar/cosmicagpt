@@ -84,7 +84,7 @@ export class ConfiguracionView extends BaseView {
   }
 
   _row(cols) {
-    return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-lg);">${cols.join('')}</div>`;
+    return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:var(--space-lg);">${cols.join('')}</div>`;
   }
 
   _field(icon, label, inputHtml, hint = '') {

@@ -50,7 +50,7 @@ export class DashboardView extends AsyncView {
         ${renderKPISkeletons()}
 
         <!-- Lists Skeletons -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--space-xl);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: var(--space-xl);">
           <section>
             <div class="skeleton" style="width: 150px; height: 20px; margin-bottom: var(--space-lg);"></div>
             ${renderCardSkeletonList(2)}
@@ -350,7 +350,7 @@ export class DashboardView extends AsyncView {
               <span style="opacity: 0.7;">👥</span> Nuevos Clientes
             </h3>
           </div>
-          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md);">
+          <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--space-md);">
             ${recentClients.length > 0
               ? recentClients.slice(0, 3).map(c => renderClientCard(c)).join('')
               : '<div class="card glass-card" style="text-align:center; padding: var(--space-xl); color: var(--text-muted);">No hay clientes registrados.</div>'}

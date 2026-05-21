@@ -45,7 +45,7 @@ function renderBudgetSection(ticket) {
       <div id="budget-error-msg" class="alert alert-danger" style="display: none;"></div>
 
       <form id="budget-form">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--space-lg);">
           ${renderFormField({
             label: 'Presupuesto al Cliente ($)',
             id: 'presupuesto',
@@ -277,7 +277,7 @@ export class TicketFormView extends AsyncView {
           <div id="form-error-msg" class="alert alert-danger" style="display: none;"></div>
           
           <form id="ticket-form" class="stack-lg">
-            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));">
               
               <div style="position:relative;" id="cliente-autocomplete-wrap">
                 ${renderFormField({
@@ -389,7 +389,7 @@ export class TicketFormView extends AsyncView {
                 value: ticket?.garantiaDias ?? 90
               })}
               ${userRole !== 'operador' ? `
-              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-lg); margin-top: var(--space-sm);">
+              <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--space-lg); border-top: 1px solid var(--border); padding-top: var(--space-lg); margin-top: var(--space-sm);">
                 ${renderFormField({
                   label: '🛠️ Técnico Asignado',
                   id: 'tecnicoAsignadoId',

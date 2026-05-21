@@ -76,7 +76,7 @@ export class InventarioFormView extends AsyncView {
 
           <form id="inv-form" class="stack-lg">
             <!-- Row 1 -->
-            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));">
               ${renderFormField({
                 label: 'Nombre del repuesto',
                 id:    'nombre',
@@ -93,7 +93,7 @@ export class InventarioFormView extends AsyncView {
             </div>
 
             <!-- Row 2 -->
-            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+            <div class="grid-stack" style="grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));">
               ${renderFormField({
                 label:    'Categoría',
                 id:       'categoria',

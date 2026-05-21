@@ -362,6 +362,36 @@
       #tickets-grid {
         margin-top: var(--space-sm) !important;
       }
+
+      /* Dashboard: colapsar grids en mobile */
+      .dashboard-main-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .dashboard-section-secondary {
+        position: static !important; /* Quitar sticky en mobile */
+      }
+
+      /* Executive KPI strip: 4 cols → 2 cols */
+      .executive-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      /* Dropdown de perfil: asegurar que no se salga del viewport */
+      .perfil-dropdown {
+        right: var(--space-sm) !important;
+        left: var(--space-sm) !important;
+        min-width: 0 !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* KPI strip: mantener 2 cols pero reducir fuente */
+      .executive-kpi-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .exec-kpi-value {
+        font-size: 18px !important;
+      }
     }
 
     /* Fix z-index for autocompletes */
