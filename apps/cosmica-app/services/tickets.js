@@ -187,11 +187,40 @@ export async function updateTicketStatus(id, newStatus) {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("Orden no encontrada.");
 
+    const isEntregaConPrecio = newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0;
+    let cajaSession = null;
+
+    // ── V1.1 ATOMICIDAD: validar caja abierta y registrar ingreso ANTES de cambiar estado.
+    //    Si falla la caja, el ticket nunca cambia a Entregado. Si la caja se registra OK pero
+    //    luego falla el updateDoc, queda un asiento huérfano (visible en Drift Detection) en
+    //    vez de un ticket entregado sin cobro registrado — drift detectable es muchísimo
+    //    mejor que dinero invisible.
     if (newStatus === WORK_STATUS.entregado) {
       const { getCajaSession } = await import('./finanzas.js');
-      const cajaSession = await getCajaSession();
+      cajaSession = await getCajaSession();
       if (!cajaSession) {
         throw new Error("Debe existir una caja abierta para registrar el cobro.");
+      }
+    }
+
+    if (isEntregaConPrecio) {
+      const { autoRegistrarIngresoTicket } = await import('./finanzas.js');
+      const { logEvent } = await import('../core/logger.js');
+      const autoResult = await autoRegistrarIngresoTicket(
+        { ...trabajo, id, estado: newStatus },
+        cajaSession?.id
+      );
+      if (!autoResult || !autoResult.success) {
+        logEvent('finanzas.auto_income_failed_pre_entrega', {
+          ticketId: id,
+          numeroOrden: trabajo.numeroOrden,
+          precio: trabajo.precio,
+          error: autoResult?.error,
+        }, 'error');
+        throw new Error(
+          `No se pudo registrar el cobro en caja: ${autoResult?.error || 'error desconocido'}. ` +
+          `El ticket NO fue marcado como Entregado.`
+        );
       }
     }
 
@@ -212,7 +241,21 @@ export async function updateTicketStatus(id, newStatus) {
       updateData.fechaEntregado = now;
 
     const docRef = doc(db, COLLECTIONS.trabajos, id);
-    await updateDoc(docRef, updateData);
+    try {
+      await updateDoc(docRef, updateData);
+    } catch (updErr) {
+      // Caja YA quedó registrada (orden invertido). Loggeamos para Drift Detection y propagamos.
+      if (isEntregaConPrecio) {
+        const { logEvent } = await import('../core/logger.js');
+        logEvent('tickets.status_update_failed_post_caja', {
+          ticketId: id,
+          numeroOrden: trabajo.numeroOrden,
+          newStatus,
+          error: updErr.message,
+        }, 'error');
+      }
+      throw updErr;
+    }
 
     // Sincronizar con seguimiento público
     await publishPublicOrder(id, { ...trabajo, ...updateData });
@@ -226,24 +269,6 @@ export async function updateTicketStatus(id, newStatus) {
         to:   newStatus,
       },
     });
-
-    // Auto-registrar ingreso en caja cuando un ticket es entregado con precio
-    if (newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0) {
-      try {
-        const { autoRegistrarIngresoTicket, getCajaSession } = await import('./finanzas.js');
-        const session = await getCajaSession();
-        const autoResult = await autoRegistrarIngresoTicket({ ...trabajo, id, estado: newStatus }, session?.id);
-        if (!autoResult || !autoResult.success) {
-          throw new Error(autoResult?.error || 'Error desconocido al registrar ingreso');
-        }
-      } catch (e) {
-        console.warn('[tickets] auto-income registration failed:', e);
-        // We do not fail the status change, but we MUST alert the operator
-        if (typeof window !== 'undefined' && window.__cosmicaShowToast) {
-          window.__cosmicaShowToast('⚠️ El ticket se entregó pero NO pudo registrarse el pago en caja. Revisá manualmente.', 'warning', 10000);
-        }
-      }
-    }
 
     invalidateTicketsCache();
     return { success: true };

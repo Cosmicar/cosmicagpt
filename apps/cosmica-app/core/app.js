@@ -4,6 +4,15 @@ import { LoginView } from '../views/login.js';
 import { renderLoadingState, renderErrorState } from '../components/app-state.js';
 import { cleanupExpiredDrafts } from './chaos-guard.js';
 import { suscribirseAlInbox, marcarLeida } from '../services/notificaciones.js';
+import {
+  setNavRole,
+  initNavbarClock,
+  updateCajaStatusIndicator,
+  invalidateCajaStatusCache,
+} from './navbar.js';
+
+// Re-export para que router.js y consumidores externos sigan funcionando sin tocar imports.
+export { updateCajaStatusIndicator, invalidateCajaStatusCache };
 
 /* ╔══════════════════════════════════════════════════════════════╗
    ║  SPACE PHOTO AVATARS                                         ║
@@ -95,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sesión confirmada con perfil válido: mostrar shell completo
     cleanupExpiredDrafts(); // Sweep stale cosmica_draft_* keys before the session starts
     document.body.classList.add('session-ready');
-    _navRole = session.profile?.rol || null;
+    setNavRole(session.profile?.rol || null);
     renderSidebar(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
@@ -364,6 +373,7 @@ function renderSidebar(profile) {
     inventario:    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
     finanzas:      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
     usuarios:      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><line x1="19" y1="8" x2="23" y2="8"/><line x1="21" y1="6" x2="21" y2="10"/></svg>',
+    drift:         '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v3l2 2"/></svg>',
     configuracion: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>'
   };
 
@@ -377,6 +387,7 @@ function renderSidebar(profile) {
     { id: 'inventario',    label: 'Inventario',     roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
     { id: 'finanzas',      label: 'Finanzas',       roles: ['admin', 'recepcion', 'tecnico', 'operador', 'tester'] },
     { id: 'usuarios',      label: 'Operadores',      roles: ['admin', 'tester'] },
+    { id: 'drift',         label: 'Drift Detection', roles: ['admin', 'tester'] },
     { id: 'configuracion', label: 'Configuración',  roles: ['admin', 'tester'] }
   ];
 
@@ -531,291 +542,11 @@ function renderBottomNav(profile) {
   }
 }
 
-// Rol del usuario activo (se setea al iniciar sesión)
-let _navRole = null;
+// ── Navbar (reloj + indicadores de caja) extraído a core/navbar.js en V1.1
+//    Estas funciones quedaron como re-exports al inicio del archivo.
+//    El código original (initNavbarClock, _renderCajaIndicator, updateCajaStatusIndicator,
+//    _onCajaClick) fue eliminado de aquí para bajar app.js de 944 a <500 LOC.
 
-// Throttle: máximo 1 lectura Firestore de caja cada 30 s para no consumir lecturas
-// innecesarias en navegaciones rápidas entre vistas.
-let _lastCajaCheck = 0;
-let _lastCajaResult = null;
-
-/**
- * Reloj + fecha en tiempo real — Buenos Aires (GMT-3).
- * Estilo cosmos: fecha tenue arriba, hora con glow cyan abajo.
- * Cero requests de red — usa el reloj interno del browser.
- */
-function initNavbarClock() {
-  const el = document.getElementById('navbar-clock');
-  if (!el) return;
-
-  // Inject styles once
-  if (!document.getElementById('cosmos-clock-style')) {
-    const s = document.createElement('style');
-    s.id = 'cosmos-clock-style';
-    s.textContent = `
-      #navbar-clock {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(99,102,241,0.04));
-        border: 1px solid rgba(0,229,255,0.12);
-        line-height: 1;
-        white-space: nowrap;
-        position: relative;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset;
-      }
-      #navbar-clock::before {
-        content: '';
-        width: 5px; height: 5px;
-        border-radius: 50%;
-        background: var(--accent-cyan);
-        box-shadow: 0 0 6px var(--accent-cyan);
-        animation: clockPulse 2s ease-in-out infinite;
-        flex-shrink: 0;
-      }
-      @keyframes clockPulse {
-        0%, 100% { opacity: 0.85; }
-        50%      { opacity: 0.35; }
-      }
-      .clock-date {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        opacity: 0.85;
-      }
-      .clock-sep {
-        color: rgba(0,229,255,0.35);
-        font-weight: 700;
-      }
-      .clock-time {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        font-variant-numeric: tabular-nums;
-        color: var(--text-primary);
-        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-      }
-      @media (max-width: 768px) {
-        #navbar-clock { display: none !important; }
-      }
-    `;
-    document.head.appendChild(s);
-  }
-
-  const DIAS  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
-  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-
-  const tick = () => {
-    // Parse current time in Buenos Aires timezone
-    const now   = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-    const dia   = DIAS[now.getDay()];
-    const fecha = `${String(now.getDate()).padStart(2,'0')} ${MESES[now.getMonth()]}`;
-    const hora  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-
-    el.innerHTML = `
-      <span class="clock-date">${dia} ${fecha}</span>
-      <span class="clock-sep">·</span>
-      <span class="clock-time">${hora}</span>
-    `;
-  };
-
-  tick();
-  setInterval(tick, 1000);
-}
-
-/** Llama esto tras abrir o cerrar la caja para forzar refresco inmediato del indicador. */
-export function invalidateCajaStatusCache() {
-  _lastCajaCheck = 0;
-  _lastCajaResult = null;
-}
-
-/**
- * Actualiza un indicador de caja individual (taller o remoto) en el navbar.
- * @param {HTMLElement} el  - el div indicador
- * @param {object|null} session - sesión abierta o null
- * @param {'taller'|'remoto'} tipo
- */
-function _renderCajaIndicator(el, session, tipo) {
-  const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
-
-  if (session) {
-    el.innerHTML =
-      `<span style="color:var(--accent-green);font-size:7px;line-height:1;vertical-align:middle;">●</span>` +
-      `<span style="vertical-align:middle;">${label} · Abierta</span>`;
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.borderColor = 'rgba(16,185,129,0.25)';
-    el.title = `Caja ${label} abierta por ${session.openedByName || 'alguien'}. Clic para cerrar.`;
-    el.dataset.cajaStatus = 'open';
-    el.dataset.sesionId = session.id;
-  } else {
-    el.innerHTML =
-      `<span style="color:var(--danger);font-size:7px;line-height:1;vertical-align:middle;">●</span>` +
-      `<span style="vertical-align:middle;">${label} · Cerrada</span>`;
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.borderColor = 'rgba(255,255,255,0.06)';
-    el.title = `Caja ${label} cerrada. Clic para abrir.`;
-    el.dataset.cajaStatus = 'closed';
-    el.dataset.sesionId = '';
-  }
-}
-
-/**
- * Updates the persistent caja status indicators in the navbar.
- * Admin/tester: shows two separate indicators (Taller + Remoto).
- * Other roles: shows single unified indicator.
- */
-export async function updateCajaStatusIndicator() {
-  const isAdmin = _navRole === 'admin' || _navRole === 'tester';
-
-  try {
-    const { getCajaSession, getCajaSessionByTipo } = await import('../services/finanzas.js');
-    const now = Date.now();
-
-    if (isAdmin) {
-      // ── Admin: dos indicadores separados ──────────────────────────────
-      const elTaller = document.getElementById('caja-taller-indicator');
-      const elRemoto = document.getElementById('caja-remoto-indicator');
-      const elLegacy = document.getElementById('caja-status-indicator');
-      if (elLegacy) elLegacy.style.display = 'none'; // ocultar el unificado
-
-      const [tallerSession, remotoSession] = await Promise.all([
-        getCajaSessionByTipo('taller'),
-        getCajaSessionByTipo('remoto')
-      ]);
-      _lastCajaCheck  = now;
-      _lastCajaResult = tallerSession; // backward compat para otras partes
-
-      if (elTaller) {
-        _renderCajaIndicator(elTaller, tallerSession, 'taller');
-        if (!elTaller._hasClickListener) {
-          elTaller._hasClickListener = true;
-          elTaller.addEventListener('click', () => _onCajaClick(elTaller, 'taller'));
-        }
-      }
-      if (elRemoto) {
-        _renderCajaIndicator(elRemoto, remotoSession, 'remoto');
-        if (!elRemoto._hasClickListener) {
-          elRemoto._hasClickListener = true;
-          elRemoto.addEventListener('click', () => _onCajaClick(elRemoto, 'remoto'));
-        }
-      }
-
-    } else {
-      // ── Otros roles: indicador único (taller) ──────────────────────────
-      const el = document.getElementById('caja-status-indicator');
-      const elTaller = document.getElementById('caja-taller-indicator');
-      const elRemoto = document.getElementById('caja-remoto-indicator');
-      if (elTaller) elTaller.style.display = 'none';
-      if (elRemoto) elRemoto.style.display = 'none';
-      if (!el) return;
-
-      let session;
-      if (now - _lastCajaCheck < 30_000) {
-        session = _lastCajaResult;
-      } else {
-        session = await getCajaSession();
-        _lastCajaCheck  = now;
-        _lastCajaResult = session;
-      }
-
-      if (session) {
-        el.innerHTML =
-          `<span style="color:var(--accent-green);font-size:7px;line-height:1;">●</span>` +
-          `<span>Caja Abierta</span>`;
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.title = `Abierta por ${session.openedByName || 'alguien'}.`;
-        el.dataset.cajaStatus = 'open';
-        el.dataset.sesionId   = session.id;
-      } else {
-        el.innerHTML =
-          `<span style="color:var(--danger);font-size:7px;line-height:1;">●</span>` +
-          `<span>Caja Cerrada</span>`;
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.title = 'No hay una sesión de caja activa.';
-        el.dataset.cajaStatus = 'closed';
-        el.dataset.sesionId   = '';
-      }
-    }
-  } catch (err) {
-    console.warn('[app] updateCajaStatusIndicator failed:', err);
-  }
-}
-
-/**
- * Handler de click en un indicador de caja (abrir/cerrar).
- */
-async function _onCajaClick(el, tipo) {
-  const { canAccess } = await import('./session.js');
-  if (!canAccess('finanzas-write')) {
-    const { showToast } = await import('../components/toast.js');
-    showToast('No tenés permisos para gestionar la caja', 'error');
-    return;
-  }
-
-  const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
-
-  if (el.dataset.cajaStatus === 'closed') {
-    const input = prompt(`¿Confirmás la apertura de Caja ${label}?\n\nIngresá el saldo inicial ($):`, '0');
-    if (input === null) return;
-    const saldo = Number(input.trim());
-    if (isNaN(saldo) || saldo < 0) {
-      const { showToast } = await import('../components/toast.js');
-      showToast('Monto de saldo inicial inválido', 'error');
-      return;
-    }
-    try {
-      const { abrirCaja } = await import('../services/finanzas.js');
-      const { showToast } = await import('../components/toast.js');
-      const res = await abrirCaja(saldo, tipo);
-      if (res.success) {
-        showToast(`Caja ${label} abierta con $${saldo.toLocaleString('es-AR')}`, 'success');
-        invalidateCajaStatusCache();
-        await updateCajaStatusIndicator();
-        if (window.location.hash === '#finanzas') {
-          window.dispatchEvent(new HashChangeEvent('hashchange'));
-        }
-      }
-    } catch (err) {
-      const { showToast } = await import('../components/toast.js');
-      showToast(err.message || 'Error al abrir caja', 'error');
-    }
-
-  } else if (el.dataset.cajaStatus === 'open') {
-    const sesionId = el.dataset.sesionId;
-    const input = prompt(`Cierre de Caja ${label}.\n\nIngresá el saldo final real (contado) ($):`, '0');
-    if (input === null) return;
-    const saldoFinal = Number(input.trim());
-    if (isNaN(saldoFinal) || saldoFinal < 0) {
-      const { showToast } = await import('../components/toast.js');
-      showToast('Monto de saldo final inválido', 'error');
-      return;
-    }
-    try {
-      const { cerrarCaja } = await import('../services/finanzas.js');
-      const { showToast } = await import('../components/toast.js');
-      const res = await cerrarCaja(sesionId, saldoFinal);
-      if (res.success) {
-        showToast(`Caja ${label} cerrada correctamente`, 'success');
-        invalidateCajaStatusCache();
-        await updateCajaStatusIndicator();
-        if (window.location.hash === '#finanzas') {
-          window.dispatchEvent(new HashChangeEvent('hashchange'));
-        }
-      }
-    } catch (err) {
-      const { showToast } = await import('../components/toast.js');
-      showToast(err.message || 'Error al cerrar caja', 'error');
-    }
-  }
-}
 
 /**
  * Initializes global operational keyboard shortcuts.
@@ -889,56 +620,10 @@ function initPWAFeatures() {
     });
   }
 
-  // 2. Escucha de capacidad de instalación (UI Agradable tipo Legacy)
-  let deferredPrompt = null;
-
+  // 2. Capacidad de instalación — capturamos el evento por si más adelante
+  //    activamos el banner. El banner UI fue removido por requerimiento.
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    deferredPrompt = e;
-    // showInstallBanner(); // Ocultada según requerimiento
+    // deferredPrompt podría guardarse aquí si se decide re-habilitar el banner.
   });
-
-  function showInstallBanner() {
-    if (document.getElementById('pwa-install-banner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'pwa-install-banner';
-    banner.style.cssText = `
-      position: fixed; bottom: env(safe-area-inset-bottom, 20px); left: 50%; transform: translateX(-50%);
-      background: rgba(17, 24, 39, 0.95); border: 1px solid var(--accent-cyan);
-      backdrop-filter: blur(10px); padding: 14px 20px; border-radius: var(--radius-lg);
-      z-index: 9999; display: flex; align-items: center; gap: 16px; 
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6); width: calc(100% - 32px); max-width: 400px;
-      animation: slideUpPwa 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      margin-bottom: 20px;
-    `;
-    banner.innerHTML = `
-      <div style="font-size:24px;">📲</div>
-      <div style="flex:1;">
-        <div style="font-weight:700; color:#fff; font-size:14px; margin-bottom:2px;">Instalá Cósmica App</div>
-        <div style="font-size:12px; color:var(--text-muted);">Acceso rápido y offline</div>
-      </div>
-      <button id="pwa-install-btn" style="background:var(--accent-cyan); color:#000; border:none; padding:8px 16px; border-radius:var(--radius-md); font-weight:700; font-size:13px; cursor:pointer;">Instalar</button>
-      <button id="pwa-dismiss-btn" style="background:transparent; border:none; color:var(--text-muted); font-size:20px; cursor:pointer; padding:4px;">×</button>
-    `;
-    document.body.appendChild(banner);
-
-    if (!document.getElementById('pwa-keyframes')) {
-      const style = document.createElement('style');
-      style.id = 'pwa-keyframes';
-      style.textContent = '@keyframes slideUpPwa { from { bottom: -100px; opacity: 0; } to { bottom: env(safe-area-inset-bottom, 20px); opacity: 1; } }';
-      document.head.appendChild(style);
-    }
-
-    document.getElementById('pwa-install-btn').addEventListener('click', async () => {
-      banner.style.display = 'none';
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    });
-
-    document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
-      banner.style.display = 'none';
-    });
-  }
 }

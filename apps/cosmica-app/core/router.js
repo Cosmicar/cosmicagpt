@@ -8,6 +8,7 @@ import { InventarioFormView } from '../views/inventario-form.js';
 import { FinanzasView } from '../views/finanzas.js';
 import { ConfiguracionView } from '../views/configuracion.js';
 import { UsuariosView } from '../views/usuarios.js';
+import { DriftDetectionView } from '../views/drift-detection.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession, canAccess } from './session.js';
@@ -33,7 +34,8 @@ export class Router {
       'inventario-nuevo': 'Nuevo Repuesto | Cósmica App',
       'inventario-edit':  'Editar Repuesto | Cósmica App',
       'configuracion':    'Configuración | Cósmica App',
-      'usuarios':         'Operadores | Cósmica App'
+      'usuarios':         'Operadores | Cósmica App',
+      'drift':            'Drift Detection | Cósmica App'
     };
 
     // Mapeo de rutas a Clases de Vista
@@ -50,7 +52,8 @@ export class Router {
       'inventario-edit':  InventarioFormView,
       'finanzas':        FinanzasView,
       'configuracion':    ConfiguracionView,
-      'usuarios':         UsuariosView
+      'usuarios':         UsuariosView,
+      'drift':            DriftDetectionView
     };
     
     // Escuchar cambios de ruta
@@ -77,7 +80,8 @@ export class Router {
       'inventario-nuevo': 'inventario-write',
       'inventario-edit':  'inventario-write',
       'finanzas':        'finanzas-read',
-      'usuarios':        'admin-usuarios'
+      'usuarios':        'admin-usuarios',
+      'drift':           'admin-usuarios'  // misma gate que admin — solo admin/tester
     };
 
     const requiredAction = routePermissions[path];

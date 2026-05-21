@@ -324,13 +324,15 @@ export async function createCajaEntry(data, sesionId = null) {
  *     admin adjustment entries with the same ticketRef.
  */
 export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
-  if (!ticket?.id || !Number(ticket.precio || 0)) return;
+  if (!ticket?.id || !Number(ticket.precio || 0)) {
+    return { success: true, skipped: true, reason: 'no-price-or-id' };
+  }
 
   // In-memory guard: intercept concurrent duplicate calls in the same JS process
   const eventKey = `${ticket.id}_ingreso`;
   if (_cajaInFlight.has(eventKey)) {
     console.warn('[finanzas] autoRegistrarIngresoTicket: concurrent call intercepted for', ticket.id);
-    return;
+    return { success: true, alreadyExists: true, reason: 'concurrent-call' };
   }
   _cajaInFlight.add(eventKey);
 
@@ -343,7 +345,7 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
         where('tipo', '==', 'ingreso'),
       )
     );
-    if (!dedupSnap.empty) return; // already registered
+    if (!dedupSnap.empty) return { success: true, alreadyExists: true };
 
     const cliente = [ticket.nombre, ticket.apellido].filter(Boolean).join(' ').trim();
     const descripcion = [
@@ -352,7 +354,7 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
       cliente ? `· ${cliente}` : '',
     ].filter(Boolean).join(' ');
 
-    await addDoc(collection(db, COLLECTIONS.caja), {
+    const ref = await addDoc(collection(db, COLLECTIONS.caja), {
       tipo:        'ingreso',
       descripcion,
       monto:       Number(ticket.precio),
@@ -365,8 +367,11 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
     });
 
     cacheInvalidate(CACHE_CAJA);
+    return { success: true, id: ref.id };
   } catch (err) {
-    console.warn('[finanzas] autoRegistrarIngresoTicket (silently failed):', err);
+    console.error('[finanzas] autoRegistrarIngresoTicket failed:', err);
+    // ⬆ ahora propagamos error como resultado — el caller decide si abortar la entrega
+    return { success: false, error: err.message || 'Error desconocido al registrar caja' };
   } finally {
     _cajaInFlight.delete(eventKey);
   }

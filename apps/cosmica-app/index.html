@@ -458,6 +458,122 @@
       opacity: 1;
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+       COMPONENTES REUTILIZABLES — V1.1
+       Extraídos de los inline styles repetidos en views/*.
+       Reglas:
+         - Modificadores con BEM-like (caja-pill--open)
+         - No usar !important salvo media queries
+         - Cada componente acepta ser combinado con .glass-card o .card
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Caja status pill (navbar) ───────────────────────────────── */
+    .caja-pill {
+      display: none; /* JS lo cambia a flex cuando hay datos */
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      white-space: nowrap;
+    }
+    .caja-pill:hover {
+      background: rgba(0, 0, 0, 0.35);
+    }
+    .caja-pill--open   { border-color: rgba(16, 185, 129, 0.25); }
+    .caja-pill--closed { border-color: rgba(255, 255, 255, 0.06); }
+    .caja-dot { font-size: 7px; line-height: 1; vertical-align: middle; }
+    .caja-dot--open   { color: var(--accent-green); }
+    .caja-dot--closed { color: var(--danger); }
+    .caja-text { vertical-align: middle; }
+
+    /* ── Filter chip (estado de filtros, deep-link, tags) ───────── */
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid rgba(0, 229, 255, 0.18);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .filter-chip--warn  { background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.2); }
+    .filter-chip--danger { background: rgba(255, 71, 87, 0.08); border-color: rgba(255, 71, 87, 0.22); }
+
+    /* ── KPI card — alineación común para grid de métricas ──────── */
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0; /* permite truncado en flex children */
+    }
+    .kpi-card__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .kpi-card__value {
+      font-size: var(--font-2xl);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+    .kpi-card__delta {
+      font-size: var(--font-xs);
+      color: var(--text-muted);
+    }
+
+    /* ── Data table (admin views — drift, usuarios, finanzas) ───── */
+    .data-table {
+      width: 100%;
+      min-width: 600px; /* fuerza scroll horizontal en mobile */
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table thead tr {
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table th { padding: 8px; font-weight: 600; }
+    .data-table td { padding: 8px; }
+    .data-table tbody tr { border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .data-table tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .data-table__scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* ── Status dot — wrapper común para indicadores ● ──────────── */
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot--ok    { background: var(--accent-green); box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+    .status-dot--warn  { background: var(--accent-orange); box-shadow: 0 0 6px var(--accent-orange-glow); }
+    .status-dot--err   { background: var(--danger); box-shadow: 0 0 6px rgba(255,71,87,0.4); }
+    .status-dot--info  { background: var(--accent-cyan); box-shadow: 0 0 6px var(--accent-cyan-glow); }
+
     /* ── Navbar overflow protection ───────────────────────── */
     .navbar-email {
       display: flex;
@@ -2023,13 +2139,13 @@
       <div id="navbar-clock" style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap;opacity:0.75;"></div>
 
       <!-- Caja Taller — visible solo para admin/tester -->
-      <div id="caja-taller-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;" data-tipo="taller"></div>
+      <div id="caja-taller-indicator" class="caja-pill" data-tipo="taller"></div>
 
       <!-- Caja Remoto — visible solo para admin/tester -->
-      <div id="caja-remoto-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;" data-tipo="remoto"></div>
+      <div id="caja-remoto-indicator" class="caja-pill" data-tipo="remoto"></div>
 
       <!-- Caja unificada — visible para roles no-admin -->
-      <div id="caja-status-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;"></div>
+      <div id="caja-status-indicator" class="caja-pill"></div>
 
       <span id="userEmail" class="navbar-email"></span>
       <button class="btn btn-primary" id="btnPerfil">Perfil</button>
