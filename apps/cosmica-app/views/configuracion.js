@@ -487,13 +487,51 @@ export class ConfiguracionView extends BaseView {
       });
     }
 
-    // ── Drift re-scan (delegated, button injected after load) ─────────────────
-    document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'drift-refresh') {
-        this._driftLoaded = false;
-        this._loadMantenimientoTab();
-      }
-    }, { once: false });
+    // ── Mantenimiento: drift refresh + details chevron + reset contabilidad ──
+    const driftPanel = document.getElementById('drift-panel-content');
+    if (driftPanel) {
+      driftPanel.addEventListener('click', (e) => {
+        // Re-scan
+        if (e.target.id === 'drift-refresh') {
+          this._driftLoaded = false;
+          this._loadMantenimientoTab();
+          return;
+        }
+        // Mostrar área de confirmación
+        if (e.target.id === 'reset-contab-btn') {
+          const area = document.getElementById('reset-contab-confirm-area');
+          if (area) { area.style.display = 'block'; e.target.style.display = 'none'; }
+          return;
+        }
+        // Cancelar
+        if (e.target.id === 'reset-contab-cancel-btn') {
+          const area = document.getElementById('reset-contab-confirm-area');
+          const btn  = document.getElementById('reset-contab-btn');
+          if (area) area.style.display = 'none';
+          if (btn)  btn.style.display = '';
+          const inp = document.getElementById('reset-contab-input');
+          if (inp) inp.value = '';
+          return;
+        }
+        // Ejecutar reset
+        if (e.target.id === 'reset-contab-execute-btn') {
+          const inp = document.getElementById('reset-contab-input');
+          if (!inp || inp.value.trim() !== 'RESET') {
+            showToast('Escribí exactamente RESET para confirmar', 'error');
+            if (inp) inp.focus();
+            return;
+          }
+          this._ejecutarResetContabilidad(e.target);
+        }
+      });
+      // Animación chevron en <details>
+      driftPanel.addEventListener('toggle', (e) => {
+        if (e.target.tagName === 'DETAILS') {
+          const chevron = e.target.querySelector('.details-chevron');
+          if (chevron) chevron.style.transform = e.target.open ? 'rotate(180deg)' : '';
+        }
+      }, true);
+    }
 
     // ── Change password ───────────────────────────────────────────────────────
     const changePwdBtn = document.getElementById('change-pwd-btn');
@@ -629,112 +667,219 @@ export class ConfiguracionView extends BaseView {
     const total = entregadosSinCaja.length + cajaHuerfana.length + montoDesalineado.length;
     return `
       <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
-        <div style="display:flex;align-items:center;gap:var(--space-lg);padding:var(--space-lg);
-            background:rgba(0,0,0,0.15);border-radius:var(--radius-md);
-            border-left:4px solid ${total === 0 ? 'var(--accent-green)' : 'var(--danger)'};">
-          <div style="font-size:28px;">${total === 0 ? '✅' : '⚠️'}</div>
-          <div style="flex:1;">
-            <div style="font-size:var(--font-md);font-weight:700;color:var(--text-primary);">
-              ${total === 0 ? 'Sin drift detectado' : `${total} inconsistencia${total > 1 ? 's' : ''} detectada${total > 1 ? 's' : ''}`}
+
+        <!-- ── Drift Detection ─────────────────────────────────── -->
+        <div>
+          ${this._sectionTitle('🔍', 'Drift Detection', 'Inconsistencias entre tickets entregados y movimientos de caja. Read-only — corrección manual desde Finanzas.')}
+
+          <!-- Banner resumen -->
+          <div style="display:flex;align-items:center;gap:var(--space-lg);padding:var(--space-lg);
+              background:rgba(0,0,0,0.15);border-radius:var(--radius-md);margin-bottom:var(--space-md);
+              border-left:4px solid ${total === 0 ? 'var(--accent-green)' : 'var(--danger)'};">
+            <div style="font-size:28px;">${total === 0 ? '✅' : '⚠️'}</div>
+            <div style="flex:1;">
+              <div style="font-size:var(--font-md);font-weight:700;color:var(--text-primary);">
+                ${total === 0 ? 'Sin drift detectado' : `${total} inconsistencia${total > 1 ? 's' : ''} detectada${total > 1 ? 's' : ''}`}
+              </div>
+              <div style="font-size:var(--font-sm);color:var(--text-muted);margin-top:4px;">
+                ${total === 0
+                  ? 'Todos los tickets entregados tienen su asiento de caja correspondiente.'
+                  : 'Revisá cada sección y corregí manualmente desde Finanzas si corresponde.'}
+              </div>
             </div>
-            <div style="font-size:var(--font-sm);color:var(--text-muted);margin-top:4px;">
-              ${total === 0
-                ? 'Todos los tickets entregados tienen su asiento de caja correspondiente.'
-                : 'Revisá cada sección y corregí manualmente desde Finanzas si corresponde.'}
-            </div>
+            <button class="btn btn-secondary btn-sm" id="drift-refresh">🔄 Re-escanear</button>
           </div>
-          <button class="btn btn-secondary btn-sm" id="drift-refresh">🔄 Re-escanear</button>
+
+          <!-- Categorías colapsables -->
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${this._renderDriftCategory('Entregados sin caja', '⚠️',
+              'Ticket marcado Entregado con precio > 0, pero sin asiento de caja tipo ingreso.',
+              'var(--danger)', entregadosSinCaja,
+              (t) => `
+                <td style="padding:8px;font-family:var(--font-mono);">#${t.numeroOrden || '—'}</td>
+                <td style="padding:8px;">${[t.nombre, t.apellido].filter(Boolean).join(' ') || '—'}</td>
+                <td style="padding:8px;color:var(--text-muted);">${t.equipo || '—'}</td>
+                <td style="padding:8px;text-align:right;font-weight:700;color:var(--danger);">${this._ars(t.precio)}</td>
+                <td style="padding:8px;color:var(--text-muted);font-size:11px;">${this._fmtTs(t.fechaEntregado)}</td>
+                <td style="padding:8px;"><a href="#ticket-edit?id=${t.id}" class="btn btn-sm btn-primary">Abrir</a></td>
+              `,
+              ['Orden', 'Cliente', 'Equipo', 'Precio', 'Entregado', '']
+            )}
+            ${this._renderDriftCategory('Caja huérfana', '👻',
+              'Asiento de caja con origen ticket cuyo ticketRef ya no existe en la base.',
+              'var(--accent-orange)', cajaHuerfana,
+              (e) => `
+                <td style="padding:8px;font-family:var(--font-mono);font-size:11px;">${e.id.slice(0, 8)}…</td>
+                <td style="padding:8px;color:var(--text-muted);">${e.descripcion || '—'}</td>
+                <td style="padding:8px;text-align:right;font-weight:700;">${this._ars(e.monto)}</td>
+                <td style="padding:8px;color:var(--text-muted);">${e.metodoPago || '—'}</td>
+                <td style="padding:8px;color:var(--text-muted);font-size:11px;">${this._fmtTs(e.createdAt)}</td>
+                <td style="padding:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${(e.ticketRef || '').slice(0, 8)}…</td>
+              `,
+              ['Asiento', 'Descripción', 'Monto', 'Método', 'Creado', 'TicketRef']
+            )}
+            ${this._renderDriftCategory('Monto desalineado', '⚖️',
+              'El total registrado en caja para el ticket difiere del precio del ticket.',
+              'var(--accent-orange)', montoDesalineado,
+              (row) => `
+                <td style="padding:8px;font-family:var(--font-mono);">#${row.ticket.numeroOrden || '—'}</td>
+                <td style="padding:8px;">${[row.ticket.nombre, row.ticket.apellido].filter(Boolean).join(' ') || '—'}</td>
+                <td style="padding:8px;text-align:right;">${this._ars(row.precio)}</td>
+                <td style="padding:8px;text-align:right;">${this._ars(row.totalCaja)}</td>
+                <td style="padding:8px;text-align:right;font-weight:700;color:${row.delta > 0 ? 'var(--accent-green)' : 'var(--danger)'};">${row.delta > 0 ? '+' : ''}${this._ars(row.delta)}</td>
+                <td style="padding:8px;"><a href="#ticket-edit?id=${row.ticket.id}" class="btn btn-sm btn-primary">Abrir</a></td>
+              `,
+              ['Orden', 'Cliente', 'Precio ticket', 'Total caja', 'Δ', '']
+            )}
+
+            <!-- System logs colapsable -->
+            <details style="background:rgba(0,0,0,0.15);border-radius:var(--radius-md);border-left:3px solid rgba(255,255,255,0.1);overflow:hidden;">
+              <summary style="display:flex;align-items:center;gap:10px;padding:14px var(--space-lg);cursor:pointer;list-style:none;user-select:none;">
+                <span style="font-size:16px;">📋</span>
+                <span style="font-size:var(--font-sm);font-weight:700;color:var(--text-primary);flex:1;">
+                  Eventos del sistema
+                </span>
+                <span style="font-size:11px;background:rgba(255,255,255,0.07);color:var(--text-muted);padding:2px 8px;border-radius:20px;font-weight:600;">${logs.length}</span>
+                <span class="details-chevron" style="color:var(--text-muted);font-size:12px;transition:transform 0.2s;">▼</span>
+              </summary>
+              <div style="padding:0 var(--space-lg) var(--space-lg);">
+                <p style="margin:0 0 var(--space-sm);font-size:var(--font-xs);color:var(--text-muted);">Últimos ${logs.length} eventos · más recientes primero</p>
+                ${logs.length === 0 ? `
+                  <div style="padding:var(--space-md);text-align:center;color:var(--text-muted);font-size:var(--font-sm);">No hay eventos registrados aún.</div>
+                ` : `
+                  <div style="max-height:280px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;line-height:1.6;border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius-sm);">
+                    ${logs.map(l => `
+                      <div style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:10px;align-items:flex-start;">
+                        <span style="color:${this._levelColor(l.level)};font-weight:700;min-width:44px;">${(l.level || 'info').toUpperCase()}</span>
+                        <span style="color:var(--text-muted);min-width:120px;flex-shrink:0;">${this._fmtTs(l.ts)}</span>
+                        <span style="color:var(--accent-cyan);min-width:200px;flex-shrink:0;">${l.event}</span>
+                        <span style="color:var(--text-muted);flex:1;word-break:break-all;">${this._stringifyData(l.data)}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </details>
+          </div>
         </div>
 
-        ${this._renderDriftCategory('Entregados sin caja',
-          'Ticket marcado Entregado con precio > 0, pero sin asiento de caja tipo ingreso.',
-          'var(--danger)', entregadosSinCaja,
-          (t) => `
-            <td style="padding:8px;font-family:var(--font-mono);">#${t.numeroOrden || '—'}</td>
-            <td style="padding:8px;">${[t.nombre, t.apellido].filter(Boolean).join(' ') || '—'}</td>
-            <td style="padding:8px;color:var(--text-muted);">${t.equipo || '—'}</td>
-            <td style="padding:8px;text-align:right;font-weight:700;color:var(--danger);">${this._ars(t.precio)}</td>
-            <td style="padding:8px;color:var(--text-muted);font-size:11px;">${this._fmtTs(t.fechaEntregado)}</td>
-            <td style="padding:8px;"><a href="#ticket-edit?id=${t.id}" class="btn btn-sm btn-primary">Abrir</a></td>
-          `,
-          ['Orden', 'Cliente', 'Equipo', 'Precio', 'Entregado', '']
-        )}
-
-        ${this._renderDriftCategory('Caja huérfana',
-          'Asiento de caja con origen ticket cuyo ticketRef ya no existe en la base.',
-          'var(--accent-orange)', cajaHuerfana,
-          (e) => `
-            <td style="padding:8px;font-family:var(--font-mono);font-size:11px;">${e.id.slice(0, 8)}…</td>
-            <td style="padding:8px;color:var(--text-muted);">${e.descripcion || '—'}</td>
-            <td style="padding:8px;text-align:right;font-weight:700;">${this._ars(e.monto)}</td>
-            <td style="padding:8px;color:var(--text-muted);">${e.metodoPago || '—'}</td>
-            <td style="padding:8px;color:var(--text-muted);font-size:11px;">${this._fmtTs(e.createdAt)}</td>
-            <td style="padding:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">${(e.ticketRef || '').slice(0, 8)}…</td>
-          `,
-          ['Asiento', 'Descripción', 'Monto', 'Método', 'Creado', 'TicketRef']
-        )}
-
-        ${this._renderDriftCategory('Monto desalineado',
-          'El total registrado en caja para el ticket difiere del precio del ticket.',
-          'var(--accent-orange)', montoDesalineado,
-          (row) => `
-            <td style="padding:8px;font-family:var(--font-mono);">#${row.ticket.numeroOrden || '—'}</td>
-            <td style="padding:8px;">${[row.ticket.nombre, row.ticket.apellido].filter(Boolean).join(' ') || '—'}</td>
-            <td style="padding:8px;text-align:right;">${this._ars(row.precio)}</td>
-            <td style="padding:8px;text-align:right;">${this._ars(row.totalCaja)}</td>
-            <td style="padding:8px;text-align:right;font-weight:700;color:${row.delta > 0 ? 'var(--accent-green)' : 'var(--danger)'};">${row.delta > 0 ? '+' : ''}${this._ars(row.delta)}</td>
-            <td style="padding:8px;"><a href="#ticket-edit?id=${row.ticket.id}" class="btn btn-sm btn-primary">Abrir</a></td>
-          `,
-          ['Orden', 'Cliente', 'Precio ticket', 'Total caja', 'Δ', '']
-        )}
-
-        <div style="background:rgba(0,0,0,0.15);border-radius:var(--radius-md);padding:var(--space-lg);">
-          <h3 style="margin:0 0 4px;font-size:var(--font-md);font-weight:700;">Últimos eventos del sistema</h3>
-          <p style="margin:0 0 var(--space-md);font-size:var(--font-xs);color:var(--text-muted);">${logs.length} eventos · más recientes primero</p>
-          ${logs.length === 0 ? `
-            <div style="padding:var(--space-md);text-align:center;color:var(--text-muted);font-size:var(--font-sm);">No hay eventos registrados aún.</div>
-          ` : `
-            <div style="max-height:320px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;line-height:1.6;">
-              ${logs.map(l => `
-                <div style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:10px;align-items:flex-start;">
-                  <span style="color:${this._levelColor(l.level)};font-weight:700;min-width:48px;">${(l.level || 'info').toUpperCase()}</span>
-                  <span style="color:var(--text-muted);min-width:130px;flex-shrink:0;">${this._fmtTs(l.ts)}</span>
-                  <span style="color:var(--accent-cyan);min-width:240px;flex-shrink:0;">${l.event}</span>
-                  <span style="color:var(--text-muted);flex:1;word-break:break-all;">${this._stringifyData(l.data)}</span>
+        <!-- ── Reset de Contabilidad ───────────────────────────── -->
+        <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:var(--space-lg);">
+          ${this._sectionTitle('🗑️', 'Reset de Contabilidad', 'Elimina todos los movimientos de caja y sesiones. Acción irreversible.')}
+          <div style="padding:var(--space-lg);background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:var(--radius-md);display:flex;align-items:flex-start;gap:var(--space-md);">
+            <div style="font-size:24px;flex-shrink:0;">☢️</div>
+            <div style="flex:1;">
+              <div style="font-size:var(--font-sm);font-weight:700;color:#EF4444;margin-bottom:6px;">Zona de peligro</div>
+              <div style="font-size:var(--font-sm);color:var(--text-muted);line-height:1.6;">
+                Borra <strong style="color:var(--text-primary);">todos</strong> los asientos de caja y sesiones de caja registrados en Firestore.
+                Los tickets <strong style="color:var(--text-primary);">no se modifican</strong>. Esta operación
+                <strong style="color:#EF4444;">no se puede deshacer</strong>.
+              </div>
+              <div id="reset-contab-confirm-area" style="display:none;margin-top:var(--space-md);">
+                <div style="font-size:var(--font-sm);color:#EF4444;font-weight:600;margin-bottom:8px;">
+                  ¿Estás completamente seguro? Escribí <code style="background:rgba(239,68,68,0.1);padding:1px 6px;border-radius:4px;">RESET</code> para confirmar:
                 </div>
-              `).join('')}
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input type="text" id="reset-contab-input" class="input" placeholder="Escribí RESET"
+                    style="max-width:180px;margin:0;border-color:rgba(239,68,68,0.3);">
+                  <button type="button" id="reset-contab-execute-btn" class="btn"
+                    style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.4);padding:9px 18px;font-weight:700;white-space:nowrap;">
+                    ☢️ Ejecutar reset
+                  </button>
+                  <button type="button" id="reset-contab-cancel-btn" class="btn btn-secondary btn-sm">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
-          `}
+            <button type="button" id="reset-contab-btn" class="btn"
+              style="background:rgba(239,68,68,0.1);color:#EF4444;border:1px solid rgba(239,68,68,0.3);padding:9px 18px;font-weight:700;white-space:nowrap;flex-shrink:0;">
+              Resetear contabilidad
+            </button>
+          </div>
         </div>
+
       </div>
     `;
   }
 
-  _renderDriftCategory(title, desc, color, rows, rowFn, headers) {
+  _renderDriftCategory(title, icon, desc, color, rows, rowFn, headers) {
+    const isEmpty = rows.length === 0;
     return `
-      <div style="background:rgba(0,0,0,0.15);border-radius:var(--radius-md);padding:var(--space-lg);border-left:3px solid ${color};">
-        <h3 style="margin:0 0 4px;font-size:var(--font-md);font-weight:700;color:${color};">
-          ${title} <span style="font-size:12px;color:var(--text-muted);font-weight:500;">(${rows.length})</span>
-        </h3>
-        <p style="margin:0 0 var(--space-md);font-size:var(--font-xs);color:var(--text-muted);">${desc}</p>
-        ${rows.length === 0 ? `
-          <div style="padding:var(--space-md);text-align:center;color:var(--text-muted);font-size:var(--font-sm);">✓ Sin problemas en esta categoría.</div>
-        ` : `
-          <div style="overflow-x:auto;">
-            <table style="width:100%;min-width:600px;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="text-align:left;color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
-                  ${headers.map(h => `<th style="padding:8px;font-weight:600;">${h}</th>`).join('')}
-                </tr>
-              </thead>
-              <tbody>
-                ${rows.map(r => `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">${rowFn(r)}</tr>`).join('')}
-              </tbody>
-            </table>
-          </div>
-        `}
-      </div>
+      <details style="background:rgba(0,0,0,0.15);border-radius:var(--radius-md);
+          border-left:3px solid ${isEmpty ? 'rgba(255,255,255,0.08)' : color};overflow:hidden;">
+        <summary style="display:flex;align-items:center;gap:10px;padding:14px var(--space-lg);cursor:pointer;list-style:none;user-select:none;">
+          <span style="font-size:16px;">${icon}</span>
+          <span style="font-size:var(--font-sm);font-weight:700;color:${isEmpty ? 'var(--text-muted)' : color};flex:1;">
+            ${title}
+          </span>
+          <span style="font-size:11px;background:${isEmpty ? 'rgba(255,255,255,0.07)' : `rgba(${color === 'var(--danger)' ? '239,68,68' : '251,146,60'},0.15)`};
+              color:${isEmpty ? 'var(--text-muted)' : color};padding:2px 8px;border-radius:20px;font-weight:700;">${rows.length}</span>
+          <span class="details-chevron" style="color:var(--text-muted);font-size:12px;transition:transform 0.2s;">▼</span>
+        </summary>
+        <div style="padding:0 var(--space-lg) var(--space-lg);">
+          <p style="margin:0 0 var(--space-sm);font-size:var(--font-xs);color:var(--text-muted);">${desc}</p>
+          ${isEmpty ? `
+            <div style="padding:var(--space-md);text-align:center;color:var(--text-muted);font-size:var(--font-sm);">✓ Sin problemas en esta categoría.</div>
+          ` : `
+            <div style="overflow-x:auto;border:1px solid rgba(255,255,255,0.05);border-radius:var(--radius-sm);">
+              <table style="width:100%;min-width:600px;border-collapse:collapse;font-size:13px;">
+                <thead>
+                  <tr style="text-align:left;color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+                    ${headers.map(h => `<th style="padding:8px 10px;font-weight:600;">${h}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map(r => `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">${rowFn(r)}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      </details>
     `;
+  }
+
+  async _ejecutarResetContabilidad(btn) {
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Borrando...';
+    try {
+      const { collection, getDocs, writeBatch, doc } =
+        await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
+      const { db }          = await import('../../../js/firebase.js');
+      const { COLLECTIONS } = await import('../../../js/domain.js');
+
+      // Borramos en lotes de 490 (límite Firestore = 500 ops/batch)
+      const deleteBatch = async (colName) => {
+        let snap = await getDocs(collection(db, colName));
+        while (!snap.empty) {
+          const chunks = [];
+          for (let i = 0; i < snap.docs.length; i += 490) {
+            chunks.push(snap.docs.slice(i, i + 490));
+          }
+          for (const chunk of chunks) {
+            const batch = writeBatch(db);
+            chunk.forEach(d => batch.delete(doc(db, colName, d.id)));
+            await batch.commit();
+          }
+          snap = await getDocs(collection(db, colName));
+        }
+      };
+
+      await deleteBatch(COLLECTIONS.caja);
+      await deleteBatch(COLLECTIONS.cajaSesiones);
+
+      showToast('✅ Contabilidad reseteada a cero correctamente', 'success');
+      // Refrescar el panel completo
+      this._driftLoaded = false;
+      this._loadMantenimientoTab();
+    } catch (err) {
+      console.error('[Reset contabilidad]', err);
+      showToast('Error al resetear: ' + err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   }
 
   _ars(n) { return '$' + Math.round(Number(n || 0)).toLocaleString('es-AR'); }
