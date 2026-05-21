@@ -23,6 +23,16 @@ function _buildTrabajosQueryConstraints() {
 }
 
 const CACHE_KEY = 'tickets:list';
+const CACHE_KEY_TALLER = 'tickets:list:taller'; // operador-only — evita cross-contamination con admin
+
+/**
+ * Devuelve la cache key correcta según el rol activo. Sin esta separación,
+ * un admin podía dejar tickets remotos en cache y el operador los veía después.
+ */
+function _ticketsCacheKey() {
+  const session = getCurrentSession();
+  return session?.profile?.rol === 'operador' ? CACHE_KEY_TALLER : CACHE_KEY;
+}
 
 // ── Cursor state para paginación Firestore ──────────────────────────────────
 // Almacenado a nivel módulo para que getTicketsNextPage() pueda usar el cursor
@@ -38,8 +48,19 @@ let _hasMoreTickets = false; // true si la última lectura llegó al límite
  *
  * @returns {Promise<Array>} Lista de tickets (máx. FETCH_LIMIT)
  */
+/**
+ * Filtro defensivo client-side. Aunque la query Firestore ya filtra por
+ * tipo='taller' para operadores, esto garantiza que ninguna fuente de datos
+ * (cache stale, callers que bypassean, etc.) muestre remotos al operador.
+ */
+function _enforceOperadorTallerFilter(tickets) {
+  const session = getCurrentSession();
+  if (session?.profile?.rol !== 'operador') return tickets;
+  return tickets.filter(t => (t.tipo || 'taller') === 'taller');
+}
+
 export function getTickets() {
-  return cacheWrap(CACHE_KEY, async () => {
+  return cacheWrap(_ticketsCacheKey(), async () => {
     const roleFilter = _buildTrabajosQueryConstraints();
     const q = query(
       collection(db, COLLECTIONS.trabajos),
@@ -50,7 +71,8 @@ export function getTickets() {
     const snap = await getDocs(q);
     _lastTicketDoc  = snap.docs[snap.docs.length - 1] ?? null;
     _hasMoreTickets = snap.docs.length === FETCH_LIMIT;
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return _enforceOperadorTallerFilter(docs);
   });
 }
 
@@ -81,7 +103,8 @@ export async function getTicketsNextPage() {
   const snap = await getDocs(q);
   _lastTicketDoc  = snap.docs[snap.docs.length - 1] ?? null;
   _hasMoreTickets = snap.docs.length === FETCH_LIMIT;
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return _enforceOperadorTallerFilter(docs);
 }
 
 /**
@@ -90,6 +113,7 @@ export async function getTicketsNextPage() {
  */
 export function invalidateTicketsCache() {
   cacheInvalidate(CACHE_KEY);
+  cacheInvalidate(CACHE_KEY_TALLER);
   _lastTicketDoc  = null;
   _hasMoreTickets = false;
 }

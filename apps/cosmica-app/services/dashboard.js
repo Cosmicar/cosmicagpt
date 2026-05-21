@@ -287,21 +287,34 @@ function computeOperationalIntelligence(tickets, clientes) {
 // Límite máximo de eventos en el Activity Feed del dashboard
 const ACTIVITY_LIMIT = 20;
 
-async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
+async function getGlobalActivity(limitCount = ACTIVITY_LIMIT, visibleTicketIds = null) {
   // Clampeamos para no leer más de ACTIVITY_LIMIT * 2 docs en total
   const safeLimit = Math.min(limitCount, ACTIVITY_LIMIT);
 
   try {
     // 1. Fetch recent ticket history via collectionGroup — sin orderBy para evitar
     //    requerir un índice compuesto en Firestore. Ordenamos client-side.
+    // Si visibleTicketIds está definido (operador), pedimos extra para compensar
+    // los eventos que vamos a filtrar fuera (de tickets remotos no visibles).
+    const fetchMultiplier = visibleTicketIds ? 6 : 3;
     const historyQuery = query(
       collectionGroup(db, 'history'),
-      limit(safeLimit * 3) // fetch más y filtramos/ordenamos en memoria
+      limit(safeLimit * fetchMultiplier) // fetch más y filtramos/ordenamos en memoria
     );
     const historySnap = await getDocs(historyQuery);
-    const historyEvents = historySnap.docs.map(d => ({
-      id: d.id, ...d.data(), source: 'ticket'
+    let historyEvents = historySnap.docs.map(d => ({
+      id: d.id,
+      _trabajoId: d.ref.parent.parent?.id, // necesario para filtrar por visibilidad
+      ...d.data(),
+      source: 'ticket',
     }));
+
+    // Filtro defensivo: si el rol no puede ver ciertos trabajos (operador → solo
+    // taller), descartamos los eventos de tickets no visibles. Esto evita leak
+    // de info de tickets remotos en el Activity Feed.
+    if (visibleTicketIds) {
+      historyEvents = historyEvents.filter(e => visibleTicketIds.has(e._trabajoId));
+    }
 
     // 2. Fetch recent finance/caja movements
     const cajaQuery = query(
@@ -498,6 +511,15 @@ export async function getDashboardData() {
   // ── Desglose financiero diferencial (paridad legacy 80/20) ────────────────
   const finanzas = computeFinancialBreakdown(tickets, comisiones);
 
+  // Activity Feed: si el rol activo tiene visibilidad restringida (operador),
+  // pasamos los IDs visibles para que getGlobalActivity filtre eventos de
+  // tickets no permitidos (ej. remotos para operador).
+  const { getCurrentSession } = await import('../core/session.js');
+  const isOperador = getCurrentSession()?.profile?.rol === 'operador';
+  const visibleTicketIds = isOperador
+    ? new Set(tickets.map(t => t.id))
+    : null;
+
   return {
     metrics:           computeMetrics(tickets),
     hoy,
@@ -506,7 +528,7 @@ export async function getDashboardData() {
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),
     attentionRequired: computeAttentionRequired(tickets).map(enrichTicket),
-    activityFeed:      await getGlobalActivity(15)
+    activityFeed:      await getGlobalActivity(15, visibleTicketIds)
   };
 }
 
