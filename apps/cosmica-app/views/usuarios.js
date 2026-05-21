@@ -559,15 +559,46 @@ export class UsuariosView extends BaseView {
         <button id="mp-apply" class="btn btn-primary" style="width:100%;padding:9px;font-size:13px;">Aplicar ajuste</button>
       </div>
 
-      ${(benOpts || penOpts) ? `
-      <!-- Preset -->
-      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Aplicar preset</div>
+      ${benActivos.length ? `
+      <!-- Beneficios -->
+      <div style="background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.2);border-radius:var(--radius-md);padding:16px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#10B981;margin-bottom:12px;">🎁 Aplicar Beneficio</div>
         <div style="display:grid;grid-template-columns:1fr auto;gap:10px;">
-          <select id="mp-preset" class="input" style="margin:0;">${benOpts}${penOpts}</select>
-          <button id="mp-preset-apply" class="btn btn-secondary" style="padding:9px 16px;white-space:nowrap;">Aplicar</button>
+          <select id="mp-ben-preset" class="input" style="margin:0;">
+            ${benActivos.map(b => `<option value="${b.id}">🎁 ${b.nombre} (+${b.puntos} pts)</option>`).join('')}
+          </select>
+          <button id="mp-ben-apply" class="btn" style="padding:9px 16px;white-space:nowrap;background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#10B981;">Aplicar</button>
         </div>
       </div>` : ''}
+
+      <!-- Penalidades -->
+      <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-md);padding:16px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#EF4444;">⚠️ Aplicar Penalidad</div>
+          <button id="mp-new-pen-toggle" class="btn btn-secondary" style="padding:4px 10px;font-size:11px;border-color:rgba(239,68,68,0.4);color:#EF4444;">+ Nueva</button>
+        </div>
+
+        <!-- Form crear penalidad rápida (oculto por defecto) -->
+        <div id="mp-new-pen-form" style="display:none;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:8px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:11px;color:#EF4444;font-weight:600;margin-bottom:8px;">Crear nueva penalidad</div>
+          <div style="display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px;">
+            <input id="mp-pen-nombre" class="input" placeholder="Nombre (ej. Llegada tarde)" style="margin:0;">
+            <input id="mp-pen-pts" type="number" class="input" placeholder="−pts" style="margin:0;" max="-1">
+          </div>
+          <button id="mp-pen-crear" class="btn" style="width:100%;padding:8px;font-size:12px;background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#EF4444;">Crear penalidad</button>
+        </div>
+
+        ${penActivas.length ? `
+        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;">
+          <select id="mp-pen-preset" class="input" style="margin:0;border-color:rgba(239,68,68,0.3);">
+            ${penActivas.map(p => `<option value="${p.id}">⚠️ ${p.nombre} (${p.puntos} pts)</option>`).join('')}
+          </select>
+          <button id="mp-pen-apply" class="btn" style="padding:9px 16px;white-space:nowrap;background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#EF4444;">Aplicar</button>
+        </div>` : `
+        <div id="mp-pen-empty" style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px 0;">
+          No hay penalidades configuradas. Creá una con "+ Nueva".
+        </div>`}
+      </div>
 
       <!-- Historial -->
       <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Historial (últimos 50)</div>
@@ -588,6 +619,16 @@ export class UsuariosView extends BaseView {
 
     const errEl = modal.querySelector('#mp-error');
 
+    // Reload helper — recarga el modal fresco
+    const reloadModal = async () => {
+      this._users = await listAllUsers();
+      document.getElementById('m-puntos')?.remove();
+      document.getElementById('usuarios-content').innerHTML = this._renderTabOperadores(this._users);
+      this._bindTableActions();
+      this._bindTabButtons();
+    };
+
+    // Ajuste manual
     modal.querySelector('#mp-apply')?.addEventListener('click', async () => {
       const puntos = Number(modal.querySelector('#mp-puntos').value);
       const motivo = modal.querySelector('#mp-motivo').value.trim();
@@ -596,32 +637,64 @@ export class UsuariosView extends BaseView {
       if (!motivo) { errEl.textContent = 'El motivo es requerido.'; errEl.style.display = 'block'; return; }
       try {
         await agregarPuntos(u.id, puntos, motivo);
-        this._users = await listAllUsers();
-        document.getElementById('m-puntos')?.remove();
-        document.getElementById('usuarios-content').innerHTML = this._renderTabOperadores(this._users);
-        this._bindTableActions();
-        this._bindTabButtons();
         showToast('Puntos actualizados', 'success');
+        await reloadModal();
       } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
     });
 
-    modal.querySelector('#mp-preset-apply')?.addEventListener('click', async () => {
-      const select = modal.querySelector('#mp-preset');
+    // Beneficio preset
+    modal.querySelector('#mp-ben-apply')?.addEventListener('click', async () => {
+      const select = modal.querySelector('#mp-ben-preset');
       const itemId = select?.value;
-      const tipo   = select?.selectedOptions[0]?.dataset.tipo;
       if (!itemId) return;
       errEl.style.display = 'none';
       try {
-        await aplicarPreset(u.id, itemId, tipo);
-        this._users = await listAllUsers();
+        await aplicarPreset(u.id, itemId, 'beneficio');
+        showToast('Beneficio aplicado', 'success');
+        await reloadModal();
+      } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+    });
+
+    // Toggle form nueva penalidad
+    modal.querySelector('#mp-new-pen-toggle')?.addEventListener('click', () => {
+      const form = modal.querySelector('#mp-new-pen-form');
+      const visible = form.style.display !== 'none';
+      form.style.display = visible ? 'none' : 'block';
+      if (!visible) modal.querySelector('#mp-pen-nombre')?.focus();
+    });
+
+    // Crear penalidad rápida
+    modal.querySelector('#mp-pen-crear')?.addEventListener('click', async () => {
+      const nombre = modal.querySelector('#mp-pen-nombre')?.value.trim();
+      let pts = Number(modal.querySelector('#mp-pen-pts')?.value);
+      errEl.style.display = 'none';
+      if (!nombre) { errEl.textContent = 'El nombre de la penalidad es requerido.'; errEl.style.display = 'block'; return; }
+      if (!pts || pts === 0) { errEl.textContent = 'Ingresá los puntos a descontar (número negativo).'; errEl.style.display = 'block'; return; }
+      if (pts > 0) pts = -pts; // asegurar que sea negativo
+      try {
+        await savePenalidad(null, { nombre, puntos: pts, descripcion: '', activo: true });
+        showToast(`Penalidad "${nombre}" creada`, 'success');
+        // Reabrir el modal con datos frescos
         document.getElementById('m-puntos')?.remove();
-        document.getElementById('usuarios-content').innerHTML = this._renderTabOperadores(this._users);
-        this._bindTableActions();
-        this._bindTabButtons();
-        showToast('Preset aplicado', 'success');
+        const updatedUser = { ...u };
+        await this._modalPuntos(updatedUser);
+      } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+    });
+
+    // Penalidad preset
+    modal.querySelector('#mp-pen-apply')?.addEventListener('click', async () => {
+      const select = modal.querySelector('#mp-pen-preset');
+      const itemId = select?.value;
+      if (!itemId) return;
+      errEl.style.display = 'none';
+      try {
+        await aplicarPreset(u.id, itemId, 'penalidad');
+        showToast('Penalidad aplicada', 'success');
+        await reloadModal();
       } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; }
     });
   }
+
 
   // ── Modal: beneficio ──────────────────────────────────────────
 
