@@ -211,8 +211,25 @@ function initPerfilButton(session, mainContent) {
     const avatar = getCosmicAvatar(avatarSeed);
     btnPerfil.innerHTML = `<img src="${avatar.url}" alt="${avatar.name}"
       style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
-      onerror="this.style.display='none'">`;
-    btnPerfil.style.setProperty('--perfil-bg', '#020617');
+      onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#1e1b4b,#020617)'">`;
+    // Force circular avatar styling regardless of btn-primary defaults (desktop + mobile)
+    btnPerfil.style.cssText = `
+      width: 36px; height: 36px; min-height: 36px; min-width: 36px;
+      padding: 0; border-radius: 50%; background: #020617;
+      overflow: hidden;
+      border: 1.5px solid rgba(0,229,255,0.5);
+      box-shadow: 0 0 12px rgba(0,229,255,0.25), inset 0 0 0 1px rgba(255,255,255,0.08);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease;
+    `;
+    btnPerfil.onmouseenter = () => {
+      btnPerfil.style.transform = 'scale(1.08)';
+      btnPerfil.style.boxShadow = '0 0 18px rgba(0,229,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.15)';
+    };
+    btnPerfil.onmouseleave = () => {
+      btnPerfil.style.transform = '';
+      btnPerfil.style.boxShadow = '0 0 12px rgba(0,229,255,0.25), inset 0 0 0 1px rgba(255,255,255,0.08)';
+    };
     btnPerfil.setAttribute('aria-label', `Perfil de ${displayName} (${avatar.name})`);
     btnPerfil.setAttribute('title', `${displayName} — ${avatar.name}`);
   }
@@ -492,47 +509,71 @@ function initNavbarClock() {
     s.id = 'cosmos-clock-style';
     s.textContent = `
       #navbar-clock {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0px;
-        line-height: 1.1;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(99,102,241,0.04));
+        border: 1px solid rgba(0,229,255,0.12);
+        line-height: 1;
+        white-space: nowrap;
+        position: relative;
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset;
+      }
+      #navbar-clock::before {
+        content: '';
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--accent-cyan);
+        box-shadow: 0 0 6px var(--accent-cyan);
+        animation: clockPulse 2s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+      @keyframes clockPulse {
+        0%, 100% { opacity: 0.85; }
+        50%      { opacity: 0.35; }
       }
       .clock-date {
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: rgba(100,210,255,0.55);
-        font-variant-numeric: tabular-nums;
+        color: var(--text-muted);
+        opacity: 0.85;
+      }
+      .clock-sep {
+        color: rgba(0,229,255,0.35);
+        font-weight: 700;
       }
       .clock-time {
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 0.06em;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
         font-variant-numeric: tabular-nums;
-        color: rgba(0,229,255,0.92);
-        text-shadow: 0 0 12px rgba(0,229,255,0.45), 0 0 4px rgba(0,229,255,0.2);
+        color: var(--text-primary);
         font-family: ui-monospace, 'SF Mono', Menlo, monospace;
       }
-      @media (max-width: 600px) {
+      @media (max-width: 768px) {
         #navbar-clock { display: none !important; }
       }
     `;
     document.head.appendChild(s);
   }
 
-  const DIAS   = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
-  const MESES  = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const DIAS  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 
   const tick = () => {
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    // Parse current time in Buenos Aires timezone
+    const now   = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
     const dia   = DIAS[now.getDay()];
-    const fecha = `${String(now.getDate()).padStart(2,'0')} ${MESES[now.getMonth()]} ${now.getFullYear()}`;
+    const fecha = `${String(now.getDate()).padStart(2,'0')} ${MESES[now.getMonth()]}`;
     const hora  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
     el.innerHTML = `
-      <span class="clock-date">${dia} · ${fecha}</span>
+      <span class="clock-date">${dia} ${fecha}</span>
+      <span class="clock-sep">·</span>
       <span class="clock-time">${hora}</span>
     `;
   };
