@@ -219,13 +219,18 @@ function initPerfilButton(session, mainContent) {
   const email = session.user?.email || '';
   const displayName = session.profile?.nombre || email;
   const puntos = session.profile?.puntos ?? 0;
+  const rol = session.profile?.rol || '';
 
   const userEmailEl = document.getElementById('userEmail');
   if (userEmailEl) {
-    const esPositivo = puntos >= 0;
-    const color = esPositivo ? '#10B981' : '#EF4444';
-    const border = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
-    userEmailEl.innerHTML = `${displayName} <span id="navbar-puntos-badge" style="margin-left: 6px; font-size: 10px; font-weight: 700; color: ${color}; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 12px; border: 1px solid ${border};">⭐ ${esPositivo ? '+' : ''}${puntos} pts</span>`;
+    if (rol !== 'admin' && rol !== 'tester') {
+      const esPositivo = puntos >= 0;
+      const color = esPositivo ? '#10B981' : '#EF4444';
+      const border = esPositivo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+      userEmailEl.innerHTML = `${displayName} <span id="navbar-puntos-badge" style="margin-left: 6px; font-size: 10px; font-weight: 700; color: ${color}; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 12px; border: 1px solid ${border};">⭐ ${esPositivo ? '+' : ''}${puntos} pts</span>`;
+    } else {
+      userEmailEl.textContent = displayName;
+    }
   }
 
   const perfilEmailEl = document.getElementById('perfilEmail');
@@ -361,7 +366,7 @@ function renderSidebar(profile) {
         <span class="sidebar-user-name">${displayName}</span>
         <span class="sidebar-user-role" style="display:flex;align-items:center;gap:6px;">
           ${role}
-          ${(role !== 'admin') ? (() => {
+          ${(role !== 'admin' && role !== 'tester') ? (() => {
             const puntos = profile?.puntos ?? 0;
             const esPos  = puntos >= 0;
             return `<span id="sidebar-puntos-badge" style="
