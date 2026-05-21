@@ -197,7 +197,8 @@ export class TicketFormView extends AsyncView {
     const planOptions = [
       { value: 'estandar', label: 'Estándar' },
       { value: 'oro', label: 'Oro (Prioridad)' },
-      { value: 'platinum', label: 'Platinum (Urgente)' }
+      { value: 'platinum', label: 'Platinum (Urgente)' },
+      { value: 'reset', label: '🖨️ Reset de Impresora' },
     ];
 
     const isEntregado = ticket?.estado === WORK_STATUS.entregado;
@@ -963,6 +964,28 @@ export class TicketFormView extends AsyncView {
   initFormHandlers() {
     const form = document.getElementById('ticket-form');
     if (!form) return;
+
+    // ── Plan de servicio → autocompletar precio desde config ─────────────────
+    const planSelect  = document.getElementById('planServicio');
+    const precioInput = document.getElementById('precio');
+    if (planSelect && precioInput && !precioInput.disabled) {
+      const _planPrices = () => {
+        try {
+          const cfg = JSON.parse(localStorage.getItem('cosmica_config_v1') || '{}');
+          return {
+            estandar: Number(cfg.precioBronce)   || null,
+            oro:      Number(cfg.precioOro)       || null,
+            platinum: Number(cfg.precioPlatinum)  || null,
+            reset:    Number(cfg.precioReset)     || null,
+          };
+        } catch { return {}; }
+      };
+      planSelect.addEventListener('change', () => {
+        const prices = _planPrices();
+        const price  = prices[planSelect.value];
+        if (price) precioInput.value = price;
+      });
+    }
 
     // Budget suggestions listener
     const problemaInput = document.getElementById('problema');
