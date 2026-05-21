@@ -239,6 +239,8 @@ async function _onCajaClick(el, tipo) {
 
   const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
 
+  const { logEvent } = await import('./logger.js');
+
   if (el.dataset.cajaStatus === 'closed') {
     const input = prompt(`¿Confirmás la apertura de Caja ${label}?\n\nIngresá el saldo inicial ($):`, '0');
     if (input === null) return;
@@ -253,6 +255,7 @@ async function _onCajaClick(el, tipo) {
       const { showToast } = await import('../components/toast.js');
       const res = await abrirCaja(saldo, tipo);
       if (res.success) {
+        logEvent('caja.opened', { tipo, saldoInicial: saldo, sesionId: res.id });
         showToast(`Caja ${label} abierta con $${saldo.toLocaleString('es-AR')}`, 'success');
         invalidateCajaStatusCache();
         await updateCajaStatusIndicator();
@@ -261,6 +264,7 @@ async function _onCajaClick(el, tipo) {
         }
       }
     } catch (err) {
+      logEvent('caja.open_failed', { tipo, saldoInicial: saldo, error: err.message }, 'error');
       const { showToast } = await import('../components/toast.js');
       showToast(err.message || 'Error al abrir caja', 'error');
     }
@@ -280,6 +284,12 @@ async function _onCajaClick(el, tipo) {
       const { showToast } = await import('../components/toast.js');
       const res = await cerrarCaja(sesionId, saldoFinal);
       if (res.success) {
+        logEvent('caja.closed', {
+          tipo, sesionId, saldoFinal,
+          diferencia: res.diferencia,
+          totalIngresos: res.totalIngresos,
+          totalEgresos: res.totalEgresos,
+        }, Math.abs(res.diferencia || 0) >= 1000 ? 'warn' : 'info');
         showToast(`Caja ${label} cerrada correctamente`, 'success');
         invalidateCajaStatusCache();
         await updateCajaStatusIndicator();
@@ -288,6 +298,7 @@ async function _onCajaClick(el, tipo) {
         }
       }
     } catch (err) {
+      logEvent('caja.close_failed', { tipo, sesionId, saldoFinal, error: err.message }, 'error');
       const { showToast } = await import('../components/toast.js');
       showToast(err.message || 'Error al cerrar caja', 'error');
     }
