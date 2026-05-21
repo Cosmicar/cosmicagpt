@@ -303,7 +303,9 @@ service cloud.firestore {
       // Cada usuario puede leer su propio log (para el modal de puntos en perfil)
       allow read: if isAdmin() ||
         (isAuthenticated() && resource.data.uid == request.auth.uid);
-      allow update, delete: if false;
+      allow update: if false;
+      // Admin puede eliminar el log al borrar un operador
+      allow delete: if isAdmin();
     }
 
     // ─────────────────────────────────────────────
@@ -335,7 +337,8 @@ service cloud.firestore {
       allow read, update: if isAuthenticated() && request.auth.uid == uid;
       // Creación: staff autenticado puede crear notificaciones para cualquier uid
       allow create: if isStaff();
-      allow delete: if false;
+      // Admin puede eliminar el inbox al borrar un operador
+      allow delete: if isAdmin();
     }
 
     // ─────────────────────────────────────────────

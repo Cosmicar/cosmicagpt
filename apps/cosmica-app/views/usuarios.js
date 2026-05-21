@@ -3,7 +3,7 @@ import { renderBreadcrumb } from '../components/breadcrumb.js';
 import { render as renderSectionHeader } from '../components/section-header.js';
 import { showToast } from '../components/toast.js';
 import {
-  listAllUsers, createUser, updateUser,
+  listAllUsers, createUser, updateUser, deleteUser,
   agregarPuntos, getPuntosLog,
   listBeneficios, saveBeneficio, deleteBeneficio,
   listPenalidades, savePenalidad, deletePenalidad,
@@ -20,6 +20,7 @@ export class UsuariosView extends BaseView {
     this._users = [];
     this._beneficios = [];
     this._penalidades = [];
+    this._currentUid = null;
   }
 
   // ── helpers de UI (mismo estilo que ConfiguracionView) ─────────
@@ -80,11 +81,14 @@ export class UsuariosView extends BaseView {
                   style="padding:5px 12px;font-size:12px;">Editar</button>
                 <button data-action="open-puntos" data-uid="${u.id}" class="btn btn-secondary"
                   style="padding:5px 12px;font-size:12px;border-color:var(--accent-cyan);color:var(--accent-cyan);">⭐ Puntos</button>
+                ${u.id !== this._currentUid ? `
+                <button data-action="del-user" data-uid="${u.id}" data-nombre="${u.nombre || u.email || 'este usuario'}" class="btn btn-secondary"
+                  style="padding:5px 12px;font-size:12px;border-color:#EF4444;color:#EF4444;">Eliminar</button>` : ''}
               </div>
             </td>
           </tr>`;
         }).join('')
-      : this._emptyRow(5, 'Sin usuarios registrados');
+      : this._emptyRow(5, 'Sin operadores registrados');
 
     return `
       <div style="display:flex;justify-content:flex-end;margin-bottom:var(--space-lg);">
@@ -209,6 +213,12 @@ export class UsuariosView extends BaseView {
   }
 
   async afterRender() {
+    // Obtener uid del usuario logueado (para impedir auto-eliminación en UI)
+    try {
+      const { getAuth } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js');
+      this._currentUid = getAuth().currentUser?.uid || null;
+    } catch (_) { this._currentUid = null; }
+
     // Cargar datos en paralelo — cada uno falla de forma independiente
     const [usersResult, benResult, penResult] = await Promise.allSettled([
       listAllUsers(), listBeneficios(), listPenalidades()
@@ -282,6 +292,25 @@ export class UsuariosView extends BaseView {
       btn.addEventListener('click', async () => {
         const action = btn.dataset.action;
 
+        if (action === 'del-user') {
+          const uid    = btn.dataset.uid;
+          const nombre = btn.dataset.nombre;
+          if (!confirm(`⚠️ ¿Eliminar a "${nombre}"?\n\nEsto borrará su perfil e historial de puntos.\nLos clientes no se verán afectados.\n\nEsta acción no se puede deshacer.`)) return;
+          btn.disabled = true;
+          btn.textContent = 'Eliminando…';
+          try {
+            await deleteUser(uid);
+            this._users = await listAllUsers();
+            document.getElementById('usuarios-content').innerHTML = this._renderTabOperadores(this._users);
+            this._bindTableActions();
+            this._bindTabButtons();
+            showToast(`Operador "${nombre}" eliminado correctamente`, 'success');
+          } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Eliminar';
+            showToast('Error al eliminar: ' + e.message, 'error');
+          }
+        }
         if (action === 'edit-user') {
           const u = this._users.find(x => x.id === btn.dataset.uid);
           if (u) this._modalEditarUsuario(u);

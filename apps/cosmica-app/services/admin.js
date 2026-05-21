@@ -1,7 +1,7 @@
 import {
   collection, doc, getDocs, getDoc, setDoc, updateDoc,
   addDoc, serverTimestamp, query, where, orderBy, limit,
-  increment, deleteDoc
+  increment, deleteDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import {
   createUserWithEmailAndPassword, signOut
@@ -85,6 +85,36 @@ export async function createUser({ email, password, nombre, rol, permisos }) {
     return { uid: user.uid, email, rol: rolFinal };
   } finally {
     await secondary.destroy().catch(() => {});
+  }
+}
+
+/**
+ * Elimina un operador y toda su huella en Firestore:
+ *  - puntos_log del usuario
+ *  - inbox de notificaciones
+ *  - documento en /usuarios
+ * NO toca clientes ni Firebase Auth (requiere Admin SDK para Auth).
+ * Firestore permite 500 ops por batch; si hay más de ~480 docs se divide.
+ */
+export async function deleteUser(uid) {
+  // Recolectar refs a eliminar
+  const [logSnap, inboxSnap] = await Promise.all([
+    getDocs(query(collection(db, ADMIN_COLS.puntos_log), where('uid', '==', uid))),
+    getDocs(collection(db, 'notificaciones', uid, 'inbox'))
+  ]);
+
+  const allRefs = [
+    ...logSnap.docs.map(d => d.ref),
+    ...inboxSnap.docs.map(d => d.ref),
+    doc(db, COLLECTIONS.usuarios, uid)
+  ];
+
+  // Ejecutar en batches de 490 para no superar el límite de 500
+  const CHUNK = 490;
+  for (let i = 0; i < allRefs.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    allRefs.slice(i, i + CHUNK).forEach(ref => batch.delete(ref));
+    await batch.commit();
   }
 }
 
