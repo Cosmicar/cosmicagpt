@@ -77,11 +77,23 @@ function equipo(ticket) {
 // ─── Message builders ─────────────────────────────────────────────────────────
 
 /**
+ * Devuelve el link público de seguimiento de la orden.
+ * @param {Object} ticket
+ * @returns {string|null}
+ */
+function linkSeguimiento(ticket) {
+  return ticket?.numeroOrden
+    ? `https://cosmica.ar/estado.html?orden=${ticket.numeroOrden}`
+    : null;
+}
+
+/**
  * "Listo para retirar" — sent when status → listo.
  */
 export function buildReadyMessage(ticket) {
   const garantia = Number(ticket.garantiaDias) || 90;
   const precio   = Number(ticket.precio || ticket.presupuesto || 0);
+  const link     = linkSeguimiento(ticket);
   const lines = [
     `Hola ${nombre(ticket)} 👋`,
     ``,
@@ -90,9 +102,9 @@ export function buildReadyMessage(ticket) {
     `🛡 Garantía: ${garantia} días sobre mano de obra`,
     ``,
     `Podés pasar por el taller en nuestro horario habitual.`,
+    link ? `\n📍 Revisá el estado de tu equipo en:\n${link}` : '',
     ``,
     `_${BRAND_NAME}_`,
-    `${BRAND_WEB}`,
   ].filter(l => l !== null);
   return lines.join('\n');
 }
@@ -178,6 +190,7 @@ export function buildReminderMessage(ticket) {
  */
 export function buildLastWarningMessage(ticket) {
   const precio = Number(ticket.precio || ticket.presupuesto || 0);
+  const link   = linkSeguimiento(ticket);
   const lines = [
     `Hola ${nombre(ticket)} 👋`,
     ``,
@@ -186,9 +199,9 @@ export function buildLastWarningMessage(ticket) {
     ``,
     `Si no retirás el equipo en los próximos días, nos vemos en la necesidad de tomar medidas.`,
     `Por favor comunicate a la brevedad.`,
+    link ? `\n📍 Estado de tu equipo:\n${link}` : '',
     ``,
     `_${BRAND_NAME}_ · ${BRAND_PHONE}`,
-    `${BRAND_WEB}`,
   ].filter(l => l !== null);
   return lines.join('\n');
 }

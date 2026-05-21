@@ -9,7 +9,7 @@ import { showToast } from './toast.js';
 
 import { formatRelativeTs, TICKET_EVENT_ICONS } from '../core/utils.js';
 import { getClientBadge, getReentryRisk, estimateRepairTime, getClientSnapshot, getCriticalAlert, getDaysInStatus, getLifecycleStage, getAgingBadge } from '../core/intelligence.js';
-import { openWhatsApp, buildReadyMessage, buildBudgetMessage, buildApprovalMessage, buildWaitingPartsMessage, buildReminderMessage, buildLastWarningMessage } from '../core/message-templates.js';
+import { openWhatsApp, buildReadyMessage, buildLastWarningMessage } from '../core/message-templates.js';
 import { getTickets } from '../services/tickets.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -257,21 +257,24 @@ function renderBody(ticket) {
             style="height:32px;padding:0 12px;font-size:11px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);display:inline-flex;align-items:center;gap:6px;" title="Llamar">📱 Llamar</a>
         </div>
       </div>
-      <!-- WhatsApp action grid -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+      <!-- WhatsApp action buttons — solo avisos clave -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
         <button class="btn btn-sm qv-wa-btn" data-action="listo"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Avisar listo</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="presupuesto"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Presupuesto</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="aprobacion"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Aprobación</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="repuesto"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Repuesto</button>
-        <button class="btn btn-sm qv-wa-btn" data-action="recordatorio"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">Recordar</button>
+          style="height:34px;font-size:11px;font-weight:700;background:rgba(37,211,102,0.1);color:#25D366;border:1px solid rgba(37,211,102,0.2);">✅ Avisar listo</button>
         <button class="btn btn-sm qv-wa-btn" data-action="ultimoaviso"
-          style="height:34px;font-size:9px;font-weight:700;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);">Último aviso</button>
+          style="height:34px;font-size:11px;font-weight:700;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);">⚠️ Último aviso</button>
       </div>
+      <!-- Link de seguimiento público -->
+      ${ticket.numeroOrden ? (() => {
+        const linkSeguimiento = `https://cosmica.ar/estado.html?orden=${ticket.numeroOrden}`;
+        return `
+      <div style="margin-top:6px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;">
+        <span style="font-size:9px;color:var(--text-muted);white-space:nowrap;">🔗 Seguimiento:</span>
+        <span style="font-size:9px;color:var(--accent-cyan);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;">${linkSeguimiento}</span>
+        <button class="btn btn-sm btn-secondary qv-copy-btn" data-text="${linkSeguimiento}"
+          style="width:26px;height:26px;padding:0;font-size:10px;flex-shrink:0;" title="Copiar link de seguimiento">📋</button>
+      </div>`;
+      })() : ''}
     </div>` : ''}
 
     <!-- Lifecycle info -->
@@ -707,12 +710,8 @@ export async function openTicketQuickView(ticket, { onStatusChange } = {}) {
           e.stopPropagation();
           const action = btn.dataset.action;
           const msgMap = {
-            listo:        () => buildReadyMessage(ticket),
-            presupuesto:  () => buildBudgetMessage(ticket),
-            aprobacion:   () => buildApprovalMessage(ticket),
-            repuesto:     () => buildWaitingPartsMessage(ticket),
-            recordatorio: () => buildReminderMessage(ticket),
-            ultimoaviso:  () => buildLastWarningMessage(ticket),
+            listo:      () => buildReadyMessage(ticket),
+            ultimoaviso: () => buildLastWarningMessage(ticket),
           };
           const build = msgMap[action];
           if (build) openWhatsApp(ticket.telefono, build());
