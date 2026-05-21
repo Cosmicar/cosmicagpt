@@ -49,7 +49,7 @@ export class UsuariosView extends BaseView {
 
   _tableHead(...cols) {
     return `<thead><tr style="border-bottom:1px solid var(--border);">
-      ${cols.map(c => `<th style="padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);text-align:left;">${c}</th>`).join('')}
+      ${cols.map(c => `<th style="padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);text-align:left;white-space:nowrap;">${c}</th>`).join('')}
     </tr></thead>`;
   }
 
@@ -67,16 +67,16 @@ export class UsuariosView extends BaseView {
               <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${u.email || ''}</div>
             </td>
             <td style="padding:14px;">${this._badge(rol.label, rol.color)}</td>
-            <td style="padding:14px;">
+            <td style="padding:14px;white-space:nowrap;">
               ${activo
                 ? `<span style="color:#10B981;font-size:12px;font-weight:600;">● Activo</span>`
                 : `<span style="color:var(--text-muted);font-size:12px;font-weight:600;">● Inactivo</span>`}
             </td>
-            <td style="padding:14px;font-weight:700;font-size:15px;color:${pts >= 0 ? '#10B981' : '#EF4444'};">
+            <td style="padding:14px;font-weight:700;font-size:15px;white-space:nowrap;color:${pts >= 0 ? '#10B981' : '#EF4444'};">
               ${pts >= 0 ? '+' : ''}${pts}
             </td>
-            <td style="padding:14px;">
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <td style="padding:14px;white-space:nowrap;">
+              <div style="display:flex;gap:6px;flex-wrap:nowrap;">
                 <button data-action="edit-user" data-uid="${u.id}" class="btn btn-secondary"
                   style="padding:5px 12px;font-size:12px;">Editar</button>
                 <button data-action="open-puntos" data-uid="${u.id}" class="btn btn-secondary"
@@ -96,8 +96,8 @@ export class UsuariosView extends BaseView {
           + Nuevo usuario
         </button>
       </div>
-      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;min-width:720px;border-collapse:collapse;font-size:13px;">
           ${this._tableHead('Usuario', 'Rol', 'Estado', 'Puntos', 'Acciones')}
           <tbody>${rows}</tbody>
         </table>
@@ -132,8 +132,8 @@ export class UsuariosView extends BaseView {
           + Agregar beneficio
         </button>
       </div>
-      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;min-width:680px;border-collapse:collapse;font-size:13px;">
           ${this._tableHead('Nombre', 'Descripción', 'Puntos', 'Estado', 'Acciones')}
           <tbody>${rows}</tbody>
         </table>
@@ -168,8 +168,8 @@ export class UsuariosView extends BaseView {
           + Agregar penalidad
         </button>
       </div>
-      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <div style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;min-width:680px;border-collapse:collapse;font-size:13px;">
           ${this._tableHead('Nombre', 'Descripción', 'Puntos', 'Estado', 'Acciones')}
           <tbody>${rows}</tbody>
         </table>

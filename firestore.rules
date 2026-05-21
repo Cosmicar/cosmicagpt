@@ -333,8 +333,10 @@ service cloud.firestore {
     // Admin y staff pueden crear notificaciones para cualquier usuario.
     // ─────────────────────────────────────────────
     match /notificaciones/{uid}/inbox/{notifId} {
-      // Lectura y actualización (marcar como leído): solo el propio usuario
-      allow read, update: if isAuthenticated() && request.auth.uid == uid;
+      // Lectura: el dueño del inbox, o admin (para limpiar al borrar operador)
+      allow read:   if isAuthenticated() && (request.auth.uid == uid || isAdmin());
+      // Actualización (marcar como leído): solo el propio usuario
+      allow update: if isAuthenticated() && request.auth.uid == uid;
       // Creación: staff autenticado puede crear notificaciones para cualquier uid
       allow create: if isStaff();
       // Admin puede eliminar el inbox al borrar un operador
