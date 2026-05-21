@@ -28,9 +28,23 @@ const SPACE_PHOTOS = [
   { name: 'Vía Láctea',              url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/ESO-VLT-Laser-phot-0a-99.jpg/120px-ESO-VLT-Laser-phot-0a-99.jpg' },
 ];
 
-/** Pick a space photo avatar deterministically from a user seed (uid/email). */
+/**
+ * Pick a space photo avatar — random per session.
+ * Uses a salt stored in sessionStorage so the avatar stays consistent within
+ * a session (sidebar + dropdown + button match), but changes on the next login.
+ * The salt is cleared on logout (see btnLogout handler below).
+ */
 function getCosmicAvatar(seed) {
-  const s = String(seed || 'cosmica').toLowerCase();
+  let sessionSalt = '';
+  try {
+    sessionSalt = sessionStorage.getItem('cosmica_avatar_salt') || '';
+    if (!sessionSalt) {
+      sessionSalt = String(Math.random()).slice(2, 12) + Date.now().toString(36);
+      sessionStorage.setItem('cosmica_avatar_salt', sessionSalt);
+    }
+  } catch (_) { /* sessionStorage unavailable — fallback to deterministic */ }
+
+  const s = (String(seed || 'cosmica') + sessionSalt).toLowerCase();
   let hash = 0;
   for (let i = 0; i < s.length; i++) {
     hash = ((hash << 5) - hash) + s.charCodeAt(i);
@@ -292,9 +306,11 @@ function initPerfilButton(session, mainContent) {
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
       if (!confirm('¿Estás seguro que deseas cerrar sesión?')) return;
-      
+
       btnLogout.disabled = true;
       btnLogout.textContent = 'Saliendo...';
+      // Clear avatar salt so next login picks a fresh random space photo
+      try { sessionStorage.removeItem('cosmica_avatar_salt'); } catch (_) {}
       await logout();
     });
   }
