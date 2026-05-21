@@ -597,10 +597,29 @@ export class TicketFormView extends AsyncView {
           const parts = val.trim().split(/\s+/);
           const preNombre = parts[0] || '';
           const preApellido = parts.slice(1).join(' ') || '';
+          // Provincia es relevante SOLO para servicio remoto (cobertura nacional).
+          // Para taller presencial, el cliente viene al local — no se pide provincia
+          // en el quick-create (puede completarse después desde Clientes).
+          const tipoActual = document.getElementById('tipo')?.value || 'taller';
+          const isRemoto   = tipoActual === 'remoto';
+          const PROVINCES_AR = [
+            ['jujuy','Jujuy'], ['buenos_aires','Buenos Aires'], ['caba','CABA'],
+            ['cordoba','Córdoba'], ['santa_fe','Santa Fe'], ['mendoza','Mendoza'],
+            ['salta','Salta'], ['tucuman','Tucumán'], ['santiago_del_estero','Santiago del Estero'],
+            ['catamarca','Catamarca'], ['la_rioja','La Rioja'], ['san_juan','San Juan'],
+            ['san_luis','San Luis'], ['entre_rios','Entre Ríos'], ['corrientes','Corrientes'],
+            ['misiones','Misiones'], ['chaco','Chaco'], ['formosa','Formosa'],
+            ['la_pampa','La Pampa'], ['neuquen','Neuquén'], ['rio_negro','Río Negro'],
+            ['chubut','Chubut'], ['santa_cruz','Santa Cruz'], ['tierra_del_fuego','Tierra del Fuego'],
+          ];
+          const provinciaOptionsHtml = PROVINCES_AR
+            .map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+
           suggestions.innerHTML = `
             <div style="padding:12px 14px;background:#1a1f2e;">
               <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase;">
                 ➕ No encontrado — crear cliente nuevo
+                ${isRemoto ? '<span style="margin-left:6px;color:var(--accent-violet,#a371f7);font-size:10px;">🌐 servicio remoto</span>' : ''}
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                 <input id="nc-nombre" type="text" class="input" placeholder="Nombre *" value="${preNombre}"
@@ -611,6 +630,12 @@ export class TicketFormView extends AsyncView {
                   style="margin:0;font-size:13px;padding:7px 10px;">
                 <input id="nc-dni" type="text" class="input" placeholder="DNI (opcional)"
                   style="margin:0;font-size:13px;padding:7px 10px;">
+                ${isRemoto ? `
+                  <select id="nc-provincia" class="input" style="margin:0;font-size:13px;padding:7px 10px;grid-column:1 / -1;">
+                    <option value="">Provincia * (servicio remoto)</option>
+                    ${provinciaOptionsHtml}
+                  </select>
+                ` : ''}
               </div>
               <button type="button" id="nc-save-btn" class="btn btn-primary"
                 style="width:100%;padding:8px;font-size:13px;font-weight:600;">
@@ -623,25 +648,34 @@ export class TicketFormView extends AsyncView {
           // Evitar que clicks dentro del form cierren el dropdown
           suggestions.querySelector('#nc-save-btn').addEventListener('click', async (e) => {
             e.stopPropagation();
-            const ncNombre   = document.getElementById('nc-nombre')?.value.trim();
-            const ncApellido = document.getElementById('nc-apellido')?.value.trim();
-            const ncDni      = document.getElementById('nc-dni')?.value.trim();
-            const ncTelefono = document.getElementById('nc-telefono')?.value.trim();
-            const ncError    = document.getElementById('nc-error');
+            const ncNombre    = document.getElementById('nc-nombre')?.value.trim();
+            const ncApellido  = document.getElementById('nc-apellido')?.value.trim();
+            const ncDni       = document.getElementById('nc-dni')?.value.trim();
+            const ncTelefono  = document.getElementById('nc-telefono')?.value.trim();
+            const ncProvincia = document.getElementById('nc-provincia')?.value || '';
+            const ncError     = document.getElementById('nc-error');
             // Paridad con legacy: nombre y teléfono son los únicos obligatorios.
             // DNI es opcional para permitir cargas rápidas en mostrador.
             if (!ncNombre || !ncTelefono) {
               if (ncError) { ncError.textContent = 'Nombre y Teléfono son obligatorios.'; ncError.style.display = 'block'; }
               return;
             }
+            // Cuando el servicio es remoto, la provincia es obligatoria
+            // (necesaria para logística + estadísticas geográficas del SaaS).
+            if (isRemoto && !ncProvincia) {
+              if (ncError) { ncError.textContent = 'Para servicios remotos, la provincia es obligatoria.'; ncError.style.display = 'block'; }
+              return;
+            }
             const saveBtn = document.getElementById('nc-save-btn');
             if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando…'; }
             try {
               const { createCliente } = await import('../services/clientes.js');
-              const result = await createCliente({ nombre: ncNombre, apellido: ncApellido, dni: ncDni, telefono: ncTelefono });
+              const payload = { nombre: ncNombre, apellido: ncApellido, dni: ncDni, telefono: ncTelefono };
+              if (ncProvincia) payload.provincia = ncProvincia;
+              const result = await createCliente(payload);
               if (!result.success) throw new Error(result.error);
               // Agregar al cache local para que aparezca en futuros filtros
-              this._clientesCache.push({ id: result.id, nombre: ncNombre, apellido: ncApellido, dni: ncDni, telefono: ncTelefono });
+              this._clientesCache.push({ id: result.id, ...payload });
               const fullName = [ncNombre, ncApellido].filter(Boolean).join(' ');
               this._selectCliente(result.id, fullName);
             } catch (err) {
@@ -649,7 +683,7 @@ export class TicketFormView extends AsyncView {
               if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✚ Crear y seleccionar'; }
             }
           });
-          ['nc-nombre','nc-apellido','nc-dni','nc-telefono'].forEach(id => {
+          ['nc-nombre','nc-apellido','nc-dni','nc-telefono','nc-provincia'].forEach(id => {
             document.getElementById(id)?.addEventListener('click', e => e.stopPropagation());
           });
         }

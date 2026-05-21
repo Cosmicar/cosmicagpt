@@ -81,8 +81,8 @@ export class ClienteFormView extends BaseView {
               ${renderFormField({
                 label: 'DNI / CUIT',
                 id: 'dni',
-                placeholder: 'Ej: 20-12345678-9',
-                required: true
+                placeholder: 'Opcional — Ej: 20-12345678-9',
+                required: false
               })}
 
               ${renderFormField({
