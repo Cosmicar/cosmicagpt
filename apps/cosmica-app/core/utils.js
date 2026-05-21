@@ -43,3 +43,60 @@ export const TICKET_EVENT_ICONS = {
   delivery_warning:        '⚠️',
   abandoned_flagged:       '🔴',
 };
+
+/**
+ * Normaliza nombres de provincias para evitar duplicados por escritura,
+ * capitalización, guiones bajos o faltas de ortografía/acentos.
+ * Mapea valores vacíos o indeterminados a 'Sin especificar'.
+ *
+ * @param {string} prov
+ * @returns {string}
+ */
+export function normalizeProvincia(prov) {
+  if (!prov) return 'Sin especificar';
+  const clean = prov.trim().toLowerCase().replace(/_/g, ' ');
+  if (!clean || clean === 'no definida' || clean === 'no_definida' || clean === 'desconocida' || clean === 'sin especificar') {
+    return 'Sin especificar';
+  }
+  const mapping = {
+    'buenos aires': 'Buenos Aires',
+    'caba': 'CABA',
+    'catamarca': 'Catamarca',
+    'chaco': 'Chaco',
+    'chubut': 'Chubut',
+    'cordoba': 'Córdoba',
+    'corrientes': 'Corrientes',
+    'entre rios': 'Entre Ríos',
+    'formosa': 'Formosa',
+    'jujuy': 'Jujuy',
+    'la pampa': 'La Pampa',
+    'la rioja': 'La Rioja',
+    'mendoza': 'Mendoza',
+    'misiones': 'Misiones',
+    'neuquen': 'Neuquén',
+    'rio negro': 'Río Negro',
+    'salta': 'Salta',
+    'san juan': 'San Juan',
+    'san luis': 'San Luis',
+    'santa cruz': 'Santa Cruz',
+    'santa fe': 'Santa Fe',
+    'santiago del estero': 'Santiago del Estero',
+    'tierra del fuego': 'Tierra del Fuego',
+    'tucuman': 'Tucumán'
+  };
+  
+  if (mapping[clean]) return mapping[clean];
+
+  // Comparar removiendo acentos
+  const cleanAccent = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const pClean = cleanAccent(clean);
+  for (const [key, value] of Object.entries(mapping)) {
+    if (cleanAccent(key) === pClean) {
+      return value;
+    }
+  }
+
+  // Fallback: Capitalizar palabras
+  return clean.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+

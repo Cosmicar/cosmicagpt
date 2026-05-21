@@ -55,7 +55,8 @@ import {
   isTodayLocal,
   isCurrentMonthLocal,
   onlyDigits,
-  showAlertError
+  showAlertError,
+  normalizeProvincia
 } from "./utils.js";
 import { getCachedSystemConfig, getSystemConfig, logSystem } from "./system-service.js";
 
@@ -627,12 +628,17 @@ async function calcularEstadisticasAdmin() {
 
   const porProvincia = {};
   const porTipo = { taller: 0, remoto: 0 };
+  let totalServiciosConProvincia = 0;
 
   trabajos.forEach((t) => {
     // Agrupar provincias para todos los servicios
     const cliente = clientesMap[t.clienteId];
-    const prov = (cliente?.provincia || "Desconocida").trim() || "Desconocida";
-    porProvincia[prov] = (porProvincia[prov] || 0) + 1;
+    const provRaw = cliente?.provincia;
+    const prov = normalizeProvincia(provRaw);
+    if (prov && prov !== 'Sin especificar') {
+      porProvincia[prov] = (porProvincia[prov] || 0) + 1;
+      totalServiciosConProvincia++;
+    }
 
     // Cálculos financieros solo para servicios Entregados
     if (t.estado === WORK_STATUS.entregado) {
@@ -739,7 +745,7 @@ async function calcularEstadisticasAdmin() {
       rankingListEl.innerHTML = '<div class="empty-state" style="font-size:13px;padding:10px;">No hay datos geográficos.</div>';
     } else {
       rankingListEl.innerHTML = ranking.slice(0, 5).map((r, i) => {
-        const pct = totalServicios > 0 ? ((r.cantidad / totalServicios) * 100).toFixed(1) : 0;
+        const pct = totalServiciosConProvincia > 0 ? ((r.cantidad / totalServiciosConProvincia) * 100).toFixed(1) : 0;
         return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);">
           <span><strong style="color:var(--accent2);">${i+1}.</strong> ${escapeHtml(r.nombre)}</span>
           <span style="font-weight:600;">${r.cantidad} <span style="font-size:11px;font-weight:normal;color:var(--muted);">(${pct}%)</span></span>
@@ -880,7 +886,7 @@ function renderTarjetaCliente(c) {
     </div>
     <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;align-items:center;">
        <span>📞 ${escapeHtml(c.telefono || "—")}</span>
-       <span style="opacity:0.8;">📍 ${escapeHtml(c.provincia || "—")}</span>
+       <span style="opacity:0.8;">📍 ${escapeHtml(normalizeProvincia(c.provincia) || "—")}</span>
     </div>
     <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
       <button class="btn btn-sm btn-primary" style="width:100%;font-size:10px;padding:4px;min-height:28px;" onclick="event.stopPropagation(); window.nuevoTrabajoDesdeCliente('${c.id}')">

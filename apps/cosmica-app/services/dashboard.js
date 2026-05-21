@@ -2,6 +2,7 @@ import { getTickets, isOverdue } from './tickets.js';
 import { getClientes } from './clientes.js';
 import { WORK_STATUS, COLLECTIONS } from '../../../js/domain.js';
 import { getClientBadge, getReentryRisk } from '../core/intelligence.js';
+import { normalizeProvincia } from '../core/utils.js';
 import { collectionGroup, query, limit, getDocs, collection, orderBy } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 
@@ -178,8 +179,11 @@ function computeOperationalIntelligence(tickets, clientes) {
 
     // Provincia (denormalised lookup via cliente)
     const cliente = clientesById.get(t.clienteId);
-    const prov = (cliente?.provincia || 'Sin especificar').trim() || 'Sin especificar';
-    provinciasMap[prov] = (provinciasMap[prov] || 0) + 1;
+    const rawProv = cliente?.provincia;
+    const prov = normalizeProvincia(rawProv);
+    if (prov && prov !== 'Sin especificar') {
+      provinciasMap[prov] = (provinciasMap[prov] || 0) + 1;
+    }
 
     // Tipo de servicio
     if (t.tipo === 'remoto') servicioRemoto++; else servicioTaller++;
@@ -229,17 +233,19 @@ function computeOperationalIntelligence(tickets, clientes) {
   const otherProvs = allProvincias.slice(PROV_TOP_N);
   const othersCount = otherProvs.reduce((sum, p) => sum + p.count, 0);
 
+  const totalServiciosConProvincia = allProvincias.reduce((sum, p) => sum + p.count, 0);
+
   const provinciasChart = [
     ...topProvs.map(p => ({
       nombre: p.nombre,
       count: p.count,
-      pct: totalServicios > 0 ? (p.count / totalServicios) * 100 : 0,
+      pct: totalServiciosConProvincia > 0 ? (p.count / totalServiciosConProvincia) * 100 : 0,
       isOthers: false,
     })),
     ...(othersCount > 0 ? [{
       nombre: `Otros (${otherProvs.length})`,
       count: othersCount,
-      pct: totalServicios > 0 ? (othersCount / totalServicios) * 100 : 0,
+      pct: totalServiciosConProvincia > 0 ? (othersCount / totalServiciosConProvincia) * 100 : 0,
       isOthers: true,
     }] : []),
   ];

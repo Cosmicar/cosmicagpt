@@ -9,6 +9,7 @@ import { showToast } from '../components/toast.js';
 import { getTickets } from '../services/tickets.js';
 import { getClientBadge } from '../core/intelligence.js';
 import { canAccess } from '../core/session.js';
+import { normalizeProvincia } from '../core/utils.js';
 
 /**
  * Vista de Clientes con Búsqueda Rápida Local
@@ -170,7 +171,7 @@ export class ClientesView extends AsyncView {
                   <td class="tt-equipo" style="white-space: nowrap;">${c.dni || '—'}</td>
                   <td class="tt-equipo text-truncate" style="max-width: 150px; white-space: nowrap;">${c.telefono || '—'}</td>
                   <td class="tt-equipo text-truncate" style="max-width: 200px; white-space: nowrap;">${c.email || '—'}</td>
-                  <td class="tt-equipo text-truncate" style="max-width: 150px; white-space: nowrap;">${c.provincia || '—'}</td>
+                  <td class="tt-equipo text-truncate" style="max-width: 150px; white-space: nowrap;">${normalizeProvincia(c.provincia) || '—'}</td>
                   <td style="text-align: center; white-space: nowrap;">
                     ${c.badge ? `<div class="badge ${c.badge.class}" style="font-size: 10px; display: inline-block;">${c.badge.label}</div>` : '—'}
                   </td>
