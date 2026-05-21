@@ -3,7 +3,7 @@ import {
   query, orderBy, where, limit, serverTimestamp, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
-import { COLLECTIONS, WORK_STATUS } from "../../../js/domain.js";
+import { COLLECTIONS, WORK_STATUS, SERVICE_TYPES } from "../../../js/domain.js";
 import { getCurrentSession } from "../core/session.js";
 import { getTickets } from "./tickets.js";
 import { cacheInvalidate } from '../core/cache.js';
@@ -360,12 +360,16 @@ export async function getFinanzasData() {
   ]);
 
   // ── Ticket segments ───────────────────────────────────────────────────────
-  const delivered = tickets.filter(t => t.estado === WORK_STATUS.entregado);
-  const ready     = tickets.filter(t => t.estado === WORK_STATUS.listo);
-  const withPrice = delivered.filter(t => Number(t.precio || 0) > 0);
-  const approved  = tickets.filter(t => t.aprobadoCliente === true);
+  const delivered    = tickets.filter(t => t.estado === WORK_STATUS.entregado);
+  const ready        = tickets.filter(t => t.estado === WORK_STATUS.listo);
+  const withPrice    = delivered.filter(t => Number(t.precio || 0) > 0);
+  const approved     = tickets.filter(t => t.aprobadoCliente === true);
 
-  // ── KPIs ─────────────────────────────────────────────────────────────────
+  // Separar por tipo de servicio
+  const withPriceTaller = withPrice.filter(t => (t.tipo || '') !== SERVICE_TYPES.remoto);
+  const withPriceRemoto = withPrice.filter(t => t.tipo === SERVICE_TYPES.remoto);
+
+  // ── KPIs globales ─────────────────────────────────────────────────────────
   const facturacionConcretada  = withPrice.reduce((s, t) => s + Number(t.precio || 0), 0);
   const facturacionPotencial   = approved.reduce((s, t) => s + Number(t.presupuesto || 0), 0);
   const costoRepuestos         = tickets.reduce((s, t) => s + Number(t.totalRepuestos || 0), 0);
@@ -385,11 +389,15 @@ export async function getFinanzasData() {
     .sort((a, b) => toDate(b.fechaEntregado || b.updatedAt) - toDate(a.fechaEntregado || a.updatedAt))
     .slice(0, 5);
 
-  // ── Rendición semanal (desde el último cierre) ────────────────────────────
-  const diasHastaRendicion = daysUntilNextSaturday();
-  // Los ingresos pendientes de rendición son simplemente los tickets que aún NO fueron liquidados
-  const withPriceSinceRendicion = withPrice.filter(t => t.liquidado !== true);
-  const facturacionDesdeRendicion = withPriceSinceRendicion.reduce((s, t) => s + Number(t.precio || 0), 0);
+  // ── Rendición semanal — TALLER (tickets pendientes de liquidar) ───────────
+  // Solo taller: el remoto va directo a la empresa, no pasa por el cierre semanal
+  const diasHastaRendicion       = daysUntilNextSaturday();
+  const tallerPendientes         = withPriceTaller.filter(t => t.liquidado !== true);
+  const remotoPendientes         = withPriceRemoto; // Todos los remoto (se contabilizan aparte)
+  const facturacionDesdeRendicion        = tallerPendientes.reduce((s, t) => s + Number(t.precio || 0), 0);
+  const facturacionRemotoDesdeRendicion  = remotoPendientes.reduce((s, t) => s + Number(t.precio || 0), 0);
+  // Para el banner usamos solo taller (que requiere rendición)
+  const withPriceSinceRendicion  = tallerPendientes;
 
   // ── Plan distribution ─────────────────────────────────────────────────────
   const distribucionPlanes = {};
@@ -471,10 +479,14 @@ export async function getFinanzasData() {
       totalTickets:    tickets.length,
       totalEntregados: delivered.length,
       totalConPrecio:  withPrice.length,
-      // Rendición semanal
+      // Rendición semanal — TALLER
       facturacionDesdeRendicion,
-      ticketsDesdeRendicion:  withPriceSinceRendicion.length,
+      ticketsDesdeRendicion:       tallerPendientes.length,
       diasHastaRendicion,
+      // Remoto (siempre abierto, va directo empresa)
+      facturacionRemotoDesdeRendicion,
+      ticketsRemoto:               withPriceRemoto.length,
+      ticketsTaller:               withPriceTaller.length,
     },
     ticketsMasRentables,
     ultimosCobrados,

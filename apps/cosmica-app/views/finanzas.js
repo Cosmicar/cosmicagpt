@@ -984,8 +984,10 @@ export class FinanzasView extends AsyncView {
 
   // ── Banner rendición semanal (admin) ─────────────────────────────────────
   renderBannerRendicion(kpis) {
-    const facturado     = kpis.facturacionDesdeRendicion ?? 0;
-    const tickets       = kpis.ticketsDesdeRendicion ?? 0;
+    const tallerFact    = kpis.facturacionDesdeRendicion ?? 0;
+    const tallerTkts    = kpis.ticketsDesdeRendicion ?? 0;
+    const remotFact     = kpis.facturacionRemotoDesdeRendicion ?? 0;
+    const remotTkts     = kpis.ticketsRemoto ?? 0;
     const diasRestantes = kpis.diasHastaRendicion ?? 0;
 
     const countdownText = diasRestantes === 0
@@ -994,39 +996,62 @@ export class FinanzasView extends AsyncView {
         ? '⏰ Mañana es la rendición semanal'
         : `📅 Faltan <strong>${diasRestantes}</strong> días para la rendición del sábado`;
 
-    const color  = diasRestantes === 0 ? 'var(--accent-green)'  : diasRestantes <= 2 ? 'var(--accent-orange)'  : 'var(--accent-cyan)';
-    const bg     = diasRestantes === 0 ? 'rgba(34,197,94,0.07)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.07)' : 'rgba(0,229,255,0.05)';
-    const border = diasRestantes === 0 ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
+    const tColor  = diasRestantes === 0 ? 'var(--accent-green)'  : diasRestantes <= 2 ? 'var(--accent-orange)'  : 'var(--accent-cyan)';
+    const tBg     = diasRestantes === 0 ? 'rgba(34,197,94,0.07)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.07)' : 'rgba(0,229,255,0.05)';
+    const tBorder = diasRestantes === 0 ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
+
+    const statBox = (label, val, color) => `
+      <div style="text-align:right;">
+        <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">${label}</div>
+        <div style="font-size:var(--font-md);font-weight:800;color:${color};">${val}</div>
+      </div>`;
 
     return `
-      <div style="padding:var(--space-md) var(--space-lg);background:${bg};
-                  border:1px solid ${border};border-radius:var(--radius-md);
-                  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-md);">
-        <span style="font-size:var(--font-sm);font-weight:600;color:${color};">${countdownText}</span>
-        <div style="display:flex;align-items:center;gap:var(--space-lg);">
-          <div style="text-align:right;">
-            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">DESDE ÚLT. SÁBADO</div>
-            <div style="font-size:var(--font-md);font-weight:800;color:${color};">${ars(facturado)}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <!-- Taller -->
+        <div style="padding:var(--space-md) var(--space-lg);background:${tBg};
+                    border:1px solid ${tBorder};border-radius:var(--radius-md);
+                    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-md);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:13px;font-weight:700;color:${tColor};padding:3px 10px;background:${tBg};border:1px solid ${tBorder};border-radius:20px;">🏭 TALLER</span>
+            <span style="font-size:var(--font-sm);font-weight:600;color:${tColor};">${countdownText}</span>
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">COBROS</div>
-            <div style="font-size:var(--font-md);font-weight:800;color:var(--text-primary);">${tickets}</div>
+          <div style="display:flex;align-items:center;gap:var(--space-lg);">
+            ${statBox('PENDIENTE RENDICIÓN', ars(tallerFact), tColor)}
+            ${statBox('COBROS', String(tallerTkts), 'var(--text-primary)')}
           </div>
         </div>
+        <!-- Remoto -->
+        ${remotTkts > 0 ? `
+        <div style="padding:var(--space-md) var(--space-lg);background:rgba(139,92,246,0.05);
+                    border:1px solid rgba(139,92,246,0.2);border-radius:var(--radius-md);
+                    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-md);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:13px;font-weight:700;color:var(--accent-purple);padding:3px 10px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:20px;">🌐 REMOTO</span>
+            <span style="font-size:var(--font-sm);color:var(--text-muted);">Servicios acumulados (directo empresa)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-lg);">
+            ${statBox('FACTURADO', ars(remotFact), 'var(--accent-purple)')}
+            ${statBox('COBROS', String(remotTkts), 'var(--text-primary)')}
+          </div>
+        </div>` : ''}
       </div>`;
   }
 
-  // ── Rendimiento Operador ──────────────────────────────────────────────────
   renderRendimientoOperador(kpis, comisiones) {
     const pctOperador = Number(comisiones?.taller ?? 30);
     const pctNegocio  = 100 - pctOperador;
 
-    // Usar ingresos DESDE la última rendición (último sábado), no toda la historia
-    const facturado     = kpis.facturacionDesdeRendicion ?? kpis.facturacionConcretada ?? 0;
-    const tickets       = kpis.ticketsDesdeRendicion ?? kpis.totalConPrecio ?? 0;
-    const diasRestantes = kpis.diasHastaRendicion ?? 0;
-    const miGanancia    = Math.round(facturado * (pctOperador / 100));
-    const aporteNegocio = Math.round(facturado * (pctNegocio / 100));
+    // TALLER: solo tickets no liquidados (pendientes de rendición)
+    const facturadoTaller = kpis.facturacionDesdeRendicion ?? 0;
+    const ticketsTaller   = kpis.ticketsDesdeRendicion ?? 0;
+    // REMOTO: todos los cobros remotos (van directo empresa, el operador no rinde esto)
+    const facturadoRemoto = kpis.facturacionRemotoDesdeRendicion ?? 0;
+    const ticketsRemoto   = kpis.ticketsRemoto ?? 0;
+
+    const diasRestantes   = kpis.diasHastaRendicion ?? 0;
+    const miGanancia      = Math.round(facturadoTaller * (pctOperador / 100));
+    const aporteNegocio   = Math.round(facturadoTaller * (pctNegocio / 100));
 
     // Texto del countdown
     const countdownText = diasRestantes === 0
@@ -1035,25 +1060,15 @@ export class FinanzasView extends AsyncView {
         ? '⏰ Mañana es la rendición'
         : `📅 Faltan <strong>${diasRestantes}</strong> días para la rendición del sábado`;
 
-    // Color del countdown
-    const countdownColor = diasRestantes === 0
-      ? 'var(--accent-green)' : diasRestantes <= 2
-        ? 'var(--accent-orange)' : 'var(--accent-cyan)';
-    const countdownBg = diasRestantes === 0
-      ? 'rgba(34,197,94,0.08)' : diasRestantes <= 2
-        ? 'rgba(249,115,22,0.08)' : 'rgba(0,229,255,0.06)';
-    const countdownBorder = diasRestantes === 0
-      ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2
-        ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
+    const countdownColor  = diasRestantes === 0 ? 'var(--accent-green)'  : diasRestantes <= 2 ? 'var(--accent-orange)'  : 'var(--accent-cyan)';
+    const countdownBg     = diasRestantes === 0 ? 'rgba(34,197,94,0.08)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.08)' : 'rgba(0,229,255,0.06)';
+    const countdownBorder = diasRestantes === 0 ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
 
     return `
       <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
         <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-sm);display:flex;align-items:center;gap:8px;">
           <span style="opacity:0.8;">📊</span> Mi Rendimiento Semanal
         </h3>
-        <p style="font-size:var(--font-xs);color:var(--text-muted);margin:0 0 var(--space-md);">
-          Ingresos acumulados desde el último sábado · ${tickets} cobro${tickets !== 1 ? 's' : ''}
-        </p>
 
         <!-- Countdown rendición -->
         <div style="padding:var(--space-sm) var(--space-md);background:${countdownBg};
@@ -1063,33 +1078,46 @@ export class FinanzasView extends AsyncView {
           <span>${countdownText}</span>
         </div>
 
-        <!-- Cards de distribución -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);">
-          <div style="padding:var(--space-lg);background:rgba(34,197,94,0.07);
-                      border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (${pctOperador}%)</div>
-            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-green);">
-              ${ars(miGanancia)}
-            </div>
-            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que me quedo</div>
+        <!-- TALLER -->
+        <div style="margin-bottom:var(--space-md);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🏭 Taller <span style="font-weight:400;color:var(--text-muted);font-size:9px;">${ticketsTaller} cobro${ticketsTaller !== 1 ? 's' : ''} pendientes de rendición</span>
           </div>
-          <div style="padding:var(--space-lg);background:rgba(249,115,22,0.07);
-                      border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">APORTE AL NEGOCIO (${pctNegocio}%)</div>
-            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-orange);">
-              ${ars(aporteNegocio)}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-md);">
+            <div style="padding:var(--space-md) var(--space-lg);background:rgba(34,197,94,0.07);
+                        border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (${pctOperador}%)</div>
+              <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-green);">${ars(miGanancia)}</div>
+              <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que me quedo</div>
             </div>
-            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que pongo en la empresa</div>
-          </div>
-          <div style="padding:var(--space-lg);background:rgba(255,255,255,0.04);
-                      border:1px solid var(--border);border-radius:var(--radius-md);text-align:center;">
-            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">TOTAL FACTURADO</div>
-            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-cyan);">
-              ${ars(facturado)}
+            <div style="padding:var(--space-md) var(--space-lg);background:rgba(249,115,22,0.07);
+                        border:1px solid rgba(249,115,22,0.2);border-radius:var(--radius-md);text-align:center;">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">APORTE AL NEGOCIO (${pctNegocio}%)</div>
+              <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-orange);">${ars(aporteNegocio)}</div>
+              <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que entrego al admin</div>
             </div>
-            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Desde el último sábado</div>
+            <div style="padding:var(--space-md) var(--space-lg);background:rgba(255,255,255,0.04);
+                        border:1px solid var(--border);border-radius:var(--radius-md);text-align:center;">
+              <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">TOTAL COBRADO</div>
+              <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-cyan);">${ars(facturadoTaller)}</div>
+              <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Pendiente de rendir</div>
+            </div>
           </div>
         </div>
+
+        ${facturadoRemoto > 0 ? `
+        <!-- REMOTO -->
+        <div style="border-top:1px solid rgba(139,92,246,0.15);padding-top:var(--space-md);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-purple);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🌐 Remoto <span style="font-weight:400;color:var(--text-muted);font-size:9px;">${ticketsRemoto} servicio${ticketsRemoto !== 1 ? 's' : ''} — va directo a la empresa</span>
+          </div>
+          <div style="padding:var(--space-md) var(--space-lg);background:rgba(139,92,246,0.06);
+                      border:1px solid rgba(139,92,246,0.2);border-radius:var(--radius-md);
+                      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-md);">
+            <span style="font-size:var(--font-sm);color:var(--text-muted);">Total cobrado en servicios remotos</span>
+            <span style="font-size:var(--font-xl);font-weight:800;color:var(--accent-purple);">${ars(facturadoRemoto)}</span>
+          </div>
+        </div>` : ''}
       </section>
     `;
   }
