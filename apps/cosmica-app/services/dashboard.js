@@ -326,10 +326,12 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
 export async function getDashboardData() {
   // Lazy-import facturas service: si las rules bloquean al rol, devuelve map vacío
   const { getFacturasMapByTicket } = await import('./facturacion.js');
-  const [tickets, clientes, facturasMap] = await Promise.all([
+  const { getCajaEntries } = await import('./finanzas.js');
+  const [tickets, clientes, facturasMap, cajaEntries] = await Promise.all([
     getTickets(),
     getClientes(),
     getFacturasMapByTicket(),
+    getCajaEntries().catch(() => []),
   ]);
 
   // Pre-agrupa tickets por clienteId — O(n) en vez de O(n²) por ticket enriquecido
@@ -360,22 +362,47 @@ export async function getDashboardData() {
   };
 
   // ── Métricas del día (hoy) ────────────────────────────────────────────────
+  // Regla:
+  //   Ingresados/Entregados → por fecha del ticket (fechaIngreso / fechaEntregado)
+  //   Facturado hoy         → por fecha de creación del asiento de caja (createdAt),
+  //                           NO por fechaEntregado del ticket — evita contar cobros
+  //                           de sesiones anteriores cerradas hoy via "force-close".
   const todayStr = new Date().toISOString().split('T')[0];
   const hoy = {
     ingresadosTaller:  0, ingresadosRemoto:  0,
     entregadosTaller:  0, entregadosRemoto:  0,
     facturacionTaller: 0, facturacionRemoto: 0,
   };
+
+  // Mapa ticketId → tipo para cross-reference en asientos de caja
+  const ticketTipoMap = new Map(tickets.map(t => [t.id, t.tipo || 'taller']));
+
+  const esHoyStr = (dateStr) => dateStr?.split?.('T')[0] === todayStr;
+  const esHoyTs  = (ts) => {
+    if (!ts) return false;
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toISOString().split('T')[0] === todayStr;
+  };
+
   for (const t of tickets) {
-    const esHoy = (dateStr) => dateStr?.split?.('T')[0] === todayStr;
     const taller = t.tipo !== 'remoto';
-    if (esHoy(t.fechaIngreso)) {
+    if (esHoyStr(t.fechaIngreso)) {
       if (taller) hoy.ingresadosTaller++; else hoy.ingresadosRemoto++;
     }
-    if (t.estado === WORK_STATUS.entregado && esHoy(t.fechaEntregado)) {
-      if (taller) { hoy.entregadosTaller++; hoy.facturacionTaller += Number(t.precio || 0); }
-      else        { hoy.entregadosRemoto++; hoy.facturacionRemoto += Number(t.precio || 0); }
+    if (t.estado === WORK_STATUS.entregado && esHoyStr(t.fechaEntregado)) {
+      if (taller) hoy.entregadosTaller++; else hoy.entregadosRemoto++;
     }
+  }
+
+  // Facturado hoy = asientos de caja tipo 'ingreso' creados hoy
+  for (const entry of cajaEntries) {
+    if (entry.tipo !== 'ingreso') continue;
+    if (!esHoyTs(entry.createdAt)) continue;
+    const tipo = entry.ticketRef
+      ? (ticketTipoMap.get(entry.ticketRef) || 'taller')
+      : 'taller';
+    if (tipo === 'remoto') hoy.facturacionRemoto += Number(entry.monto || 0);
+    else                   hoy.facturacionTaller += Number(entry.monto || 0);
   }
 
   return {
