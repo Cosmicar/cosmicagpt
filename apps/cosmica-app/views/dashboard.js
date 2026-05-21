@@ -108,7 +108,7 @@ export class DashboardView extends AsyncView {
   }
 
   renderContent(data) {
-    const { metrics, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
+    const { metrics, hoy, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
     this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
@@ -135,6 +135,38 @@ export class DashboardView extends AsyncView {
              ${canCreateTicket ? '<a href="#ticket-nuevo" class="btn btn-primary btn-sm">➕ Nuevo Trabajo</a>' : ''}
           </div>
         </header>
+
+        <!-- Banda "Hoy" — actividad del día por tipo -->
+        ${hoy ? (() => {
+          const ars = n => '$' + Math.round(n).toLocaleString('es-AR');
+          const totalIngresados   = hoy.ingresadosTaller + hoy.ingresadosRemoto;
+          const totalEntregados   = hoy.entregadosTaller + hoy.entregadosRemoto;
+          const totalFacturacion  = hoy.facturacionTaller + hoy.facturacionRemoto;
+          const cell = (label, val, sub, color = 'var(--accent-cyan)') =>
+            `<div style="display:flex;flex-direction:column;gap:2px;min-width:90px;">
+              <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;">${label}</div>
+              <div style="font-size:18px;font-weight:800;color:${color};letter-spacing:-.02em;">${val}</div>
+              <div style="font-size:10px;color:var(--text-muted);opacity:.7;">${sub}</div>
+            </div>`;
+          return `
+          <section style="background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.1);
+            border-radius:var(--radius-lg);padding:14px 20px;display:flex;align-items:center;
+            gap:0;flex-wrap:wrap;margin-bottom:var(--space-md);">
+            <div style="font-size:11px;font-weight:800;color:var(--accent-cyan);text-transform:uppercase;
+              letter-spacing:.08em;min-width:48px;margin-right:24px;">HOY</div>
+            <div style="display:flex;gap:28px;flex-wrap:wrap;flex:1;">
+              ${cell('Ingresados', totalIngresados,
+                `🏭 ${hoy.ingresadosTaller} taller · 🌐 ${hoy.ingresadosRemoto} remoto`)}
+              <div style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
+              ${cell('Entregados', totalEntregados,
+                `🏭 ${hoy.entregadosTaller} taller · 🌐 ${hoy.entregadosRemoto} remoto`)}
+              <div style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>
+              ${cell('Facturado hoy', ars(totalFacturacion),
+                `🏭 ${ars(hoy.facturacionTaller)} · 🌐 ${ars(hoy.facturacionRemoto)}`,
+                totalFacturacion > 0 ? 'var(--accent-green)' : 'var(--text-muted)')}
+            </div>
+          </section>`;
+        })() : ''}
 
         <!-- KPIs Principales (atajos clickeables al listado filtrado de Trabajos) -->
         <section class="kpi-grid" style="margin-bottom: var(--space-lg);">

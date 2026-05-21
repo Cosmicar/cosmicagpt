@@ -904,27 +904,29 @@ export class TicketsView extends AsyncView {
       filtered = filtered.filter(t => t._searchIndex ? t._searchIndex.includes(q) : false);
     }
 
-    // Orden inteligente:
-    // Prioridad: críticos, esperando repuesto, listos, reparación, ingresados
-    // Dentro: más antiguos arriba
+    // Orden:
+    // - Vista "Todos" o "Finalizado": puramente cronológico descendente (último ingresado arriba)
+    // - Resto (activos, mis-tickets, sin-asignar, etc.): prioridad por estado + fecha desc dentro del grupo
+    const pureChronological = this.currentFilter === 'all' || this.currentFilter === 'finalizado';
+
     filtered.sort((a, b) => {
+      const dateA = new Date(a.fechaIngreso || a.createdAt || 0).getTime();
+      const dateB = new Date(b.fechaIngreso || b.createdAt || 0).getTime();
+
+      if (pureChronological) return dateB - dateA;
+
       const getPriority = (t) => {
         if (t.criticalAlert || t.planServicio === 'platinum' || isOverdue(t)) return 0;
         if (t.estado === WORK_STATUS.esperandoRepuesto) return 1;
         if (t.estado === WORK_STATUS.listo) return 2;
         if (t.estado === WORK_STATUS.enReparacion) return 3;
         if (t.estado === WORK_STATUS.ingresado) return 4;
-        return 5; // entregado u otros
+        return 5;
       };
-
       const pA = getPriority(a);
       const pB = getPriority(b);
-      
       if (pA !== pB) return pA - pB;
-
-      const dateA = new Date(a.fechaIngreso || 0).getTime();
-      const dateB = new Date(b.fechaIngreso || 0).getTime();
-      return dateB - dateA;  // más reciente primero
+      return dateB - dateA;  // más reciente primero dentro del grupo
     });
 
     return filtered;

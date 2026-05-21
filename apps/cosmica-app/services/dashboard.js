@@ -359,8 +359,28 @@ export async function getDashboardData() {
     };
   };
 
+  // ── Métricas del día (hoy) ────────────────────────────────────────────────
+  const todayStr = new Date().toISOString().split('T')[0];
+  const hoy = {
+    ingresadosTaller:  0, ingresadosRemoto:  0,
+    entregadosTaller:  0, entregadosRemoto:  0,
+    facturacionTaller: 0, facturacionRemoto: 0,
+  };
+  for (const t of tickets) {
+    const esHoy = (dateStr) => dateStr?.split?.('T')[0] === todayStr;
+    const taller = t.tipo !== 'remoto';
+    if (esHoy(t.fechaIngreso)) {
+      if (taller) hoy.ingresadosTaller++; else hoy.ingresadosRemoto++;
+    }
+    if (t.estado === WORK_STATUS.entregado && esHoy(t.fechaEntregado)) {
+      if (taller) { hoy.entregadosTaller++; hoy.facturacionTaller += Number(t.precio || 0); }
+      else        { hoy.entregadosRemoto++; hoy.facturacionRemoto += Number(t.precio || 0); }
+    }
+  }
+
   return {
     metrics:           computeMetrics(tickets),
+    hoy,
     intelligence:      computeOperationalIntelligence(tickets, clientes),
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),

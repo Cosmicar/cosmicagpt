@@ -377,6 +377,25 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
   }
 }
 
+/**
+ * Returns true if a caja ingreso entry already exists for this ticketId.
+ * Used to skip session validation when a ticket was already paid in a previous session.
+ */
+export async function hasCajaIngresoForTicket(ticketId) {
+  try {
+    const snap = await getDocs(query(
+      collection(db, COLLECTIONS.caja),
+      where('ticketRef', '==', ticketId),
+      where('tipo', '==', 'ingreso'),
+      limit(1)
+    ));
+    return !snap.empty;
+  } catch (err) {
+    console.warn('[finanzas] hasCajaIngresoForTicket:', err.message);
+    return false;
+  }
+}
+
 // ── Main aggregation ──────────────────────────────────────────────────────────
 
 export async function getFinanzasData() {

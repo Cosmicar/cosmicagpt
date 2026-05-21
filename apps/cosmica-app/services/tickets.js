@@ -196,12 +196,19 @@ export async function updateTicketStatus(id, newStatus) {
     //    vez de un ticket entregado sin cobro registrado — drift detectable es muchísimo
     //    mejor que dinero invisible.
     if (newStatus === WORK_STATUS.entregado) {
-      const { getCajaSessionByTipo } = await import('./finanzas.js');
-      const tipoTicket = trabajo.tipo || 'taller';
-      cajaSession = await getCajaSessionByTipo(tipoTicket);
-      if (!cajaSession) {
-        const label = tipoTicket === 'remoto' ? 'remota' : 'de taller';
-        throw new Error(`Debe existir una caja ${label} abierta para registrar el cobro.`);
+      const { getCajaSessionByTipo, hasCajaIngresoForTicket } = await import('./finanzas.js');
+      // Si ya existe un ingreso registrado para este ticket (fue pagado en sesión anterior),
+      // no requerimos caja abierta ni volvemos a registrar — solo actualizamos el estado.
+      const yaRegistrado = Number(trabajo.precio || 0) > 0
+        ? await hasCajaIngresoForTicket(id)
+        : true; // sin precio → no necesita caja
+      if (!yaRegistrado) {
+        const tipoTicket = trabajo.tipo || 'taller';
+        cajaSession = await getCajaSessionByTipo(tipoTicket);
+        if (!cajaSession) {
+          const label = tipoTicket === 'remoto' ? 'remota' : 'de taller';
+          throw new Error(`Debe existir una caja ${label} abierta para registrar el cobro.`);
+        }
       }
     }
 
