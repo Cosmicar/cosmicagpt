@@ -612,7 +612,7 @@ export class UsuariosView extends BaseView {
           <div style="font-size:11px;color:#EF4444;font-weight:600;margin-bottom:8px;">Crear nueva penalidad</div>
           <div style="display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px;">
             <input id="mp-pen-nombre" class="input" placeholder="Nombre (ej. Llegada tarde)" style="margin:0;">
-            <input id="mp-pen-pts" type="number" class="input" placeholder="−pts" style="margin:0;" max="-1">
+            <input id="mp-pen-pts" type="number" min="1" class="input" placeholder="ej: 30" style="margin:0;">
           </div>
           <button id="mp-pen-crear" class="btn" style="width:100%;padding:8px;font-size:12px;background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#EF4444;">Crear penalidad</button>
         </div>
@@ -698,10 +698,9 @@ export class UsuariosView extends BaseView {
       let pts = Number(modal.querySelector('#mp-pen-pts')?.value);
       errEl.style.display = 'none';
       if (!nombre) { errEl.textContent = 'El nombre de la penalidad es requerido.'; errEl.style.display = 'block'; return; }
-      if (!pts || pts === 0) { errEl.textContent = 'Ingresá los puntos a descontar (número negativo).'; errEl.style.display = 'block'; return; }
-      if (pts > 0) pts = -pts; // asegurar que sea negativo
+      if (!pts || pts <= 0) { errEl.textContent = 'Ingresá una cantidad de puntos mayor que 0.'; errEl.style.display = 'block'; return; }
       try {
-        await savePenalidad(null, { nombre, puntos: pts, descripcion: '', activo: true });
+        await savePenalidad({ nombre, puntos: Math.abs(pts), descripcion: '', activo: true });
         showToast(`Penalidad "${nombre}" creada`, 'success');
         // Reabrir el modal con datos frescos
         document.getElementById('m-puntos')?.remove();
