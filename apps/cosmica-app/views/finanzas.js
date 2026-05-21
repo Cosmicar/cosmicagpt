@@ -341,79 +341,19 @@ export class FinanzasView extends AsyncView {
         return s + (e.tipo === 'egreso' || (e.tipo === 'ajuste' && m < 0) ? -Math.abs(m) : Math.abs(m));
       }, 0);
 
-    return `
-      <div id="cierre-panel" style="display:${this._showCierre ? 'block' : 'none'};">
-        <div class="card glass-card" style="
-          max-width:520px;padding:var(--space-lg);
-          border:1px solid rgba(249,115,22,0.3);
-        ">
-          <h4 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);">
-            🔒 Cierre de Caja
-          </h4>
-
-          <!-- Summary -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-sm);margin-bottom:var(--space-sm);">
-            ${this._miniStat('Saldo Inicial', ars(session.saldoInicial || 0), 'var(--text-muted)')}
-            ${this._miniStat('Ingresos', ars(sessionData.ingresos), 'var(--accent-green)')}
-            ${this._miniStat('Egresos', ars(sessionData.egresos), 'var(--accent-orange)')}
-          </div>
-
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-lg);">
-            <div style="flex:1 1 50px;">${this._miniStat('EFVO', ars(calcTotalByMethod('efectivo')), 'var(--accent-cyan)')}</div>
-            <div style="flex:1 1 50px;">${this._miniStat('TRAN', ars(calcTotalByMethod('transferencia')), 'var(--accent-cyan)')}</div>
-            <div style="flex:1 1 50px;">${this._miniStat('MP', ars(calcTotalByMethod('mercadopago')), 'var(--accent-cyan)')}</div>
-            <div style="flex:1 1 50px;">${this._miniStat('DEB', ars(calcTotalByMethod('debito')), 'var(--accent-cyan)')}</div>
-            <div style="flex:1 1 50px;">${this._miniStat('CRED', ars(calcTotalByMethod('credito')), 'var(--accent-cyan)')}</div>
-          </div>
-          <div style="
-            display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--space-md);
-            padding:var(--space-md);
-            background:rgba(255,255,255,0.04);
-            border-radius:var(--radius-md);
-            border:1px solid var(--border);
-            margin-bottom:var(--space-lg);
-          ">
-            <span style="font-size:var(--font-sm);color:var(--text-muted);flex:1 1 120px;">Saldo esperado en caja</span>
-            <span id="cierre-esperado" style="font-size:var(--font-lg);font-weight:800;color:var(--accent-cyan);flex-shrink:0;">
-              ${ars(saldoEsperado)}
-            </span>
-          </div>
-
-          <div id="cierre-error" class="alert alert-danger" style="display:none;"></div>
-
-          <form id="cierre-form" style="display:flex;flex-direction:column;gap:var(--space-md);">
-            <input type="hidden" name="sesionId" value="${session.id}">
-            <input type="hidden" name="saldoEsperado" value="${saldoEsperado}">
-            <div>
-              <label style="font-size:var(--font-sm);color:var(--text-muted);display:block;margin-bottom:6px;">
-                Monto contado en caja (efectivo real)
-              </label>
-              <input type="number" name="saldoDeclarado" id="cierre-contado" class="input"
-                placeholder="Ej: 12500" min="0" step="1" style="margin:0;" required>
-            </div>
-            <!-- Diferencia preview -->
-            <div id="cierre-dif-preview" style="
-              padding:var(--space-sm) var(--space-md);
-              border-radius:var(--radius-md);
-              background:rgba(255,255,255,0.03);
-              border:1px solid var(--border);
-              font-size:var(--font-sm);
-              color:var(--text-muted);
-            ">
-              Ingresá el monto para ver la diferencia.
-            </div>
-            <div style="display:flex;gap:var(--space-sm);">
-              <button type="submit" id="cierre-submit-btn" class="btn"
-                style="flex:1;background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.4);color:var(--accent-orange);">
-                🔒 Confirmar Cierre
-              </button>
-              <button type="button" class="btn btn-secondary" id="btn-cancel-cierre">
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>`;
+    // Renderizamos un placeholder vacío — el modal se inyecta dinámicamente al hacer click
+    // para evitar que el panel inline rompa el layout en móvil
+    return `<div id="cierre-panel" data-saldo-esperado="${saldoEsperado}"
+      data-efvo="${calcTotalByMethod('efectivo')}"
+      data-tran="${calcTotalByMethod('transferencia')}"
+      data-mp="${calcTotalByMethod('mercadopago')}"
+      data-deb="${calcTotalByMethod('debito')}"
+      data-cred="${calcTotalByMethod('credito')}"
+      data-saldo-inicial="${session.saldoInicial || 0}"
+      data-ingresos="${sessionData.ingresos}"
+      data-egresos="${sessionData.egresos}"
+      data-sesion-id="${session.id}"
+      style="display:none;"></div>`;
   }
 
   _miniStat(label, value, color) {
@@ -1228,31 +1168,123 @@ export class FinanzasView extends AsyncView {
     }
     if (formApertura) this._initAperturaForm(formApertura);
 
-    // Cierre
-    const btnToggleCierre  = document.getElementById('btn-toggle-cierre');
-    const cierrePanel      = document.getElementById('cierre-panel');
-    const btnCancelCierre  = document.getElementById('btn-cancel-cierre');
-    const formCierre       = document.getElementById('cierre-form');
+    // Cierre — abre un modal overlay (no inline, para evitar layout roto en móvil)
+    const btnToggleCierre = document.getElementById('btn-toggle-cierre');
+    const cierreDataEl    = document.getElementById('cierre-panel');
 
-    if (btnToggleCierre && cierrePanel) {
-      const showCierre = () => {
-        cierrePanel.style.display = 'block';
-        btnToggleCierre.textContent = '✖ Cancelar cierre';
-        cierrePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        document.getElementById('cierre-contado')?.focus();
-      };
-      const hideCierre = () => {
-        cierrePanel.style.display = 'none';
-        btnToggleCierre.innerHTML = '🔒 Cerrar Caja';
-      };
+    if (btnToggleCierre && cierreDataEl) {
       btnToggleCierre.addEventListener('click', () => {
-        if (cierrePanel.style.display !== 'none') hideCierre(); else showCierre();
+        // Si ya existe un overlay abierto, cerrarlo
+        const existing = document.getElementById('cierre-modal-overlay');
+        if (existing) { existing.remove(); btnToggleCierre.innerHTML = '🔒 Cerrar Caja'; return; }
+
+        const d = cierreDataEl.dataset;
+        const saldoEsperado = Number(d.saldoEsperado || 0);
+        const fmtArs = n => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n);
+        const miniSt = (lbl, val, color) => `<div style="text-align:center;padding:10px 8px;background:rgba(255,255,255,0.04);border-radius:8px;"><div style="font-size:9px;color:#888;font-weight:700;letter-spacing:.5px;margin-bottom:4px;">${lbl}</div><div style="font-size:15px;font-weight:800;color:${color};">${val}</div></div>`;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'cierre-modal-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+        overlay.innerHTML = `
+          <div style="background:#0f1117;border:1px solid rgba(249,115,22,0.35);border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+            <h4 style="font-size:16px;font-weight:700;margin:0 0 20px;display:flex;align-items:center;gap:8px;">🔒 Cierre de Caja</h4>
+
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+              ${miniSt('SALDO INICIAL', fmtArs(Number(d.saldoInicial||0)), '#888')}
+              ${miniSt('INGRESOS', fmtArs(Number(d.ingresos||0)), 'var(--accent-green,#10b981)')}
+              ${miniSt('EGRESOS', fmtArs(Number(d.egresos||0)), 'var(--accent-orange,#f97316)')}
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px;">
+              ${miniSt('EFVO', fmtArs(Number(d.efvo||0)), '#00e5ff')}
+              ${miniSt('TRAN', fmtArs(Number(d.tran||0)), '#00e5ff')}
+              ${miniSt('MP', fmtArs(Number(d.mp||0)), '#00e5ff')}
+              ${miniSt('DEB', fmtArs(Number(d.deb||0)), '#00e5ff')}
+              ${miniSt('CRED', fmtArs(Number(d.cred||0)), '#00e5ff')}
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:16px;">
+              <span style="font-size:13px;color:#888;">Saldo esperado</span>
+              <span id="cierre-modal-esperado" style="font-size:20px;font-weight:800;color:#00e5ff;">${fmtArs(saldoEsperado)}</span>
+            </div>
+
+            <div id="cierre-modal-error" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#ef4444;font-size:13px;margin-bottom:12px;"></div>
+
+            <form id="cierre-modal-form" style="display:flex;flex-direction:column;gap:12px;">
+              <input type="hidden" name="sesionId" value="${d.sesionId}">
+              <input type="hidden" name="saldoEsperado" value="${saldoEsperado}">
+              <div>
+                <label style="font-size:13px;color:#888;display:block;margin-bottom:6px;">Monto contado en caja (efectivo real)</label>
+                <input type="number" name="saldoDeclarado" id="cierre-modal-contado" class="input"
+                  placeholder="Ej: 12500" min="0" step="1" style="margin:0;width:100%;box-sizing:border-box;" required>
+              </div>
+              <div id="cierre-modal-preview" style="padding:10px 14px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);font-size:13px;color:#888;">
+                Ingresá el monto para ver la diferencia.
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button type="submit" id="cierre-modal-submit" class="btn" style="flex:1;background:rgba(249,115,22,0.15);border-color:rgba(249,115,22,0.4);color:#f97316;">🔒 Confirmar Cierre</button>
+                <button type="button" id="cierre-modal-cancel" class="btn btn-secondary">Cancelar</button>
+              </div>
+            </form>
+          </div>`;
+
+        document.body.appendChild(overlay);
+        btnToggleCierre.innerHTML = '✖ Cancelar cierre';
+
+        const closeModal = () => {
+          overlay.remove();
+          btnToggleCierre.innerHTML = '🔒 Cerrar Caja';
+        };
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+        overlay.querySelector('#cierre-modal-cancel').addEventListener('click', closeModal);
+        document.addEventListener('keydown', function esc(e) {
+          if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', esc); }
+        });
+
+        // Diferencia preview
+        const inputContado = overlay.querySelector('#cierre-modal-contado');
+        const previewEl    = overlay.querySelector('#cierre-modal-preview');
+        inputContado.addEventListener('input', () => {
+          const contado = Number(inputContado.value || 0);
+          if (!inputContado.value) { previewEl.textContent = 'Ingresá el monto para ver la diferencia.'; previewEl.style.color = '#888'; return; }
+          const diff = contado - saldoEsperado;
+          const ok = Math.abs(diff) <= 1;
+          previewEl.innerHTML = ok
+            ? '<strong style="color:#10b981;">✓ Cuadra con el saldo esperado</strong>'
+            : `Diferencia: <strong style="color:${diff >= 0 ? '#10b981' : '#ef4444'}">${diff >= 0 ? '+' : ''}${fmtArs(diff)}</strong>`;
+          previewEl.style.color = ok ? '#10b981' : (diff >= 0 ? '#10b981' : '#ef4444');
+        });
+        setTimeout(() => inputContado.focus(), 100);
+
+        // Form submit
+        overlay.querySelector('#cierre-modal-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const submitBtn = overlay.querySelector('#cierre-modal-submit');
+          const errEl = overlay.querySelector('#cierre-modal-error');
+          errEl.style.display = 'none';
+          const fd = new FormData(e.target);
+          submitBtn.disabled = true; submitBtn.textContent = 'Cerrando…';
+          try {
+            const { cerrarCaja } = await import('../services/finanzas.js');
+            const res = await cerrarCaja(fd.get('sesionId'), fd.get('saldoDeclarado'));
+            if (res.success) {
+              showToast('Caja cerrada correctamente', 'success');
+              import('../core/app.js').then(m => { m.invalidateCajaStatusCache?.(); m.updateCajaStatusIndicator?.(); });
+              closeModal();
+              this.fetchAndRender();
+            } else {
+              errEl.textContent = res.error || 'Error al cerrar caja';
+              errEl.style.display = 'block';
+              submitBtn.disabled = false; submitBtn.textContent = '🔒 Confirmar Cierre';
+            }
+          } catch (err) {
+            errEl.textContent = err.message || 'Error inesperado';
+            errEl.style.display = 'block';
+            submitBtn.disabled = false; submitBtn.textContent = '🔒 Confirmar Cierre';
+          }
+        });
       });
-      if (btnCancelCierre) btnCancelCierre.addEventListener('click', hideCierre);
-    } else if (btnCancelCierre && cierrePanel) {
-      btnCancelCierre.addEventListener('click', () => { cierrePanel.style.display = 'none'; });
     }
-    if (formCierre) this._initCierreForm(formCierre);
 
     // Caja form (manual movement)
     if (canAccess('finanzas-write') && data?.cajaSession) this._initCajaForm();
