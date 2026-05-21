@@ -8,7 +8,6 @@ import { InventarioFormView } from '../views/inventario-form.js';
 import { FinanzasView } from '../views/finanzas.js';
 import { ConfiguracionView } from '../views/configuracion.js';
 import { UsuariosView } from '../views/usuarios.js';
-import { DriftDetectionView } from '../views/drift-detection.js';
 import { renderEmptyState } from '../components/app-state.js';
 import { BaseView } from './base-view.js';
 import { getCurrentSession, canAccess } from './session.js';
@@ -35,7 +34,7 @@ export class Router {
       'inventario-edit':  'Editar Repuesto | Cósmica App',
       'configuracion':    'Configuración | Cósmica App',
       'usuarios':         'Operadores | Cósmica App',
-      'drift':            'Drift Detection | Cósmica App'
+      'drift':            'Configuración | Cósmica App'
     };
 
     // Mapeo de rutas a Clases de Vista
@@ -52,8 +51,7 @@ export class Router {
       'inventario-edit':  InventarioFormView,
       'finanzas':        FinanzasView,
       'configuracion':    ConfiguracionView,
-      'usuarios':         UsuariosView,
-      'drift':            DriftDetectionView
+      'usuarios':         UsuariosView
     };
     
     // Escuchar cambios de ruta
@@ -81,7 +79,7 @@ export class Router {
       'inventario-edit':  'inventario-write',
       'finanzas':        'finanzas-read',
       'usuarios':        'admin-usuarios',
-      'drift':           'admin-usuarios'  // misma gate que admin — solo admin/tester
+      'drift':           'admin-usuarios'  // redirige a configuracion?tab=mantenimiento
     };
 
     const requiredAction = routePermissions[path];
@@ -92,8 +90,14 @@ export class Router {
     }
     // ────────────────────────────────────────────────────────────────────────
 
+    // Legacy redirect: #drift → #configuracion?tab=mantenimiento
+    if (path === 'drift') {
+      window.location.hash = '#configuracion?tab=mantenimiento';
+      return;
+    }
+
     const ViewClass = this.routes[path];
-    
+
     if (ViewClass) {
       this.loadRoute(new ViewClass(params), path);
     } else {

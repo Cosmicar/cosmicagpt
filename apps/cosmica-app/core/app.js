@@ -386,9 +386,8 @@ function renderSidebar(profile) {
     { id: 'clientes',      label: 'Clientes',       roles: ['admin', 'recepcion', 'operador', 'tester'] },
     { id: 'inventario',    label: 'Inventario',     roles: ['admin', 'tecnico', 'recepcion', 'operador', 'tester'] },
     { id: 'finanzas',      label: 'Finanzas',       roles: ['admin', 'recepcion', 'tecnico', 'operador', 'tester'] },
-    { id: 'usuarios',      label: 'Operadores',      roles: ['admin', 'tester'] },
-    { id: 'drift',         label: 'Drift Detection', roles: ['admin', 'tester'] },
-    { id: 'configuracion', label: 'Configuración',  roles: ['admin', 'tester'] }
+    { id: 'usuarios',      label: 'Operadores',     roles: ['admin', 'tester'] },
+    { id: 'configuracion', label: 'Configuración', roles: ['admin', 'tester'] }
   ];
 
   const filteredItems = menuItems.filter(item => item.roles.includes(role));
