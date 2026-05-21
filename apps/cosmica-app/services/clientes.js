@@ -1,21 +1,34 @@
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
-import { COLLECTIONS } from "../../../js/domain.js";
+import { COLLECTIONS, ROLES } from "../../../js/domain.js";
 import { cacheWrap, cacheInvalidate } from '../core/cache.js';
+import { getCurrentSession } from '../core/session.js';
 
-const CACHE_KEY     = 'clientes:list';
 const CLIENTES_LIMIT = 500; // máximo por lectura Firestore
 
 /**
- * Obtiene el listado de clientes desde Firestore.
- * Limitado a CLIENTES_LIMIT, ordenado por createdAt desc (más recientes primero).
- *
- * @returns {Promise<Array>} Lista de clientes
+ * Returns role-aware query constraints for the clientes collection.
+ * Operadores can only see clients from "taller" (origenContacto == 'taller').
+ * Mirrors the same pattern used in legacy /js/work-repository.js → listClientesCRM().
  */
+function _buildClientesQueryConstraints() {
+  const session = getCurrentSession();
+  const role = session?.profile?.rol;
+  if (role === ROLES.operador) {
+    return [where('origenContacto', '==', 'taller')];
+  }
+  return [];
+}
+
 export function getClientes() {
-  return cacheWrap(CACHE_KEY, async () => {
+  const session = getCurrentSession();
+  const role = session?.profile?.rol;
+  const cacheKey = role === ROLES.operador ? 'clientes:list:taller' : 'clientes:list';
+  return cacheWrap(cacheKey, async () => {
+    const constraints = _buildClientesQueryConstraints();
     const q = query(
       collection(db, COLLECTIONS.clientes),
+      ...constraints,
       orderBy('createdAt', 'desc'),
       limit(CLIENTES_LIMIT)
     );
@@ -67,7 +80,8 @@ export async function createCliente(data) {
     // 3. Guardar en Firestore
     const docRef = await addDoc(collection(db, COLLECTIONS.clientes), newCliente);
     
-    cacheInvalidate(CACHE_KEY);
+    cacheInvalidate('clientes:list');
+    cacheInvalidate('clientes:list:taller');
     return {
       success: true,
       id: docRef.id,
@@ -104,7 +118,8 @@ export async function updateCliente(id, data) {
     };
 
     await updateDoc(docRef, updateData);
-    cacheInvalidate(CACHE_KEY);
+    cacheInvalidate('clientes:list');
+    cacheInvalidate('clientes:list:taller');
     return {
       success: true,
       message: "Cliente actualizado correctamente."
@@ -124,7 +139,8 @@ export async function updateCliente(id, data) {
 export async function deleteCliente(id) {
   try {
     await deleteDoc(doc(db, COLLECTIONS.clientes, id));
-    cacheInvalidate(CACHE_KEY);
+    cacheInvalidate('clientes:list');
+    cacheInvalidate('clientes:list:taller');
     return { success: true };
   } catch (error) {
     console.error("Error al eliminar cliente:", error);
