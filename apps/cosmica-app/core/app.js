@@ -641,18 +641,23 @@ export function invalidateCajaStatusCache() {
  */
 function _renderCajaIndicator(el, session, tipo) {
   const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
-  const color = tipo === 'remoto' ? 'rgba(99,179,237,0.85)' : 'var(--accent-cyan)';
 
   if (session) {
-    el.innerHTML = `<span style="color:var(--accent-green);">●</span> <span style="opacity:.6;font-size:9px;">${label}</span> Abierta`;
+    el.innerHTML =
+      `<span style="color:var(--accent-green);font-size:7px;line-height:1;vertical-align:middle;">●</span>` +
+      `<span style="vertical-align:middle;">${label} · Abierta</span>`;
     el.style.display = 'flex';
+    el.style.alignItems = 'center';
     el.style.borderColor = 'rgba(16,185,129,0.25)';
     el.title = `Caja ${label} abierta por ${session.openedByName || 'alguien'}. Clic para cerrar.`;
     el.dataset.cajaStatus = 'open';
     el.dataset.sesionId = session.id;
   } else {
-    el.innerHTML = `<span style="color:var(--danger);">●</span> <span style="opacity:.6;font-size:9px;">${label}</span> Cerrada`;
+    el.innerHTML =
+      `<span style="color:var(--danger);font-size:7px;line-height:1;vertical-align:middle;">●</span>` +
+      `<span style="vertical-align:middle;">${label} · Cerrada</span>`;
     el.style.display = 'flex';
+    el.style.alignItems = 'center';
     el.style.borderColor = 'rgba(255,255,255,0.06)';
     el.title = `Caja ${label} cerrada. Clic para abrir.`;
     el.dataset.cajaStatus = 'closed';
@@ -720,14 +725,20 @@ export async function updateCajaStatusIndicator() {
       }
 
       if (session) {
-        el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
+        el.innerHTML =
+          `<span style="color:var(--accent-green);font-size:7px;line-height:1;">●</span>` +
+          `<span>Caja Abierta</span>`;
         el.style.display = 'flex';
+        el.style.alignItems = 'center';
         el.title = `Abierta por ${session.openedByName || 'alguien'}.`;
         el.dataset.cajaStatus = 'open';
         el.dataset.sesionId   = session.id;
       } else {
-        el.innerHTML = `<span style="color:var(--danger);">●</span> Caja Cerrada`;
+        el.innerHTML =
+          `<span style="color:var(--danger);font-size:7px;line-height:1;">●</span>` +
+          `<span>Caja Cerrada</span>`;
         el.style.display = 'flex';
+        el.style.alignItems = 'center';
         el.title = 'No hay una sesión de caja activa.';
         el.dataset.cajaStatus = 'closed';
         el.dataset.sesionId   = '';
