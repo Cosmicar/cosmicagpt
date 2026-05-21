@@ -195,10 +195,10 @@ export class TicketFormView extends AsyncView {
     ];
 
     const planOptions = [
-      { value: 'estandar', label: 'Estándar' },
-      { value: 'oro', label: 'Oro (Prioridad)' },
+      { value: 'bronce',   label: 'Bronce' },
+      { value: 'oro',      label: 'Oro (Prioridad)' },
       { value: 'platinum', label: 'Platinum (Urgente)' },
-      { value: 'reset', label: '🖨️ Reset de Impresora' },
+      { value: 'reset',    label: '🖨️ Reset de Impresora' },
     ];
 
     const isEntregado = ticket?.estado === WORK_STATUS.entregado;
@@ -329,7 +329,7 @@ export class TicketFormView extends AsyncView {
                 id: 'planServicio',
                 type: 'select',
                 options: planOptions,
-                value: ticket?.planServicio || 'estandar',
+                value: ticket?.planServicio || 'bronce',
                 required: true
               }) : `<input type="hidden" name="planServicio" id="planServicio" value="${ticket?.planServicio || 'estandar'}">`}
 
@@ -369,7 +369,7 @@ export class TicketFormView extends AsyncView {
                   { value: 'debito', label: 'Débito' },
                   { value: 'credito', label: 'Crédito' }
                 ],
-                value: ticket?.metodoPago || 'efectivo',
+                value: ticket?.metodoPago || (admin ? 'transferencia' : 'efectivo'),
                 disabled: freezeFinancials
               })}
 
@@ -549,22 +549,25 @@ export class TicketFormView extends AsyncView {
         if (!val) { suggestions.style.display = 'none'; hidden.value = ''; return; }
 
         const filtered = this._clientesCache.filter(c => {
-          const full = `${c.nombre} ${c.apellido} ${c.dni} ${c.telefono}`.toLowerCase();
+          const full = `${c.nombre || ''} ${c.apellido || ''} ${c.dni || ''} ${c.telefono || ''}`.toLowerCase();
           return full.includes(val);
         }).slice(0, 5);
 
         this._currentSuggestions = filtered;
         this._suggestionIndex = -1;
 
+        const _fullName = (c) => [c.nombre, c.apellido].filter(Boolean).join(' ');
+
         if (filtered.length > 0) {
           suggestions.innerHTML = filtered.map((c, i) => {
             const ticketCount = this._allTicketsCache.filter(t => t.clienteId === c.id).length;
             const badge = getClientBadge(ticketCount);
+            const fullName = _fullName(c);
             return `
-            <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${c.nombre} ${c.apellido}" data-index="${i}" 
+            <div class="cliente-suggestion-item" data-id="${c.id}" data-name="${fullName}" data-index="${i}"
                  style="padding:10px 15px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;background:#1a1f2e;">
               <div>
-                <div style="font-weight:600;font-size:var(--font-sm);color:var(--text-primary);">${c.nombre} ${c.apellido}</div>
+                <div style="font-weight:600;font-size:var(--font-sm);color:var(--text-primary);">${fullName}</div>
                 <div style="font-size:var(--font-xs);color:var(--text-muted);">${c.telefono || ''} ${c.dni ? `• DNI: ${c.dni}` : ''}</div>
               </div>
               ${badge ? `<span class="badge ${badge.class}" style="font-size:10px;">${badge.label}</span>` : ''}
@@ -573,17 +576,72 @@ export class TicketFormView extends AsyncView {
           suggestions.style.display = 'block';
 
           suggestions.querySelectorAll('.cliente-suggestion-item').forEach(el => {
-            el.addEventListener('mouseenter', () => { 
+            el.addEventListener('mouseenter', () => {
               this._suggestionIndex = parseInt(el.dataset.index);
-              this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item'); 
+              this._updateSuggestionHighlight(suggestions, 'cliente-suggestion-item');
             });
             el.addEventListener('click', () => {
               this._selectCliente(el.dataset.id, el.dataset.name);
             });
           });
         } else {
-          suggestions.innerHTML = `<div style="padding:10px;color:var(--text-muted);font-size:var(--font-sm);">No se encontraron clientes. <a href="#cliente-nuevo" style="color:var(--accent-cyan);">Crear nuevo?</a></div>`;
+          // Mini-form para crear cliente inline
+          const parts = val.trim().split(/\s+/);
+          const preNombre = parts[0] || '';
+          const preApellido = parts.slice(1).join(' ') || '';
+          suggestions.innerHTML = `
+            <div style="padding:12px 14px;background:#1a1f2e;">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase;">
+                ➕ No encontrado — crear cliente nuevo
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <input id="nc-nombre" type="text" class="input" placeholder="Nombre *" value="${preNombre}"
+                  style="margin:0;font-size:13px;padding:7px 10px;">
+                <input id="nc-apellido" type="text" class="input" placeholder="Apellido" value="${preApellido}"
+                  style="margin:0;font-size:13px;padding:7px 10px;">
+                <input id="nc-dni" type="text" class="input" placeholder="DNI *"
+                  style="margin:0;font-size:13px;padding:7px 10px;">
+                <input id="nc-telefono" type="text" class="input" placeholder="Teléfono *"
+                  style="margin:0;font-size:13px;padding:7px 10px;">
+              </div>
+              <button type="button" id="nc-save-btn" class="btn btn-primary"
+                style="width:100%;padding:8px;font-size:13px;font-weight:600;">
+                ✚ Crear y seleccionar
+              </button>
+              <div id="nc-error" style="display:none;margin-top:6px;font-size:11px;color:var(--danger);"></div>
+            </div>`;
           suggestions.style.display = 'block';
+
+          // Evitar que clicks dentro del form cierren el dropdown
+          suggestions.querySelector('#nc-save-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const ncNombre   = document.getElementById('nc-nombre')?.value.trim();
+            const ncApellido = document.getElementById('nc-apellido')?.value.trim();
+            const ncDni      = document.getElementById('nc-dni')?.value.trim();
+            const ncTelefono = document.getElementById('nc-telefono')?.value.trim();
+            const ncError    = document.getElementById('nc-error');
+            if (!ncNombre || !ncDni || !ncTelefono) {
+              if (ncError) { ncError.textContent = 'Nombre, DNI y Teléfono son obligatorios.'; ncError.style.display = 'block'; }
+              return;
+            }
+            const saveBtn = document.getElementById('nc-save-btn');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando…'; }
+            try {
+              const { createCliente } = await import('../services/clientes.js');
+              const result = await createCliente({ nombre: ncNombre, apellido: ncApellido, dni: ncDni, telefono: ncTelefono });
+              if (!result.success) throw new Error(result.error);
+              // Agregar al cache local para que aparezca en futuros filtros
+              this._clientesCache.push({ id: result.id, nombre: ncNombre, apellido: ncApellido, dni: ncDni, telefono: ncTelefono });
+              const fullName = [ncNombre, ncApellido].filter(Boolean).join(' ');
+              this._selectCliente(result.id, fullName);
+            } catch (err) {
+              if (ncError) { ncError.textContent = err.message; ncError.style.display = 'block'; }
+              if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '✚ Crear y seleccionar'; }
+            }
+          });
+          ['nc-nombre','nc-apellido','nc-dni','nc-telefono'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', e => e.stopPropagation());
+          });
         }
       }, 150);
     });
@@ -602,7 +660,7 @@ export class TicketFormView extends AsyncView {
       } else if (e.key === 'Enter' && this._suggestionIndex >= 0) {
         e.preventDefault();
         const item = this._currentSuggestions[this._suggestionIndex];
-        this._selectCliente(item.id, `${item.nombre} ${item.apellido}`);
+        this._selectCliente(item.id, [item.nombre, item.apellido].filter(Boolean).join(' '));
       } else if (e.key === 'Escape') {
         suggestions.style.display = 'none';
       }
@@ -973,7 +1031,7 @@ export class TicketFormView extends AsyncView {
         try {
           const cfg = JSON.parse(localStorage.getItem('cosmica_config_v1') || '{}');
           return {
-            estandar: Number(cfg.precioBronce)   || null,
+            bronce:   Number(cfg.precioBronce)   || null,
             oro:      Number(cfg.precioOro)       || null,
             platinum: Number(cfg.precioPlatinum)  || null,
             reset:    Number(cfg.precioReset)     || null,
@@ -1045,8 +1103,8 @@ export class TicketFormView extends AsyncView {
             ? (this._ticket?.precio || '')
             : (rawData.precio || ''),
           metodoPago: metodoFieldDisabled
-            ? (this._ticket?.metodoPago || 'efectivo')
-            : (rawData.metodoPago || 'efectivo'),
+            ? (this._ticket?.metodoPago || 'transferencia')
+            : (rawData.metodoPago || (admin ? 'transferencia' : 'efectivo')),
           marca: rawData.marca_modelo || '',
           modelo: '',
           tecnicoAsignadoId: userRole === 'operador'

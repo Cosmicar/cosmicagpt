@@ -924,7 +924,7 @@ export class TicketsView extends AsyncView {
 
       const dateA = new Date(a.fechaIngreso || 0).getTime();
       const dateB = new Date(b.fechaIngreso || 0).getTime();
-      return dateA - dateB;
+      return dateB - dateA;  // más reciente primero
     });
 
     return filtered;
