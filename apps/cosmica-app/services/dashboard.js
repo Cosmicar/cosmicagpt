@@ -362,11 +362,13 @@ export async function getDashboardData() {
   };
 
   // ── Métricas del día (hoy) ────────────────────────────────────────────────
-  // Regla:
-  //   Ingresados/Entregados → por fecha del ticket (fechaIngreso / fechaEntregado)
-  //   Facturado hoy         → por fecha de creación del asiento de caja (createdAt),
-  //                           NO por fechaEntregado del ticket — evita contar cobros
-  //                           de sesiones anteriores cerradas hoy via "force-close".
+  // Regla: todo se filtra por fechaIngreso == hoy.
+  //   Ingresados  → tickets con fechaIngreso = hoy
+  //   Entregados  → tickets con fechaIngreso = hoy Y entregados (mismo día)
+  //   Facturado   → asientos de caja para tickets ingresados hoy
+  //
+  // Esto excluye correctamente tickets viejos cerrados hoy (ej. REM-0043
+  // ingresado el 14/05 y cerrado el 21/05 no contamina la vista diaria).
   const todayStr = new Date().toISOString().split('T')[0];
   const hoy = {
     ingresadosTaller:  0, ingresadosRemoto:  0,
@@ -374,35 +376,41 @@ export async function getDashboardData() {
     facturacionTaller: 0, facturacionRemoto: 0,
   };
 
-  // Mapa ticketId → tipo para cross-reference en asientos de caja
-  const ticketTipoMap = new Map(tickets.map(t => [t.id, t.tipo || 'taller']));
+  // Mapa ticketId → {tipo, ingresadoHoy} para cross-reference con caja
+  const ticketMetaMap = new Map(tickets.map(t => [t.id, {
+    tipo:        t.tipo || 'taller',
+    ingresadoHoy: t.fechaIngreso?.split('T')[0] === todayStr,
+  }]));
 
-  const esHoyStr = (dateStr) => dateStr?.split?.('T')[0] === todayStr;
-  const esHoyTs  = (ts) => {
+  const esHoyTs = (ts) => {
     if (!ts) return false;
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toISOString().split('T')[0] === todayStr;
   };
 
   for (const t of tickets) {
+    if (t.fechaIngreso?.split('T')[0] !== todayStr) continue; // solo tickets de hoy
     const taller = t.tipo !== 'remoto';
-    if (esHoyStr(t.fechaIngreso)) {
-      if (taller) hoy.ingresadosTaller++; else hoy.ingresadosRemoto++;
-    }
-    if (t.estado === WORK_STATUS.entregado && esHoyStr(t.fechaEntregado)) {
+    if (taller) hoy.ingresadosTaller++; else hoy.ingresadosRemoto++;
+    if (t.estado === WORK_STATUS.entregado) {
       if (taller) hoy.entregadosTaller++; else hoy.entregadosRemoto++;
     }
   }
 
-  // Facturado hoy = asientos de caja tipo 'ingreso' creados hoy
+  // Facturado hoy = caja ingresos para tickets ingresados hoy (sin importar cuándo se cobró)
   for (const entry of cajaEntries) {
     if (entry.tipo !== 'ingreso') continue;
-    if (!esHoyTs(entry.createdAt)) continue;
-    const tipo = entry.ticketRef
-      ? (ticketTipoMap.get(entry.ticketRef) || 'taller')
-      : 'taller';
-    if (tipo === 'remoto') hoy.facturacionRemoto += Number(entry.monto || 0);
-    else                   hoy.facturacionTaller += Number(entry.monto || 0);
+    const meta = entry.ticketRef ? ticketMetaMap.get(entry.ticketRef) : null;
+    // Entrada sin ticketRef (manual) → contar si fue creada hoy
+    if (!entry.ticketRef) {
+      if (!esHoyTs(entry.createdAt)) continue;
+      hoy.facturacionTaller += Number(entry.monto || 0);
+      continue;
+    }
+    // Entrada con ticketRef → contar solo si el ticket fue ingresado hoy
+    if (!meta?.ingresadoHoy) continue;
+    if (meta.tipo === 'remoto') hoy.facturacionRemoto += Number(entry.monto || 0);
+    else                        hoy.facturacionTaller += Number(entry.monto || 0);
   }
 
   return {
