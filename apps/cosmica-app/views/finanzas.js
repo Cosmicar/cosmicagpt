@@ -213,6 +213,9 @@ export class FinanzasView extends AsyncView {
           </div>
         </section>
 
+        <!-- Banner rendición semanal -->
+        ${this.renderBannerRendicion(kpis)}
+
         <!-- Top tickets + Últimos cobrados -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:var(--space-xl);">
           ${this.renderTopTickets(ticketsMasRentables)}
@@ -1039,21 +1042,89 @@ export class FinanzasView extends AsyncView {
       </section>`;
   }
 
+  // ── Banner rendición semanal (admin) ─────────────────────────────────────
+  renderBannerRendicion(kpis) {
+    const facturado     = kpis.facturacionDesdeRendicion ?? 0;
+    const tickets       = kpis.ticketsDesdeRendicion ?? 0;
+    const diasRestantes = kpis.diasHastaRendicion ?? 0;
+
+    const countdownText = diasRestantes === 0
+      ? '🎉 ¡Hoy es día de rendición!'
+      : diasRestantes === 1
+        ? '⏰ Mañana es la rendición semanal'
+        : `📅 Faltan <strong>${diasRestantes}</strong> días para la rendición del sábado`;
+
+    const color  = diasRestantes === 0 ? 'var(--accent-green)'  : diasRestantes <= 2 ? 'var(--accent-orange)'  : 'var(--accent-cyan)';
+    const bg     = diasRestantes === 0 ? 'rgba(34,197,94,0.07)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.07)' : 'rgba(0,229,255,0.05)';
+    const border = diasRestantes === 0 ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2 ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
+
+    return `
+      <div style="padding:var(--space-md) var(--space-lg);background:${bg};
+                  border:1px solid ${border};border-radius:var(--radius-md);
+                  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-md);">
+        <span style="font-size:var(--font-sm);font-weight:600;color:${color};">${countdownText}</span>
+        <div style="display:flex;align-items:center;gap:var(--space-lg);">
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">DESDE ÚLT. SÁBADO</div>
+            <div style="font-size:var(--font-md);font-weight:800;color:${color};">${ars(facturado)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">COBROS</div>
+            <div style="font-size:var(--font-md);font-weight:800;color:var(--text-primary);">${tickets}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
   // ── Rendimiento Operador ──────────────────────────────────────────────────
   renderRendimientoOperador(kpis, comisiones) {
     const pctOperador = Number(comisiones?.taller ?? 30);
     const pctNegocio  = 100 - pctOperador;
 
-    const facturado     = kpis.facturacionConcretada || 0;
-    const miGanancia    = facturado * (pctOperador / 100);
-    const aporteNegocio = facturado * (pctNegocio / 100);
+    // Usar ingresos DESDE la última rendición (último sábado), no toda la historia
+    const facturado     = kpis.facturacionDesdeRendicion ?? kpis.facturacionConcretada ?? 0;
+    const tickets       = kpis.ticketsDesdeRendicion ?? kpis.totalConPrecio ?? 0;
+    const diasRestantes = kpis.diasHastaRendicion ?? 0;
+    const miGanancia    = Math.round(facturado * (pctOperador / 100));
+    const aporteNegocio = Math.round(facturado * (pctNegocio / 100));
+
+    // Texto del countdown
+    const countdownText = diasRestantes === 0
+      ? '🎉 ¡Hoy es día de rendición!'
+      : diasRestantes === 1
+        ? '⏰ Mañana es la rendición'
+        : `📅 Faltan <strong>${diasRestantes}</strong> días para la rendición del sábado`;
+
+    // Color del countdown
+    const countdownColor = diasRestantes === 0
+      ? 'var(--accent-green)' : diasRestantes <= 2
+        ? 'var(--accent-orange)' : 'var(--accent-cyan)';
+    const countdownBg = diasRestantes === 0
+      ? 'rgba(34,197,94,0.08)' : diasRestantes <= 2
+        ? 'rgba(249,115,22,0.08)' : 'rgba(0,229,255,0.06)';
+    const countdownBorder = diasRestantes === 0
+      ? 'rgba(34,197,94,0.25)' : diasRestantes <= 2
+        ? 'rgba(249,115,22,0.25)' : 'rgba(0,229,255,0.15)';
 
     return `
       <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
-        <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
-          <span style="opacity:0.8;">📊</span> Mi Rendimiento (Taller)
+        <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-sm);display:flex;align-items:center;gap:8px;">
+          <span style="opacity:0.8;">📊</span> Mi Rendimiento Semanal
         </h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);">
+        <p style="font-size:var(--font-xs);color:var(--text-muted);margin:0 0 var(--space-md);">
+          Ingresos acumulados desde el último sábado · ${tickets} cobro${tickets !== 1 ? 's' : ''}
+        </p>
+
+        <!-- Countdown rendición -->
+        <div style="padding:var(--space-sm) var(--space-md);background:${countdownBg};
+                    border:1px solid ${countdownBorder};border-radius:var(--radius-md);
+                    font-size:var(--font-sm);color:${countdownColor};font-weight:600;
+                    margin-bottom:var(--space-md);display:flex;align-items:center;gap:8px;">
+          <span>${countdownText}</span>
+        </div>
+
+        <!-- Cards de distribución -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-md);">
           <div style="padding:var(--space-lg);background:rgba(34,197,94,0.07);
                       border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-md);text-align:center;">
             <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">MI GANANCIA (${pctOperador}%)</div>
@@ -1069,6 +1140,14 @@ export class FinanzasView extends AsyncView {
               ${ars(aporteNegocio)}
             </div>
             <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Lo que pongo en la empresa</div>
+          </div>
+          <div style="padding:var(--space-lg);background:rgba(255,255,255,0.04);
+                      border:1px solid var(--border);border-radius:var(--radius-md);text-align:center;">
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;">TOTAL FACTURADO</div>
+            <div style="font-size:var(--font-xl);font-weight:800;color:var(--accent-cyan);">
+              ${ars(facturado)}
+            </div>
+            <div style="font-size:var(--font-xs);color:var(--text-muted);margin-top:4px;">Desde el último sábado</div>
           </div>
         </div>
       </section>

@@ -38,6 +38,30 @@ function startOfWeek() {
   return d;
 }
 
+/**
+ * Devuelve el inicio del último sábado (día de rendición semanal).
+ * Si hoy es sábado, devuelve el inicio de hoy mismo.
+ */
+function startOfLastSaturday() {
+  const d = new Date();
+  // getDay(): 0=Dom, 1=Lun, ... 6=Sáb
+  const dayOfWeek = d.getDay(); // 0-6
+  const daysSinceSat = dayOfWeek === 6 ? 0 : (dayOfWeek + 1); // cuántos días atrás fue el sábado
+  d.setDate(d.getDate() - daysSinceSat);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/**
+ * Devuelve los días que faltan para el próximo sábado.
+ * Si hoy es sábado devuelve 0.
+ */
+function daysUntilNextSaturday() {
+  const dayOfWeek = new Date().getDay(); // 0=Dom ... 6=Sáb
+  if (dayOfWeek === 6) return 0;
+  return 6 - dayOfWeek;
+}
+
 // ── Session helpers ───────────────────────────────────────────────────────────
 
 function sessionName() {
@@ -358,6 +382,15 @@ export async function getFinanzasData() {
     .sort((a, b) => toDate(b.fechaEntregado || b.updatedAt) - toDate(a.fechaEntregado || a.updatedAt))
     .slice(0, 5);
 
+  // ── Rendición semanal (desde el último sábado) ────────────────────────────
+  const rendicionStart        = startOfLastSaturday();
+  const diasHastaRendicion    = daysUntilNextSaturday();
+  const withPriceSinceRendicion = withPrice.filter(t => {
+    const fecha = toDate(t.fechaEntregado || t.updatedAt);
+    return fecha >= rendicionStart;
+  });
+  const facturacionDesdeRendicion = withPriceSinceRendicion.reduce((s, t) => s + Number(t.precio || 0), 0);
+
   // ── Plan distribution ─────────────────────────────────────────────────────
   const distribucionPlanes = {};
   for (const t of tickets) {
@@ -438,6 +471,10 @@ export async function getFinanzasData() {
       totalTickets:    tickets.length,
       totalEntregados: delivered.length,
       totalConPrecio:  withPrice.length,
+      // Rendición semanal
+      facturacionDesdeRendicion,
+      ticketsDesdeRendicion:  withPriceSinceRendicion.length,
+      diasHastaRendicion,
     },
     ticketsMasRentables,
     ultimosCobrados,
