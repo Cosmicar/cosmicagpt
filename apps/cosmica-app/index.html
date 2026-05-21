@@ -460,9 +460,12 @@
 
     /* ── Navbar overflow protection ───────────────────────── */
     .navbar-email {
+      display: flex;
+      align-items: center;
+      gap: 4px;
       font-size: var(--font-sm);
       color: var(--text-muted);
-      max-width: 150px;
+      max-width: 180px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
