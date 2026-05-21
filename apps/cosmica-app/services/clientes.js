@@ -20,20 +20,51 @@ function _buildClientesQueryConstraints() {
   return [];
 }
 
+/**
+ * Obtiene el listado de clientes desde Firestore.
+ * Limitado a CLIENTES_LIMIT, ordenado por createdAt desc (más recientes primero).
+ * Para operadores filtra por origenContacto == 'taller' (sin índice compuesto:
+ * el ordenamiento se hace en cliente para evitar requerir índice Firestore).
+ *
+ * @returns {Promise<Array>} Lista de clientes
+ */
 export function getClientes() {
   const session = getCurrentSession();
   const role = session?.profile?.rol;
-  const cacheKey = role === ROLES.operador ? 'clientes:list:taller' : 'clientes:list';
+  const isOperador = role === ROLES.operador;
+  const cacheKey = isOperador ? 'clientes:list:taller' : 'clientes:list';
+
   return cacheWrap(cacheKey, async () => {
-    const constraints = _buildClientesQueryConstraints();
-    const q = query(
-      collection(db, COLLECTIONS.clientes),
-      ...constraints,
-      orderBy('createdAt', 'desc'),
-      limit(CLIENTES_LIMIT)
-    );
+    let q;
+    if (isOperador) {
+      // Sólo el filtro where — sin orderBy para no requerir índice compuesto.
+      // El orden se aplica en cliente a continuación.
+      q = query(
+        collection(db, COLLECTIONS.clientes),
+        where('origenContacto', '==', 'taller'),
+        limit(CLIENTES_LIMIT)
+      );
+    } else {
+      q = query(
+        collection(db, COLLECTIONS.clientes),
+        orderBy('createdAt', 'desc'),
+        limit(CLIENTES_LIMIT)
+      );
+    }
+
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Ordenamiento en cliente para el caso operador (evita índice compuesto)
+    if (isOperador) {
+      docs.sort((a, b) => {
+        const ta = a.createdAt?.seconds ?? 0;
+        const tb = b.createdAt?.seconds ?? 0;
+        return tb - ta;
+      });
+    }
+
+    return docs;
   });
 }
 
