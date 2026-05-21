@@ -79,36 +79,54 @@ function sessionUid() {
 // ── Caja Session Management ───────────────────────────────────────────────────
 
 /**
- * Returns the currently open caja session, or null if none.
+ * Returns the currently open caja session for a given tipo ('taller' | 'remoto').
+ * Sessions without tipo field are treated as 'taller' (backward compat).
  * Never cached — must always reflect the real DB state.
  */
-export async function getCajaSession() {
+export async function getCajaSessionByTipo(tipo = 'taller') {
   try {
-    const q = query(
+    const snap = await getDocs(query(
       collection(db, COLLECTIONS.cajaSesiones),
       where('status', '==', 'open'),
-      limit(1)
-    );
-    const snap = await getDocs(q);
+      limit(10)  // small limit — few cajas open at a time
+    ));
     if (snap.empty) return null;
-    const d = snap.docs[0];
-    return { id: d.id, ...d.data() };
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Taller: sessions with tipo=='taller' OR legacy sessions without tipo
+    if (tipo === 'taller') {
+      return docs.find(d => d.tipo === 'taller' || !d.tipo) || null;
+    }
+    return docs.find(d => d.tipo === tipo) || null;
   } catch (err) {
-    console.error('[caja] getCajaSession:', err);
+    console.error(`[caja] getCajaSessionByTipo(${tipo}):`, err);
     return null;
   }
 }
 
-export async function abrirCaja(saldoInicial) {
-  const existing = await getCajaSession();
-  if (existing) throw new Error('Ya existe una caja abierta. Cerrala antes de abrir una nueva.');
+/**
+ * Returns the currently open caja session (taller), or null if none.
+ * Kept for backward compatibility.
+ */
+export async function getCajaSession() {
+  return getCajaSessionByTipo('taller');
+}
 
-  const configRef = doc(db, 'config', 'caja_status');
+/**
+ * @param {number} saldoInicial
+ * @param {'taller'|'remoto'} tipo - tipo de caja a abrir (default: 'taller')
+ */
+export async function abrirCaja(saldoInicial, tipo = 'taller') {
+  const existing = await getCajaSessionByTipo(tipo);
+  if (existing) throw new Error(`Ya existe una caja ${tipo} abierta. Cerrala antes de abrir una nueva.`);
+
+  // Each tipo uses its own config doc to avoid mutex conflicts between cajas
+  const configKey = tipo === 'remoto' ? 'caja_remoto_status' : 'caja_status';
+  const configRef = doc(db, 'config', configKey);
 
   const id = await runTransaction(db, async (t) => {
     const configSnap = await t.get(configRef);
     if (configSnap.exists() && configSnap.data().isOpen) {
-      throw new Error('Ya existe una caja abierta. Cerrala antes de abrir una nueva.');
+      throw new Error(`Ya existe una caja ${tipo} abierta. Cerrala antes de abrir una nueva.`);
     }
 
     const newRef = doc(collection(db, COLLECTIONS.cajaSesiones));
@@ -118,6 +136,7 @@ export async function abrirCaja(saldoInicial) {
       openedByName:        sessionName(),
       saldoInicial:        Number(saldoInicial) || 0,
       status:              'open',
+      tipo,
       closedAt:            null,
       closedBy:            null,
       closedByName:        null,
@@ -167,13 +186,17 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
   const totalDebito        = calcTotalByMethod('debito');
   const totalCredito       = calcTotalByMethod('credito');
 
-  const configRef = doc(db, 'config', 'caja_status');
   const sesionRef = doc(db, COLLECTIONS.cajaSesiones, sesionId);
 
   const res = await runTransaction(db, async (t) => {
     const sesionSnap = await t.get(sesionRef);
     if (!sesionSnap.exists()) throw new Error('Sesión de caja no encontrada.');
     if (sesionSnap.data().status === 'closed') throw new Error('Esta caja ya está cerrada.');
+
+    // Determine config doc based on session tipo (backward compat: no tipo → taller)
+    const sesionTipo = sesionSnap.data().tipo || 'taller';
+    const configKey  = sesionTipo === 'remoto' ? 'caja_remoto_status' : 'caja_status';
+    const configRef  = doc(db, 'config', configKey);
 
     const saldoInicial = Number(sesionSnap.data().saldoInicial || 0);
     const saldoFinalSistema = saldoInicial + totalIngresos - totalEgresos;

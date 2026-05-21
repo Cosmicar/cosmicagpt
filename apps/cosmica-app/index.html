@@ -2016,7 +2016,17 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
     </button>
     <div class="navbar-actions">
-      <div id="caja-status-indicator" style="display: none; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 0.05em;"></div>
+      <!-- Reloj Buenos Aires (GMT-3) -->
+      <div id="navbar-clock" style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap;opacity:0.75;"></div>
+
+      <!-- Caja Taller — visible solo para admin/tester -->
+      <div id="caja-taller-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;" data-tipo="taller"></div>
+
+      <!-- Caja Remoto — visible solo para admin/tester -->
+      <div id="caja-remoto-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;" data-tipo="remoto"></div>
+
+      <!-- Caja unificada — visible para roles no-admin -->
+      <div id="caja-status-indicator" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);text-transform:uppercase;letter-spacing:0.05em;"></div>
 
       <span id="userEmail" class="navbar-email"></span>
       <button class="btn btn-primary" id="btnPerfil">Perfil</button>

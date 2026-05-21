@@ -116,9 +116,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sesión confirmada con perfil válido: mostrar shell completo
     cleanupExpiredDrafts(); // Sweep stale cosmica_draft_* keys before the session starts
     document.body.classList.add('session-ready');
+    _navRole = session.profile?.rol || null;
     renderSidebar(session.profile);
     initPerfilButton(session, mainContent);
     initSidebarMobile();
+    initNavbarClock();
     updateCajaStatusIndicator();
     initGlobalShortcuts();
     initPWAFeatures();
@@ -499,10 +501,36 @@ function renderBottomNav(profile) {
   }
 }
 
+// Rol del usuario activo (se setea al iniciar sesión)
+let _navRole = null;
+
 // Throttle: máximo 1 lectura Firestore de caja cada 30 s para no consumir lecturas
 // innecesarias en navegaciones rápidas entre vistas.
 let _lastCajaCheck = 0;
 let _lastCajaResult = null;
+
+/**
+ * Reloj en tiempo real — Buenos Aires (America/Argentina/Buenos_Aires, GMT-3).
+ * Se actualiza cada segundo y se muestra en #navbar-clock.
+ */
+function initNavbarClock() {
+  const el = document.getElementById('navbar-clock');
+  if (!el) return;
+
+  const tick = () => {
+    const now = new Date();
+    el.textContent = now.toLocaleTimeString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour:     '2-digit',
+      minute:   '2-digit',
+      second:   '2-digit',
+      hour12:   false
+    });
+  };
+
+  tick();
+  setInterval(tick, 1000);
+}
 
 /** Llama esto tras abrir o cerrar la caja para forzar refresco inmediato del indicador. */
 export function invalidateCajaStatusCache() {
@@ -511,120 +539,175 @@ export function invalidateCajaStatusCache() {
 }
 
 /**
- * Updates the persistent caja status indicator in the navbar.
+ * Actualiza un indicador de caja individual (taller o remoto) en el navbar.
+ * @param {HTMLElement} el  - el div indicador
+ * @param {object|null} session - sesión abierta o null
+ * @param {'taller'|'remoto'} tipo
+ */
+function _renderCajaIndicator(el, session, tipo) {
+  const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
+  const color = tipo === 'remoto' ? 'rgba(99,179,237,0.85)' : 'var(--accent-cyan)';
+
+  if (session) {
+    el.innerHTML = `<span style="color:var(--accent-green);">●</span> <span style="opacity:.6;font-size:9px;">${label}</span> Abierta`;
+    el.style.display = 'flex';
+    el.style.borderColor = 'rgba(16,185,129,0.25)';
+    el.title = `Caja ${label} abierta por ${session.openedByName || 'alguien'}. Clic para cerrar.`;
+    el.dataset.cajaStatus = 'open';
+    el.dataset.sesionId = session.id;
+  } else {
+    el.innerHTML = `<span style="color:var(--danger);">●</span> <span style="opacity:.6;font-size:9px;">${label}</span> Cerrada`;
+    el.style.display = 'flex';
+    el.style.borderColor = 'rgba(255,255,255,0.06)';
+    el.title = `Caja ${label} cerrada. Clic para abrir.`;
+    el.dataset.cajaStatus = 'closed';
+    el.dataset.sesionId = '';
+  }
+}
+
+/**
+ * Updates the persistent caja status indicators in the navbar.
+ * Admin/tester: shows two separate indicators (Taller + Remoto).
+ * Other roles: shows single unified indicator.
  */
 export async function updateCajaStatusIndicator() {
-  const el = document.getElementById('caja-status-indicator');
-  if (!el) return;
+  const isAdmin = _navRole === 'admin' || _navRole === 'tester';
 
   try {
-    const { getCajaSession } = await import('../services/finanzas.js');
+    const { getCajaSession, getCajaSessionByTipo } = await import('../services/finanzas.js');
     const now = Date.now();
-    let session;
-    if (now - _lastCajaCheck < 30_000) {
-      session = _lastCajaResult; // Usa resultado cacheado en módulo
-    } else {
-      session = await getCajaSession();
-      _lastCajaCheck = now;
-      _lastCajaResult = session;
-    }
 
-    if (session) {
-      el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
-      el.style.display = 'flex';
-      el.style.cursor = 'pointer';
-      el.title = `Abierta por ${session.openedByName || 'alguien'}. Clic para cerrar caja.`;
-      el.dataset.cajaStatus = 'open';
-      el.dataset.sesionId = session.id;
-    } else {
-      el.innerHTML = `<span style="color:var(--danger);">●</span> Caja Cerrada`;
-      el.style.display = 'flex';
-      el.style.cursor = 'pointer';
-      el.title = 'No hay una sesión de caja activa. Hacé clic para abrirla.';
-      el.dataset.cajaStatus = 'closed';
-      el.dataset.sesionId = '';
-    }
+    if (isAdmin) {
+      // ── Admin: dos indicadores separados ──────────────────────────────
+      const elTaller = document.getElementById('caja-taller-indicator');
+      const elRemoto = document.getElementById('caja-remoto-indicator');
+      const elLegacy = document.getElementById('caja-status-indicator');
+      if (elLegacy) elLegacy.style.display = 'none'; // ocultar el unificado
 
-    // Bind click listener once to allow direct opening/closing
-    if (!el._hasClickListener) {
-      el._hasClickListener = true;
-      el.addEventListener('click', async () => {
-        const { canAccess } = await import('./session.js');
-        if (!canAccess('finanzas-write')) {
-          const { showToast } = await import('../components/toast.js');
-          showToast('No tenés permisos para gestionar la caja', 'error');
-          return;
+      const [tallerSession, remotoSession] = await Promise.all([
+        getCajaSessionByTipo('taller'),
+        getCajaSessionByTipo('remoto')
+      ]);
+      _lastCajaCheck  = now;
+      _lastCajaResult = tallerSession; // backward compat para otras partes
+
+      if (elTaller) {
+        _renderCajaIndicator(elTaller, tallerSession, 'taller');
+        if (!elTaller._hasClickListener) {
+          elTaller._hasClickListener = true;
+          elTaller.addEventListener('click', () => _onCajaClick(elTaller, 'taller'));
         }
-
-        if (el.dataset.cajaStatus === 'closed') {
-          const input = prompt("¿Confirmás la apertura de la caja?\n\nIngresá el saldo inicial ($):", "0");
-          if (input !== null) {
-            const saldo = Number(input.trim());
-            if (isNaN(saldo) || saldo < 0) {
-              const { showToast } = await import('../components/toast.js');
-              showToast('Monto de saldo inicial inválido', 'error');
-              return;
-            }
-
-            try {
-              const { abrirCaja, invalidateCajaStatusCache } = await import('../services/finanzas.js');
-              const { showToast } = await import('../components/toast.js');
-              const res = await abrirCaja(saldo);
-              if (res.success) {
-                showToast('Caja abierta correctamente con $' + saldo.toLocaleString('es-AR'), 'success');
-                invalidateCajaStatusCache();
-                await updateCajaStatusIndicator();
-                
-                // Refresh active finanzas view if the user is currently on it
-                if (window.location.hash === '#finanzas') {
-                  window.dispatchEvent(new HashChangeEvent('hashchange'));
-                }
-              } else {
-                showToast(res.error || 'Error al abrir caja', 'error');
-              }
-            } catch (err) {
-              const { showToast } = await import('../components/toast.js');
-              showToast(err.message || 'Error al abrir caja', 'error');
-            }
-          }
-        } else if (el.dataset.cajaStatus === 'open') {
-          const sesionId = el.dataset.sesionId;
-          const input = prompt("Cierre de caja en curso.\n\nPor favor, ingresá el saldo final real (contado) ($):", "0");
-          
-          if (input !== null) {
-            const saldoFinal = Number(input.trim());
-            if (isNaN(saldoFinal) || saldoFinal < 0) {
-              const { showToast } = await import('../components/toast.js');
-              showToast('Monto de saldo final inválido', 'error');
-              return;
-            }
-
-            try {
-              const { cerrarCaja, invalidateCajaStatusCache } = await import('../services/finanzas.js');
-              const { showToast } = await import('../components/toast.js');
-              
-              const res = await cerrarCaja(sesionId, saldoFinal);
-              if (res.success) {
-                showToast('Caja cerrada correctamente', 'success');
-                invalidateCajaStatusCache();
-                await updateCajaStatusIndicator();
-                
-                if (window.location.hash === '#finanzas') {
-                  window.dispatchEvent(new HashChangeEvent('hashchange'));
-                }
-              } else {
-                showToast(res.error || 'Error al cerrar caja', 'error');
-              }
-            } catch (err) {
-              const { showToast } = await import('../components/toast.js');
-              showToast(err.message || 'Error al cerrar caja', 'error');
-            }
-          }
+      }
+      if (elRemoto) {
+        _renderCajaIndicator(elRemoto, remotoSession, 'remoto');
+        if (!elRemoto._hasClickListener) {
+          elRemoto._hasClickListener = true;
+          elRemoto.addEventListener('click', () => _onCajaClick(elRemoto, 'remoto'));
         }
-      });
+      }
+
+    } else {
+      // ── Otros roles: indicador único (taller) ──────────────────────────
+      const el = document.getElementById('caja-status-indicator');
+      const elTaller = document.getElementById('caja-taller-indicator');
+      const elRemoto = document.getElementById('caja-remoto-indicator');
+      if (elTaller) elTaller.style.display = 'none';
+      if (elRemoto) elRemoto.style.display = 'none';
+      if (!el) return;
+
+      let session;
+      if (now - _lastCajaCheck < 30_000) {
+        session = _lastCajaResult;
+      } else {
+        session = await getCajaSession();
+        _lastCajaCheck  = now;
+        _lastCajaResult = session;
+      }
+
+      if (session) {
+        el.innerHTML = `<span style="color:var(--accent-green);">●</span> Caja Abierta`;
+        el.style.display = 'flex';
+        el.title = `Abierta por ${session.openedByName || 'alguien'}.`;
+        el.dataset.cajaStatus = 'open';
+        el.dataset.sesionId   = session.id;
+      } else {
+        el.innerHTML = `<span style="color:var(--danger);">●</span> Caja Cerrada`;
+        el.style.display = 'flex';
+        el.title = 'No hay una sesión de caja activa.';
+        el.dataset.cajaStatus = 'closed';
+        el.dataset.sesionId   = '';
+      }
     }
   } catch (err) {
     console.warn('[app] updateCajaStatusIndicator failed:', err);
+  }
+}
+
+/**
+ * Handler de click en un indicador de caja (abrir/cerrar).
+ */
+async function _onCajaClick(el, tipo) {
+  const { canAccess } = await import('./session.js');
+  if (!canAccess('finanzas-write')) {
+    const { showToast } = await import('../components/toast.js');
+    showToast('No tenés permisos para gestionar la caja', 'error');
+    return;
+  }
+
+  const label = tipo === 'remoto' ? 'Remoto' : 'Taller';
+
+  if (el.dataset.cajaStatus === 'closed') {
+    const input = prompt(`¿Confirmás la apertura de Caja ${label}?\n\nIngresá el saldo inicial ($):`, '0');
+    if (input === null) return;
+    const saldo = Number(input.trim());
+    if (isNaN(saldo) || saldo < 0) {
+      const { showToast } = await import('../components/toast.js');
+      showToast('Monto de saldo inicial inválido', 'error');
+      return;
+    }
+    try {
+      const { abrirCaja } = await import('../services/finanzas.js');
+      const { showToast } = await import('../components/toast.js');
+      const res = await abrirCaja(saldo, tipo);
+      if (res.success) {
+        showToast(`Caja ${label} abierta con $${saldo.toLocaleString('es-AR')}`, 'success');
+        invalidateCajaStatusCache();
+        await updateCajaStatusIndicator();
+        if (window.location.hash === '#finanzas') {
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        }
+      }
+    } catch (err) {
+      const { showToast } = await import('../components/toast.js');
+      showToast(err.message || 'Error al abrir caja', 'error');
+    }
+
+  } else if (el.dataset.cajaStatus === 'open') {
+    const sesionId = el.dataset.sesionId;
+    const input = prompt(`Cierre de Caja ${label}.\n\nIngresá el saldo final real (contado) ($):`, '0');
+    if (input === null) return;
+    const saldoFinal = Number(input.trim());
+    if (isNaN(saldoFinal) || saldoFinal < 0) {
+      const { showToast } = await import('../components/toast.js');
+      showToast('Monto de saldo final inválido', 'error');
+      return;
+    }
+    try {
+      const { cerrarCaja } = await import('../services/finanzas.js');
+      const { showToast } = await import('../components/toast.js');
+      const res = await cerrarCaja(sesionId, saldoFinal);
+      if (res.success) {
+        showToast(`Caja ${label} cerrada correctamente`, 'success');
+        invalidateCajaStatusCache();
+        await updateCajaStatusIndicator();
+        if (window.location.hash === '#finanzas') {
+          window.dispatchEvent(new HashChangeEvent('hashchange'));
+        }
+      }
+    } catch (err) {
+      const { showToast } = await import('../components/toast.js');
+      showToast(err.message || 'Error al cerrar caja', 'error');
+    }
   }
 }
 
