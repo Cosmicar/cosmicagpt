@@ -16,6 +16,9 @@ const CACHE_HISTORIAL = 'finanzas:historial';
 // Firestore dedup check and inserting duplicate income entries.
 const _cajaInFlight = new Set();
 let _comisionesCache = null;
+export function clearComisionesCache() {
+  _comisionesCache = null;
+}
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 

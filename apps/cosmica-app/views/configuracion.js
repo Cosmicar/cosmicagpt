@@ -40,9 +40,23 @@ export class ConfiguracionView extends BaseView {
     };
   }
 
-  saveConfig(data) {
+  async saveConfig(data) {
     try {
       localStorage.setItem(this.configKey, JSON.stringify(data));
+      
+      // Save comisiones to Firestore so it's globally available
+      const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
+      const { db } = await import('../../../js/firebase.js');
+      
+      const comisionesData = {
+        taller: Number(data.comisionTaller ?? 30),
+        remoto: Number(data.comisionRemoto ?? 20)
+      };
+      await setDoc(doc(db, 'config', 'comisiones'), comisionesData, { merge: true });
+
+      const { clearComisionesCache } = await import('../services/finanzas.js');
+      clearComisionesCache();
+
       showToast('Configuración guardada correctamente', 'success');
       if (data.colorPrincipal) {
         document.documentElement.style.setProperty('--accent-cyan', data.colorPrincipal);
