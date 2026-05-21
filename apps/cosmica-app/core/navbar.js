@@ -10,8 +10,21 @@
  *   - Cache local de estado de caja con throttle 30s
  */
 
+import { APP_VERSION } from '../../../js/config.js';
+
 // Rol del usuario activo — setear vía setNavRole() desde el bootstrap
 let _navRole = null;
+
+/**
+ * Inyecta la versión del SaaS en el badge al lado del nombre "Cósmica App".
+ * Idempotente: solo escribe una vez.
+ */
+export function initVersionBadge() {
+  const el = document.getElementById('app-version-badge');
+  if (!el) return;
+  el.textContent = `v${APP_VERSION}`;
+  el.setAttribute('title', `Cósmica App SaaS — versión ${APP_VERSION}`);
+}
 
 // Throttle: máximo 1 lectura Firestore de caja cada 30s para no quemar lecturas
 // en navegaciones rápidas entre vistas.

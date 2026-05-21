@@ -3,7 +3,7 @@ import { getClientes } from './clientes.js';
 import { WORK_STATUS, COLLECTIONS } from '../../../js/domain.js';
 import { getClientBadge, getReentryRisk } from '../core/intelligence.js';
 import { normalizeProvincia } from '../core/utils.js';
-import { collectionGroup, query, limit, getDocs, collection, orderBy } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { collectionGroup, query, limit, getDocs, collection, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { db } from "../../../js/firebase.js";
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -334,6 +334,66 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
+ * Computa el desglose financiero diferencial — paridad con legacy panel.js l.643-660.
+ *
+ * Reglas:
+ *   - Remoto entregado: 100% del precio → entra directo a Caja Cósmica Neto.
+ *   - Taller entregado liquidado: la parte de empresa (100 - comisionTaller %)
+ *     suma a Caja Cósmica Neto. La parte del operador ya fue retirada al cobro.
+ *   - Taller entregado SIN liquidar: la parte de empresa va a "Pendiente Cósmica"
+ *     y la parte del operador a "Deuda Operadores" (el operador todavía tiene el efectivo).
+ *
+ * @returns {{ bruto:number, neto:number, pendienteCosmica:number, deudaOperadores:number,
+ *             pctEmpresaTaller:number, pctEmpresaRemoto:number,
+ *             tallerLiquidadosCount:number, tallerPendientesCount:number }}
+ */
+function computeFinancialBreakdown(tickets, comisiones) {
+  const pctOpTaller   = Number(comisiones?.taller ?? 30);
+  const pctOpRemoto   = Number(comisiones?.remoto ?? 20);
+  const pctEmpresaTaller = 100 - pctOpTaller;   // ej. comisión 30 → empresa 70
+  const pctEmpresaRemoto = 100 - pctOpRemoto;   // ej. comisión 20 → empresa 80
+
+  let bruto = 0, neto = 0, pendienteCosmica = 0, deudaOperadores = 0;
+  let tallerLiquidadosCount = 0, tallerPendientesCount = 0;
+
+  for (const t of tickets) {
+    if (t.estado !== WORK_STATUS.entregado) continue;
+    const precio = Number(t.precio || 0);
+    if (precio <= 0) continue;
+    bruto += precio;
+
+    if (t.tipo === 'remoto') {
+      // 100% del remoto entra a la caja Cósmica
+      neto += precio;
+    } else {
+      // taller
+      const aporteEmpresa = precio * (pctEmpresaTaller / 100);
+      const cuotaOperador = precio * (pctOpTaller       / 100);
+      if (t.liquidado === true) {
+        neto += aporteEmpresa;
+        tallerLiquidadosCount++;
+      } else {
+        pendienteCosmica += aporteEmpresa;
+        deudaOperadores  += cuotaOperador;
+        tallerPendientesCount++;
+      }
+    }
+  }
+
+  return {
+    bruto:                Math.round(bruto),
+    neto:                 Math.round(neto),
+    pendienteCosmica:     Math.round(pendienteCosmica),
+    deudaOperadores:      Math.round(deudaOperadores),
+    pctEmpresaTaller,
+    pctEmpresaRemoto,
+    pctOperadorTaller:    pctOpTaller,
+    tallerLiquidadosCount,
+    tallerPendientesCount,
+  };
+}
+
+/**
  * Fetches all dashboard data in two parallel Firestore reads (tickets + clientes).
  * Previously required 3× getTickets() calls; now uses each dataset exactly once.
  */
@@ -341,11 +401,19 @@ export async function getDashboardData() {
   // Lazy-import facturas service: si las rules bloquean al rol, devuelve map vacío
   const { getFacturasMapByTicket } = await import('./facturacion.js');
   const { getCajaEntries } = await import('./finanzas.js');
-  const [tickets, clientes, facturasMap, cajaEntries] = await Promise.all([
+
+  // Comisiones config (default legacy: 80/20 taller, 100/0 remoto → operator commissions
+  // are 30/20 in SaaS as configurable defaults; fallback if doc missing)
+  const comisionesPromise = getDoc(doc(db, 'config', 'comisiones'))
+    .then(s => s.exists() ? s.data() : { taller: 30, remoto: 20 })
+    .catch(() => ({ taller: 30, remoto: 20 }));
+
+  const [tickets, clientes, facturasMap, cajaEntries, comisiones] = await Promise.all([
     getTickets(),
     getClientes(),
     getFacturasMapByTicket(),
     getCajaEntries().catch(() => []),
+    comisionesPromise,
   ]);
 
   // Pre-agrupa tickets por clienteId — O(n) en vez de O(n²) por ticket enriquecido
@@ -427,9 +495,13 @@ export async function getDashboardData() {
     else                        hoy.facturacionTaller += Number(entry.monto || 0);
   }
 
+  // ── Desglose financiero diferencial (paridad legacy 80/20) ────────────────
+  const finanzas = computeFinancialBreakdown(tickets, comisiones);
+
   return {
     metrics:           computeMetrics(tickets),
     hoy,
+    finanzas,
     intelligence:      computeOperationalIntelligence(tickets, clientes),
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),

@@ -7,6 +7,7 @@ import { suscribirseAlInbox, marcarLeida } from '../services/notificaciones.js';
 import {
   setNavRole,
   initNavbarClock,
+  initVersionBadge,
   updateCajaStatusIndicator,
   invalidateCajaStatusCache,
 } from './navbar.js';
@@ -109,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPerfilButton(session, mainContent);
     initSidebarMobile();
     initNavbarClock();
+    initVersionBadge();
     updateCajaStatusIndicator();
     initGlobalShortcuts();
     initPWAFeatures();

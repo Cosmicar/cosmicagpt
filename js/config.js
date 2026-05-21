@@ -15,3 +15,9 @@ export const APP_ROUTES = {
   saas:  "apps/cosmica-app/",
   legacy: "panel.html"
 };
+
+// Versión semántica del SaaS. Bump manual con cada release relevante.
+//   MAJOR: cambios de modelo de datos o ruptura de API
+//   MINOR: features nuevas (modelo contable, KPIs, módulos)
+//   PATCH: bugfixes, ajustes UI
+export const APP_VERSION = "1.1.0";

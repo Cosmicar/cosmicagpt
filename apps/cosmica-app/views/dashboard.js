@@ -108,7 +108,7 @@ export class DashboardView extends AsyncView {
   }
 
   renderContent(data) {
-    const { metrics, hoy, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
+    const { metrics, hoy, finanzas, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
     this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
@@ -165,6 +165,75 @@ export class DashboardView extends AsyncView {
                 `🏭 ${ars(hoy.facturacionTaller)} · 🌐 ${ars(hoy.facturacionRemoto)}`,
                 totalFacturacion > 0 ? 'var(--accent-green)' : 'var(--text-muted)')}
             </div>
+          </section>`;
+        })() : ''}
+
+        <!-- Salud Financiera (admin/tester) — paridad legacy: bruto vs neto + deuda -->
+        ${finanzas && canAccess('admin-stats') ? (() => {
+          const ars = n => '$' + Math.round(n).toLocaleString('es-AR');
+          const tieneDeuda = finanzas.deudaOperadores > 0;
+          return `
+          <section style="background:rgba(34,197,94,0.025);border:1px solid rgba(34,197,94,0.08);
+            border-radius:var(--radius-lg);padding:14px 20px;margin-bottom:var(--space-md);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <span style="font-size:11px;font-weight:800;color:var(--accent-green);text-transform:uppercase;
+                letter-spacing:.08em;">💰 Salud Financiera</span>
+              <span style="font-size:9px;color:var(--text-muted);opacity:.7;">
+                Histórico · Taller ${finanzas.pctOperadorTaller}% operador / ${finanzas.pctEmpresaTaller}% empresa · Remoto 100% empresa
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
+              <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:var(--radius-md);
+                border:1px solid rgba(255,255,255,0.04);">
+                <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;
+                  letter-spacing:.06em;font-weight:600;margin-bottom:4px;">Facturación bruta</div>
+                <div style="font-size:20px;font-weight:800;color:var(--text-primary);letter-spacing:-.02em;">
+                  ${ars(finanzas.bruto)}
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:.7;">
+                  Todos los servicios entregados
+                </div>
+              </div>
+              <div style="padding:12px;background:rgba(34,197,94,0.05);border-radius:var(--radius-md);
+                border:1px solid rgba(34,197,94,0.18);">
+                <div style="font-size:10px;color:var(--accent-green);text-transform:uppercase;
+                  letter-spacing:.06em;font-weight:700;margin-bottom:4px;">Caja Cósmica Neto</div>
+                <div style="font-size:20px;font-weight:800;color:var(--accent-green);letter-spacing:-.02em;">
+                  ${ars(finanzas.neto)}
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:.7;">
+                  Lo que efectivamente entró
+                </div>
+              </div>
+              <div style="padding:12px;background:rgba(251,146,60,0.05);border-radius:var(--radius-md);
+                border:1px solid rgba(251,146,60,0.18);">
+                <div style="font-size:10px;color:var(--accent-orange);text-transform:uppercase;
+                  letter-spacing:.06em;font-weight:700;margin-bottom:4px;">Pendiente Cósmica</div>
+                <div style="font-size:20px;font-weight:800;color:var(--accent-orange);letter-spacing:-.02em;">
+                  ${ars(finanzas.pendienteCosmica)}
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:.7;">
+                  ${finanzas.tallerPendientesCount} ticket${finanzas.tallerPendientesCount !== 1 ? 's' : ''} sin liquidar
+                </div>
+              </div>
+              <div style="padding:12px;background:rgba(${tieneDeuda ? '239,68,68' : '255,255,255'},0.04);
+                border-radius:var(--radius-md);border:1px solid rgba(${tieneDeuda ? '239,68,68' : '255,255,255'},0.${tieneDeuda ? '18' : '06'});">
+                <div style="font-size:10px;color:${tieneDeuda ? 'var(--danger)' : 'var(--text-muted)'};text-transform:uppercase;
+                  letter-spacing:.06em;font-weight:700;margin-bottom:4px;">Deuda Operadores</div>
+                <div style="font-size:20px;font-weight:800;color:${tieneDeuda ? 'var(--danger)' : 'var(--text-muted)'};letter-spacing:-.02em;">
+                  ${ars(finanzas.deudaOperadores)}
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:.7;">
+                  Efectivo en mano del operador
+                </div>
+              </div>
+            </div>
+            ${tieneDeuda ? `
+              <div style="margin-top:10px;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+                💡 Cuando el operador rinde, "Pendiente" pasa a "Caja Cósmica Neto" y la deuda se borra.
+                <a href="#finanzas" style="color:var(--accent-cyan);text-decoration:none;font-weight:600;">Ir a liquidar →</a>
+              </div>
+            ` : ''}
           </section>`;
         })() : ''}
 
