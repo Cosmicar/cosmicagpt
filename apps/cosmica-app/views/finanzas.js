@@ -358,23 +358,23 @@ export class FinanzasView extends AsyncView {
             ${this._miniStat('Egresos', ars(sessionData.egresos), 'var(--accent-orange)')}
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:var(--space-lg);">
-            ${this._miniStat('EFVO', ars(calcTotalByMethod('efectivo')), 'var(--accent-cyan)')}
-            ${this._miniStat('TRAN', ars(calcTotalByMethod('transferencia')), 'var(--accent-cyan)')}
-            ${this._miniStat('MP', ars(calcTotalByMethod('mercadopago')), 'var(--accent-cyan)')}
-            ${this._miniStat('DEB', ars(calcTotalByMethod('debito')), 'var(--accent-cyan)')}
-            ${this._miniStat('CRED', ars(calcTotalByMethod('credito')), 'var(--accent-cyan)')}
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-lg);">
+            <div style="flex:1 1 50px;">${this._miniStat('EFVO', ars(calcTotalByMethod('efectivo')), 'var(--accent-cyan)')}</div>
+            <div style="flex:1 1 50px;">${this._miniStat('TRAN', ars(calcTotalByMethod('transferencia')), 'var(--accent-cyan)')}</div>
+            <div style="flex:1 1 50px;">${this._miniStat('MP', ars(calcTotalByMethod('mercadopago')), 'var(--accent-cyan)')}</div>
+            <div style="flex:1 1 50px;">${this._miniStat('DEB', ars(calcTotalByMethod('debito')), 'var(--accent-cyan)')}</div>
+            <div style="flex:1 1 50px;">${this._miniStat('CRED', ars(calcTotalByMethod('credito')), 'var(--accent-cyan)')}</div>
           </div>
           <div style="
-            display:flex;justify-content:space-between;align-items:center;
+            display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--space-md);
             padding:var(--space-md);
             background:rgba(255,255,255,0.04);
             border-radius:var(--radius-md);
             border:1px solid var(--border);
             margin-bottom:var(--space-lg);
           ">
-            <span style="font-size:var(--font-sm);color:var(--text-muted);">Saldo esperado en caja</span>
-            <span id="cierre-esperado" style="font-size:var(--font-lg);font-weight:800;color:var(--accent-cyan);">
+            <span style="font-size:var(--font-sm);color:var(--text-muted);flex:1 1 120px;">Saldo esperado en caja</span>
+            <span id="cierre-esperado" style="font-size:var(--font-lg);font-weight:800;color:var(--accent-cyan);flex-shrink:0;">
               ${ars(saldoEsperado)}
             </span>
           </div>

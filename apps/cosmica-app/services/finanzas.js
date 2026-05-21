@@ -385,13 +385,10 @@ export async function getFinanzasData() {
     .sort((a, b) => toDate(b.fechaEntregado || b.updatedAt) - toDate(a.fechaEntregado || a.updatedAt))
     .slice(0, 5);
 
-  // ── Rendición semanal (desde el último sábado) ────────────────────────────
-  const rendicionStart        = startOfLastSaturday();
-  const diasHastaRendicion    = daysUntilNextSaturday();
-  const withPriceSinceRendicion = withPrice.filter(t => {
-    const fecha = toDate(t.fechaEntregado || t.updatedAt);
-    return fecha >= rendicionStart;
-  });
+  // ── Rendición semanal (desde el último cierre) ────────────────────────────
+  const diasHastaRendicion = daysUntilNextSaturday();
+  // Los ingresos pendientes de rendición son simplemente los tickets que aún NO fueron liquidados
+  const withPriceSinceRendicion = withPrice.filter(t => t.liquidado !== true);
   const facturacionDesdeRendicion = withPriceSinceRendicion.reduce((s, t) => s + Number(t.precio || 0), 0);
 
   // ── Plan distribution ─────────────────────────────────────────────────────
