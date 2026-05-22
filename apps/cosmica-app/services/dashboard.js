@@ -344,6 +344,46 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT, visibleTicketIds =
   }
 }
 
+// ── Date-based stats ─────────────────────────────────────────────────────────
+
+/**
+ * Computes ingresados / entregados / facturación for a given date or range.
+ *
+ * @param {Array}  tickets  - Full ticket array (from getDashboardData)
+ * @param {string|{from:string,to:string}} dateParam
+ *   - Single date string 'YYYY-MM-DD', or
+ *   - Range object  { from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' }
+ * @returns {{ ingresadosTaller, ingresadosRemoto, entregadosTaller, entregadosRemoto,
+ *             facturacionTaller, facturacionRemoto }}
+ */
+export function computeStatsForDate(tickets, dateParam) {
+  const result = {
+    ingresadosTaller:  0, ingresadosRemoto:  0,
+    entregadosTaller:  0, entregadosRemoto:  0,
+    facturacionTaller: 0, facturacionRemoto: 0,
+  };
+
+  const inRange = (rawDateStr) => {
+    if (!rawDateStr) return false;
+    const d = rawDateStr.split('T')[0];
+    if (typeof dateParam === 'string') return d === dateParam;
+    return d >= dateParam.from && d <= dateParam.to;
+  };
+
+  for (const t of tickets) {
+    const taller = t.tipo !== 'remoto';
+    if (inRange(t.fechaIngreso)) {
+      if (taller) result.ingresadosTaller++; else result.ingresadosRemoto++;
+    }
+    if (inRange(t.fechaEntregado)) {
+      if (taller) result.entregadosTaller++; else result.entregadosRemoto++;
+      const precio = Number(t.precio || 0);
+      if (taller) result.facturacionTaller += precio; else result.facturacionRemoto += precio;
+    }
+  }
+  return result;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -528,7 +568,9 @@ export async function getDashboardData() {
     recentTickets:     tickets.slice(0, 5).map(enrichTicket),
     recentClients:     computeRecentClients(clientes, 5),
     attentionRequired: computeAttentionRequired(tickets).map(enrichTicket),
-    activityFeed:      await getGlobalActivity(15, visibleTicketIds)
+    activityFeed:      await getGlobalActivity(15, visibleTicketIds),
+    // Expose full dataset for client-side date-range stats (zero extra Firestore reads)
+    allTickets:        tickets,
   };
 }
 

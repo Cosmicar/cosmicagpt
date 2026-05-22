@@ -1,5 +1,5 @@
 import { AsyncView } from '../core/async-view.js';
-import { getDashboardData } from '../services/dashboard.js';
+import { getDashboardData, computeStatsForDate } from '../services/dashboard.js';
 import { updateTicketStatus, assignTechnician, reingresoTicket } from '../services/tickets.js';
 import { getCurrentSession } from '../core/session.js';
 import { ensureBudgetApprovedEvent } from '../services/ticket-history.js';
@@ -108,10 +108,11 @@ export class DashboardView extends AsyncView {
   }
 
   renderContent(data) {
-    const { metrics, hoy, finanzas, intelligence, recentTickets, recentClients, attentionRequired, activityFeed } = data;
+    const { metrics, hoy, finanzas, intelligence, recentTickets, recentClients, attentionRequired, activityFeed, allTickets } = data;
     this._recentTickets = recentTickets;
     this._attentionTickets = attentionRequired;
     this._allTicketsForExport = recentTickets; // Simplification for now, could fetch more
+    this._allTickets = allTickets || recentTickets || [];
     this._followUpItems = this._buildFollowUpList([...(recentTickets || []), ...(attentionRequired || [])]);
     const canCreateTicket = canAccess('create-ticket');
     const showIntelligence = canAccess('admin-stats') && intelligence;
@@ -236,6 +237,9 @@ export class DashboardView extends AsyncView {
             ` : ''}
           </section>`;
         })() : ''}
+
+        <!-- Estadísticas por Fecha -->
+        ${this._renderDateStatsSection()}
 
         <!-- KPIs Principales (atajos clickeables al listado filtrado de Trabajos) -->
         <section class="kpi-grid" style="margin-bottom: var(--space-lg);">
@@ -364,6 +368,111 @@ export class DashboardView extends AsyncView {
         </section>
       </div>
     `;
+  }
+
+  /**
+   * Renders the date-based statistics section with preset chips + date picker.
+   * Defaults to "Hoy" on initial render.
+   */
+  _renderDateStatsSection() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const initialStats = computeStatsForDate(this._allTickets, todayStr);
+    return `
+      <section class="date-stats-section" style="
+        background: rgba(139,92,246,0.04);
+        border: 1px solid rgba(139,92,246,0.12);
+        border-radius: var(--radius-lg);
+        padding: 14px 20px;
+        margin-bottom: var(--space-md);
+      ">
+        <!-- Header row: label + preset chips + date input -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <span style="font-size:11px;font-weight:800;color:#a78bfa;text-transform:uppercase;
+            letter-spacing:.08em;white-space:nowrap;">📅 Por Fecha</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="date-preset-group">
+            <button class="date-preset-btn" data-preset="hoy"    data-active="true">Hoy</button>
+            <button class="date-preset-btn" data-preset="ayer"   data-active="false">Ayer</button>
+            <button class="date-preset-btn" data-preset="7d"     data-active="false">Últimos 7d</button>
+            <button class="date-preset-btn" data-preset="mes"    data-active="false">Este mes</button>
+          </div>
+          <input type="date" id="date-stats-picker" value="${todayStr}"
+            title="Elegí una fecha específica"
+            style="
+              background: rgba(255,255,255,0.06);
+              border: 1px solid rgba(139,92,246,0.25);
+              border-radius: var(--radius-sm);
+              color: var(--text-primary);
+              font-size: 12px;
+              padding: 5px 10px;
+              cursor: pointer;
+              outline: none;
+              margin-left: auto;
+            ">
+        </div>
+        <!-- Stats cells — updated in-place via JS -->
+        <div id="date-stats-cells">
+          ${this._renderDateStatsCells(initialStats)}
+        </div>
+      </section>
+    `;
+  }
+
+  /**
+   * Renders the 3 stat cells (Ingresados / Entregados / Facturado) for a stats object.
+   * Called both on initial render and on date change (DOM update).
+   */
+  _renderDateStatsCells(stats) {
+    const ars = n => '$' + Math.round(n).toLocaleString('es-AR');
+    const totalIngresados  = stats.ingresadosTaller  + stats.ingresadosRemoto;
+    const totalEntregados  = stats.entregadosTaller  + stats.entregadosRemoto;
+    const totalFacturacion = stats.facturacionTaller + stats.facturacionRemoto;
+
+    const cell = (label, val, sub, color = 'var(--text-primary)') => `
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:90px;">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;
+          letter-spacing:.06em;font-weight:600;">${label}</div>
+        <div style="font-size:18px;font-weight:800;color:${color};letter-spacing:-.02em;">${val}</div>
+        <div style="font-size:10px;color:var(--text-muted);opacity:.7;">${sub}</div>
+      </div>`;
+
+    const divider = `<div style="width:1px;background:rgba(255,255,255,0.06);align-self:stretch;"></div>`;
+
+    return `
+      <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;">
+        ${cell('Ingresados', totalIngresados,
+          `🏭 ${stats.ingresadosTaller} taller · 🌐 ${stats.ingresadosRemoto} remoto`,
+          totalIngresados > 0 ? '#a78bfa' : 'var(--text-muted)')}
+        ${divider}
+        ${cell('Entregados', totalEntregados,
+          `🏭 ${stats.entregadosTaller} taller · 🌐 ${stats.entregadosRemoto} remoto`,
+          totalEntregados > 0 ? 'var(--accent-cyan)' : 'var(--text-muted)')}
+        ${divider}
+        ${cell('Facturado', ars(totalFacturacion),
+          `🏭 ${ars(stats.facturacionTaller)} · 🌐 ${ars(stats.facturacionRemoto)}`,
+          totalFacturacion > 0 ? 'var(--accent-green)' : 'var(--text-muted)')}
+      </div>`;
+  }
+
+  /**
+   * Resolves a preset chip ID to a date param (string or {from,to} range).
+   */
+  _resolveDatePreset(preset) {
+    const today = new Date();
+    const fmt = d => d.toISOString().split('T')[0];
+    if (preset === 'hoy')  return fmt(today);
+    if (preset === 'ayer') {
+      const y = new Date(today); y.setDate(y.getDate() - 1);
+      return fmt(y);
+    }
+    if (preset === '7d') {
+      const start = new Date(today); start.setDate(start.getDate() - 6);
+      return { from: fmt(start), to: fmt(today) };
+    }
+    if (preset === 'mes') {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: fmt(start), to: fmt(today) };
+    }
+    return fmt(today);
   }
 
   /**
@@ -677,6 +786,64 @@ export class DashboardView extends AsyncView {
     const btnRefresh = document.getElementById('btn-refresh');
     if (btnRefresh) {
       btnRefresh.addEventListener('click', () => this.fetchAndRender());
+    }
+
+    // ── Date-stats preset chips + date picker ────────────────────────────────
+    const dateStatsCells = document.getElementById('date-stats-cells');
+    const datePicker     = document.getElementById('date-stats-picker');
+
+    const updateDateStats = (dateParam, activePreset = null) => {
+      if (!dateStatsCells) return;
+      const stats = computeStatsForDate(this._allTickets, dateParam);
+      dateStatsCells.innerHTML = this._renderDateStatsCells(stats);
+
+      // Sync chip active state
+      document.querySelectorAll('.date-preset-btn').forEach(b => {
+        const isActive = activePreset && b.dataset.preset === activePreset;
+        b.style.background   = isActive ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)';
+        b.style.borderColor  = isActive ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)';
+        b.style.color        = isActive ? '#c4b5fd'              : 'var(--text-muted)';
+        b.style.fontWeight   = isActive ? '700'                   : '500';
+        b.dataset.active     = isActive ? 'true' : 'false';
+      });
+
+      // Sync date picker to single date if applicable
+      if (datePicker) {
+        if (typeof dateParam === 'string') datePicker.value = dateParam;
+        else if (activePreset === 'ayer') {
+          const y = new Date(); y.setDate(y.getDate() - 1);
+          datePicker.value = y.toISOString().split('T')[0];
+        }
+      }
+    };
+
+    // Apply base styles to chips
+    document.querySelectorAll('.date-preset-btn').forEach(btn => {
+      const isActive = btn.dataset.active === 'true';
+      Object.assign(btn.style, {
+        background:   isActive ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.05)',
+        border:       `1px solid ${isActive ? 'rgba(139,92,246,0.5)' : 'rgba(255,255,255,0.1)'}`,
+        borderRadius: 'var(--radius-sm)',
+        color:        isActive ? '#c4b5fd' : 'var(--text-muted)',
+        fontSize:     '11px',
+        fontWeight:   isActive ? '700' : '500',
+        padding:      '4px 10px',
+        cursor:       'pointer',
+        transition:   'all 0.15s ease',
+        whiteSpace:   'nowrap',
+      });
+
+      btn.addEventListener('click', () => {
+        const dateParam = this._resolveDatePreset(btn.dataset.preset);
+        updateDateStats(dateParam, btn.dataset.preset);
+      });
+    });
+
+    if (datePicker) {
+      datePicker.addEventListener('change', () => {
+        if (!datePicker.value) return;
+        updateDateStats(datePicker.value, null); // clears chip highlight
+      });
     }
 
     // Follow-up WhatsApp buttons

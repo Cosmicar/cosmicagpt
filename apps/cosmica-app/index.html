@@ -454,6 +454,21 @@
       .exec-kpi-value {
         font-size: 18px !important;
       }
+
+      /* Date stats section: stack picker below chips on very small screens */
+      .date-stats-section #date-preset-group {
+        flex-wrap: wrap !important;
+      }
+      .date-stats-section #date-stats-picker {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+    }
+
+    /* Date picker color fix for dark mode (webkit) */
+    #date-stats-picker::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
     }
 
     /* Fix z-index for autocompletes */
