@@ -84,6 +84,9 @@ function sessionUid() {
  * Never cached — must always reflect the real DB state.
  */
 export async function getCajaSessionByTipo(tipo = 'taller') {
+  if (getCurrentSession()?.profile?.rol === 'operador' && tipo === 'remoto') {
+    return null;
+  }
   try {
     const snap = await getDocs(query(
       collection(db, COLLECTIONS.cajaSesiones),
@@ -116,6 +119,9 @@ export async function getCajaSession() {
  * @param {'taller'|'remoto'} tipo - tipo de caja a abrir (default: 'taller')
  */
 export async function abrirCaja(saldoInicial, tipo = 'taller') {
+  if (getCurrentSession()?.profile?.rol === 'operador' && tipo === 'remoto') {
+    throw new Error('No tenés permisos para abrir una caja remota.');
+  }
   const existing = await getCajaSessionByTipo(tipo);
   if (existing) throw new Error(`Ya existe una caja ${tipo} abierta. Cerrala antes de abrir una nueva.`);
 
@@ -157,6 +163,13 @@ export async function abrirCaja(saldoInicial, tipo = 'taller') {
 
 export async function cerrarCaja(sesionId, saldoDeclarado) {
   if (!sesionId) throw new Error('ID de sesión requerido.');
+
+  const sesionSnap = await getDoc(doc(db, COLLECTIONS.cajaSesiones, sesionId));
+  if (!sesionSnap.exists()) throw new Error('Sesión de caja no encontrada.');
+  if (getCurrentSession()?.profile?.rol === 'operador' && sesionSnap.data().tipo === 'remoto') {
+    throw new Error('No tenés permisos para cerrar una caja remota.');
+  }
+
   const declared = Number(saldoDeclarado);
   if (isNaN(declared)) throw new Error('Monto declarado inválido.');
 
@@ -230,18 +243,85 @@ export async function cerrarCaja(sesionId, saldoDeclarado) {
 }
 
 /**
+ * Filters out remote caja entries for operator role client-side/in-memory.
+ */
+export async function filterRemoteCajaEntriesForOperador(entries) {
+  if (!entries || entries.length === 0) return [];
+
+  const unknownSessionIds = new Set();
+  const unknownTicketRefs = new Set();
+
+  for (const entry of entries) {
+    if (entry.tipoCaja) continue;
+    if (entry.sesionId) unknownSessionIds.add(entry.sesionId);
+    if (entry.ticketRef) unknownTicketRefs.add(entry.ticketRef);
+  }
+
+  // Resolve unknown sessions
+  const remoteSessionIds = new Set();
+  if (unknownSessionIds.size > 0) {
+    const sessionPromises = Array.from(unknownSessionIds).map(async (id) => {
+      try {
+        const snap = await getDoc(doc(db, COLLECTIONS.cajaSesiones, id));
+        if (snap.exists() && snap.data().tipo === 'remoto') {
+          remoteSessionIds.add(id);
+        }
+      } catch (e) {
+        console.warn(`[caja] Error checking session ${id}:`, e);
+      }
+    });
+    await Promise.all(sessionPromises);
+  }
+
+  // Resolve unknown tickets
+  const remoteTicketRefs = new Set();
+  if (unknownTicketRefs.size > 0) {
+    const ticketPromises = Array.from(unknownTicketRefs).map(async (id) => {
+      try {
+        const snap = await getDoc(doc(db, COLLECTIONS.trabajos, id));
+        if (snap.exists() && snap.data().tipo === 'remoto') {
+          remoteTicketRefs.add(id);
+        }
+      } catch (e) {
+        // If security rules block operator read or any other error, assume it is remote
+        console.warn(`[caja] Error checking ticket ${id} (assuming remote):`, e);
+        remoteTicketRefs.add(id);
+      }
+    });
+    await Promise.all(ticketPromises);
+  }
+
+  return entries.filter(entry => {
+    if (entry.tipoCaja === 'remoto') return false;
+    if (entry.tipoCaja === 'taller') return true;
+    if (entry.sesionId && remoteSessionIds.has(entry.sesionId)) return false;
+    if (entry.ticketRef && remoteTicketRefs.has(entry.ticketRef)) return false;
+    return true;
+  });
+}
+
+/**
  * Returns the last N closed caja sessions (historial de cierres).
  */
 export async function getCajaHistorial(n = 10) {
   try {
+    const session = getCurrentSession();
+    const isOperador = session?.profile?.rol === 'operador';
+    const fetchLimit = isOperador ? n * 2 : n;
+
     const q = query(
       collection(db, COLLECTIONS.cajaSesiones),
       where('status', '==', 'closed'),
       orderBy('closedAt', 'desc'),
-      limit(n)
+      limit(fetchLimit)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (isOperador) {
+      docs = docs.filter(d => d.tipo !== 'remoto').slice(0, n);
+    }
+    return docs;
   } catch (err) {
     console.error('[caja] getCajaHistorial:', err);
     return [];
@@ -255,6 +335,16 @@ export async function getCajaHistorial(n = 10) {
  */
 export async function getCajaEntries(sesionId = null) {
   try {
+    const session = getCurrentSession();
+    const isOperador = session?.profile?.rol === 'operador';
+
+    if (sesionId && isOperador) {
+      const sesionSnap = await getDoc(doc(db, COLLECTIONS.cajaSesiones, sesionId));
+      if (sesionSnap.exists() && sesionSnap.data().tipo === 'remoto') {
+        return [];
+      }
+    }
+
     let q;
     if (sesionId) {
       q = query(
@@ -266,7 +356,12 @@ export async function getCajaEntries(sesionId = null) {
       q = query(collection(db, COLLECTIONS.caja), orderBy('createdAt', 'desc'));
     }
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    let entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (isOperador) {
+      entries = await filterRemoteCajaEntriesForOperador(entries);
+    }
+    return entries;
   } catch (err) {
     console.error('[caja] getCajaEntries:', err);
     return [];
@@ -290,6 +385,32 @@ export async function createCajaEntry(data, sesionId = null) {
 
     const tipo = ['ingreso', 'egreso', 'ajuste'].includes(data.tipo) ? data.tipo : 'ingreso';
 
+    let tipoCaja = data.tipoCaja;
+    if (!tipoCaja && sesionId) {
+      try {
+        const sesionSnap = await getDoc(doc(db, COLLECTIONS.cajaSesiones, sesionId));
+        if (sesionSnap.exists()) {
+          tipoCaja = sesionSnap.data().tipo || 'taller';
+        }
+      } catch (e) {
+        console.warn('[caja] Error checking session for tipoCaja:', e);
+      }
+    }
+    if (!tipoCaja && data.ticketRef) {
+      try {
+        const ticketSnap = await getDoc(doc(db, COLLECTIONS.trabajos, data.ticketRef));
+        if (ticketSnap.exists()) {
+          tipoCaja = ticketSnap.data().tipo || 'taller';
+        }
+      } catch (e) {
+        console.warn('[caja] Error checking ticket for tipoCaja (assuming remote):', e);
+        tipoCaja = 'remoto';
+      }
+    }
+    if (!tipoCaja) {
+      tipoCaja = 'taller';
+    }
+
     const ref = await addDoc(collection(db, COLLECTIONS.caja), {
       tipo,
       descripcion: data.descripcion.trim(),
@@ -300,6 +421,7 @@ export async function createCajaEntry(data, sesionId = null) {
       ticketRef:            data.ticketRef || null,
       pendingReconciliation: data.pendingReconciliation ?? false,
       sesionId,
+      tipoCaja,
       createdAt: serverTimestamp(),
       createdBy: sessionUid(),
     });
@@ -362,6 +484,7 @@ export async function autoRegistrarIngresoTicket(ticket, sesionId = null) {
       origen:      'ticket',
       ticketRef:   ticket.id,
       sesionId:    sesionId || null,
+      tipoCaja:    ticket.tipo || 'taller',
       createdAt:   serverTimestamp(),
       createdBy:   sessionUid() || 'sistema',
     });

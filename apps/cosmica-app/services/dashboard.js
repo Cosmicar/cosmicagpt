@@ -323,12 +323,18 @@ async function getGlobalActivity(limitCount = ACTIVITY_LIMIT, visibleTicketIds =
       limit(safeLimit)
     );
     const cajaSnap = await getDocs(cajaQuery);
-    const cajaEvents = cajaSnap.docs.map(d => ({
+    let cajaEvents = cajaSnap.docs.map(d => ({
       id: d.id, ...d.data(),
       type: 'financial_movement',
       message: `${d.data().tipo?.toUpperCase()}: ${d.data().descripcion}`,
       source: 'finance'
     }));
+
+    if (visibleTicketIds) {
+      const { filterRemoteCajaEntriesForOperador } = await import('./finanzas.js');
+      cajaEvents = await filterRemoteCajaEntriesForOperador(cajaEvents);
+      cajaEvents = cajaEvents.filter(e => !e.ticketRef || visibleTicketIds.has(e.ticketRef));
+    }
 
     // 3. Merge, sort client-side, slice final
     return [...historyEvents, ...cajaEvents]

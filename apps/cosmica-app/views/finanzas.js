@@ -886,16 +886,18 @@ export class FinanzasView extends AsyncView {
   // ── Comisiones por operador ───────────────────────────────────────────────
 
   renderComisiones(ultimosCobrados, comisionesConfig) {
+    const isOperador = getCurrentSession()?.profile?.rol === 'operador';
     // Read percentages from app config
     let comisionTaller = Number(comisionesConfig?.taller ?? 30);
     let comisionRemoto = Number(comisionesConfig?.remoto ?? 20);
+    const badgeText = isOperador ? `Taller ${comisionTaller}%` : `Taller ${comisionTaller}% · Remoto ${comisionRemoto}%`;
 
     if (!ultimosCobrados || ultimosCobrados.length === 0) {
       return `
         <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
           <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
             <span style="opacity:0.8;">👷</span> Comisiones de Operadores
-            <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller ${comisionTaller}% · Remoto ${comisionRemoto}%</span>
+            <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">${badgeText}</span>
           </h3>
           <div style="text-align:center;padding:var(--space-xl);color:var(--text-muted);font-size:var(--font-sm);
                       border:1px dashed var(--border);border-radius:var(--radius-md);">
@@ -967,7 +969,7 @@ export class FinanzasView extends AsyncView {
       <section class="card glass-card" style="padding:var(--space-lg); border: 1px solid rgba(0,229,255,0.08);">
         <h3 style="font-size:var(--font-md);font-weight:700;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:8px;">
           <span style="opacity:0.8;">👷</span> Comisiones de Operadores
-          <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">Taller ${comisionTaller}% · Remoto ${comisionRemoto}%</span>
+          <span class="badge" style="font-size:10px;background:rgba(255,255,255,0.06);">${badgeText}</span>
         </h3>
         <div style="display:flex;flex-direction:column;gap:4px;">
           ${rows}

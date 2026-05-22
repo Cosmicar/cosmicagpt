@@ -210,6 +210,9 @@ export async function updateTicketStatus(id, newStatus) {
   try {
     const trabajo = await getTrabajo(id);
     if (!trabajo) throw new Error("Orden no encontrada.");
+    if (getCurrentSession()?.profile?.rol === 'operador' && trabajo.tipo === SERVICE_TYPES.remoto) {
+      throw new Error("No tenés permisos para modificar una orden remota.");
+    }
 
     const isEntregaConPrecio = newStatus === WORK_STATUS.entregado && Number(trabajo.precio || 0) > 0;
     let cajaSession = null;
@@ -318,7 +321,11 @@ export async function updateTicketStatus(id, newStatus) {
  * @returns {Promise<Object>}
  */
 export async function getTicket(id) {
-  return await getTrabajo(id);
+  const ticket = await getTrabajo(id);
+  if (ticket && getCurrentSession()?.profile?.rol === 'operador' && ticket.tipo === SERVICE_TYPES.remoto) {
+    return null;
+  }
+  return ticket;
 }
 
 /**
@@ -332,6 +339,9 @@ export async function updateTicket(id, data) {
   try {
     const trabajoActual = await getTrabajo(id);
     if (!trabajoActual) throw new Error("Orden no encontrada.");
+    if (getCurrentSession()?.profile?.rol === 'operador' && trabajoActual.tipo === SERVICE_TYPES.remoto) {
+      throw new Error("No tenés permisos para modificar una orden remota.");
+    }
 
     const updateData = {
       clienteId: data.clienteId,
@@ -517,6 +527,9 @@ export async function updateTicketBudget(id, data) {
   try {
     const trabajoActual = await getTrabajo(id);
     if (!trabajoActual) throw new Error("Orden no encontrada.");
+    if (getCurrentSession()?.profile?.rol === 'operador' && trabajoActual.tipo === SERVICE_TYPES.remoto) {
+      throw new Error("No tenés permisos para modificar una orden remota.");
+    }
 
     const updateData = {
       diagnosticoTecnico: (data.diagnosticoTecnico || '').trim(),
