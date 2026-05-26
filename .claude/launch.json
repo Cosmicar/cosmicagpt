@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "legacy-freeze-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "-s", "apps/cosmica-app", "-l", "3333"],
+      "port": 3333
+    }
+  ]
+}
