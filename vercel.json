@@ -7,8 +7,18 @@
       "destination": "/apps/cosmica-app/index.html"
     },
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
+      "destination": "/apps/cosmica-app/index.html"
+    },
+    {
       "source": "/components/ui/:path*",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/components/ui/:path*"
+    },
+    {
+      "source": "/components/ui/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "destination": "/components/ui/:path*"
     },
     {
@@ -17,8 +27,18 @@
       "destination": "/apps/cosmica-app/core/:path*"
     },
     {
+      "source": "/core/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
+      "destination": "/apps/cosmica-app/core/:path*"
+    },
+    {
       "source": "/views/:path*",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/views/:path*"
+    },
+    {
+      "source": "/views/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "destination": "/apps/cosmica-app/views/:path*"
     },
     {
@@ -27,8 +47,18 @@
       "destination": "/apps/cosmica-app/services/:path*"
     },
     {
+      "source": "/services/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
+      "destination": "/apps/cosmica-app/services/:path*"
+    },
+    {
       "source": "/components/:path*",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/components/:path*"
+    },
+    {
+      "source": "/components/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "destination": "/apps/cosmica-app/components/:path*"
     },
     {
@@ -37,13 +67,28 @@
       "destination": "/apps/cosmica-app/assets/:path*"
     },
     {
+      "source": "/assets/:path*",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
+      "destination": "/apps/cosmica-app/assets/:path*"
+    },
+    {
       "source": "/sw.js",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
       "destination": "/apps/cosmica-app/sw.js"
     },
     {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
+      "destination": "/apps/cosmica-app/sw.js"
+    },
+    {
       "source": "/manifest.json",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "destination": "/apps/cosmica-app/manifest.json"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "destination": "/apps/cosmica-app/manifest.json"
     }
   ],
@@ -62,16 +107,6 @@
       "source": "/app",
       "destination": "https://app.cosmica.ar/",
       "permanent": true
-    },
-    {
-      "source": "/apps/cosmica-app",
-      "destination": "https://app.cosmica.ar/",
-      "permanent": true
-    },
-    {
-      "source": "/apps/cosmica-app/",
-      "destination": "https://app.cosmica.ar/",
-      "permanent": true
     }
   ],
   "headers": [
@@ -84,6 +119,13 @@
     {
       "source": "/sw.js",
       "has": [{ "type": "host", "value": "app.cosmica.ar" }],
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
