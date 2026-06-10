@@ -90,6 +90,14 @@
       "source": "/manifest.json",
       "has": [{ "type": "host", "value": "cosmicagpt.vercel.app" }],
       "destination": "/apps/cosmica-app/manifest.json"
+    },
+    {
+      "source": "/:page(asistencia|estado|login|panel)",
+      "destination": "/:page.html"
+    },
+    {
+      "source": "/:page(pc-lenta-[a-z-]+)",
+      "destination": "/:page.html"
     }
   ],
   "redirects": [
