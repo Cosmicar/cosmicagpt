@@ -128,6 +128,17 @@ a { color: inherit; text-decoration: none; }
 ul { list-style: none; }
 button { font-family: inherit; }
 
+:focus-visible {
+  outline: 3px solid rgba(77, 124, 254, 0.9);
+  outline-offset: 4px;
+}
+.skip-link {
+  position: fixed; top: 10px; left: 12px; z-index: 1000;
+  padding: 10px 14px; border-radius: 10px; background: var(--text); color: var(--bg);
+  font-size: 14px; font-weight: 700; transform: translateY(-160%); transition: transform .2s ease;
+}
+.skip-link:focus { transform: translateY(0); }
+
 ::selection { background: rgba(255, 45, 120, 0.35); color: #fff; }
 
 /* ── Atmósfera: aurora de marca, muy contenida ── */
@@ -232,9 +243,10 @@ button { font-family: inherit; }
   background: rgba(9, 9, 14, 0.97); backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex; flex-direction: column; padding: 12px 20px 24px;
-  transform: translateY(-110%); transition: transform .3s ease;
+  transform: translateY(-110%); visibility: hidden; pointer-events: none;
+  transition: transform .3s ease, visibility 0s linear .3s;
 }
-.nav-mobile.open { transform: translateY(0); }
+.nav-mobile.open { transform: translateY(0); visibility: visible; pointer-events: auto; transition-delay: 0s; }
 .nav-mobile a { padding: 13px 4px; font-size: 16px; font-weight: 500; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.05); }
 .nav-mobile a:last-of-type { border: none; }
 .nav-mobile .btn { margin-top: 14px; }
@@ -245,7 +257,7 @@ button { font-family: inherit; }
 }
 
 /* ── Hero ── */
-.hero { padding: 128px 0 64px; position: relative; }
+.hero { padding: 128px 0 64px; position: relative; overflow: clip; }
 @media (min-width: 900px) { .hero { padding: 168px 0 96px; } }
 .hero-grid { display: grid; gap: 48px; align-items: center; }
 @media (min-width: 980px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 56px; } }
@@ -275,6 +287,7 @@ button { font-family: inherit; }
 .hero-meta span { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--faint); font-weight: 500; }
 .hero-meta .icon { width: 15px; height: 15px; color: var(--muted); }
 .stars { color: #fbbf24; letter-spacing: 1px; font-size: 12px; }
+.hero-meta .stars { color: #fbbf24; }
 
 /* ── Ventana de sesión remota (hero visual) ── */
 .session {
@@ -415,7 +428,7 @@ button { font-family: inherit; }
 }
 .plan-name { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
 .plan-price { font-size: 38px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 4px; }
-.plan-price small { font-size: 14px; font-weight: 500; color: var(--faint); letter-spacing: 0; }
+.plan-price small { display: block; margin-top: 1px; font-size: 11px; font-weight: 600; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; }
 .plan-tag { font-size: 13px; color: var(--faint); margin-bottom: 22px; }
 .plan ul { display: grid; gap: 11px; margin-bottom: 28px; flex: 1; }
 .plan li { display: flex; gap: 10px; font-size: 14px; color: var(--muted); align-items: flex-start; }
@@ -540,6 +553,7 @@ button { font-family: inherit; }
 </head>
 <body>
 
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 <div class="aurora" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
@@ -582,12 +596,12 @@ button { font-family: inherit; }
       <a href="#faq">Preguntas</a>
     </div>
     <a class="btn btn-primary nav-cta" href="/asistencia.html">Solicitar asistencia</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMobile">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
-<div class="nav-mobile" id="navMobile">
+<div class="nav-mobile" id="navMobile" aria-hidden="true">
   <a href="#como-funciona">Cómo funciona</a>
   <a href="#servicios">Servicios</a>
   <a href="#planes">Planes</a>
@@ -597,7 +611,7 @@ button { font-family: inherit; }
   <a class="btn btn-primary" href="/asistencia.html">Solicitar asistencia</a>
 </div>
 
-<main>
+<main id="contenido">
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <header class="hero" id="inicio">
@@ -625,7 +639,7 @@ button { font-family: inherit; }
           </a>
         </div>
         <div class="hero-meta">
-          <span><svg class="icon"><use href="#i-google"/></svg><span class="stars">★★★★★</span> en Google</span>
+          <span><svg class="icon"><use href="#i-google"/></svg><span class="stars" aria-hidden="true">★★★★★</span> 5 estrellas en Google</span>
           <span><svg class="icon"><use href="#i-monitor"/></svg>+500 equipos reparados</span>
           <span><svg class="icon"><use href="#i-shield"/></svg>Garantía de 90 días</span>
         </div>
@@ -633,7 +647,7 @@ button { font-family: inherit; }
 
       <div style="position:relative">
         <div class="session-glow" aria-hidden="true"></div>
-        <div class="session" id="session" aria-label="Demostración de una sesión de reparación remota">
+        <div class="session" id="session" role="img" aria-label="Demostración de una sesión de reparación remota">
           <div class="session-bar">
             <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
             <span class="session-title">
@@ -775,7 +789,7 @@ button { font-family: inherit; }
     <div class="plans">
       <div class="plan reveal">
         <div class="plan-name">Bronce</div>
-        <div class="plan-price">$19.900</div>
+        <div class="plan-price">$19.900<small>ARS por sesión</small></div>
         <p class="plan-tag">Ideal para PCs lentas o infectadas</p>
         <ul>
           <li><svg class="icon"><use href="#i-check"/></svg>Eliminación de virus, malware y spyware</li>
@@ -789,7 +803,7 @@ button { font-family: inherit; }
       <div class="plan plan-feat reveal reveal-d1">
         <div class="plan-flag">El más elegido</div>
         <div class="plan-name">Oro</div>
-        <div class="plan-price">$29.900</div>
+        <div class="plan-price">$29.900<small>ARS por sesión</small></div>
         <p class="plan-tag">Todo lo necesario, en una sola sesión</p>
         <ul>
           <li><svg class="icon"><use href="#i-check"/></svg>Revisión general del equipo</li>
@@ -803,7 +817,7 @@ button { font-family: inherit; }
 
       <div class="plan reveal reveal-d2">
         <div class="plan-name">Platinum</div>
-        <div class="plan-price">$39.900</div>
+        <div class="plan-price">$39.900<small>ARS por sesión</small></div>
         <p class="plan-tag">Experiencia completa, configurada a tu medida</p>
         <ul>
           <li><svg class="icon"><use href="#i-check"/></svg>Todo lo del plan Oro</li>
@@ -1067,12 +1081,26 @@ toggle.addEventListener('click', () => {
   const open = mobileMenu.classList.toggle('open');
   toggle.classList.toggle('open', open);
   toggle.setAttribute('aria-expanded', open);
+  toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+  mobileMenu.setAttribute('aria-hidden', !open);
 });
 mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
   mobileMenu.classList.remove('open');
   toggle.classList.remove('open');
   toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', 'Abrir menú');
+  mobileMenu.setAttribute('aria-hidden', 'true');
 }));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && mobileMenu.classList.contains('open')) {
+    mobileMenu.classList.remove('open');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Abrir menú');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    toggle.focus();
+  }
+});
 
 // Reveal on scroll
 const revealObserver = new IntersectionObserver(entries => {
@@ -1112,18 +1140,32 @@ if (reducedMotion) {
 }
 
 // FAQ acordeón
-document.querySelectorAll('.faq-q').forEach(btn => {
+document.querySelectorAll('.faq-q').forEach((btn, index) => {
+  const answer = btn.nextElementSibling;
+  const questionId = `faq-question-${index + 1}`;
+  const answerId = `faq-answer-${index + 1}`;
+  btn.id = questionId;
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', answerId);
+  answer.id = answerId;
+  answer.setAttribute('role', 'region');
+  answer.setAttribute('aria-labelledby', questionId);
+  answer.setAttribute('aria-hidden', 'true');
+
   btn.addEventListener('click', () => {
     const item = btn.parentElement;
-    const answer = btn.nextElementSibling;
     const isOpen = item.classList.contains('open');
     document.querySelectorAll('.faq-item.open').forEach(o => {
       o.classList.remove('open');
       o.querySelector('.faq-a').style.maxHeight = null;
+      o.querySelector('.faq-a').setAttribute('aria-hidden', 'true');
+      o.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
     });
     if (!isOpen) {
       item.classList.add('open');
       answer.style.maxHeight = answer.scrollHeight + 'px';
+      answer.setAttribute('aria-hidden', 'false');
+      btn.setAttribute('aria-expanded', 'true');
     }
   });
 });
