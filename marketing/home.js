@@ -96,18 +96,27 @@
       });
 
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const revealElements = [...document.querySelectorAll('.reveal')];
       if (!reducedMotion && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver(entries => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               entry.target.classList.add('visible');
+              entry.target.classList.remove('reveal-pending');
               observer.unobserve(entry.target);
             }
           });
         }, { threshold: .12 });
-        document.querySelectorAll('.reveal').forEach(element => observer.observe(element));
+        revealElements.forEach(element => {
+          if (element.getBoundingClientRect().top > window.innerHeight * .88) {
+            element.classList.add('reveal-pending');
+            observer.observe(element);
+          } else {
+            element.classList.add('visible');
+          }
+        });
       } else {
-        document.querySelectorAll('.reveal').forEach(element => element.classList.add('visible'));
+        revealElements.forEach(element => element.classList.add('visible'));
       }
 
       document.getElementById('year').textContent = new Date().getFullYear();
