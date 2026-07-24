@@ -6,6 +6,9 @@ const requiredFiles = [
   'index.html',
   'asistencia.html',
   'marketing/site.css',
+  'marketing/sections.css',
+  'marketing/responsive.css',
+  'marketing/icons.svg',
   'marketing/home.js',
   'marketing/assistance.css',
   'marketing/assistance.js'
@@ -24,6 +27,8 @@ const checks = {
   'index.html': [
     /<title>[^<]+<\/title>/,
     /href="\/marketing\/site\.css"/,
+    /href="\/marketing\/sections\.css"/,
+    /href="\/marketing\/responsive\.css"/,
     /src="\/marketing\/home\.js"/,
     /id="problemas"/,
     /id="planes"/,
