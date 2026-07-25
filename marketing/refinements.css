@@ -1,0 +1,372 @@
+/* Ajustes comerciales y de accesibilidad posteriores al rediseño. */
+
+/* El toolbar de Vercel sólo es una herramienta interna de preview.
+   Ocultamos sus hosts conocidos para que no interfiera con la experiencia visual. */
+vercel-live-feedback,
+vercel-toolbar,
+[data-vercel-toolbar],
+[data-vercel-live-feedback] {
+  display: none !important;
+}
+
+.nav-actions {
+  flex-shrink: 0;
+}
+
+.nav-assistance-mobile {
+  display: none;
+}
+
+.assistance-access {
+  border-color: rgba(76, 111, 255, .22);
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 10px 25px rgba(76, 111, 255, .08);
+}
+
+.assistance-access:hover {
+  border-color: rgba(76, 111, 255, .45);
+  box-shadow: 0 14px 30px rgba(76, 111, 255, .14);
+}
+
+.hero-tertiary {
+  display: inline-flex;
+  margin: -8px 0 21px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+  text-decoration: underline;
+  text-decoration-color: rgba(239, 45, 117, .32);
+  text-underline-offset: 4px;
+}
+
+.hero-tertiary:hover {
+  color: var(--pink);
+}
+
+/* Hero más claro: la persona conserva el protagonismo y la interfaz queda reducida
+   a una única confirmación de seguridad. */
+.support-stage {
+  place-items: center;
+}
+
+.hero-person {
+  width: min(100%, 525px);
+  height: 500px;
+  object-position: center 38%;
+}
+
+.support-summary {
+  right: 18px;
+  bottom: 28px;
+  width: min(72%, 315px);
+  transform: none;
+  border-radius: 22px;
+  background: rgba(18, 16, 25, .95);
+  backdrop-filter: blur(16px);
+}
+
+.support-summary .window-body {
+  padding: 17px;
+}
+
+.support-summary .window-intro {
+  margin: 0 0 13px;
+}
+
+.summary-status {
+  display: grid;
+  grid-template-columns: 35px 1fr;
+  gap: 11px;
+  align-items: center;
+  padding: 12px;
+  color: #c8f8e4;
+  background: rgba(7, 155, 105, .11);
+  border: 1px solid rgba(110, 231, 183, .18);
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.summary-status .icon {
+  width: 25px;
+  height: 25px;
+  color: #6ee7b7;
+}
+
+.step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 11px;
+  margin-top: 24px;
+}
+
+/* Reseñas de Google recuperadas como prueba social visible. */
+.reviews-section {
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255, 91, 53, .08), transparent 28%),
+    radial-gradient(circle at 92% 18%, rgba(76, 111, 255, .09), transparent 31%),
+    #fff;
+}
+
+.reviews-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 38px;
+  align-items: end;
+}
+
+.google-rating {
+  display: flex;
+  min-width: 220px;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.google-g {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  color: #4285f4;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  font-size: 27px;
+  font-weight: 950;
+  font-family: Arial, sans-serif;
+}
+
+.google-rating strong {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.google-rating small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.review-stars {
+  color: #f7b500;
+  letter-spacing: .08em;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px;
+  margin-top: 38px;
+}
+
+.review-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 12px 34px rgba(35, 24, 49, .055);
+}
+
+.review-card header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.review-card header strong,
+.review-card header small {
+  display: block;
+}
+
+.review-card header small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.review-avatar {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: none;
+  place-items: center;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.review-blue { background: #4285f4; }
+.review-green { background: #0f9d58; }
+.review-orange { background: #f4b400; }
+
+.review-card blockquote {
+  margin: 14px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.reviews-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 11px;
+  margin-top: 28px;
+}
+
+.mobile-sticky-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* A partir de tablet, dejamos el acceso a asistencia visible y WhatsApp en la barra inferior. */
+@media (max-width: 1050px) {
+  .nav-actions .btn {
+    display: none;
+  }
+
+  .nav-actions .assistance-access {
+    display: inline-flex;
+  }
+
+  .nav-assistance-mobile {
+    display: block;
+    color: var(--blue) !important;
+    font-weight: 900 !important;
+  }
+
+  .support-stage {
+    min-height: 510px;
+  }
+
+  .hero-person {
+    width: min(100%, 610px);
+    height: 500px;
+  }
+
+  .support-summary {
+    right: 3%;
+    width: min(54%, 330px);
+  }
+
+  .reviews-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .nav {
+    gap: 8px;
+  }
+
+  .brand {
+    font-size: 15px;
+  }
+
+  .brand img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .nav-actions {
+    gap: 7px;
+  }
+
+  .nav-actions .assistance-access {
+    min-height: 40px;
+    padding: 9px 12px;
+    font-size: 11px;
+  }
+
+  .nav-actions .assistance-access .icon {
+    width: 17px;
+    height: 17px;
+  }
+
+  .hero-tertiary {
+    display: block;
+    text-align: center;
+  }
+
+  .support-stage {
+    min-height: 440px;
+  }
+
+  .hero-person {
+    height: 410px;
+  }
+
+  .support-summary {
+    right: 10px;
+    bottom: 16px;
+    width: calc(100% - 42px);
+    max-width: 310px;
+  }
+
+  .support-summary .window-intro {
+    margin-bottom: 10px;
+  }
+
+  .summary-status {
+    padding: 10px;
+  }
+
+  .reviews-heading {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .google-rating {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .review-card {
+    padding: 21px;
+  }
+
+  .step-actions {
+    display: grid;
+  }
+
+  .step-actions .btn {
+    width: 100%;
+  }
+
+  .mobile-sticky {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-sticky-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mobile-sticky-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .nav-actions .assistance-access {
+    padding-inline: 10px;
+  }
+}

@@ -10,12 +10,14 @@ const requiredFiles = [
   'marketing/assistance.css',
   'marketing/assistance.js',
   'marketing/humans.css',
+  'marketing/refinements.css',
   'marketing/hero-client.webp',
   'marketing/problem-client.webp',
   'marketing/review-client.webp',
   'marketing/assistance-client.webp',
   'marketing/assistance-technician.webp'
 ];
+
 let failed = false;
 
 for (const file of requiredFiles) {
@@ -30,6 +32,8 @@ const checks = {
   'index.html': [
     /<title>[^<]+<\/title>/,
     /href="\/marketing\/site\.css"/,
+    /href="\/marketing\/humans\.css"/,
+    /href="\/marketing\/refinements\.css"/,
     /src="\/marketing\/home\.js"/,
     /src="\/marketing\/hero-client\.webp"/,
     /src="\/marketing\/problem-client\.webp"/,
@@ -37,8 +41,12 @@ const checks = {
     /src="cosmica-logo\.webp"/,
     /id="problemas"/,
     /id="planes"/,
+    /id="resenas"/,
     /id="seguridad"/,
     /data-source="hero-primary"/,
+    /class="[^"]*assistance-access/,
+    /href="\/asistencia\.html"/,
+    /g\.page\/r\/CUYVFj2zsaPzEAE/,
     /https:\/\/app\.cosmica\.ar/,
     /5493883298736/
   ],
@@ -63,7 +71,9 @@ for (const file of Object.keys(checks)) {
   if (!/^<!doctype html>/i.test(html.trim())) {
     console.error('  ✗ Falta doctype');
     failed = true;
-  } else console.log('  ✓ Doctype');
+  } else {
+    console.log('  ✓ Doctype');
+  }
 
   for (const tag of ['html', 'head', 'body', 'main']) {
     const opens = (html.match(new RegExp(`<${tag}(?:\\s|>)`, 'gi')) || []).length;
@@ -71,7 +81,9 @@ for (const file of Object.keys(checks)) {
     if (opens !== closes || opens !== 1) {
       console.error(`  ✗ Balance incorrecto de <${tag}>: ${opens}/${closes}`);
       failed = true;
-    } else console.log(`  ✓ <${tag}> balanceado`);
+    } else {
+      console.log(`  ✓ <${tag}> balanceado`);
+    }
   }
 
   for (const pattern of checks[file]) {
@@ -84,12 +96,16 @@ for (const file of Object.keys(checks)) {
   if (/<a(?![^>]*id="sendLink")[^>]*href="#"/.test(html)) {
     console.error('  ✗ Enlace vacío detectado');
     failed = true;
-  } else console.log('  ✓ Sin enlaces vacíos inesperados');
+  } else {
+    console.log('  ✓ Sin enlaces vacíos inesperados');
+  }
 
   if (/\{\{[^}]+\}\}/.test(html)) {
     console.error('  ✗ Placeholder sin reemplazar');
     failed = true;
-  } else console.log('  ✓ Sin placeholders');
+  } else {
+    console.log('  ✓ Sin placeholders');
+  }
 }
 
 for (const file of ['marketing/home.js', 'marketing/assistance.js']) {
@@ -107,4 +123,5 @@ if (failed) {
   console.error('\nValidación fallida.');
   process.exit(1);
 }
+
 console.log('\n✓ Validación de marketing completada.');
