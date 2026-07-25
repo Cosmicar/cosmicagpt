@@ -8,7 +8,11 @@ const requiredFiles = [
   'marketing/site.css',
   'marketing/sections.css',
   'marketing/responsive.css',
+  'marketing/humans.css',
   'marketing/icons.svg',
+  'marketing/hero-client.webp',
+  'marketing/problem-client.webp',
+  'marketing/review-client.webp',
   'marketing/home.js',
   'marketing/assistance.css',
   'marketing/assistance.js'
@@ -45,43 +49,55 @@ const checks = {
     /id="sendId"/,
     /anydesk\.com\/es\/downloads\/windows/,
     /5493883298736/
+  ],
+  'marketing/home.js': [
+    /humanStyles\.href\s*=\s*['"]\/marketing\/humans\.css['"]/
+  ],
+  'marketing/humans.css': [
+    /hero-client\.webp/,
+    /problem-client\.webp/,
+    /review-client\.webp/
   ]
 };
 
 for (const file of Object.keys(checks)) {
-  const html = fs.readFileSync(path.join(root, file), 'utf8');
+  const source = fs.readFileSync(path.join(root, file), 'utf8');
   console.log(`\n${file}`);
 
-  if (!/^<!doctype html>/i.test(html.trim())) {
-    console.error('  ✗ Falta doctype');
-    failed = true;
-  } else console.log('  ✓ Doctype');
-
-  for (const tag of ['html', 'head', 'body', 'main']) {
-    const opens = (html.match(new RegExp(`<${tag}(?:\\s|>)`, 'gi')) || []).length;
-    const closes = (html.match(new RegExp(`</${tag}>`, 'gi')) || []).length;
-    if (opens !== closes || opens !== 1) {
-      console.error(`  ✗ Balance incorrecto de <${tag}>: ${opens}/${closes}`);
+  if (file.endsWith('.html')) {
+    if (!/^<!doctype html>/i.test(source.trim())) {
+      console.error('  ✗ Falta doctype');
       failed = true;
-    } else console.log(`  ✓ <${tag}> balanceado`);
+    } else console.log('  ✓ Doctype');
+
+    for (const tag of ['html', 'head', 'body', 'main']) {
+      const opens = (source.match(new RegExp(`<${tag}(?:\\s|>)`, 'gi')) || []).length;
+      const closes = (source.match(new RegExp(`</${tag}>`, 'gi')) || []).length;
+      if (opens !== closes || opens !== 1) {
+        console.error(`  ✗ Balance incorrecto de <${tag}>: ${opens}/${closes}`);
+        failed = true;
+      } else console.log(`  ✓ <${tag}> balanceado`);
+    }
   }
 
   for (const pattern of checks[file]) {
-    if (!pattern.test(html)) {
+    if (!pattern.test(source)) {
       console.error(`  ✗ Falta patrón requerido: ${pattern}`);
       failed = true;
     }
   }
 
-  if (/<a(?![^>]*id="sendLink")[^>]*href="#"/.test(html)) {
-    console.error('  ✗ Enlace vacío detectado');
-    failed = true;
-  } else console.log('  ✓ Sin enlaces vacíos inesperados');
+  if (file.endsWith('.html')) {
+    if (/<a(?![^>]*id="sendLink")[^>]*href="#"/.test(source)) {
+      console.error('  ✗ Enlace vacío detectado');
+      failed = true;
+    } else console.log('  ✓ Sin enlaces vacíos inesperados');
 
-  if (/\{\{[^}]+\}\}/.test(html)) {
-    console.error('  ✗ Placeholder sin reemplazar');
-    failed = true;
-  } else console.log('  ✓ Sin placeholders');
+    if (/\{\{[^}]+\}\}/.test(source)) {
+      console.error('  ✗ Placeholder sin reemplazar');
+      failed = true;
+    } else console.log('  ✓ Sin placeholders');
+  }
 }
 
 for (const file of ['marketing/home.js', 'marketing/assistance.js']) {
