@@ -1,4 +1,9 @@
 (() => {
+  const headerStyles = document.createElement('link');
+  headerStyles.rel = 'stylesheet';
+  headerStyles.href = '/marketing/header-polish.css';
+  document.head.appendChild(headerStyles);
+
   const phone = '5493883298736';
   const header = document.getElementById('header');
   const menuToggle = document.getElementById('menuToggle');
@@ -6,7 +11,7 @@
   const status = document.getElementById('serviceStatus');
   const problemNavLink = navLinks.querySelector('a[href="#problemas"]');
 
-  if (problemNavLink) problemNavLink.textContent = '¿En qué te ayudamos?';
+  if (problemNavLink) problemNavLink.textContent = 'Servicios';
 
   const updateHeader = () => header.classList.toggle('scrolled', window.scrollY > 12);
   updateHeader();
