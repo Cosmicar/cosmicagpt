@@ -1,0 +1,48 @@
+name: Generar SEO provincial
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - data/provincias.json
+      - generar-provincias.js
+      - template-provincia.html
+      - template-cobertura.html
+      - scripts/validate-marketing.mjs
+      - .github/workflows/generate-provincial-seo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generar y validar páginas
+        run: node scripts/validate-marketing.mjs
+
+      - name: Guardar archivos generados
+        shell: bash
+        run: |
+          git add pc-lenta-*.html soporte-tecnico-remoto-argentina.html sitemap.xml robots.txt llms.txt
+          if git diff --cached --quiet; then
+            echo "Los archivos generados ya estaban actualizados."
+            exit 0
+          fi
+          git config user.name "cosmica-seo-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "chore: regenerar páginas provinciales"
+          git push
