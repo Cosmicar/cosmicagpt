@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node scripts/validate-marketing.mjs",
+  "buildCommand": "node generar-provincias.js",
   "rewrites": [
     {
       "source": "/",
