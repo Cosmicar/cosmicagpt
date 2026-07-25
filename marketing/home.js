@@ -4,6 +4,9 @@
   const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.getElementById('navLinks');
   const status = document.getElementById('serviceStatus');
+  const problemNavLink = navLinks.querySelector('a[href="#problemas"]');
+
+  if (problemNavLink) problemNavLink.textContent = '¿En qué te ayudamos?';
 
   const updateHeader = () => header.classList.toggle('scrolled', window.scrollY > 12);
   updateHeader();
