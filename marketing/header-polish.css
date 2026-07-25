@@ -1,0 +1,93 @@
+/* Ajuste específico del encabezado: agrupa navegación y acciones sin perder legibilidad. */
+
+@media (min-width: 1181px) {
+  .header .nav {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    column-gap: 22px;
+    min-height: 74px;
+  }
+
+  .header .brand {
+    white-space: nowrap;
+  }
+
+  .header .nav-links {
+    min-width: 0;
+    justify-content: center;
+    gap: clamp(14px, 1.35vw, 20px);
+  }
+
+  .header .nav-links a {
+    white-space: nowrap;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .header .nav-actions {
+    gap: 8px;
+  }
+
+  .header .nav-actions .btn-small {
+    min-height: 40px;
+    padding: 9px 15px;
+    font-size: 13px;
+  }
+
+  .header .nav-actions .btn-small .icon {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+/* Evita una franja intermedia donde los enlaces podrían comprimirse o saltar de línea. */
+@media (min-width: 1051px) and (max-width: 1180px) {
+  .header .nav {
+    gap: 12px;
+  }
+
+  .header .nav-links {
+    display: none;
+  }
+
+  .header .menu-toggle {
+    display: block;
+  }
+
+  .header .nav-actions .btn {
+    display: none;
+  }
+
+  .header .nav-actions .assistance-access {
+    display: inline-flex;
+  }
+
+  .header .nav-assistance-mobile {
+    display: block;
+    color: var(--blue) !important;
+    font-weight: 900 !important;
+  }
+
+  .header .nav-links.open {
+    position: fixed;
+    inset: 78px 16px auto;
+    display: grid;
+    gap: 0;
+    padding: 16px;
+    background: rgba(255, 255, 255, .98);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .header .nav-links.open a {
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .header .nav-links.open a:last-child {
+    border-bottom: 0;
+  }
+}
