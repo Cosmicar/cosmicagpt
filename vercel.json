@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/validate-marketing.mjs",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/",

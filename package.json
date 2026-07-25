@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "generate:provinces": "node generar-provincias.js",
+    "validate:marketing": "node scripts/validate-marketing.mjs"
+  },
   "dependencies": {
     "@afipsdk/afip.js": "^1.2.3",
     "firebase-admin": "^13.10.0"
