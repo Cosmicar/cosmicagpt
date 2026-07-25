@@ -104,8 +104,9 @@ for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fai
 
 if (!homeJs.includes("coverage.id = 'cobertura-nacional'")) fail('home.js: no inserta el directorio provincial');
 if (!homeJs.includes('/soporte-tecnico-remoto-argentina.html')) fail('home.js: falta enlace al directorio nacional');
+if (!homeJs.includes('/pc-lenta-${slug}.html')) fail('home.js: falta la plantilla de enlaces provinciales');
 for (const province of provinces) {
-  if (!homeJs.includes(`/pc-lenta-${province.slug}.html`)) fail(`home.js: falta enlace a ${province.name}`);
+  if (!homeJs.includes(`'${province.slug}'`)) fail(`home.js: falta el slug de ${province.name}`);
 }
 
 const seenTitles = new Set();
