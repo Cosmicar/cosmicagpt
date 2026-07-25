@@ -1,4 +1,8 @@
     (() => {
+      const humanStyles = document.createElement('link');
+      humanStyles.rel = 'stylesheet';
+      humanStyles.href = '/marketing/humans.css';
+      document.head.appendChild(humanStyles);
       const phone = '5493883298736';
       const header = document.getElementById('header');
       const menuToggle = document.getElementById('menuToggle');

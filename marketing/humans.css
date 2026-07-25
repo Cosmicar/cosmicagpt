@@ -1,0 +1,85 @@
+/* Fotografías humanas de apoyo. El logo y el sistema visual de Cósmica permanecen intactos. */
+.support-stage {
+  isolation: isolate;
+  place-items: end;
+  padding: 72px 0 22px 126px;
+}
+.support-stage::before { z-index: 0; }
+.support-stage::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 88px 18px 0;
+  background: url('/marketing/hero-client.webp') center / cover no-repeat;
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 34px;
+  box-shadow: var(--shadow-lg);
+}
+.support-window {
+  width: min(100%, 345px);
+  margin: auto 0 0 auto;
+  transform: rotate(1deg);
+}
+.support-window .window-body { padding: 18px; }
+.support-window .window-intro { margin-bottom: 15px; }
+.support-window .diagnostic-list { gap: 8px; }
+.support-window .diagnostic-row { padding: 9px 10px; }
+.support-window .window-result { margin-top: 12px; padding: 12px; }
+.support-window .result-score { font-size: 22px; }
+.floating-card { right: -4px; bottom: -7px; width: 185px; }
+
+.problem-grid { grid-template-columns: repeat(6, 1fr); }
+.problem-card:first-child {
+  grid-column: span 2;
+  min-height: 235px;
+  padding-left: 178px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.03) 0 38%, #fff 67%),
+    url('/marketing/problem-client.webp') left center / auto 100% no-repeat;
+}
+.problem-card:first-child .problem-icon { margin-left: 0; }
+
+.trust-quote { padding-top: 222px; }
+.trust-quote::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 18px 18px auto;
+  height: 174px;
+  background:
+    linear-gradient(90deg, rgba(18,16,25,.08), rgba(18,16,25,.02)),
+    url('/marketing/review-client.webp') center 42% / cover no-repeat;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 22px;
+}
+.trust-quote h2,
+.trust-quote p,
+.trust-quote .btn { position: relative; z-index: 2; }
+
+@media (max-width: 1050px) {
+  .support-stage { min-height: 540px; padding-left: 150px; }
+  .support-stage::after { right: 150px; }
+  .support-window { width: min(62%, 370px); }
+  .problem-grid { grid-template-columns: repeat(3, 1fr); }
+  .problem-card:first-child { grid-column: span 3; padding-left: 300px; background-size: auto 100%; }
+}
+
+@media (max-width: 720px) {
+  .support-stage { min-height: 470px; padding: 0 0 20px; }
+  .support-stage::after { inset: 0 0 38px; border-radius: 27px; }
+  .support-window { width: calc(100% - 40px); max-width: 340px; }
+  .support-window .diagnostic-row:nth-child(2),
+  .support-window .window-result { display: none; }
+  .floating-card { right: 3px; bottom: -12px; width: 165px; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .problem-card:first-child {
+    grid-column: auto;
+    min-height: 365px;
+    padding: 220px 22px 22px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.02) 0 48%, #fff 68%),
+      url('/marketing/problem-client.webp') top center / 100% 235px no-repeat;
+  }
+  .trust-quote { padding-top: 198px; }
+  .trust-quote::before { height: 150px; }
+}
