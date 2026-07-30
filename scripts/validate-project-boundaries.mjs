@@ -15,14 +15,23 @@ for (const rewrite of rewrites) {
     fail('vercel.json no puede usar app.cosmica.ar como host de una reescritura local.');
   }
   if (serialized.includes('/apps/cosmica-app')) {
-    fail('vercel.json no puede servir la copia legacy de Cósmica.app.');
-  }
-  if (serialized.includes('cosmicagpt.vercel.app') && serialized.includes('cosmica-app')) {
-    fail('El alias de Vercel no puede apuntar a la aplicación legacy.');
+    fail('vercel.json no puede servir una copia local de Cósmica.app.');
   }
 }
 
-const requiredRedirects = ['/app', '/app/:path*', '/staff', '/staff/:path*', '/login', '/panel'];
+const requiredRedirects = [
+  '/app',
+  '/app/:path*',
+  '/staff',
+  '/staff/:path*',
+  '/login',
+  '/login.html',
+  '/panel',
+  '/panel.html',
+  '/estado',
+  '/estado.html'
+];
+
 for (const source of requiredRedirects) {
   const match = redirects.find(redirect => redirect.source === source);
   if (!match) {
@@ -34,19 +43,41 @@ for (const source of requiredRedirects) {
   }
 }
 
-if (!fs.existsSync('.vercelignore')) {
-  fail('Falta .vercelignore para excluir la aplicación legacy.');
-} else {
-  const ignored = fs.readFileSync('.vercelignore', 'utf8');
-  if (!ignored.includes('apps/cosmica-app/')) {
-    fail('.vercelignore debe excluir apps/cosmica-app/.');
+const forbiddenPaths = [
+  'apps',
+  'release',
+  'js',
+  'components',
+  'core',
+  'services',
+  'views',
+  'docs',
+  'panel.html',
+  'login.html',
+  'estado.html',
+  'redesign.html',
+  'indexold1.html',
+  'firebase-messaging-sw.js',
+  'manifest.json',
+  'sw.js',
+  'MIGRATION_RUNBOOK.md',
+  'SYSTEM_OVERVIEW.md',
+  'dev-server.err.log',
+  'dev-server.out.log',
+  'firestore.rules',
+  '.vercelignore'
+];
+
+for (const legacyPath of forbiddenPaths) {
+  if (fs.existsSync(legacyPath)) {
+    fail(`El repositorio público no puede contener el legado: ${legacyPath}`);
   }
 }
 
 const readme = fs.readFileSync('README.md', 'utf8');
-for (const required of ['www.cosmica.ar', 'app.cosmica.ar', 'Cosmicar/cosmica-app', 'rama autorizada']) {
+for (const required of ['www.cosmica.ar', 'app.cosmica.ar', 'Cosmicar/cosmica-app', 'rama autorizada', 'legado eliminado']) {
   if (!readme.includes(required)) fail(`README.md no documenta la regla canónica: ${required}`);
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log('✓ Arquitectura canónica validada: web y app permanecen separadas.');
+console.log('✓ Repositorio limpio: la web pública y Cósmica.app permanecen separadas.');

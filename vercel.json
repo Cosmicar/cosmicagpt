@@ -43,7 +43,27 @@
       "permanent": true
     },
     {
+      "source": "/login.html",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
       "source": "/panel",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/panel.html",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/estado",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/estado.html",
       "destination": "https://app.cosmica.ar/",
       "permanent": true
     }
