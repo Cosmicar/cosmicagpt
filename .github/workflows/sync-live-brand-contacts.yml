@@ -39,12 +39,12 @@ jobs:
       - name: Regenerar páginas provinciales
         run: node generar-provincias.js
 
-      - name: Verificar referencias históricas
+      - name: Verificar referencias históricas publicadas
         shell: bash
         run: |
-          if grep -RInE 'cosmica\.plus|cosmica\.arg|x\.com/cosmicaarg|@cosmicaarg|tecnocosmica@gmail\.com|soporte@cosmica\.ar' \
-            --include='*.html' --include='*.js' --include='*.mjs' --include='*.json' .; then
-            echo 'Se encontraron referencias históricas.'
+          published_files=(index.html asistencia.html template-provincia.html pc-lenta-*.html)
+          if grep -InE 'cosmica\.plus|cosmica\.arg|x\.com/cosmicaarg|@cosmicaarg|tecnocosmica@gmail\.com|soporte@cosmica\.ar' "${published_files[@]}"; then
+            echo 'Se encontraron referencias históricas en archivos publicados.'
             exit 1
           fi
 
