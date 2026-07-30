@@ -1,0 +1,75 @@
+name: Sincronizar contactos de la web activa
+
+on:
+  pull_request:
+    branches:
+      - claude/cosmica-landing-redesign-q2v6te
+    paths:
+      - scripts/sync-live-brand-contacts.mjs
+      - .github/workflows/sync-live-brand-contacts.yml
+  push:
+    branches:
+      - claude/cosmica-landing-redesign-q2v6te
+    paths:
+      - scripts/sync-live-brand-contacts.mjs
+      - .github/workflows/sync-live-brand-contacts.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar rama
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sincronizar contactos oficiales
+        run: node scripts/sync-live-brand-contacts.mjs
+
+      - name: Regenerar páginas provinciales
+        run: node generar-provincias.js
+
+      - name: Verificar referencias históricas publicadas
+        shell: bash
+        run: |
+          published_files=(index.html asistencia.html template-provincia.html pc-lenta-*.html)
+          if grep -InE 'cosmica\.plus|cosmica\.arg|x\.com/cosmicaarg|@cosmicaarg|tecnocosmica@gmail\.com|soporte@cosmica\.ar' "${published_files[@]}"; then
+            echo 'Se encontraron referencias históricas en archivos publicados.'
+            exit 1
+          fi
+
+      - name: Verificar contactos oficiales
+        shell: bash
+        run: |
+          grep -q 'hola@cosmica.ar' index.html
+          grep -q 'facebook.com/somoscosmica' index.html
+          grep -q 'instagram.com/somoscosmica.ar' index.html
+          grep -q 'x.com/somoscosmica' index.html
+          grep -q 'threads.net/@somoscosmica.ar' index.html
+          grep -q 'hola@cosmica.ar' asistencia.html
+          grep -q 'hola@cosmica.ar' pc-lenta-jujuy.html
+          test "$(find . -maxdepth 1 -name 'pc-lenta-*.html' | wc -l)" -eq 24
+
+      - name: Guardar cambios en la rama productiva
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          git add index.html asistencia.html template-provincia.html pc-lenta-*.html sitemap.xml robots.txt llms.txt
+          if git diff --cached --quiet; then
+            echo 'Los contactos oficiales ya estaban sincronizados.'
+            exit 0
+          fi
+          git config user.name 'cosmica-brand-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git commit -m 'chore: actualizar contactos oficiales en web activa'
+          git push
