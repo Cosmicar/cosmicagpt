@@ -18,7 +18,8 @@ const provider = {
     addressRegion: 'Jujuy',
     addressCountry: 'AR'
   },
-  sameAs: ['https://www.facebook.com/cosmica.arg/','https://www.instagram.com/cosmica.plus']
+  email: 'hola@cosmica.ar',
+  sameAs: ['https://www.facebook.com/somoscosmica','https://www.instagram.com/somoscosmica.ar','https://x.com/somoscosmica','https://www.threads.net/@somoscosmica.ar']
 };
 
 const escapeHtml = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
