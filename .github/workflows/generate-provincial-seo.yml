@@ -8,6 +8,7 @@ on:
       - generar-provincias.js
       - template-provincia.html
       - template-cobertura.html
+      - scripts/sync-brand-contacts.mjs
       - scripts/validate-marketing.mjs
       - .github/workflows/generate-provincial-seo.yml
   workflow_dispatch:
@@ -31,18 +32,22 @@ jobs:
         with:
           node-version: 22
 
+      - name: Sincronizar contactos oficiales
+        run: node scripts/sync-brand-contacts.mjs
+
       - name: Generar y validar páginas
         run: node scripts/validate-marketing.mjs
 
-      - name: Guardar archivos generados
+      - name: Guardar cambios sincronizados
         shell: bash
         run: |
-          git add pc-lenta-*.html soporte-tecnico-remoto-argentina.html sitemap.xml robots.txt llms.txt
+          git add index.html asistencia.html generar-provincias.js template-provincia.html template-cobertura.html \
+            pc-lenta-*.html soporte-tecnico-remoto-argentina.html sitemap.xml robots.txt llms.txt
           if git diff --cached --quiet; then
-            echo "Los archivos generados ya estaban actualizados."
+            echo "Los contactos y archivos generados ya estaban actualizados."
             exit 0
           fi
           git config user.name "cosmica-seo-bot"
           git config user.email "actions@users.noreply.github.com"
-          git commit -m "chore: regenerar páginas provinciales"
+          git commit -m "chore: sincronizar contactos y regenerar SEO"
           git push
