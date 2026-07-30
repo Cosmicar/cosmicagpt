@@ -1,37 +1,49 @@
-# Cósmica — Sistema de Gestión de Soporte Técnico
+# Cósmica | Web pública
 
-## Descripción
-Cósmica es un sistema liviano y robusto diseñado para la gestión de talleres de servicio técnico, control de inventario y punto de venta (POS). Está optimizado para funcionar en entornos de hosting estático como GitHub Pages, delegando la persistencia y la seguridad a Firebase.
+Este repositorio contiene exclusivamente la web institucional y comercial de Cósmica.
 
-## Stack Tecnológico
-- **Frontend**: HTML5, CSS3 (Vanilla), Javascript ES6 puro.
-- **Backend/Database**: Firebase Auth & Firestore.
-- **Hosting**: GitHub Pages / Netlify.
+## Arquitectura canónica
 
-## Instalación y Configuración Local
-1. Clona este repositorio.
-2. Abre el archivo `index.html` en tu navegador (se recomienda usar un servidor local como Live Server en VS Code).
+| Dominio | Función | Repositorio | Rama de producción |
+| --- | --- | --- | --- |
+| `www.cosmica.ar` / `cosmica.ar` | Servicios, asistencia remota, marketing y cobertura nacional | `Cosmicar/cosmicagpt` | `main` |
+| `app.cosmica.ar` | Cósmica.app para talleres y comercios | `Cosmicar/cosmica-app` | `main` |
 
-## Configuración de Firebase
-1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
-2. Habilita **Firestore** y **Authentication** (Email/Password).
-3. Crea una aplicación web y copia las credenciales.
-4. Pega las credenciales en el archivo `js/firebase.js` (si existe) o en el bloque de inicialización correspondiente.
-5. Despliega las reglas de seguridad contenidas en `firestore.rules`.
+## Reglas de separación
 
-## Despliegue en GitHub Pages
-1. Sube el proyecto a un repositorio de GitHub.
-2. Ve a Settings -> Pages.
-3. Selecciona la rama `main` y la carpeta `/` (root).
-4. Guarda y espera a que GitHub genere la URL pública.
+1. Este repositorio no debe servir, compilar ni reescribir tráfico para una copia local de Cósmica.app.
+2. Las rutas históricas `/app`, `/staff`, `/login` y `/panel` redirigen al dominio oficial `app.cosmica.ar`.
+3. El directorio legado `apps/cosmica-app/` queda excluido del despliegue de la web pública hasta su eliminación definitiva.
+4. La única rama autorizada como fuente de producción para la web es `main`.
+5. Las ramas `claude/*`, `agent/*` y otros experimentos históricos no representan producción y no deben conectarse a dominios.
 
-## Estructura de Carpetas (Core)
-- `/`: Archivos HTML principales (`index.html`, `panel.html`, `login.html`).
-- `js/`: Módulos de lógica y repositorios.
-- `release/`: Documentación y snapshots para distribución.
+## Contenido vigente
 
-## Módulos del Sistema
-- **Órdenes Técnicas**: Ingreso, diagnóstico y entrega de equipos.
-- **Inventario**: Control de stock y alerta de mínimos.
-- **POS / Ventas**: Carrito de compras y registro de ventas transaccional.
-- **Logger**: Registro de auditoría del sistema.
+- Home de servicios técnicos.
+- Flujo de asistencia remota.
+- Planes y contacto por WhatsApp.
+- Directorio nacional y páginas provinciales.
+- SEO, sitemap y datos estructurados.
+
+## Validación
+
+El despliegue ejecuta:
+
+```bash
+node scripts/validate-project-boundaries.mjs
+node scripts/validate-marketing.mjs
+```
+
+La primera validación impide que vuelvan a incorporarse reescrituras hacia copias legacy de la app. La segunda genera y verifica la web, las páginas provinciales y el sitemap.
+
+## Contactos oficiales
+
+- Correo: `hola@cosmica.ar`
+- Facebook: `@somoscosmica`
+- Instagram: `@somoscosmica.ar`
+- X: `@somoscosmica`
+- Threads: `@somoscosmica.ar`
+
+## Nota sobre material legado
+
+El historial del repositorio conserva archivos y ramas de etapas anteriores. Ese material no es fuente de verdad. Toda decisión nueva debe partir de esta arquitectura canónica y de las ramas `main` de ambos repositorios.
