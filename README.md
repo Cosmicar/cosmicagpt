@@ -11,11 +11,11 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 
 ## Reglas de separación
 
-1. Este repositorio no debe servir, compilar ni reescribir tráfico para una copia local de Cósmica.app.
-2. Las rutas históricas `/app`, `/staff`, `/login` y `/panel` redirigen al dominio oficial `app.cosmica.ar`.
-3. El directorio legado `apps/cosmica-app/` queda excluido del despliegue de la web pública hasta su eliminación definitiva.
-4. La única rama autorizada como fuente de producción para la web es `main`.
-5. Las ramas `claude/*`, `agent/*` y otros experimentos históricos no representan producción y no deben conectarse a dominios.
+1. Este repositorio no sirve, compila ni conserva una copia local de Cósmica.app.
+2. Las rutas históricas `/app`, `/staff`, `/login`, `/panel` y `/estado`, incluidas sus variantes `.html`, redirigen al dominio oficial `app.cosmica.ar`.
+3. La única rama autorizada como fuente de producción para la web es `main`.
+4. Las ramas experimentales no representan producción y no deben conectarse a dominios.
+5. El legado eliminado permanece recuperable en el historial de Git, pero no forma parte del árbol vigente.
 
 ## Contenido vigente
 
@@ -34,7 +34,7 @@ node scripts/validate-project-boundaries.mjs
 node scripts/validate-marketing.mjs
 ```
 
-La primera validación impide que vuelvan a incorporarse reescrituras hacia copias legacy de la app. La segunda genera y verifica la web, las páginas provinciales y el sitemap.
+La primera validación impide que regresen copias o archivos de la aplicación antigua. La segunda genera y verifica la web, las páginas provinciales y el sitemap.
 
 ## Contactos oficiales
 
@@ -44,6 +44,6 @@ La primera validación impide que vuelvan a incorporarse reescrituras hacia copi
 - X: `@somoscosmica`
 - Threads: `@somoscosmica.ar`
 
-## Nota sobre material legado
+## Fuente de verdad
 
-El historial del repositorio conserva archivos y ramas de etapas anteriores. Ese material no es fuente de verdad. Toda decisión nueva debe partir de esta arquitectura canónica y de las ramas `main` de ambos repositorios.
+Toda decisión nueva debe partir de `main` en `Cosmicar/cosmicagpt` para la web y de `main` en `Cosmicar/cosmica-app` para el sistema. Ningún archivo, snapshot o rama histórica reemplaza esa regla.
