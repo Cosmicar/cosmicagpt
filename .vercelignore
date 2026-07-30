@@ -1,0 +1,3 @@
+# La aplicación productiva vive exclusivamente en Cosmicar/cosmica-app.
+# Esta copia histórica no debe formar parte del despliegue de www.cosmica.ar.
+apps/cosmica-app/
