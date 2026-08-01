@@ -1,0 +1,44 @@
+.brand.brand-v2 {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 0;
+  min-width: 0;
+  color: inherit;
+  line-height: 0;
+  letter-spacing: normal;
+  text-decoration: none;
+}
+
+.brand-v2-logo {
+  display: block;
+  width: clamp(164px, 16vw, 194px);
+  height: auto;
+  max-width: none;
+  object-fit: contain;
+}
+
+.footer .brand-v2-logo {
+  width: clamp(170px, 17vw, 205px);
+}
+
+.topbar .brand-v2-logo {
+  width: clamp(168px, 17vw, 196px);
+}
+
+.brand.brand-v2:focus-visible {
+  outline: 3px solid rgba(215, 10, 58, .28);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+@media (max-width: 720px) {
+  .brand-v2-logo,
+  .topbar .brand-v2-logo {
+    width: 158px;
+  }
+
+  .footer .brand-v2-logo {
+    width: 172px;
+  }
+}
