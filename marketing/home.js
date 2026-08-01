@@ -1,5 +1,5 @@
 (() => {
-  for (const href of ['/marketing/header-polish.css', '/marketing/coverage.css']) {
+  for (const href of ['/marketing/header-polish.css', '/marketing/coverage.css', '/marketing/brand-v2.css']) {
     if (!document.querySelector(`link[href="${href}"]`)) {
       const stylesheet = document.createElement('link');
       stylesheet.rel = 'stylesheet';
@@ -7,6 +7,13 @@
       document.head.appendChild(stylesheet);
     }
   }
+
+  document.querySelectorAll('.brand').forEach(brand => {
+    const isDarkContext = Boolean(brand.closest('.footer'));
+    brand.classList.add('brand-v2');
+    brand.setAttribute('aria-label', 'Cósmica');
+    brand.innerHTML = `<img class="brand-v2-logo" src="/brand/v2/cosmica-logo-integrado-${isDarkContext ? 'dark' : 'light'}.svg" alt="Cósmica">`;
+  });
 
   const provinces = [
     ['Buenos Aires','buenos-aires'],['CABA','caba'],['Catamarca','catamarca'],['Chaco','chaco'],
