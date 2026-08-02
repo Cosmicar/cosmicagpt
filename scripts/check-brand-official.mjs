@@ -12,6 +12,11 @@ const requiredAssets = [
   'marketing/brand-v2.css'
 ];
 
+const retiredFiles = [
+  'generate_logos.py',
+  'gen_logos_run.py'
+];
+
 const forbiddenPublicTokens = [
   '@cosmica.plus',
   'facebook.com/cosmica.arg',
@@ -86,6 +91,14 @@ for (const relativePath of [
 for (const relativePath of requiredAssets) {
   if (!fs.existsSync(path.join(root, relativePath))) {
     throw new Error(`[brand] Falta el activo obligatorio ${relativePath}`);
+  }
+}
+
+for (const relativePath of retiredFiles) {
+  if (fs.existsSync(path.join(root, relativePath))) {
+    throw new Error(
+      `[brand] Reapareció el generador legacy retirado ${relativePath}. Usar únicamente los activos A1.1.`
+    );
   }
 }
 
