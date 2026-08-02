@@ -42,7 +42,7 @@ const officialTokens = {
   'vercel.json': [
     '"source": "/cosmica-logo.webp"',
     '"source": "/cosmica-logo.png"',
-    '"destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5"'
+    '"destination": "/brand/v2/cosmica-isotipo-micro.svg"'
   ]
 };
 
