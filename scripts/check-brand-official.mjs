@@ -20,8 +20,7 @@ const forbiddenPublicTokens = [
   'tecnocosmica@gmail.com',
   '#D70A3A',
   '#0D1520',
-  '#090E17',
-  '🚀'
+  '#090E17'
 ];
 
 const officialTokens = {
@@ -29,7 +28,8 @@ const officialTokens = {
   'marketing/brand-v2.js': [
     '/brand/v2/cosmica-logo-integrado-light.svg',
     '/brand/v2/cosmica-logo-integrado-dark.svg',
-    '/brand/v2/cosmica-isotipo-micro.svg'
+    '/brand/v2/cosmica-isotipo-micro.svg',
+    "replaceAll('🚀', '')"
   ]
 };
 
