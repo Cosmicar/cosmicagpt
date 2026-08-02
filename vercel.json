@@ -18,6 +18,16 @@
   ],
   "redirects": [
     {
+      "source": "/cosmica-logo.webp",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5",
+      "permanent": true
+    },
+    {
+      "source": "/cosmica-logo.png",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5",
+      "permanent": true
+    },
+    {
       "source": "/app",
       "destination": "https://app.cosmica.ar/",
       "permanent": true
