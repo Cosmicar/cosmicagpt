@@ -4,6 +4,14 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/cosmica-logo.webp",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg"
+    },
+    {
+      "source": "/cosmica-logo.png",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg"
+    },
+    {
       "source": "/asistencia",
       "destination": "/asistencia.html"
     },
@@ -17,16 +25,6 @@
     }
   ],
   "redirects": [
-    {
-      "source": "/cosmica-logo.webp",
-      "destination": "/brand/v2/cosmica-isotipo-micro.svg",
-      "permanent": true
-    },
-    {
-      "source": "/cosmica-logo.png",
-      "destination": "/brand/v2/cosmica-isotipo-micro.svg",
-      "permanent": true
-    },
     {
       "source": "/app",
       "destination": "https://app.cosmica.ar/",
