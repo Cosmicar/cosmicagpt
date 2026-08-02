@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node scripts/validate-project-boundaries.mjs && node scripts/validate-marketing.mjs",
+  "buildCommand": "node scripts/validate-project-boundaries.mjs && node scripts/check-brand-official.mjs && node scripts/validate-marketing.mjs",
   "outputDirectory": ".",
   "rewrites": [
     {
