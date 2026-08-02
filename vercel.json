@@ -19,12 +19,12 @@
   "redirects": [
     {
       "source": "/cosmica-logo.webp",
-      "destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg",
       "permanent": true
     },
     {
       "source": "/cosmica-logo.png",
-      "destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5",
+      "destination": "/brand/v2/cosmica-isotipo-micro.svg",
       "permanent": true
     },
     {
