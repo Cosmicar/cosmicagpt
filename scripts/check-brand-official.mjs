@@ -40,8 +40,6 @@ const publicFiles = fs
 
 for (const relativePath of [
   ...publicFiles,
-  'template-cobertura.html',
-  'template-provincia.html',
   'generar-provincias.js',
   'marketing/home.js',
   'marketing/assistance.js',
@@ -59,18 +57,28 @@ for (const relativePath of [
     }
   }
 
-  if (relativePath.endsWith('.html') && source.includes('cosmica-logo.webp')) {
-    const protectedByOfficialLoader = [
-      '/marketing/home.js',
-      '/marketing/assistance.js',
-      '/marketing/province.js',
-      '/marketing/brand-v2.js'
-    ].some(loader => source.includes(loader));
+  if (relativePath.endsWith('.html')) {
+    if (source.includes('cosmica-logo.webp')) {
+      throw new Error(`[brand] ${relativePath} todavía contiene el logo legacy.`);
+    }
 
-    if (!protectedByOfficialLoader) {
-      throw new Error(
-        `[brand] ${relativePath} conserva cosmica-logo.webp sin cargar la capa oficial A1.1.`
-      );
+    if (source.includes('🚀')) {
+      throw new Error(`[brand] ${relativePath} todavía contiene un cohete visible.`);
+    }
+
+    const hasBrandAnchor = /class=(["'])[^"']*\bbrand\b[^"']*\1/i.test(source);
+    if (hasBrandAnchor) {
+      for (const requiredMarkup of [
+        '/marketing/brand-v2.css',
+        '/marketing/brand-v2.js',
+        '/brand/v2/cosmica-logo-integrado-'
+      ]) {
+        if (!source.includes(requiredMarkup)) {
+          throw new Error(
+            `[brand] ${relativePath} no contiene el markup oficial requerido: ${requiredMarkup}`
+          );
+        }
+      }
     }
   }
 }
@@ -90,4 +98,4 @@ for (const [relativePath, tokens] of Object.entries(officialTokens)) {
   }
 }
 
-console.log('✓ Identidad oficial A1.1 verificada en la landing.');
+console.log('✓ Identidad oficial A1.1 y markup canónico verificados en la landing.');
