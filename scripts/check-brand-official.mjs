@@ -9,7 +9,9 @@ const requiredAssets = [
   'brand/v2/cosmica-logo-integrado-light.svg',
   'brand/v2/cosmica-logo-integrado-dark.svg',
   'marketing/brand-v2.js',
-  'marketing/brand-v2.css'
+  'marketing/brand-v2.css',
+  'cosmica-logo.png',
+  'cosmica-logo.webp'
 ];
 
 const retiredFiles = [
@@ -113,4 +115,19 @@ for (const [relativePath, tokens] of Object.entries(officialTokens)) {
   }
 }
 
-console.log('✓ Identidad oficial A1.1 y markup canónico verificados en la landing.');
+const png = fs.readFileSync(path.join(root, 'cosmica-logo.png'));
+const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+if (png.length < pngSignature.length || !png.subarray(0, pngSignature.length).equals(pngSignature)) {
+  throw new Error('[brand] cosmica-logo.png no contiene un PNG válido.');
+}
+
+const webp = fs.readFileSync(path.join(root, 'cosmica-logo.webp'));
+const hasWebpSignature =
+  webp.length >= 12 &&
+  webp.toString('ascii', 0, 4) === 'RIFF' &&
+  webp.toString('ascii', 8, 12) === 'WEBP';
+if (!hasWebpSignature) {
+  throw new Error('[brand] cosmica-logo.webp no contiene un WebP válido.');
+}
+
+console.log('✓ Identidad oficial A1.1, markup canónico y formatos raster verificados.');
