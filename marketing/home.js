@@ -8,6 +8,14 @@
     }
   }
 
+  const brandScript = '/marketing/brand-v2.js';
+  if (!document.querySelector(`script[src="${brandScript}"]`)) {
+    const script = document.createElement('script');
+    script.src = brandScript;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
   const provinces = [
     ['Buenos Aires','buenos-aires'],['CABA','caba'],['Catamarca','catamarca'],['Chaco','chaco'],
     ['Chubut','chubut'],['Córdoba','cordoba'],['Corrientes','corrientes'],['Entre Ríos','entre-rios'],

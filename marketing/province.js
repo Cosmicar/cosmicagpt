@@ -1,4 +1,11 @@
 (() => {
+  const brandScript = '/marketing/brand-v2.js';
+  if (!document.querySelector(`script[src="${brandScript}"]`)) {
+    const script = document.createElement('script');
+    script.src = brandScript;
+    document.head.appendChild(script);
+  }
+
   const phone = '5493883298736';
   const header = document.getElementById('header');
   const menuToggle = document.getElementById('menuToggle');
