@@ -1,17 +1,11 @@
 (() => {
-  const brandStylesheet = '/marketing/brand-v2.css';
-  if (!document.querySelector(`link[href="${brandStylesheet}"]`)) {
-    const stylesheet = document.createElement('link');
-    stylesheet.rel = 'stylesheet';
-    stylesheet.href = brandStylesheet;
-    document.head.appendChild(stylesheet);
+  const brandScript = '/marketing/brand-v2.js';
+  if (!document.querySelector(`script[src="${brandScript}"]`)) {
+    const script = document.createElement('script');
+    script.src = brandScript;
+    script.defer = true;
+    document.head.appendChild(script);
   }
-
-  document.querySelectorAll('.brand').forEach(brand => {
-    brand.classList.add('brand-v2');
-    brand.setAttribute('aria-label', 'Cósmica');
-    brand.innerHTML = '<img class="brand-v2-logo" src="/brand/v2/cosmica-logo-integrado-light.svg" alt="Cósmica">';
-  });
 
   const completed = new Set();
   const progressBar = document.getElementById('progressBar');
