@@ -8,7 +8,9 @@
   },
   "scripts": {
     "generate:provinces": "node generar-provincias.js",
-    "validate:marketing": "node scripts/validate-marketing.mjs"
+    "check:brand-official": "node scripts/check-brand-official.mjs",
+    "validate:marketing": "node scripts/validate-marketing.mjs",
+    "build": "npm run check:brand-official && npm run validate:marketing"
   },
   "dependencies": {
     "@afipsdk/afip.js": "^1.2.3",
