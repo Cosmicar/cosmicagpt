@@ -9,7 +9,8 @@ const requiredAssets = [
   'brand/v2/cosmica-logo-integrado-light.svg',
   'brand/v2/cosmica-logo-integrado-dark.svg',
   'marketing/brand-v2.js',
-  'marketing/brand-v2.css'
+  'marketing/brand-v2.css',
+  'vercel.json'
 ];
 
 const retiredFiles = [
@@ -37,6 +38,11 @@ const officialTokens = {
     'cosmica-logo-integrado-${variant}.svg',
     'cosmica-isotipo-micro.svg',
     "replaceAll('🚀', '')"
+  ],
+  'vercel.json': [
+    '"source": "/cosmica-logo.webp"',
+    '"source": "/cosmica-logo.png"',
+    '"destination": "/brand/v2/cosmica-isotipo-micro.svg?v=5"'
   ]
 };
 
@@ -113,4 +119,4 @@ for (const [relativePath, tokens] of Object.entries(officialTokens)) {
   }
 }
 
-console.log('✓ Identidad oficial A1.1 y markup canónico verificados en la landing.');
+console.log('✓ Identidad oficial A1.1, markup canónico y compatibilidad legacy verificados.');
