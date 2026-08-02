@@ -14,7 +14,9 @@ const requiredAssets = [
 
 const retiredFiles = [
   'generate_logos.py',
-  'gen_logos_run.py'
+  'gen_logos_run.py',
+  'crop_logo.py',
+  'update_logo_uris.py'
 ];
 
 const forbiddenPublicTokens = [
@@ -97,7 +99,7 @@ for (const relativePath of requiredAssets) {
 for (const relativePath of retiredFiles) {
   if (fs.existsSync(path.join(root, relativePath))) {
     throw new Error(
-      `[brand] Reapareció el generador legacy retirado ${relativePath}. Usar únicamente los activos A1.1.`
+      `[brand] Reapareció la herramienta legacy retirada ${relativePath}. Usar únicamente los activos y generadores A1.1.`
     );
   }
 }
