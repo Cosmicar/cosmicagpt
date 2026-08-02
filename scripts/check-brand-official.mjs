@@ -26,9 +26,9 @@ const forbiddenPublicTokens = [
 const officialTokens = {
   'marketing/brand-v2.css': ['#E1063A', '#0F121A', '#F6F3F0', '#D9D4CF'],
   'marketing/brand-v2.js': [
-    '/brand/v2/cosmica-logo-integrado-light.svg',
-    '/brand/v2/cosmica-logo-integrado-dark.svg',
-    '/brand/v2/cosmica-isotipo-micro.svg',
+    "const BRAND_ROOT = '/brand/v2'",
+    'cosmica-logo-integrado-${variant}.svg',
+    'cosmica-isotipo-micro.svg',
     "replaceAll('🚀', '')"
   ]
 };
