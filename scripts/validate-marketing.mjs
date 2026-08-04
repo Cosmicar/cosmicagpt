@@ -74,6 +74,15 @@ const homeJs = read('marketing/home.js');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
 
+const currentPlanPrices = ['$24.900', '$35.900', '$49.900'];
+const retiredPlanPrices = ['$19.900', '$29.900', '$39.900'];
+for (const price of currentPlanPrices) {
+  if (!indexHtml.includes(price)) fail(`index.html: falta el precio vigente ${price}`);
+}
+for (const price of retiredPlanPrices) {
+  if (indexHtml.includes(price)) fail(`index.html: conserva el precio anterior ${price}`);
+}
+
 const indexPatterns = [
   /<title>[^<]+<\/title>/,
   /href="\/marketing\/site\.css"/,
@@ -137,6 +146,8 @@ for (const province of provinces) {
   if (!html.includes('"@type":"FAQPage"')) fail(`${file}: falta schema FAQPage`);
   if (!html.includes('/soporte-tecnico-remoto-argentina.html')) fail(`${file}: falta enlace al hub nacional`);
   if (!html.includes('Nuestra base física está en San Salvador de Jujuy')) fail(`${file}: no aclara la base física real`);
+  if (!html.includes('Planes desde $24.900')) fail(`${file}: falta el precio inicial vigente`);
+  if (retiredPlanPrices.some(price => html.includes(price))) fail(`${file}: conserva un precio anterior`);
 
   const cityMatches = province.cities.filter(city => html.includes(city));
   if (cityMatches.length < 3) fail(`${file}: faltan ciudades de referencia`);
