@@ -62,6 +62,9 @@ for (const relativePath of publicFiles) {
     '🚀',
     '👨‍🚀',
     '#00E5FF',
+    'tecnocosmica@gmail.com',
+    'soporte@cosmica.ar',
+    'info@cosmica.ar',
   ]) {
     if (source.includes(token)) errors.push(`${relativePath} conserva identidad retirada: ${token}`);
   }
@@ -86,6 +89,11 @@ for (const relativePath of publicFiles) {
   if (source.includes('name="twitter:image"') && !source.includes('/brand/official/cover-x.png?v=7')) {
     errors.push(`${relativePath} no usa la portada oficial de X`);
   }
+}
+
+const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+if (!home.includes('mailto:hola@cosmica.ar') || !home.includes('>hola@cosmica.ar<')) {
+  errors.push('index.html no publica hola@cosmica.ar como correo institucional');
 }
 
 const contracts = {
