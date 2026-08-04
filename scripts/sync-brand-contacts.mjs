@@ -14,7 +14,9 @@ const replacements = [
   ['https://x.com/cosmicaarg', 'https://x.com/somoscosmica'],
   ['@cosmica.plus', '@somoscosmica.ar'],
   ['@cosmicaarg', '@somoscosmica'],
-  ['tecnocosmica@gmail.com', 'hola@cosmica.ar']
+  ['tecnocosmica@gmail.com', 'hola@cosmica.ar'],
+  ['soporte@cosmica.ar', 'hola@cosmica.ar'],
+  ['info@cosmica.ar', 'hola@cosmica.ar']
 ];
 
 const FACEBOOK_URL = 'https://www.facebook.com/somoscosmica';
