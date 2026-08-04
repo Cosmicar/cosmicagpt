@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ignoredDirectories = new Set(['.git', 'node_modules']);
 const textExtensions = new Set(['.html', '.js', '.mjs', '.json', '.md', '.txt', '.xml', '.yml', '.yaml']);
+const ignoredRelativePaths = new Set([
+  'scripts/sync-brand-contacts.mjs',
+  'scripts/check-brand-official.mjs',
+]);
 
 const replacements = [
   ['https://www.facebook.com/cosmica.arg/', 'https://www.facebook.com/somoscosmica'],
@@ -38,6 +42,8 @@ function walk(directory) {
 
 function replaceLegacyReferences() {
   for (const absolutePath of walk(root)) {
+    const relativePath = path.relative(root, absolutePath).replaceAll('\\\\', '/');
+    if (ignoredRelativePaths.has(relativePath)) continue;
     const original = fs.readFileSync(absolutePath, 'utf8');
     let updated = original;
     for (const [from, to] of replacements) updated = updated.replaceAll(from, to);
