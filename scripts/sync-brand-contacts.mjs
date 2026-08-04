@@ -42,7 +42,7 @@ function walk(directory) {
 
 function replaceLegacyReferences() {
   for (const absolutePath of walk(root)) {
-    const relativePath = path.relative(root, absolutePath).replaceAll('\\\\', '/');
+    const relativePath = path.relative(root, absolutePath).split(path.sep).join('/');
     if (ignoredRelativePaths.has(relativePath)) continue;
     const original = fs.readFileSync(absolutePath, 'utf8');
     let updated = original;
