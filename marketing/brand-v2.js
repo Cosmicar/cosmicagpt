@@ -1,6 +1,6 @@
 (() => {
-  const BRAND_ROOT = '/brand/v2';
-  const BRAND_VERSION = '5';
+  const BRAND_ROOT = '/brand/official';
+  const BRAND_VERSION = '7';
   const STYLESHEET = '/marketing/brand-v2.css';
 
   if (!document.querySelector(`link[href^="${STYLESHEET}"]`)) {
@@ -10,7 +10,7 @@
     document.head.appendChild(stylesheet);
   }
 
-  document.documentElement.classList.add('cosmica-brand-v2');
+  document.documentElement.classList.add('cosmica-brand-official');
 
   document.querySelectorAll('.brand').forEach(brand => {
     const isDarkContext = Boolean(
@@ -18,15 +18,12 @@
     );
     const variant = isDarkContext ? 'dark' : 'light';
 
-    brand.classList.add('brand-v2');
+    brand.classList.remove('brand-v2');
+    brand.classList.add('brand-official');
     brand.setAttribute('aria-label', 'Cósmica');
-    brand.innerHTML = `<img class="brand-v2-logo" src="${BRAND_ROOT}/cosmica-logo-integrado-${variant}.svg?v=${BRAND_VERSION}" alt="Cósmica" decoding="async">`;
+    brand.innerHTML = `<img class="brand-official-logo" src="${BRAND_ROOT}/cosmica-logo-${variant}.png?v=${BRAND_VERSION}" alt="Cósmica" width="3798" height="1851" decoding="async">`;
   });
 
-  /* El Resumen Visual Oficial A1.1 prohíbe cohetes en toda pieza.
-   * Las páginas provinciales existentes comparten este módulo, por lo que la
-   * limpieza se aplica de forma central sin reescribir archivos generados a mano.
-   */
   const textWalker = document.createTreeWalker(
     document.body,
     NodeFilter.SHOW_TEXT,
@@ -55,14 +52,14 @@
 
   const favicon = document.createElement('link');
   favicon.rel = 'icon';
-  favicon.type = 'image/svg+xml';
-  favicon.href = `${BRAND_ROOT}/cosmica-isotipo-micro.svg?v=${BRAND_VERSION}`;
+  favicon.type = 'image/png';
+  favicon.href = `${BRAND_ROOT}/cosmica-symbol.png?v=${BRAND_VERSION}`;
   document.head.appendChild(favicon);
 
-  const shortcut = document.createElement('link');
-  shortcut.rel = 'shortcut icon';
-  shortcut.href = `${BRAND_ROOT}/cosmica-isotipo-micro.svg?v=${BRAND_VERSION}`;
-  document.head.appendChild(shortcut);
+  const appleIcon = document.createElement('link');
+  appleIcon.rel = 'apple-touch-icon';
+  appleIcon.href = `${BRAND_ROOT}/avatar-light.png?v=${BRAND_VERSION}`;
+  document.head.appendChild(appleIcon);
 
   const applicationName = document.querySelector('meta[name="application-name"]') ?? document.createElement('meta');
   applicationName.setAttribute('name', 'application-name');

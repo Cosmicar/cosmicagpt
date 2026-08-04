@@ -3,8 +3,6 @@
   --obsidian: #0F121A;
   --warm-white: #F6F3F0;
   --soft-gray: #D9D4CF;
-
-  /* Compatibilidad con los tokens legacy de la landing. */
   --paper: var(--warm-white);
   --paper-2: #FBF9F7;
   --ink: var(--obsidian);
@@ -19,11 +17,10 @@
   --gradient: linear-gradient(120deg, var(--carmine), var(--carmine));
 }
 
-.brand.brand-v2 {
+.brand.brand-official {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 0;
   min-width: 0;
   color: inherit;
   line-height: 0;
@@ -32,12 +29,11 @@
   overflow: visible;
 }
 
-/* Mayor especificidad que `.brand img` del CSS legacy. */
-.brand.brand-v2 > img.brand-v2-logo,
-.topbar .brand.brand-v2 > img.brand-v2-logo,
-.footer .brand.brand-v2 > img.brand-v2-logo {
+.brand.brand-official > img.brand-official-logo,
+.topbar .brand.brand-official > img.brand-official-logo,
+.footer .brand.brand-official > img.brand-official-logo {
   display: block;
-  width: clamp(178px, 18vw, 218px);
+  width: clamp(100px, 10vw, 126px);
   height: auto;
   max-width: none;
   object-fit: contain;
@@ -46,21 +42,20 @@
   box-shadow: none;
 }
 
-.footer .brand.brand-v2 > img.brand-v2-logo {
-  width: clamp(184px, 19vw, 228px);
+.footer .brand.brand-official > img.brand-official-logo {
+  width: clamp(112px, 11vw, 136px);
 }
 
-.topbar .brand.brand-v2 > img.brand-v2-logo {
-  width: clamp(176px, 18vw, 214px);
+.topbar .brand.brand-official > img.brand-official-logo {
+  width: clamp(98px, 10vw, 124px);
 }
 
-.brand.brand-v2:focus-visible {
+.brand.brand-official:focus-visible {
   outline: 3px solid rgba(225, 6, 58, .28);
   outline-offset: 6px;
   border-radius: 6px;
 }
 
-/* La identidad principal abandona el gradiente naranja/rosa/azul. */
 .gradient-text {
   color: var(--carmine) !important;
   background: none !important;
@@ -94,7 +89,6 @@
     linear-gradient(180deg, #FBF9F7 0%, var(--warm-white) 72%, #fff 100%) !important;
 }
 
-/* Elimina el recurso concéntrico cercano al territorio orbital. */
 .hero::after {
   display: none !important;
 }
@@ -109,19 +103,19 @@
 }
 
 @media (max-width: 720px) {
-  .brand.brand-v2 > img.brand-v2-logo,
-  .topbar .brand.brand-v2 > img.brand-v2-logo {
-    width: 154px;
+  .brand.brand-official > img.brand-official-logo,
+  .topbar .brand.brand-official > img.brand-official-logo {
+    width: 104px;
   }
 
-  .footer .brand.brand-v2 > img.brand-v2-logo {
-    width: 174px;
+  .footer .brand.brand-official > img.brand-official-logo {
+    width: 118px;
   }
 }
 
 @media (max-width: 390px) {
-  .brand.brand-v2 > img.brand-v2-logo,
-  .topbar .brand.brand-v2 > img.brand-v2-logo {
-    width: 142px;
+  .brand.brand-official > img.brand-official-logo,
+  .topbar .brand.brand-official > img.brand-official-logo {
+    width: 96px;
   }
 }
