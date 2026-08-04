@@ -1,6 +1,6 @@
 (() => {
   const BRAND_ROOT = '/brand/official';
-  const BRAND_VERSION = '7';
+  const BRAND_VERSION = '9';
   const STYLESHEET = '/marketing/brand-v2.css';
 
   if (!document.querySelector(`link[href^="${STYLESHEET}"]`)) {

@@ -7,13 +7,13 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors = [];
 
 const officialAssets = {
-  'brand/official/avatar-light.png': ['644b1530532b5b914e2436e6a5e0acd4dc0d5bde0001c45568b5932479150a18', 1080, 1080],
-  'brand/official/avatar-obsidian.png': ['0194890ce4bdcf2c52395b223cbe1edfddb374acb3af1599b8804ac5d06698b3', 1080, 1080],
-  'brand/official/cosmica-logo-dark.png': ['ccba584e1af8bc996b273b64c8e6f907d04e3ff6ea76adcf8a406c973d7b7e03', 3798, 1851],
-  'brand/official/cosmica-logo-light.png': ['7687444931e1f093fcb5845edfeff1251b0b15ce01584fdf051c2351c4c57a61', 3798, 1851],
-  'brand/official/cosmica-symbol.png': ['0854bb91003978d48f5156605dce3ef01e52b370b2cb0e0774380194c5b5dab7', 1592, 1851],
-  'brand/official/cover-facebook.png': ['986b1f4559cd89fecb781c115b1bffde9e86cd9d55d5c1977541bddc7cc7aba7', 1640, 624],
-  'brand/official/cover-x.png': ['98c7606bfcbf23130e8d4ab351e85cf619e64f322bef0501fc848f4adbfb55c0', 1500, 500],
+  'brand/official/avatar-light.png': ['35adc0ee6c36599c4f7deaf2d96a4b38236f7d3b5b0c65f2dd20a23b70f792a4', 1080, 1080],
+  'brand/official/avatar-obsidian.png': ['071545d52ad293842cd96e7afc7c2acb7d3f0c5b661417c5721ec0a401323eef', 1080, 1080],
+  'brand/official/cosmica-logo-dark.png': ['e4364e4a85e945738af2c1e56950208b90bfbe8fe97c8a261f5330069fb52903', 3798, 1851],
+  'brand/official/cosmica-logo-light.png': ['0118c7840633be76e6713cdccab3ebe375d546d43e02cd03d93a1f44f477c3aa', 3798, 1851],
+  'brand/official/cosmica-symbol.png': ['4187a11b8607df122f4b25bf01cbfd1cb2e43c38925dfcdd5a8f38fd2e46f6fb', 1080, 1080],
+  'brand/official/cover-facebook.png': ['cc2ed6cfaf2e3094b54c79fd6140f166f10131efa4391e5f316b2e7113b396c9', 1640, 624],
+  'brand/official/cover-x.png': ['9a29bfeb48f832788a0dc7cbe6603b15e4a81e9d84ddd6e7f2a28e1536873f71', 1500, 500],
 };
 
 const requiredFiles = [
@@ -21,6 +21,7 @@ const requiredFiles = [
   'marketing/brand-v2.js',
   'marketing/brand-v2.css',
   'scripts/sync-brand-markup.mjs',
+  'brand/official/README.md',
 ];
 
 for (const relativePath of requiredFiles) {
@@ -70,9 +71,9 @@ for (const relativePath of publicFiles) {
   }
 
   for (const requiredHead of [
-    '/brand/official/cosmica-symbol.png?v=7',
-    '/brand/official/avatar-light.png?v=7',
-    '/marketing/brand-v2.css?v=7',
+    '/brand/official/cosmica-symbol.png?v=9',
+    '/brand/official/avatar-light.png?v=9',
+    '/marketing/brand-v2.css?v=9',
     '/marketing/brand-v2.js',
   ]) {
     if (!source.includes(requiredHead)) errors.push(`${relativePath} no contiene ${requiredHead}`);
@@ -83,10 +84,10 @@ for (const relativePath of publicFiles) {
       errors.push(`${relativePath} no usa la firma oficial completa`);
     }
   }
-  if (source.includes('property="og:image"') && !source.includes('/brand/official/cover-facebook.png?v=7')) {
+  if (source.includes('property="og:image"') && !source.includes('/brand/official/cover-facebook.png?v=9')) {
     errors.push(`${relativePath} no usa la portada oficial de Facebook`);
   }
-  if (source.includes('name="twitter:image"') && !source.includes('/brand/official/cover-x.png?v=7')) {
+  if (source.includes('name="twitter:image"') && !source.includes('/brand/official/cover-x.png?v=9')) {
     errors.push(`${relativePath} no usa la portada oficial de X`);
   }
 }
@@ -106,16 +107,21 @@ const contracts = {
   ],
   'marketing/brand-v2.js': [
     "const BRAND_ROOT = '/brand/official'",
-    "const BRAND_VERSION = '7'",
+    "const BRAND_VERSION = '9'",
     'cosmica-logo-${variant}.png',
     'cosmica-symbol.png',
     'avatar-light.png',
   ],
   'scripts/sync-brand-markup.mjs': [
-    "const BRAND_VERSION = '7'",
+    "const BRAND_VERSION = '9'",
     '/brand/official/cosmica-logo-${variant}.png',
     '/brand/official/cosmica-symbol.png',
-    '/brand/official/cover-facebook.png?v=7',
+    '/brand/official/cover-facebook.png?v=${BRAND_VERSION}',
+  ],
+  'brand/official/README.md': [
+    'C limpia, sin acento ni trazo flotante',
+    'En texto escrito, la marca conserva su ortografía: Cósmica.',
+    'No utilizar ni reconstruir versiones anteriores.',
   ],
 };
 

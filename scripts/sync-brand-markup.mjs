@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BRAND_VERSION = '7';
+const BRAND_VERSION = '9';
 const BRAND_CSS = `/marketing/brand-v2.css?v=${BRAND_VERSION}`;
 const BRAND_SCRIPT = '/marketing/brand-v2.js';
 
@@ -45,10 +45,10 @@ function ensureOfficialHead(source) {
   let updated = source
     .replace(/<link\b[^>]*rel=(["'])[^"']*(?:apple-touch-icon|(?:shortcut\s+)?icon)[^"']*\1[^>]*>\s*/gi, '')
     .replace(/\/marketing\/brand-v2\.css\?v=\d+/g, BRAND_CSS)
-    .replace(/(<meta\s+property=(["'])og:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$1https://cosmica.ar/brand/official/cover-facebook.png?v=7$4')
+    .replace(/(<meta\s+property=(["'])og:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}$4`)
     .replace(/(<meta\s+property=(["'])og:image:width\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$11640$4')
     .replace(/(<meta\s+property=(["'])og:image:height\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$1624$4')
-    .replace(/(<meta\s+name=(["'])twitter:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$1https://cosmica.ar/brand/official/cover-x.png?v=7$4');
+    .replace(/(<meta\s+name=(["'])twitter:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://cosmica.ar/brand/official/cover-x.png?v=${BRAND_VERSION}$4`);
 
   const additions = [
     `<link rel="icon" type="image/png" href="/brand/official/cosmica-symbol.png?v=${BRAND_VERSION}">`,
@@ -76,7 +76,7 @@ for (const relativePath of htmlFiles) {
   updated = ensureOfficialHead(updated);
   updated = updated
     .replaceAll('🚀', '')
-    .replaceAll('https://cosmica.ar/preview.jpg', 'https://cosmica.ar/brand/official/cover-facebook.png?v=7');
+    .replaceAll('https://cosmica.ar/preview.jpg', `https://cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}`);
 
   upgradedBrands += beforeBrands;
 
