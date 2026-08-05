@@ -1,0 +1,23 @@
+{
+  "name": "Cósmica",
+  "short_name": "Cósmica",
+  "description": "Tecnología que resuelve. Personas que acompañan.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F121A",
+  "theme_color": "#0F121A",
+  "icons": [
+    {
+      "src": "/brand/official/icons/cosmica-c-v10-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/official/icons/cosmica-c-v10-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
