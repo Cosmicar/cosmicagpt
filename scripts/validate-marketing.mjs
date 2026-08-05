@@ -25,6 +25,7 @@ const provinceFiles = provinces.map(province => `pc-lenta-${province.slug}.html`
 const requiredFiles = [
   'index.html',
   'asistencia.html',
+  'plus.html',
   'template-provincia.html',
   'template-cobertura.html',
   'soporte-tecnico-remoto-argentina.html',
@@ -41,11 +42,20 @@ const requiredFiles = [
   'marketing/coverage.css',
   'marketing/province.css',
   'marketing/province.js',
+  'marketing/plus.css',
   'marketing/hero-client.webp',
   'marketing/problem-client.webp',
   'marketing/review-client.webp',
   'marketing/assistance-client.webp',
   'marketing/assistance-technician.webp',
+  'site.webmanifest',
+  'favicon.ico',
+  'brand/official/icons/cosmica-c-v10-16.png',
+  'brand/official/icons/cosmica-c-v10-32.png',
+  'brand/official/icons/cosmica-c-v10-180.png',
+  'brand/official/icons/cosmica-c-v10-192.png',
+  'brand/official/icons/cosmica-c-v10-512.png',
+  'brand/official/icons/favicon-c-v10.ico',
   ...provinceFiles
 ];
 
@@ -70,9 +80,11 @@ const extract = (html, pattern) => html.match(pattern)?.[1]?.trim() || '';
 
 const indexHtml = read('index.html');
 const assistanceHtml = read('asistencia.html');
+const plusHtml = read('plus.html');
 const homeJs = read('marketing/home.js');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
+balancedDocument(plusHtml, 'plus.html');
 
 const currentPlanPrices = ['$24.900', '$35.900', '$49.900'];
 const retiredPlanPrices = ['$19.900', '$29.900', '$39.900'];
@@ -88,7 +100,8 @@ const indexPatterns = [
   /href="\/marketing\/site\.css"/,
   /src="\/marketing\/home\.js"/,
   /src="\/marketing\/hero-client\.webp"/,
-  /src="\/brand\/official\/cosmica-logo-light\.png\?v=7"/,
+  /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
+  /href="\/plus"/,
   /id="problemas"/,
   /id="planes"/,
   /id="seguridad"/,
@@ -102,7 +115,7 @@ const assistancePatterns = [
   /src="\/marketing\/assistance\.js"/,
   /src="\/marketing\/assistance-client\.webp"/,
   /src="\/marketing\/assistance-technician\.webp"/,
-  /src="\/brand\/official\/cosmica-logo-light\.png\?v=7"/,
+  /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
   /id="downloadAnydesk"/,
   /id="openedButton"/,
   /id="sendId"/,
@@ -110,6 +123,30 @@ const assistancePatterns = [
   /5493883298736/
 ];
 for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fail(`asistencia.html: falta ${pattern}`);
+
+const plusPatterns = [
+  /<link rel="canonical" href="https:\/\/cosmica\.ar\/plus">/,
+  /href="\/marketing\/plus\.css"/,
+  /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
+  /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
+  /href="\/site\.webmanifest\?v=10"/,
+  /Cósmica App Pro incluida/,
+  /\$49\.000/,
+  /https:\/\/cafecito\.app\/cosmica/,
+  /5493883298736/
+];
+for (const pattern of plusPatterns) if (!pattern.test(plusHtml)) fail(`plus.html: falta ${pattern}`);
+
+const manifest = JSON.parse(read('site.webmanifest'));
+if (manifest.theme_color !== '#0F121A' || manifest.background_color !== '#0F121A') fail('site.webmanifest: colores de marca incorrectos');
+for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'cosmica-c-v10-512.png']]) {
+  if (!manifest.icons?.some(icon => icon.sizes === size && icon.src.endsWith(file))) fail(`site.webmanifest: falta el icono ${size}`);
+}
+
+const vercelConfig = JSON.parse(read('vercel.json'));
+if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/plus' && rewrite.destination === '/plus.html')) {
+  fail('vercel.json: falta la reescritura directa de /plus');
+}
 
 if (!homeJs.includes("coverage.id = 'cobertura-nacional'")) fail('home.js: no inserta el directorio provincial');
 if (!homeJs.includes('/soporte-tecnico-remoto-argentina.html')) fail('home.js: falta enlace al directorio nacional');
@@ -163,8 +200,9 @@ for (const province of provinces) {
 
 const sitemap = read('sitemap.xml');
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-if (sitemapUrls.length !== 27) fail(`sitemap: se esperaban 27 URLs y hay ${sitemapUrls.length}`);
-if ((sitemap.match(/<lastmod>/g) || []).length !== 27) fail('sitemap: faltan lastmod');
+if (sitemapUrls.length !== 28) fail(`sitemap: se esperaban 28 URLs y hay ${sitemapUrls.length}`);
+if ((sitemap.match(/<lastmod>/g) || []).length !== 28) fail('sitemap: faltan lastmod');
+if (!sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: falta Cósmica+');
 for (const province of provinces) {
   const url = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
   if (!sitemapUrls.includes(url)) fail(`sitemap: falta ${province.name}`);

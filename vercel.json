@@ -4,6 +4,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/plus",
+      "destination": "/plus.html"
+    },
+    {
       "source": "/asistencia",
       "destination": "/asistencia.html"
     },
@@ -14,6 +18,16 @@
     {
       "source": "/:page(pc-lenta-[a-z-]+)",
       "destination": "/:page.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/favicon.ico",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/brand/official/icons/:file*",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     }
   ],
   "redirects": [

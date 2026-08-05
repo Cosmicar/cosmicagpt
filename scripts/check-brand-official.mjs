@@ -12,6 +12,11 @@ const officialAssets = {
   'brand/official/cosmica-logo-dark.png': ['e4364e4a85e945738af2c1e56950208b90bfbe8fe97c8a261f5330069fb52903', 3798, 1851],
   'brand/official/cosmica-logo-light.png': ['0118c7840633be76e6713cdccab3ebe375d546d43e02cd03d93a1f44f477c3aa', 3798, 1851],
   'brand/official/cosmica-symbol.png': ['4187a11b8607df122f4b25bf01cbfd1cb2e43c38925dfcdd5a8f38fd2e46f6fb', 1080, 1080],
+  'brand/official/icons/cosmica-c-v10-16.png': ['a8d26a71f0c7765a6ca0c442c82a449618a6d8c0388a7d8ed1d79d294474b434', 16, 16],
+  'brand/official/icons/cosmica-c-v10-32.png': ['bb3707ce8c150840a7a2c22bb7c8efc1e119052f5e3f551da142607322146246', 32, 32],
+  'brand/official/icons/cosmica-c-v10-180.png': ['4f4b4ed5279aa0dd6523ca8bb677b5245c63102d381c157e717302e5ba13e862', 180, 180],
+  'brand/official/icons/cosmica-c-v10-192.png': ['3174a89d5803516c6389763f9cd13bd000cb1df1dc447a82bc9b6df3d37b6ea9', 192, 192],
+  'brand/official/icons/cosmica-c-v10-512.png': ['ebcadd0f4bccf6aa251443301a60c6cec21c124264599cdc54af7d4a2d901b1a', 512, 512],
   'brand/official/cover-facebook.png': ['cc2ed6cfaf2e3094b54c79fd6140f166f10131efa4391e5f316b2e7113b396c9', 1640, 624],
   'brand/official/cover-x.png': ['9a29bfeb48f832788a0dc7cbe6603b15e4a81e9d84ddd6e7f2a28e1536873f71', 1500, 500],
 };
@@ -22,6 +27,11 @@ const requiredFiles = [
   'marketing/brand-v2.css',
   'scripts/sync-brand-markup.mjs',
   'brand/official/README.md',
+  'brand/official/icons/favicon-c-v10.ico',
+  'favicon.ico',
+  'site.webmanifest',
+  'plus.html',
+  'marketing/plus.css',
 ];
 
 for (const relativePath of requiredFiles) {
@@ -47,6 +57,13 @@ for (const [relativePath, [expectedHash, width, height]] of Object.entries(offic
   if (sha256(file) !== expectedHash) errors.push(`${relativePath} no coincide con la entrega oficial`);
 }
 
+for (const relativePath of ['brand/official/icons/favicon-c-v10.ico', 'favicon.ico']) {
+  const absolutePath = path.join(root, relativePath);
+  if (fs.existsSync(absolutePath) && sha256(fs.readFileSync(absolutePath)) !== 'b310239ce106f4fcc3162fd04f6c3aad2ea1f9a4ae2eef843dbd3b319dd334a4') {
+    errors.push(`${relativePath} no coincide con la C oficial versionada`);
+  }
+}
+
 const publicFiles = fs
   .readdirSync(root, { withFileTypes: true })
   .filter(entry => entry.isFile() && entry.name.endsWith('.html'))
@@ -58,7 +75,7 @@ for (const relativePath of publicFiles) {
   for (const token of [
     '/brand/v2/',
     'cosmica-logo.webp',
-    'favicon.ico',
+    '/favicon.ico',
     'apple-touch-icon.png',
     '🚀',
     '👨‍🚀',
@@ -71,9 +88,12 @@ for (const relativePath of publicFiles) {
   }
 
   for (const requiredHead of [
-    '/brand/official/cosmica-symbol.png?v=9',
-    '/brand/official/avatar-light.png?v=9',
-    '/marketing/brand-v2.css?v=9',
+    '/brand/official/icons/cosmica-c-v10-16.png',
+    '/brand/official/icons/cosmica-c-v10-32.png',
+    '/brand/official/icons/favicon-c-v10.ico',
+    '/brand/official/icons/cosmica-c-v10-180.png',
+    '/site.webmanifest?v=10',
+    '/marketing/brand-v2.css?v=10',
     '/marketing/brand-v2.js',
   ]) {
     if (!source.includes(requiredHead)) errors.push(`${relativePath} no contiene ${requiredHead}`);
@@ -84,10 +104,10 @@ for (const relativePath of publicFiles) {
       errors.push(`${relativePath} no usa la firma oficial completa`);
     }
   }
-  if (source.includes('property="og:image"') && !source.includes('/brand/official/cover-facebook.png?v=9')) {
+  if (source.includes('property="og:image"') && !source.includes('/brand/official/cover-facebook.png?v=10')) {
     errors.push(`${relativePath} no usa la portada oficial de Facebook`);
   }
-  if (source.includes('name="twitter:image"') && !source.includes('/brand/official/cover-x.png?v=9')) {
+  if (source.includes('name="twitter:image"') && !source.includes('/brand/official/cover-x.png?v=10')) {
     errors.push(`${relativePath} no usa la portada oficial de X`);
   }
 }
@@ -107,15 +127,17 @@ const contracts = {
   ],
   'marketing/brand-v2.js': [
     "const BRAND_ROOT = '/brand/official'",
-    "const BRAND_VERSION = '9'",
+    "const BRAND_VERSION = '10'",
     'cosmica-logo-${variant}.png',
-    'cosmica-symbol.png',
-    'avatar-light.png',
+    'cosmica-c-v10-16.png',
+    'cosmica-c-v10-180.png',
+    'site.webmanifest',
   ],
   'scripts/sync-brand-markup.mjs': [
-    "const BRAND_VERSION = '9'",
+    "const BRAND_VERSION = '10'",
     '/brand/official/cosmica-logo-${variant}.png',
-    '/brand/official/cosmica-symbol.png',
+    'cosmica-c-v10-16.png',
+    'favicon-c-v10.ico',
     '/brand/official/cover-facebook.png?v=${BRAND_VERSION}',
   ],
   'brand/official/README.md': [
@@ -141,7 +163,6 @@ for (const retiredFile of [
   'cosmica-logo.datauri.txt',
   'cosmica-logo.png',
   'cosmica-logo.webp',
-  'favicon.ico',
   'icon-512.png',
   'new_logo.png',
   'preview.jpg',

@@ -1,6 +1,7 @@
 (() => {
   const BRAND_ROOT = '/brand/official';
-  const BRAND_VERSION = '9';
+  const BRAND_VERSION = '10';
+  const ICON_ROOT = `${BRAND_ROOT}/icons`;
   const STYLESHEET = '/marketing/brand-v2.css';
 
   if (!document.querySelector(`link[href^="${STYLESHEET}"]`)) {
@@ -47,19 +48,25 @@
   });
 
   document
-    .querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]')
+    .querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"]')
     .forEach(icon => icon.remove());
 
-  const favicon = document.createElement('link');
-  favicon.rel = 'icon';
-  favicon.type = 'image/png';
-  favicon.href = `${BRAND_ROOT}/cosmica-symbol.png?v=${BRAND_VERSION}`;
-  document.head.appendChild(favicon);
+  for (const icon of [
+    { rel: 'icon', type: 'image/png', sizes: '16x16', href: `${ICON_ROOT}/cosmica-c-v10-16.png` },
+    { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${ICON_ROOT}/cosmica-c-v10-32.png` },
+    { rel: 'icon', type: 'image/x-icon', href: `${ICON_ROOT}/favicon-c-v10.ico` },
+    { rel: 'apple-touch-icon', sizes: '180x180', href: `${ICON_ROOT}/cosmica-c-v10-180.png` },
+    { rel: 'manifest', href: `/site.webmanifest?v=${BRAND_VERSION}` },
+  ]) {
+    const link = document.createElement('link');
+    Object.entries(icon).forEach(([name, value]) => link.setAttribute(name, value));
+    document.head.appendChild(link);
+  }
 
-  const appleIcon = document.createElement('link');
-  appleIcon.rel = 'apple-touch-icon';
-  appleIcon.href = `${BRAND_ROOT}/avatar-light.png?v=${BRAND_VERSION}`;
-  document.head.appendChild(appleIcon);
+  const themeColor = document.querySelector('meta[name="theme-color"]') ?? document.createElement('meta');
+  themeColor.setAttribute('name', 'theme-color');
+  themeColor.setAttribute('content', '#0F121A');
+  if (!themeColor.parentNode) document.head.appendChild(themeColor);
 
   const applicationName = document.querySelector('meta[name="application-name"]') ?? document.createElement('meta');
   applicationName.setAttribute('name', 'application-name');
