@@ -104,7 +104,7 @@ update('asistencia.html', source => source.replace(
 update('generar-provincias.js', source => {
   let output = source;
   output = output.replace(
-    /\s*sameAs:\s*\[[^\]]*\]\s*/,
+    /\s*(?:email:\s*['"][^'"]+['"],\s*)*sameAs:\s*\[[^\]]*\]\s*/,
     `\n  email: '${EMAIL}',\n  sameAs: ['${FACEBOOK_URL}','${INSTAGRAM_URL}','${X_URL}','${THREADS_URL}']\n`
   );
   return output;

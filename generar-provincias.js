@@ -19,7 +19,6 @@ const provider = {
     addressCountry: 'AR'
   },
   email: 'hola@cosmica.ar',
-  email: 'hola@cosmica.ar',
   sameAs: ['https://www.facebook.com/somoscosmica','https://www.instagram.com/somoscosmica.ar','https://x.com/somoscosmica','https://www.threads.net/@somoscosmica.ar']
 };
 
