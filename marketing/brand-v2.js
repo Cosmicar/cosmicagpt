@@ -13,6 +13,27 @@
 
   document.documentElement.classList.add('cosmica-brand-official');
 
+  const plusHeader = document.querySelector('.plus-header');
+  if (plusHeader) {
+    const plusHeaderFix = document.createElement('style');
+    plusHeaderFix.dataset.cosmicaPlusHeaderFix = 'true';
+    plusHeaderFix.textContent = `
+      body { padding-top: 76px; }
+      .plus-header {
+        position: fixed !important;
+        inset: 0 0 auto !important;
+        width: 100%;
+        background: #0F121A !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+      }
+      @media (max-width: 590px) {
+        body { padding-top: 68px; }
+      }
+    `;
+    document.head.appendChild(plusHeaderFix);
+  }
+
   document.querySelectorAll('.brand').forEach(brand => {
     const isDarkContext = Boolean(
       brand.closest('.footer, [data-brand-theme="dark"], .dark')
