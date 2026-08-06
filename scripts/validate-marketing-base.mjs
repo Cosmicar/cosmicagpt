@@ -126,7 +126,7 @@ for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fai
 
 const plusPatterns = [
   /<link rel="canonical" href="https:\/\/cosmica\.ar\/plus">/,
-  /href="\/marketing\/plus\.css"/,
+  /href="\/marketing\/plus\.css(?:\?v=[^"]+)?"/,
   /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
   /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
   /href="\/site\.webmanifest\?v=10"/,
