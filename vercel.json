@@ -4,6 +4,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/serviciotecnico",
+      "destination": "/serviciotecnico.html"
+    },
+    {
       "source": "/planes",
       "destination": "/planes.html"
     },
