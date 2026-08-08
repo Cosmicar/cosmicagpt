@@ -26,6 +26,7 @@ const requiredFiles = [
   'index.html',
   'asistencia.html',
   'plus.html',
+  'planes.html',
   'template-provincia.html',
   'template-cobertura.html',
   'soporte-tecnico-remoto-argentina.html',
@@ -43,6 +44,7 @@ const requiredFiles = [
   'marketing/province.css',
   'marketing/province.js',
   'marketing/plus.css',
+  'marketing/planes.css',
   'marketing/hero-client.webp',
   'marketing/problem-client.webp',
   'marketing/review-client.webp',
@@ -81,18 +83,22 @@ const extract = (html, pattern) => html.match(pattern)?.[1]?.trim() || '';
 const indexHtml = read('index.html');
 const assistanceHtml = read('asistencia.html');
 const plusHtml = read('plus.html');
+const plansHtml = read('planes.html');
 const homeJs = read('marketing/home.js');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
 balancedDocument(plusHtml, 'plus.html');
+balancedDocument(plansHtml, 'planes.html');
 
 const currentPlanPrices = ['$24.900', '$35.900', '$49.900'];
 const retiredPlanPrices = ['$19.900', '$29.900', '$39.900'];
 for (const price of currentPlanPrices) {
   if (!indexHtml.includes(price)) fail(`index.html: falta el precio vigente ${price}`);
+  if (!plansHtml.includes(price)) fail(`planes.html: falta el precio vigente ${price}`);
 }
 for (const price of retiredPlanPrices) {
   if (indexHtml.includes(price)) fail(`index.html: conserva el precio anterior ${price}`);
+  if (plansHtml.includes(price)) fail(`planes.html: conserva el precio anterior ${price}`);
 }
 
 const indexPatterns = [
@@ -137,6 +143,27 @@ const plusPatterns = [
 ];
 for (const pattern of plusPatterns) if (!pattern.test(plusHtml)) fail(`plus.html: falta ${pattern}`);
 
+const plansPatterns = [
+  /<link rel="canonical" href="https:\/\/cosmica\.ar\/planes">/,
+  /href="\/marketing\/planes\.css(?:\?v=[^"]+)?"/,
+  /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
+  /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
+  /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
+  /href="\/site\.webmanifest\?v=10"/,
+  /id="bronce"/,
+  /id="oro"/,
+  /id="platinum"/,
+  /Windows 11/,
+  /Garantía de 90 días/,
+  /"@type":"Service"/,
+  /"@type":"FAQPage"/,
+  /5493883298736/
+];
+for (const pattern of plansPatterns) if (!pattern.test(plansHtml)) fail(`planes.html: falta ${pattern}`);
+
+if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de planes con /planes');
+if (!homeJs.includes('Ver qué incluye cada plan')) fail('home.js: falta CTA hacia el detalle completo de planes');
+
 const manifest = JSON.parse(read('site.webmanifest'));
 if (manifest.theme_color !== '#0F121A' || manifest.background_color !== '#0F121A') fail('site.webmanifest: colores de marca incorrectos');
 for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'cosmica-c-v10-512.png']]) {
@@ -146,6 +173,9 @@ for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'c
 const vercelConfig = JSON.parse(read('vercel.json'));
 if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/plus' && rewrite.destination === '/plus.html')) {
   fail('vercel.json: falta la reescritura directa de /plus');
+}
+if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/planes' && rewrite.destination === '/planes.html')) {
+  fail('vercel.json: falta la reescritura directa de /planes');
 }
 
 if (!homeJs.includes("coverage.id = 'cobertura-nacional'")) fail('home.js: no inserta el directorio provincial');
@@ -200,9 +230,10 @@ for (const province of provinces) {
 
 const sitemap = read('sitemap.xml');
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-if (sitemapUrls.length !== 28) fail(`sitemap: se esperaban 28 URLs y hay ${sitemapUrls.length}`);
-if ((sitemap.match(/<lastmod>/g) || []).length !== 28) fail('sitemap: faltan lastmod');
+if (sitemapUrls.length !== 29) fail(`sitemap: se esperaban 29 URLs y hay ${sitemapUrls.length}`);
+if ((sitemap.match(/<lastmod>/g) || []).length !== 29) fail('sitemap: faltan lastmod');
 if (!sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: falta Cósmica+');
+if (!sitemapUrls.includes('https://cosmica.ar/planes')) fail('sitemap: falta la landing de planes');
 for (const province of provinces) {
   const url = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
   if (!sitemapUrls.includes(url)) fail(`sitemap: falta ${province.name}`);
@@ -223,4 +254,4 @@ if (failMessages.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ Home, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);
+console.log(`\n✓ Home, planes, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);

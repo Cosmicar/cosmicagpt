@@ -2,4 +2,5 @@
 
 Soporte técnico remoto para computadoras en Argentina.
 Base física: Ramírez de Velazco 111, San Salvador de Jujuy.
+Planes de servicio: https://cosmica.ar/planes
 Cobertura nacional: https://cosmica.ar/soporte-tecnico-remoto-argentina.html

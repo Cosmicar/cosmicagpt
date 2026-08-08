@@ -8,8 +8,14 @@ on:
       - generar-provincias.js
       - template-provincia.html
       - template-cobertura.html
+      - planes.html
+      - marketing/home.js
+      - marketing/planes.css
+      - vercel.json
+      - sitemap.xml
       - scripts/sync-brand-contacts.mjs
       - scripts/validate-marketing.mjs
+      - scripts/validate-marketing-base.mjs
       - .github/workflows/generate-provincial-seo.yml
   workflow_dispatch:
 
