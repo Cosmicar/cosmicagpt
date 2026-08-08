@@ -55,8 +55,18 @@
   const navLinks = document.getElementById('navLinks');
   const status = document.getElementById('serviceStatus');
   const problemNavLink = navLinks?.querySelector('a[href="#problemas"]');
+  const plansNavLink = navLinks?.querySelector('a[href="#planes"]');
 
   if (problemNavLink) problemNavLink.textContent = 'Servicios';
+  if (plansNavLink) plansNavLink.href = '/planes';
+
+  const plansGrid = document.querySelector('#planes .plans');
+  if (plansGrid && !document.querySelector('.plans-detail-link')) {
+    const detailLink = document.createElement('div');
+    detailLink.className = 'center step-actions plans-detail-link';
+    detailLink.innerHTML = '<a class="btn btn-secondary" href="/planes">Ver qué incluye cada plan</a>';
+    plansGrid.after(detailLink);
+  }
 
   const updateHeader = () => header?.classList.toggle('scrolled', window.scrollY > 12);
   updateHeader();
