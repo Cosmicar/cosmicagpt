@@ -4,6 +4,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/planes",
+      "destination": "/planes.html"
+    },
+    {
       "source": "/plus",
       "destination": "/plus.html"
     },
