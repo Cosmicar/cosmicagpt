@@ -27,6 +27,7 @@ const requiredFiles = [
   'asistencia.html',
   'plus.html',
   'planes.html',
+  'serviciotecnico.html',
   'template-provincia.html',
   'template-cobertura.html',
   'soporte-tecnico-remoto-argentina.html',
@@ -45,6 +46,8 @@ const requiredFiles = [
   'marketing/province.js',
   'marketing/plus.css',
   'marketing/planes.css',
+  'marketing/serviciotecnico.css',
+  'marketing/serviciotecnico.js',
   'marketing/hero-client.webp',
   'marketing/problem-client.webp',
   'marketing/review-client.webp',
@@ -84,11 +87,13 @@ const indexHtml = read('index.html');
 const assistanceHtml = read('asistencia.html');
 const plusHtml = read('plus.html');
 const plansHtml = read('planes.html');
+const localServiceHtml = read('serviciotecnico.html');
 const homeJs = read('marketing/home.js');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
 balancedDocument(plusHtml, 'plus.html');
 balancedDocument(plansHtml, 'planes.html');
+balancedDocument(localServiceHtml, 'serviciotecnico.html');
 
 const currentPlanPrices = ['$24.900', '$35.900', '$49.900'];
 const retiredPlanPrices = ['$19.900', '$29.900', '$39.900'];
@@ -161,8 +166,26 @@ const plansPatterns = [
 ];
 for (const pattern of plansPatterns) if (!pattern.test(plansHtml)) fail(`planes.html: falta ${pattern}`);
 
+const localServicePatterns = [
+  /<link rel="canonical" href="https:\/\/cosmica\.ar\/serviciotecnico">/,
+  /href="\/marketing\/serviciotecnico\.css(?:\?v=[^"]+)?"/,
+  /src="\/marketing\/serviciotecnico\.js(?:\?v=[^"]+)?"/,
+  /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
+  /Ramírez de Velazco 111/,
+  /16:00 — 22:00/,
+  /09:00 — 13:00/,
+  /PC, notebooks y equipos All in One/,
+  /Insumos por encargo/,
+  /microelectrónica/,
+  /"@type":"ComputerRepair"/,
+  /"@type":"FAQPage"/,
+  /5493883298736/
+];
+for (const pattern of localServicePatterns) if (!pattern.test(localServiceHtml)) fail(`serviciotecnico.html: falta ${pattern}`);
+
 if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de planes con /planes');
 if (!homeJs.includes('Ver qué incluye cada plan')) fail('home.js: falta CTA hacia el detalle completo de planes');
+if (!homeJs.includes('/serviciotecnico')) fail('home.js: falta enlace al servicio técnico presencial de Jujuy');
 
 const manifest = JSON.parse(read('site.webmanifest'));
 if (manifest.theme_color !== '#0F121A' || manifest.background_color !== '#0F121A') fail('site.webmanifest: colores de marca incorrectos');
@@ -176,6 +199,9 @@ if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/plus' && rewrit
 }
 if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/planes' && rewrite.destination === '/planes.html')) {
   fail('vercel.json: falta la reescritura directa de /planes');
+}
+if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/serviciotecnico' && rewrite.destination === '/serviciotecnico.html')) {
+  fail('vercel.json: falta la reescritura directa de /serviciotecnico');
 }
 
 if (!homeJs.includes("coverage.id = 'cobertura-nacional'")) fail('home.js: no inserta el directorio provincial');
@@ -230,16 +256,17 @@ for (const province of provinces) {
 
 const sitemap = read('sitemap.xml');
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-if (sitemapUrls.length !== 29) fail(`sitemap: se esperaban 29 URLs y hay ${sitemapUrls.length}`);
-if ((sitemap.match(/<lastmod>/g) || []).length !== 29) fail('sitemap: faltan lastmod');
+if (sitemapUrls.length !== 30) fail(`sitemap: se esperaban 30 URLs y hay ${sitemapUrls.length}`);
+if ((sitemap.match(/<lastmod>/g) || []).length !== 30) fail('sitemap: faltan lastmod');
 if (!sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: falta Cósmica+');
 if (!sitemapUrls.includes('https://cosmica.ar/planes')) fail('sitemap: falta la landing de planes');
+if (!sitemapUrls.includes('https://cosmica.ar/serviciotecnico')) fail('sitemap: falta la landing de servicio técnico en Jujuy');
 for (const province of provinces) {
   const url = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
   if (!sitemapUrls.includes(url)) fail(`sitemap: falta ${province.name}`);
 }
 
-for (const file of ['marketing/home.js', 'marketing/assistance.js', 'marketing/province.js', 'generar-provincias.js']) {
+for (const file of ['marketing/home.js', 'marketing/assistance.js', 'marketing/province.js', 'marketing/serviciotecnico.js', 'generar-provincias.js']) {
   const source = read(file);
   try {
     new Function(source);
@@ -254,4 +281,4 @@ if (failMessages.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ Home, planes, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);
+console.log(`\n✓ Home, planes, servicio técnico local, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);

@@ -38,7 +38,7 @@
           <div>
             <span class="eyebrow">Cobertura nacional</span>
             <h2 id="coverage-title">Soporte técnico remoto en las <span class="gradient-text">24 jurisdicciones de Argentina.</span></h2>
-            <p>Nuestra base física está en San Salvador de Jujuy. En el resto del país atendemos por conexión remota, sin inventar sucursales.</p>
+            <p>Nuestra base física está en San Salvador de Jujuy. Si estás cerca, conocé nuestro <a href="/serviciotecnico">servicio técnico presencial en Jujuy</a>. En el resto del país atendemos por conexión remota, sin inventar sucursales.</p>
           </div>
           <a href="/soporte-tecnico-remoto-argentina.html">Ver cómo funciona la cobertura →</a>
         </div>

@@ -76,9 +76,9 @@ const coverageBreadcrumb = {'@context':'https://schema.org','@type':'BreadcrumbL
 const coverageHtml = replaceTokens(coverageTemplate,{'{{ALL_PROVINCE_LINKS}}':allProvinceLinks,'{{HUB_SCHEMA}}':jsonLd(coverageSchema),'{{HUB_BREADCRUMB}}':jsonLd(coverageBreadcrumb)});
 fs.writeFileSync(path.join(root,'soporte-tecnico-remoto-argentina.html'),minifyHtml(coverageHtml));
 
-const urls = [['/','1.0'],['/plus','0.9'],['/planes','0.9'],['/asistencia.html','0.8'],['/soporte-tecnico-remoto-argentina.html','0.9'],...provinces.map(province => [`/pc-lenta-${province.slug}.html`,'0.7'])];
+const urls = [['/','1.0'],['/plus','0.9'],['/planes','0.9'],['/serviciotecnico','0.9'],['/asistencia.html','0.8'],['/soporte-tecnico-remoto-argentina.html','0.9'],...provinces.map(province => [`/pc-lenta-${province.slug}.html`,'0.7'])];
 const sitemap = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',...urls.map(([url,priority]) => `  <url><loc>https://cosmica.ar${url}</loc><lastmod>${updatedAt}</lastmod><priority>${priority}</priority></url>`),'</urlset>',''].join('\n');
 fs.writeFileSync(path.join(root,'sitemap.xml'),sitemap);
 fs.writeFileSync(path.join(root,'robots.txt'),'User-agent: *\nAllow: /\n\nSitemap: https://cosmica.ar/sitemap.xml\n');
-fs.writeFileSync(path.join(root,'llms.txt'),'# Cósmica\n\nSoporte técnico remoto para computadoras en Argentina.\nBase física: Ramírez de Velazco 111, San Salvador de Jujuy.\nPlanes de servicio: https://cosmica.ar/planes\nCobertura nacional: https://cosmica.ar/soporte-tecnico-remoto-argentina.html\n');
+fs.writeFileSync(path.join(root,'llms.txt'),'# Cósmica\n\nSoporte técnico remoto para computadoras en Argentina.\nBase física: Ramírez de Velazco 111, San Salvador de Jujuy.\nServicio técnico presencial en Jujuy: https://cosmica.ar/serviciotecnico\nPlanes de servicio: https://cosmica.ar/planes\nCobertura nacional: https://cosmica.ar/soporte-tecnico-remoto-argentina.html\n');
 console.log(`✓ Generadas ${provinces.length} páginas provinciales, el directorio nacional y el sitemap.`);
