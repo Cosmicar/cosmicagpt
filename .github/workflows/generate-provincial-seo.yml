@@ -9,8 +9,12 @@ on:
       - template-provincia.html
       - template-cobertura.html
       - planes.html
+      - serviciotecnico.html
       - marketing/home.js
+      - marketing/coverage.css
       - marketing/planes.css
+      - marketing/serviciotecnico.css
+      - marketing/serviciotecnico.js
       - vercel.json
       - sitemap.xml
       - scripts/sync-brand-contacts.mjs
