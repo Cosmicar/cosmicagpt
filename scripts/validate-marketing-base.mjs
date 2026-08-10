@@ -119,6 +119,14 @@ const indexPatterns = [
   /id="problemas"/,
   /id="planes"/,
   /id="seguridad"/,
+  /Mercurio/,
+  /Venus/,
+  /Planeta X/,
+  /src="\/brand\/services\/mercurio\.svg"/,
+  /src="\/brand\/services\/venus\.svg"/,
+  /src="\/brand\/services\/planeta-x\.svg"/,
+  /USD 19,90/,
+  /¿Tenés un negocio\? Eso es Cósmica\+\./,
   /https:\/\/app\.cosmica\.ar/,
   /5493883298736/
 ];
@@ -199,8 +207,8 @@ const localServicePatterns = [
 ];
 for (const pattern of localServicePatterns) if (!pattern.test(localServiceHtml)) fail(`serviciotecnico.html: falta ${pattern}`);
 
-if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de planes con /planes');
-if (!homeJs.includes('Ver qué incluye cada plan')) fail('home.js: falta CTA hacia el detalle completo de planes');
+if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de servicios con /planes');
+if (!homeJs.includes('Ver Mercurio, Venus y Planeta X en detalle')) fail('home.js: falta CTA hacia el detalle completo de servicios');
 if (!homeJs.includes('/serviciotecnico')) fail('home.js: falta enlace al servicio técnico presencial de Jujuy');
 
 const manifest = JSON.parse(read('site.webmanifest'));
