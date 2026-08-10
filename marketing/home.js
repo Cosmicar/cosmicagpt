@@ -60,7 +60,7 @@
   if (problemNavLink) problemNavLink.textContent = 'Servicios';
   if (plansNavLink) {
     plansNavLink.href = '/planes';
-    plansNavLink.textContent = 'Mercurio · Venus · X';
+    plansNavLink.textContent = 'Mercurio · Venus · Planeta X';
   }
 
   const plansGrid = document.querySelector('#planes .plans');
