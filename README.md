@@ -21,7 +21,9 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 
 - Home de servicios técnicos.
 - Flujo de asistencia remota.
-- Planes y contacto por WhatsApp.
+- Servicios por intervención **Mercurio**, **Venus** y **Planeta X** en `/planes`.
+- Membresía para negocios **Cósmica+** en `/plus`, separada de las intervenciones técnicas, con precio base de referencia **USD 19,90/mes** y conversión a pesos informada al contratar.
+- Contacto por WhatsApp.
 - Directorio nacional y páginas provinciales.
 - SEO, sitemap y datos estructurados.
 

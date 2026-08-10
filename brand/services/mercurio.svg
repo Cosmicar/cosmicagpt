@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Mercurio</title>
+  <desc id="desc">Representación decorativa oscura y rocosa de Mercurio.</desc>
+  <defs>
+    <radialGradient id="surface" cx="34%" cy="28%" r="72%">
+      <stop offset="0" stop-color="#b8bbc0"/>
+      <stop offset=".42" stop-color="#777b83"/>
+      <stop offset=".78" stop-color="#424751"/>
+      <stop offset="1" stop-color="#171c25"/>
+    </radialGradient>
+    <radialGradient id="shade" cx="28%" cy="25%" r="80%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/>
+      <stop offset=".6" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0f121a" stop-opacity=".72"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <clipPath id="planet"><circle cx="160" cy="160" r="118"/></clipPath>
+  </defs>
+  <circle cx="160" cy="174" r="120" fill="#000" opacity=".32" filter="url(#shadow)"/>
+  <g clip-path="url(#planet)">
+    <circle cx="160" cy="160" r="118" fill="url(#surface)"/>
+    <g fill="#242a34" opacity=".42">
+      <circle cx="112" cy="106" r="19"/><circle cx="202" cy="92" r="13"/><circle cx="224" cy="150" r="25"/>
+      <circle cx="137" cy="181" r="14"/><circle cx="83" cy="176" r="10"/><circle cx="187" cy="221" r="20"/>
+      <circle cx="119" cy="236" r="8"/><circle cx="229" cy="220" r="9"/>
+    </g>
+    <g fill="none" stroke="#d9d4cf" stroke-opacity=".14" stroke-width="4">
+      <circle cx="112" cy="106" r="23"/><circle cx="224" cy="150" r="30"/><circle cx="187" cy="221" r="24"/>
+    </g>
+    <circle cx="160" cy="160" r="118" fill="url(#shade)"/>
+  </g>
+</svg>

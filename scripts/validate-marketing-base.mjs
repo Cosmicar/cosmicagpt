@@ -53,6 +53,9 @@ const requiredFiles = [
   'marketing/review-client.webp',
   'marketing/assistance-client.webp',
   'marketing/assistance-technician.webp',
+  'brand/services/mercurio.svg',
+  'brand/services/venus.svg',
+  'brand/services/planeta-x.svg',
   'site.webmanifest',
   'favicon.ico',
   'brand/official/icons/cosmica-c-v10-16.png',
@@ -116,6 +119,14 @@ const indexPatterns = [
   /id="problemas"/,
   /id="planes"/,
   /id="seguridad"/,
+  /Mercurio/,
+  /Venus/,
+  /Planeta X/,
+  /src="\/brand\/services\/mercurio\.svg"/,
+  /src="\/brand\/services\/venus\.svg"/,
+  /src="\/brand\/services\/planeta-x\.svg"/,
+  /USD 19,90/,
+  /¿Tenés un negocio\? Eso es Cósmica\+\./,
   /https:\/\/app\.cosmica\.ar/,
   /5493883298736/
 ];
@@ -142,11 +153,16 @@ const plusPatterns = [
   /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
   /href="\/site\.webmanifest\?v=10"/,
   /Cósmica App Pro incluida/,
-  /\$49\.000/,
-  /https:\/\/cafecito\.app\/cosmica/,
+  /USD 19,90/,
+  /ARS \$30\.113/,
+  /id="conversion"/,
+  /BCRA/,
+  /Mercurio, Venus y Planeta X/,
   /5493883298736/
 ];
 for (const pattern of plusPatterns) if (!pattern.test(plusHtml)) fail(`plus.html: falta ${pattern}`);
+if (/\$49\.900\s*(?:al|\/)?\s*mes/i.test(plusHtml)) fail('plus.html: conserva el precio mensual anterior de Cósmica+');
+if (/cafecito\.app\/cosmica/i.test(plusHtml)) fail('plus.html: conserva un checkout directo con precio potencialmente desactualizado');
 
 const plansPatterns = [
   /<link rel="canonical" href="https:\/\/cosmica\.ar\/planes">/,
@@ -155,9 +171,14 @@ const plansPatterns = [
   /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
   /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
   /href="\/site\.webmanifest\?v=10"/,
-  /id="bronce"/,
-  /id="oro"/,
-  /id="platinum"/,
+  /id="mercurio"/,
+  /id="venus"/,
+  /id="planeta-x"/,
+  /src="\/brand\/services\/mercurio\.svg"/,
+  /src="\/brand\/services\/venus\.svg"/,
+  /src="\/brand\/services\/planeta-x\.svg"/,
+  /Cósmica\+ no es el cuarto servicio/,
+  /USD 19,90/,
   /Windows 11/,
   /Garantía de 90 días/,
   /"@type":"Service"/,
@@ -165,6 +186,9 @@ const plansPatterns = [
   /5493883298736/
 ];
 for (const pattern of plansPatterns) if (!pattern.test(plansHtml)) fail(`planes.html: falta ${pattern}`);
+for (const retiredName of ['Bronce', 'Oro', 'Platinum']) {
+  if (plansHtml.includes(retiredName)) fail(`planes.html: conserva el nombre anterior ${retiredName}`);
+}
 
 const localServicePatterns = [
   /<link rel="canonical" href="https:\/\/cosmica\.ar\/serviciotecnico">/,
@@ -183,8 +207,8 @@ const localServicePatterns = [
 ];
 for (const pattern of localServicePatterns) if (!pattern.test(localServiceHtml)) fail(`serviciotecnico.html: falta ${pattern}`);
 
-if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de planes con /planes');
-if (!homeJs.includes('Ver qué incluye cada plan')) fail('home.js: falta CTA hacia el detalle completo de planes');
+if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza la navegación de servicios con /planes');
+if (!homeJs.includes('Ver Mercurio, Venus y Planeta X en detalle')) fail('home.js: falta CTA hacia el detalle completo de servicios');
 if (!homeJs.includes('/serviciotecnico')) fail('home.js: falta enlace al servicio técnico presencial de Jujuy');
 
 const manifest = JSON.parse(read('site.webmanifest'));
@@ -281,4 +305,4 @@ if (failMessages.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ Home, planes, servicio técnico local, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);
+console.log(`\n✓ Home, servicios, Cósmica+, servicio técnico local, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);

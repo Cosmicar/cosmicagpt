@@ -58,13 +58,16 @@
   const plansNavLink = navLinks?.querySelector('a[href="#planes"]');
 
   if (problemNavLink) problemNavLink.textContent = 'Servicios';
-  if (plansNavLink) plansNavLink.href = '/planes';
+  if (plansNavLink) {
+    plansNavLink.href = '/planes';
+    plansNavLink.textContent = 'Mercurio · Venus · Planeta X';
+  }
 
   const plansGrid = document.querySelector('#planes .plans');
   if (plansGrid && !document.querySelector('.plans-detail-link')) {
     const detailLink = document.createElement('div');
     detailLink.className = 'center step-actions plans-detail-link';
-    detailLink.innerHTML = '<a class="btn btn-secondary" href="/planes">Ver qué incluye cada plan</a>';
+    detailLink.innerHTML = '<a class="btn btn-secondary" href="/planes">Ver Mercurio, Venus y Planeta X en detalle</a>';
     plansGrid.after(detailLink);
   }
 
