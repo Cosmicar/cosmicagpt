@@ -83,14 +83,400 @@
   background: var(--carmine) !important;
 }
 
+/*
+ * Capa editorial cósmica para la web pública.
+ * Se construye con CSS y reutiliza los SVG de servicios ya presentes para no
+ * agregar imágenes raster pesadas, JavaScript ni elementos que provoquen CLS.
+ */
+
+/* Home: hero cinematográfico sin convertir la marca completa en una estética espacial literal. */
+.header {
+  background: rgba(246, 243, 240, .94);
+  border-bottom-color: rgba(15, 18, 26, .08);
+  backdrop-filter: blur(16px);
+}
+
 .hero {
+  isolation: isolate;
+  color: var(--warm-white);
   background:
-    radial-gradient(circle at 14% 18%, rgba(225, 6, 58, .08), transparent 28%),
-    linear-gradient(180deg, #FBF9F7 0%, var(--warm-white) 72%, #fff 100%) !important;
+    radial-gradient(circle at 78% 22%, rgba(225, 6, 58, .24), transparent 28%),
+    radial-gradient(ellipse at 88% 58%, rgba(225, 6, 58, .13), transparent 34%),
+    radial-gradient(circle at 18% 8%, rgba(246, 243, 240, .06), transparent 24%),
+    linear-gradient(135deg, #0B0E14 0%, var(--obsidian) 44%, #141925 72%, #090C12 100%) !important;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .42;
+  background:
+    radial-gradient(circle, rgba(246, 243, 240, .58) 0 1px, transparent 1.25px) 0 0 / 92px 92px,
+    radial-gradient(circle, rgba(225, 6, 58, .48) 0 1px, transparent 1.2px) 46px 31px / 137px 137px;
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, .78) 58%, transparent 100%);
 }
 
 .hero::after {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  z-index: 0;
+  right: clamp(-250px, -15vw, -120px);
+  bottom: clamp(-370px, -26vw, -235px);
+  width: clamp(430px, 48vw, 720px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(225, 6, 58, .42);
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 32% 25%, rgba(246, 243, 240, .13), transparent 17%),
+    radial-gradient(circle at 44% 40%, #4B1827 0%, #24111A 33%, #10131B 66%, #06080D 100%);
+  box-shadow:
+    -38px -26px 90px rgba(225, 6, 58, .26),
+    0 0 0 12px rgba(225, 6, 58, .035),
+    0 0 0 58px rgba(225, 6, 58, .018);
+}
+
+.hero-grid { position: relative; z-index: 2; }
+.hero h1 { color: var(--warm-white); }
+.hero .hero-copy { color: rgba(246, 243, 240, .76); }
+.hero .hero-copy strong { color: #fff; }
+.hero .hero-tertiary { color: rgba(246, 243, 240, .72); }
+.hero .hero-proof { color: rgba(246, 243, 240, .66); }
+.hero .btn-secondary {
+  color: var(--warm-white);
+  background: rgba(246, 243, 240, .06);
+  border-color: rgba(246, 243, 240, .26);
+}
+.hero .btn-secondary:hover {
+  background: rgba(246, 243, 240, .12);
+  border-color: rgba(246, 243, 240, .4);
+}
+.hero .support-stage::before {
+  background: var(--carmine);
+  opacity: .2;
+}
+.hero .support-window {
+  border-color: rgba(246, 243, 240, .14);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, .4);
+}
+
+/* Home: los tres destinos reciben una atmósfera propia sin cargar nuevos recursos. */
+#planes.plans-bg {
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(225, 6, 58, .12), transparent 24%),
+    radial-gradient(circle at 88% 86%, rgba(225, 6, 58, .08), transparent 28%),
+    linear-gradient(180deg, #111620 0%, var(--obsidian) 100%) !important;
+}
+
+#planes.plans-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background:
+    radial-gradient(circle, rgba(246, 243, 240, .5) 0 1px, transparent 1.2px) 17px 12px / 116px 116px,
+    radial-gradient(circle, rgba(225, 6, 58, .45) 0 1px, transparent 1.2px) 66px 72px / 171px 171px;
+}
+
+#planes.plans-bg > .container { position: relative; z-index: 1; }
+#planes .title { color: var(--warm-white); }
+#planes .lead { color: rgba(246, 243, 240, .66); }
+#planes .plan {
+  overflow: hidden;
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 88% 6%, rgba(246, 243, 240, .055), transparent 22%),
+    rgba(24, 28, 37, .92);
+  border-color: rgba(246, 243, 240, .12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .24);
+}
+#planes .plan::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  right: -60px;
+  top: -70px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(225, 6, 58, .12), transparent 66%);
+  pointer-events: none;
+}
+#planes .plan > :not(img) { position: relative; z-index: 2; }
+#planes .plan img[src*="/brand/services/"] {
+  z-index: 1;
+  width: 116px !important;
+  height: 116px !important;
+  opacity: .92 !important;
+  filter: saturate(.92) drop-shadow(0 14px 24px rgba(0, 0, 0, .32));
+}
+#planes .plan.featured {
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 88% 8%, rgba(225, 6, 58, .15), transparent 25%),
+    linear-gradient(145deg, #211823, #10131A 68%);
+  border-color: rgba(225, 6, 58, .58);
+  box-shadow: 0 28px 76px rgba(225, 6, 58, .12), 0 24px 60px rgba(0, 0, 0, .28);
+}
+#planes .plan-desc,
+#planes .plan-note,
+#planes .plan-list li { color: rgba(246, 243, 240, .7); }
+#planes .price strong { color: #fff; }
+#planes .price span { color: rgba(246, 243, 240, .48); }
+#planes .plan .btn-secondary {
+  color: var(--warm-white);
+  background: transparent;
+  border-color: rgba(246, 243, 240, .22);
+}
+#planes .plan .btn-secondary:hover {
+  background: rgba(246, 243, 240, .08);
+  border-color: rgba(246, 243, 240, .38);
+}
+#planes .featured .btn-secondary {
+  color: var(--obsidian);
+  background: var(--warm-white);
+}
+#planes .app-strip {
+  position: relative;
+  overflow: hidden;
+  color: var(--warm-white);
+  border-color: rgba(225, 6, 58, .34);
+  background:
+    radial-gradient(circle at 9% 80%, rgba(225, 6, 58, .19), transparent 27%),
+    radial-gradient(circle at 88% 18%, rgba(246, 243, 240, .07), transparent 20%),
+    linear-gradient(135deg, #1B1420, #111620 62%, #0B0E14);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
+}
+#planes .app-strip::after {
+  content: "";
+  position: absolute;
+  right: -56px;
+  bottom: -84px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(225, 6, 58, .3);
+  border-radius: 50%;
+  box-shadow: 0 0 0 24px rgba(225, 6, 58, .035), 0 0 0 58px rgba(225, 6, 58, .018);
+  pointer-events: none;
+}
+#planes .app-strip > * { position: relative; z-index: 1; }
+#planes .app-strip p { color: rgba(246, 243, 240, .66); }
+#planes .app-strip .btn-secondary {
+  color: var(--warm-white);
+  background: transparent;
+  border-color: rgba(246, 243, 240, .24);
+}
+
+/* /planes: escenas cósmicas más expresivas sólo en la superficie comercial de los servicios. */
+.plans-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(225, 6, 58, .24), transparent 25%),
+    radial-gradient(ellipse at 92% 62%, rgba(225, 6, 58, .13), transparent 35%),
+    radial-gradient(circle, rgba(246, 243, 240, .4) 0 1px, transparent 1.2px) 14px 18px / 118px 118px,
+    linear-gradient(135deg, #090C12 0%, var(--obsidian) 48%, #151A25 100%) !important;
+}
+.plans-hero::before {
+  width: 5px;
+  background: var(--carmine);
+}
+.plans-hero::after {
+  right: -130px;
+  top: auto;
+  bottom: -300px;
+  width: 610px;
+  height: 610px;
+  border: 1px solid rgba(225, 6, 58, .48);
+  background:
+    radial-gradient(circle at 34% 28%, rgba(246, 243, 240, .13), transparent 18%),
+    radial-gradient(circle at 42% 38%, #54172A 0%, #25121C 36%, #0B0E14 72%);
+  box-shadow: -42px -28px 95px rgba(225, 6, 58, .24), 0 0 0 34px rgba(225, 6, 58, .025);
+  opacity: .88;
+}
+.plans-hero-grid { position: relative; z-index: 2; }
+.plans-hero-panel {
+  background: linear-gradient(145deg, rgba(225, 6, 58, .085), rgba(246, 243, 240, .04));
+  backdrop-filter: blur(10px);
+}
+
+#detalle {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--warm-white);
+  background:
+    radial-gradient(circle at 12% 2%, rgba(225, 6, 58, .1), transparent 24%),
+    radial-gradient(circle at 90% 98%, rgba(225, 6, 58, .08), transparent 28%),
+    linear-gradient(180deg, #121722, var(--obsidian));
+}
+#detalle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .18;
+  background:
+    radial-gradient(circle, rgba(246, 243, 240, .5) 0 1px, transparent 1.2px) 18px 31px / 141px 141px,
+    radial-gradient(circle, rgba(225, 6, 58, .42) 0 1px, transparent 1.2px) 76px 10px / 191px 191px;
+}
+#detalle > .plans-container { position: relative; z-index: 1; }
+#detalle .plans-heading h2 { color: var(--warm-white); }
+#detalle .plans-heading p { color: rgba(246, 243, 240, .64); }
+#detalle .service-card {
+  color: var(--warm-white);
+  border-color: rgba(246, 243, 240, .12);
+  background:
+    radial-gradient(circle at 88% 9%, rgba(246, 243, 240, .05), transparent 25%),
+    rgba(24, 28, 37, .9);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .28);
+}
+#detalle .service-card::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  right: -58px;
+  top: -64px;
+  width: 235px;
+  height: 235px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 212, 207, .12), transparent 68%);
+  pointer-events: none;
+}
+#detalle #venus::before { background: radial-gradient(circle, rgba(246, 243, 240, .14), transparent 68%); }
+#detalle #planeta-x::before { background: radial-gradient(circle, rgba(225, 6, 58, .2), transparent 68%); }
+#detalle .service-card > * { position: relative; z-index: 2; }
+#detalle .service-planet {
+  z-index: 1;
+  width: 148px;
+  height: 148px;
+  top: 8px;
+  right: 4px;
+  opacity: .98;
+  filter: saturate(.95) drop-shadow(0 18px 28px rgba(0, 0, 0, .38));
+}
+#detalle .service-card header { padding-right: 102px; }
+#detalle .service-card header > p,
+#detalle .service-price span,
+#detalle .service-list li,
+#detalle .service-boundary { color: rgba(246, 243, 240, .68); }
+#detalle .service-fit {
+  color: rgba(246, 243, 240, .66);
+  background: rgba(246, 243, 240, .055);
+  border: 1px solid rgba(246, 243, 240, .07);
+}
+#detalle .service-fit b,
+#detalle .service-boundary b { color: var(--warm-white); }
+#detalle .service-boundary { border-color: rgba(246, 243, 240, .12); }
+#detalle .plans-button-secondary {
+  color: var(--warm-white);
+  background: rgba(246, 243, 240, .06);
+  border-color: rgba(246, 243, 240, .14);
+}
+#comparacion {
+  background:
+    radial-gradient(circle at 84% 14%, rgba(225, 6, 58, .12), transparent 28%),
+    linear-gradient(180deg, var(--obsidian), #0B0E14);
+}
+.plans-plus-bridge {
+  background: var(--warm-white);
+}
+.plans-plus-bridge-inner {
+  position: relative;
+  overflow: hidden;
+  color: var(--warm-white);
+  border-color: rgba(225, 6, 58, .34);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(225, 6, 58, .18), transparent 24%),
+    radial-gradient(circle at 12% 88%, rgba(246, 243, 240, .05), transparent 24%),
+    linear-gradient(135deg, #1A141F, #111620 58%, #0B0E14);
+  box-shadow: 0 28px 80px rgba(15, 18, 26, .18);
+}
+.plans-plus-bridge-inner::after {
+  content: "";
+  position: absolute;
+  right: -82px;
+  top: -96px;
+  width: 280px;
+  height: 280px;
+  border: 1px solid rgba(225, 6, 58, .26);
+  border-radius: 50%;
+  box-shadow: 0 0 0 30px rgba(225, 6, 58, .025), 0 0 0 70px rgba(225, 6, 58, .014);
+  pointer-events: none;
+}
+.plans-plus-bridge-inner > * { position: relative; z-index: 1; }
+.plans-plus-bridge p { color: rgba(246, 243, 240, .66); }
+.plans-plus-price {
+  border: 1px solid rgba(246, 243, 240, .1);
+  background: rgba(15, 18, 26, .74);
+}
+
+/* /plus: universo premium y continuo, más atmósfera que planetas literales. */
+.plus-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 78% 22%, rgba(225, 6, 58, .28), transparent 26%),
+    radial-gradient(ellipse at 93% 56%, rgba(225, 6, 58, .14), transparent 34%),
+    radial-gradient(circle at 12% 8%, rgba(246, 243, 240, .055), transparent 22%),
+    linear-gradient(135deg, #090C12 0%, var(--obsidian) 48%, #151A25 100%);
+}
+.plus-hero::before {
+  opacity: .42;
+  background:
+    radial-gradient(circle, rgba(246, 243, 240, .5) 0 1px, transparent 1.25px) 11px 9px / 118px 118px,
+    radial-gradient(circle, rgba(225, 6, 58, .5) 0 1px, transparent 1.2px) 66px 51px / 181px 181px;
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, .72) 72%, transparent 100%);
+}
+.plus-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  right: -70px;
+  top: 34px;
+  width: min(48vw, 610px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .72;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(246, 243, 240, .28) 0 1.4%, rgba(225, 6, 58, .52) 1.8%, transparent 4.5%),
+    radial-gradient(ellipse at 50% 50%, transparent 0 18%, rgba(225, 6, 58, .18) 18.5% 20%, transparent 21% 29%, rgba(225, 6, 58, .13) 30% 32%, transparent 33% 46%, rgba(225, 6, 58, .08) 47% 49%, transparent 50%),
+    radial-gradient(circle at 52% 52%, rgba(225, 6, 58, .18), transparent 58%);
+  transform: rotate(-18deg) scaleX(1.22);
+  filter: drop-shadow(0 0 42px rgba(225, 6, 58, .2));
+}
+.plus-hero-grid { position: relative; z-index: 2; }
+.plus-summary {
+  background:
+    radial-gradient(circle at 94% 7%, rgba(225, 6, 58, .12), transparent 25%),
+    linear-gradient(145deg, rgba(225, 6, 58, .09), rgba(24, 28, 37, .88) 44%);
+  backdrop-filter: blur(10px);
+}
+.plus-section-alt {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(225, 6, 58, .055), transparent 20%),
+    rgba(255, 255, 255, .02);
+}
+.plus-card {
+  background:
+    radial-gradient(circle at 92% 4%, rgba(225, 6, 58, .055), transparent 22%),
+    rgba(255, 255, 255, .035);
+  box-shadow: inset 0 1px 0 rgba(246, 243, 240, .025);
+}
+.plus-conversion {
+  background:
+    radial-gradient(circle at 88% 20%, rgba(225, 6, 58, .12), transparent 28%),
+    linear-gradient(180deg, rgba(225, 6, 58, .045), rgba(255, 255, 255, .01));
+}
+.plus-conversion-example {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .15);
 }
 
 ::selection {
@@ -102,6 +488,32 @@
   outline-color: rgba(225, 6, 58, .72) !important;
 }
 
+@media (max-width: 980px) {
+  .hero::after {
+    right: -260px;
+    bottom: -300px;
+    width: 560px;
+  }
+
+  .plans-hero::after {
+    right: -260px;
+    bottom: -260px;
+    width: 520px;
+    height: 520px;
+  }
+
+  .plus-hero::after {
+    right: -160px;
+    width: 520px;
+    opacity: .48;
+  }
+
+  #detalle .service-planet {
+    width: 124px;
+    height: 124px;
+  }
+}
+
 @media (max-width: 720px) {
   .brand.brand-official > img.brand-official-logo,
   .topbar .brand.brand-official > img.brand-official-logo {
@@ -111,6 +523,35 @@
   .footer .brand.brand-official > img.brand-official-logo {
     width: 118px;
   }
+
+  /* Mobile-first: la atmósfera se simplifica para proteger legibilidad y pintura. */
+  .hero::after,
+  .plans-hero::after,
+  .plus-hero::after,
+  #planes .app-strip::after,
+  .plans-plus-bridge-inner::after {
+    display: none !important;
+  }
+
+  .hero::before,
+  #planes.plans-bg::before,
+  #detalle::before,
+  .plus-hero::before {
+    opacity: .22;
+  }
+
+  #planes .plan img[src*="/brand/services/"] {
+    width: 92px !important;
+    height: 92px !important;
+  }
+
+  #detalle .service-planet {
+    width: 104px;
+    height: 104px;
+    opacity: .88;
+  }
+
+  #detalle .service-card header { padding-right: 72px; }
 }
 
 @media (max-width: 390px) {
