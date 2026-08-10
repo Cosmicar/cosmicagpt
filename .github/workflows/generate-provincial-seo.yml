@@ -12,6 +12,7 @@ on:
       - serviciotecnico.html
       - marketing/home.js
       - marketing/coverage.css
+      - marketing/brand-v2.css
       - marketing/planes.css
       - marketing/serviciotecnico.css
       - marketing/serviciotecnico.js
