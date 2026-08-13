@@ -92,6 +92,7 @@ const plusHtml = read('plus.html');
 const plansHtml = read('planes.html');
 const localServiceHtml = read('serviciotecnico.html');
 const homeJs = read('marketing/home.js');
+const provinceCss = read('marketing/province.css');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
 balancedDocument(plusHtml, 'plus.html');
@@ -211,6 +212,11 @@ if (!homeJs.includes("plansNavLink.href = '/planes'")) fail('home.js: no enlaza 
 if (!homeJs.includes('Ver Mercurio, Venus y Planeta X en detalle')) fail('home.js: falta CTA hacia el detalle completo de servicios');
 if (!homeJs.includes('/serviciotecnico')) fail('home.js: falta enlace al servicio técnico presencial de Jujuy');
 
+if (!provinceCss.includes('A1.1 2026-08-13')) fail('province.css: falta la capa visual A1.1 provincial');
+if (!provinceCss.includes('body[data-province] .province-hero')) fail('province.css: falta el hero provincial alineado con la home');
+if (!provinceCss.includes('var(--carmine)') || !provinceCss.includes('var(--obsidian)')) fail('province.css: faltan tokens principales A1.1');
+if (!provinceCss.includes('prefers-reduced-motion')) fail('province.css: falta resguardo de movimiento reducido');
+
 const manifest = JSON.parse(read('site.webmanifest'));
 if (manifest.theme_color !== '#0F121A' || manifest.background_color !== '#0F121A') fail('site.webmanifest: colores de marca incorrectos');
 for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'cosmica-c-v10-512.png']]) {
@@ -263,7 +269,10 @@ for (const province of provinces) {
   if (!html.includes('"@type":"FAQPage"')) fail(`${file}: falta schema FAQPage`);
   if (!html.includes('/soporte-tecnico-remoto-argentina.html')) fail(`${file}: falta enlace al hub nacional`);
   if (!html.includes('Nuestra base física está en San Salvador de Jujuy')) fail(`${file}: no aclara la base física real`);
-  if (!html.includes('Planes desde $24.900')) fail(`${file}: falta el precio inicial vigente`);
+  if (!html.includes('/marketing/province.css?v=20260813-1')) fail(`${file}: no referencia el diseño provincial vigente`);
+  if (!html.includes('Servicios desde $24.900')) fail(`${file}: falta el precio inicial vigente de servicios`);
+  if (!html.includes('Ver Mercurio, Venus y Planeta X')) fail(`${file}: falta enlace al catálogo de servicios vigente`);
+  if (!html.includes('href="/planes"')) fail(`${file}: el catálogo de servicios no apunta a /planes`);
   if (retiredPlanPrices.some(price => html.includes(price))) fail(`${file}: conserva un precio anterior`);
 
   const cityMatches = province.cities.filter(city => html.includes(city));
