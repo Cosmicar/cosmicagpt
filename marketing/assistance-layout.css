@@ -1,0 +1,49 @@
+/* Corrección específica de /asistencia.
+ * La capa editorial global usa la clase genérica .hero en la home. La guía de
+ * asistencia también usa .hero, pero no debe heredar el planeta, el fondo
+ * oscuro ni los pseudo-elementos absolutos de marketing.
+ */
+
+body {
+  overflow-x: hidden;
+}
+
+.hero.hero-with-person {
+  position: relative;
+  isolation: auto;
+  overflow: visible;
+  color: var(--ink) !important;
+  background: transparent !important;
+}
+
+.hero.hero-with-person::before,
+.hero.hero-with-person::after {
+  content: none !important;
+  display: none !important;
+}
+
+.hero.hero-with-person .hero-copy {
+  position: relative;
+  z-index: 1;
+  color: inherit !important;
+}
+
+.hero.hero-with-person h1 {
+  color: var(--ink) !important;
+}
+
+.hero.hero-with-person > * {
+  min-width: 0;
+}
+
+/* Evita que la composición superior quede pegada al borde en escritorios con
+ * barras remotas, escalado de Windows o viewports de poca altura. */
+main.container {
+  padding-top: clamp(34px, 5vw, 52px);
+}
+
+@media (max-width: 650px) {
+  main.container {
+    padding-top: 26px;
+  }
+}
