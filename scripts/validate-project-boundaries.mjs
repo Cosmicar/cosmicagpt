@@ -21,8 +21,10 @@ for (const rewrite of rewrites) {
 
 const requiredRedirects = [
   '/app',
+  '/app.html',
   '/app/:path*',
   '/staff',
+  '/staff.html',
   '/staff/:path*',
   '/login',
   '/login.html',

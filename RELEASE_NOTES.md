@@ -1,58 +1,20 @@
-# Cósmica - Notas de Lanzamiento (Release Notes)
-**Fecha:** 11 de Mayo de 2026  
-**Estado:** Estable | Optimizado | Listo para Operación
+# Cósmica · Cambios de la web pública
 
-Este documento resume las mejoras, correcciones y nuevas funcionalidades implementadas en la versión actual del sistema de gestión Cósmica.
+Este archivo corresponde a `Cosmicar/cosmicagpt`. Los cambios operativos de Cósmica.app se consultan en su propio repositorio.
 
----
+## Propuesta de auditoría · 2026-09-15 · pendiente de integración
 
-## 🚀 Nuevas Características y Mejoras UX
+- Completa `/app.html` y `/staff.html` con redirecciones permanentes a la aplicación oficial.
+- Alinea las cinco preguntas y respuestas del JSON-LD de la portada con el contenido visible; agrega validación de paridad.
+- Sustituye documentación del sistema antiguo por el alcance real de la web pública.
+- Registra hallazgos, limitaciones y prioridades en `AUDITORIA_WEB_2026-09-15.md`.
 
-### 🔍 Panel de Búsqueda de Trabajos Avanzado
-Se rediseñó por completo la sección de búsqueda para mejorar la productividad de los operadores:
-*   **Filtros de Tipo de Servicio:** Ahora es posible filtrar por *Taller*, *Remoto* o *Mixto*.
-*   **Filtros de Demora (Admin):** Filtros rápidos para ver trabajos sin movimiento por más de 3, 7 o 15 días.
-*   **Filtros Rápidos (Pills):**
-    *   `Solo activos`: Muestra únicamente trabajos en estado *Ingresado*, *En reparación* o *Listo*.
-    *   `⚠ Abandonados`: Filtra trabajos con más de 7 días sin actualizar.
-    *   `📦 Listos`: Filtra trabajos listos para entrega.
-*   **Tooltips de Actividad:** Al pasar el mouse (o mantener presionado en mobile) sobre la etiqueta de demora, se muestra la fecha y hora exacta del último movimiento.
+No cambia precios, servicios contratados ni condiciones comerciales.
 
-### 🔄 Sincronización Automática
-*   **Auto-Refresh Silencioso:** El panel se actualiza automáticamente cada 60 segundos.
-*   **Detección de Actividad:** El refresco se pausa automáticamente si el usuario tiene un modal abierto o está editando un formulario para evitar pérdida de datos.
-*   **Indicador de Sincronización:** Se añadió un texto en el título que indica la última hora de actualización exitosa.
+## Último cambio verificado en producción · 2026-09-02
 
----
+Commit `bb153c0b30175fe50bf9c12d6e9531fccc6fd722`, PR #35: Cósmica+ se describe como `Service`, conservando su oferta y evitando el marcado de producto físico.
 
-## 🛠️ Correcciones Críticas (Fixes)
+Despliegue verificado en Vercel el 15 de septiembre. Esta referencia es fechada: futuras tareas deben consultar nuevamente la publicación activa.
 
-### ⏱️ Timezone y Reset Contable (Fix Argentina)
-*   **Bug:** El contador "Entregado hoy" se reiniciaba a las 21:00 hs (Arg) debido al uso de la hora UTC.
-*   **Solución:** Se implementaron helpers de fecha local (`isTodayLocal`) que garantizan que el reseteo ocurra exactamente a las 00:00:00 hora local del cliente.
-
-### 🔗 Integración CRM - "Nuevo Trabajo"
-*   **Bug:** El botón "Nuevo Trabajo" dentro del perfil del cliente no funcionaba por un problema de visibilidad de variables de módulo.
-*   **Solución:** Se expuso el ID del cliente de forma segura al contexto global, permitiendo la creación fluida de órdenes pre-completadas desde el perfil.
-
-### 👥 Integridad en Merge de Clientes
-*   Se corrigió la inconsistencia post-merge que dejaba clientes "fantasma" o heredaba estados incorrectos (como marcar como "Taller" erróneamente).
-*   Se aseguró que el historial de servicios se mueva íntegramente al cliente principal.
-
----
-
-## ⚙️ Optimización y Rendimiento
-
-### ⚡ Carga Acelerada y Renderizado No Bloqueante
-*   **Carga en Paralelo:** Las consultas de trabajos y mapeo de clientes ahora se ejecutan en paralelo, reduciendo el tiempo de espera inicial.
-*   **Prioridad Visual:** Los contadores operativos (Activos, Listos, etc.) se calculan y muestran **inmediatamente** al llegar los datos. El renderizado pesado de las tarjetas de trabajos se difiere unos milisegundos para no congelar la pantalla.
-*   **Carga Bajo Demanda:** Se eliminó la carga masiva automática al entrar al panel. Ahora el sistema espera una búsqueda o la aplicación de un filtro, ahorrando recursos de Firebase.
-
----
-
-## 🛡️ Seguridad y Reglas de Negocio
-*   **Hardening de UI:** Los elementos administrativos (como filtros específicos y botones de borrado) no solo se ocultan, sino que se eliminan físicamente del DOM si el usuario no tiene rol de admin.
-*   **Estructura Intacta:** No se modificaron estructuras en Firestore ni se rompieron desacoples existentes.
-
----
-*Cósmica - "Usted está aquí para siempre"*
+Las notas anteriores sobre Firebase, clientes, caja y paneles correspondían al sistema histórico de mayo de 2026 y permanecen recuperables en Git.

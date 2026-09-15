@@ -40,6 +40,11 @@
   ],
   "redirects": [
     {
+      "source": "/app.html",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
       "source": "/app",
       "destination": "https://app.cosmica.ar/",
       "permanent": true
@@ -47,6 +52,11 @@
     {
       "source": "/app/:path*",
       "destination": "https://app.cosmica.ar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/staff.html",
+      "destination": "https://app.cosmica.ar/",
       "permanent": true
     },
     {
