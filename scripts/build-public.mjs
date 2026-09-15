@@ -6,6 +6,7 @@ import { optimizeBrandDelivery } from './optimize-brand-delivery.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
+execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs'], { cwd: root, stdio: 'inherit' });
 for (const script of ['validate-project-boundaries', 'sync-brand-contacts', 'validate-marketing', 'sync-brand-markup', 'check-brand-official']) {
   execFileSync(process.execPath, [path.join(root, `scripts/${script}.mjs`)], { cwd: root, stdio: 'inherit' });
 }
@@ -29,6 +30,12 @@ function copyAssets(dir) {
 }
 ['marketing', 'brand'].forEach(copyAssets);
 optimizeBrandDelivery(root, out);
+for (const page of pages.filter(page => page !== '404.html')) {
+  const target = path.join(out, page);
+  const html = fs.readFileSync(target, 'utf8');
+  if (!html.includes('</head>')) throw new Error(`${page}: falta head para analítica`);
+  fs.writeFileSync(target, html.replace('</head>', '  <script defer src="/marketing/analytics.js"></script>\n</head>'));
+}
 
 // Comprobar que el aislamiento no deja imágenes, CSS, scripts o rutas locales rotos.
 const rewrites = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8')).rewrites;

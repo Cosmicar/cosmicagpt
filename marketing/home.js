@@ -127,29 +127,18 @@
     return `https://wa.me/${phone}?text=${encodeURIComponent(`${message}\n\nVengo desde cosmica.ar (${origin}).`)}`;
   };
 
-  const track = (event, source) => {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event, source });
-  };
-
   document.querySelectorAll('.wa-link').forEach(link => {
     const source = link.dataset.source || 'website';
     link.href = waUrl(link.dataset.message || 'Hola, necesito ayuda.', source);
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.addEventListener('click', () => track('whatsapp_click', source));
   });
 
   document.querySelectorAll('.wa-trigger').forEach(button => {
     button.addEventListener('click', () => {
       const source = button.dataset.source || 'problem';
-      track('whatsapp_click', source);
       window.open(waUrl(button.dataset.message || 'Hola, necesito ayuda.', source), '_blank', 'noopener,noreferrer');
     });
-  });
-
-  document.querySelectorAll('.assistance-access').forEach((link, index) => {
-    link.addEventListener('click', () => track('assistance_click', link.dataset.source || `assistance-${index + 1}`));
   });
 
   document.querySelectorAll('.faq-question').forEach((button, index) => {

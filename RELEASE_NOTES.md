@@ -30,4 +30,8 @@ Las notas anteriores sobre Firebase, clientes, caja y paneles correspondían al 
 
 El build genera derivados PNG comprimidos en `dist/brand/optimized`, sin cambiar dimensiones, metadatos de color ni píxeles. Los originales y sus hashes siguen protegidos. El HTML público y el script de marca usan esos derivados, evitando reemplazar una imagen ya correcta durante la carga. Ahorro medido: aproximadamente 17 % por variante.
 
-La medición de clics sigue pendiente de una propiedad de analítica: Vercel Hobby no incluye eventos personalizados. No se activó un plan pago ni se inventó un identificador GA4.
+En esta entrega la medición seguía pendiente de una propiedad de analítica (resuelta en la entrada siguiente).
+
+## Medición GA4 · 2026-09-15
+
+Integra la propiedad indicada por el titular mediante el ID de medición `G-LM3ZVTL6YW`. Carga asíncrona en producción, visitas automáticas y clics de WhatsApp comercial y acceso a asistencia. Un listener compartido reemplaza los eventos locales anteriores y cubre páginas provinciales, planes y Cósmica+. No instala un contenedor GTM adicional ni activa planes pagos. Excluye query y fragmento de la URL de página y referencia; los eventos propios no envían mensajes ni IDs de asistencia. La recepción en el panel de GA4 requiere validación en Tiempo real.
