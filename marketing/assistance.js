@@ -20,6 +20,7 @@
   };
 
   const completeStep = step => {
+    if (![1, 2, 3].includes(step)) return;
     completed.add(step);
     const card = document.querySelector(`[data-step="${step}"]`);
     card.classList.add('completed');
@@ -27,17 +28,19 @@
     const count = completed.size;
     progressBar.style.width = `${count / 3 * 100}%`;
     progressLabel.textContent = `${count} de 3 pasos`;
-    localStorage.setItem('cosmica_assistance_progress', JSON.stringify([...completed]));
+    try {
+      localStorage.setItem('cosmica_assistance_progress', JSON.stringify([...completed]));
+    } catch (_) { /* La guía sigue funcionando si el navegador bloquea el almacenamiento. */ }
   };
 
   try {
     const saved = JSON.parse(localStorage.getItem('cosmica_assistance_progress') || '[]');
-    saved.forEach(completeStep);
+    if (Array.isArray(saved)) saved.forEach(completeStep);
   } catch (_) {}
 
   document.getElementById('downloadAnydesk').addEventListener('click', () => {
     completeStep(1);
-    showToast('Descarga iniciada. Cuando termine, abrí el archivo.');
+    showToast('Abrimos el sitio de AnyDesk. Descargá el archivo y abrilo.');
   });
   document.getElementById('openedButton').addEventListener('click', () => {
     completeStep(2);

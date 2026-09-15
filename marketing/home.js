@@ -113,7 +113,7 @@
     status.textContent = isOpen
       ? 'Estamos atendiendo · horario extendido hasta las 00:00'
       : 'Ahora estamos fuera de horario · escribinos y te respondemos al abrir';
-    status.parentElement.style.color = isOpen ? 'var(--green)' : 'var(--orange-dark)';
+    status.parentElement.dataset.open = String(isOpen);
   }
 
   const params = new URLSearchParams(window.location.search);

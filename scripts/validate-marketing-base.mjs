@@ -19,6 +19,22 @@ try {
   process.exit(error.status || 1);
 }
 
+// El marcado de FAQ debe describir las mismas respuestas que ve el visitante.
+const homeFaqSource = read('index.html');
+const visibleFaq = [...homeFaqSource.matchAll(/<button class="faq-question"[^>]*><span>(.*?)<\/span>[\s\S]*?<\/button><div class="faq-answer"><p>(.*?)<\/p>/g)]
+  .map(([, question, answer]) => ({ question, answer }));
+try {
+  const faqSchema = [...homeFaqSource.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map(([, json]) => JSON.parse(json)).find(schema => schema['@type'] === 'FAQPage');
+  const structuredFaq = (faqSchema?.mainEntity ?? [])
+    .map(item => ({ question: item.name, answer: item.acceptedAnswer?.text }));
+  if (!visibleFaq.length || JSON.stringify(visibleFaq) !== JSON.stringify(structuredFaq)) {
+    fail('Las preguntas y respuestas de FAQPage deben coincidir con la FAQ visible de la home.');
+  }
+} catch {
+  fail('El JSON-LD de la home debe ser JSON válido.');
+}
+
 const provinceData = JSON.parse(read('data/provincias.json'));
 const provinces = provinceData.provinces;
 const provinceFiles = provinces.map(province => `pc-lenta-${province.slug}.html`);
@@ -155,7 +171,7 @@ const plusPatterns = [
   /href="\/site\.webmanifest\?v=10"/,
   /Cósmica App Pro incluida/,
   /USD 19,90/,
-  /ARS \$30\.113/,
+  /importe vigente en pesos/,
   /id="conversion"/,
   /BCRA/,
   /Mercurio, Venus y Planeta X/,

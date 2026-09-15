@@ -29,14 +29,13 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 
 ## Validación
 
-El despliegue ejecuta:
+GitHub Actions y Vercel ejecutan el mismo comando:
 
 ```bash
-node scripts/validate-project-boundaries.mjs
-node scripts/validate-marketing.mjs
+npm run build
 ```
 
-La primera validación impide que regresen copias o archivos de la aplicación antigua. La segunda genera y verifica la web, las páginas provinciales y el sitemap.
+No requiere paquetes externos. Valida separación, contactos, marketing y marca, y genera `dist` con las páginas y activos públicos permitidos. Comprueba referencias locales y sitemap. La documentación, los scripts, las plantillas y las dependencias no se publican. Los originales de marca permanecen sin cambios.
 
 ## Contactos oficiales
 

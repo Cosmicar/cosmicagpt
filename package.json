@@ -1,20 +1,16 @@
 {
   "name": "cosmicagpt",
   "version": "1.0.0",
-  "description": "Cósmica — Sistema de gestión de soporte técnico",
+  "description": "Cósmica — Web pública de servicios y asistencia remota",
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "generate:provinces": "node generar-provincias.js",
     "sync:brand-markup": "node scripts/sync-brand-markup.mjs",
     "check:brand-official": "node scripts/check-brand-official.mjs",
     "validate:marketing": "node scripts/validate-marketing.mjs",
-    "build": "npm run validate:marketing && npm run sync:brand-markup && npm run check:brand-official"
-  },
-  "dependencies": {
-    "@afipsdk/afip.js": "^1.2.3",
-    "firebase-admin": "^13.10.0"
+    "build": "node scripts/build-public.mjs"
   }
 }

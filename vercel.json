@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node scripts/validate-project-boundaries.mjs && node scripts/validate-marketing.mjs && node scripts/sync-brand-contacts.mjs && node scripts/sync-brand-markup.mjs && node scripts/check-brand-official.mjs",
-  "outputDirectory": ".",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/serviciotecnico",
@@ -31,14 +31,29 @@
   "headers": [
     {
       "source": "/favicon.ico",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     },
     {
       "source": "/brand/official/icons/:file*",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "redirects": [
+    {
+      "source": "/app.html",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
     {
       "source": "/app",
       "destination": "https://app.cosmica.ar/",
@@ -47,6 +62,11 @@
     {
       "source": "/app/:path*",
       "destination": "https://app.cosmica.ar/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/staff.html",
+      "destination": "https://app.cosmica.ar/",
       "permanent": true
     },
     {
