@@ -43,7 +43,10 @@
     brand.classList.remove('brand-v2');
     brand.classList.add('brand-official');
     brand.setAttribute('aria-label', 'Cósmica');
-    brand.innerHTML = `<img class="brand-official-logo" src="${BRAND_ROOT}/cosmica-logo-${variant}.png?v=${BRAND_VERSION}" alt="Cósmica" width="3798" height="1851" decoding="async">`;
+    const logoSrc = `/brand/optimized/cosmica-logo-${variant}.png?v=${BRAND_VERSION}`;
+    if (brand.querySelector('.brand-official-logo')?.getAttribute('src') !== logoSrc) {
+      brand.innerHTML = `<img class="brand-official-logo" src="${logoSrc}" alt="Cósmica" width="3798" height="1851" decoding="async">`;
+    }
   });
 
   const textWalker = document.createTreeWalker(

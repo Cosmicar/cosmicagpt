@@ -25,3 +25,9 @@ Commit `bb153c0b30175fe50bf9c12d6e9531fccc6fd722`, PR #35: Cósmica+ se describe
 Despliegue verificado en Vercel el 15 de septiembre. Esta referencia es fechada: futuras tareas deben consultar nuevamente la publicación activa.
 
 Las notas anteriores sobre Firebase, clientes, caja y paneles correspondían al sistema histórico de mayo de 2026 y permanecen recuperables en Git.
+
+## Optimización de entrega del logo · 2026-09-15
+
+El build genera derivados PNG comprimidos en `dist/brand/optimized`, sin cambiar dimensiones, metadatos de color ni píxeles. Los originales y sus hashes siguen protegidos. El HTML público y el script de marca usan esos derivados, evitando reemplazar una imagen ya correcta durante la carga. Ahorro medido: aproximadamente 17 % por variante.
+
+La medición de clics sigue pendiente de una propiedad de analítica: Vercel Hobby no incluye eventos personalizados. No se activó un plan pago ni se inventó un identificador GA4.
