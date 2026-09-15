@@ -12,7 +12,7 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 | `/soporte-tecnico-remoto-argentina` | Directorio nacional de cobertura remota. |
 | `/pc-lenta-{provincia}` y variantes `.html` | 24 páginas provinciales generadas desde plantillas y datos. |
 
-La web incorpora metadatos, datos estructurados, sitemap, robots, recursos oficiales de marca y enlaces de WhatsApp contextualizados. Home y taller preparan eventos en `dataLayer`; eso por sí solo no acredita una integración de analítica activa.
+La web incorpora metadatos, datos estructurados, sitemap, robots, recursos oficiales de marca y enlaces de WhatsApp contextualizados. El build integra GA4 `G-LM3ZVTL6YW` en las páginas públicas (excepto 404), solo para los dominios productivos. Registra visitas y eventos `whatsapp_click` y `assistance_click` mediante una etiqueta directa, sin GTM adicional. Los eventos propios no incluyen mensajes ni IDs de asistencia. La recepción debe comprobarse en Tiempo real de GA4.
 
 Clientes, órdenes, ventas, caja, inventario, usuarios, facturación, permisos, paneles y PWA pertenecen a [Cósmica.app](https://app.cosmica.ar), en `Cosmicar/cosmica-app`. No se implementan aquí. Los accesos operativos históricos redirigen a la aplicación según `vercel.json`.
 

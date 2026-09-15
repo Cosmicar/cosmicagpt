@@ -16,10 +16,6 @@
     link.href = waUrl(link.dataset.message || 'Hola, necesito servicio técnico en Jujuy.', source);
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.addEventListener('click', () => {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: 'whatsapp_click', source });
-    });
   });
 
   const status = document.getElementById('localStatus');
