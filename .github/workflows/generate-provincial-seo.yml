@@ -1,65 +1,19 @@
-name: Generar SEO provincial
-
+name: Validar web pública
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - data/provincias.json
-      - generar-provincias.js
-      - template-provincia.html
-      - template-cobertura.html
-      - planes.html
-      - serviciotecnico.html
-      - marketing/home.js
-      - marketing/coverage.css
-      - marketing/brand-v2.css
-      - marketing/province.css
-      - marketing/planes.css
-      - marketing/serviciotecnico.css
-      - marketing/serviciotecnico.js
-      - vercel.json
-      - sitemap.xml
-      - scripts/sync-brand-contacts.mjs
-      - scripts/validate-marketing.mjs
-      - scripts/validate-marketing-base.mjs
-      - .github/workflows/generate-provincial-seo.yml
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
   workflow_dispatch:
-
 permissions:
-  contents: write
-
+  contents: read
 jobs:
   generate:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar rama
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          fetch-depth: 0
-
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Sincronizar contactos oficiales
-        run: node scripts/sync-brand-contacts.mjs
-
-      - name: Generar y validar páginas
-        run: node scripts/validate-marketing.mjs
-
-      - name: Guardar cambios sincronizados
-        shell: bash
-        run: |
-          git add index.html asistencia.html generar-provincias.js template-provincia.html template-cobertura.html \
-            pc-lenta-*.html soporte-tecnico-remoto-argentina.html sitemap.xml robots.txt llms.txt
-          if git diff --cached --quiet; then
-            echo "Los contactos y archivos generados ya estaban actualizados."
-            exit 0
-          fi
-          git config user.name "cosmica-seo-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git commit -m "chore: sincronizar contactos y regenerar SEO"
-          git push
+          node-version: 24
+      - name: Validar y construir sitio público
+        run: npm run build

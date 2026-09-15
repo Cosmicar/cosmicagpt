@@ -560,3 +560,8 @@
     width: 96px;
   }
 }
+
+/* Estados legibles sobre la portada oscura. */
+.hero .status-pill { color: #A7E8CC; background: #162B28; border-color: #38544D; }
+.hero .status-pill[data-open="false"] { color: #F6D49A; background: #30291F; border-color: #625136; }
+.hero .status-pill[data-open="false"] .status-dot::after { animation: none; }

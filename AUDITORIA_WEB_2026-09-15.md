@@ -52,3 +52,9 @@ Es una auditoría de la web pública y su entrega, no una certificación de segu
 ## Comprobaciones de la propuesta
 
 Build completo aprobado en una copia temporal sin node_modules, con 24 provincias generadas y 34 HTML validados contra los 12 activos originales. Pruebas negativas aprobadas: una FAQ desalineada y una redirección legacy ausente provocan el rechazo correspondiente. `git diff --check` sin errores.
+
+## Correcciones autorizadas y ejecutadas
+
+El responsable autorizó realizar las correcciones necesarias después de revisar este informe. Se completaron aislamiento de salida pública, retiro de node_modules y dependencias/herramientas heredadas, eliminación del middleware del sistema anterior, CI completo sin commits automáticos, contraste del horario, acceso al taller, tolerancia de almacenamiento en asistencia y retiro del ejemplo histórico en pesos. Los hallazgos de la tabla anterior son evidencia del baseline, no una lista actual de pendientes.
+
+La optimización de derivados del logo, la contratación/configuración de analítica y el rediseño integral no forman parte de este lote. Se preservaron los binarios oficiales y los precios base.

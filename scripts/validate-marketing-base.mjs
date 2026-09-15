@@ -171,7 +171,7 @@ const plusPatterns = [
   /href="\/site\.webmanifest\?v=10"/,
   /Cósmica App Pro incluida/,
   /USD 19,90/,
-  /ARS \$30\.113/,
+  /importe vigente en pesos/,
   /id="conversion"/,
   /BCRA/,
   /Mercurio, Venus y Planeta X/,

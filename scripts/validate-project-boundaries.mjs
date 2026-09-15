@@ -46,6 +46,7 @@ for (const source of requiredRedirects) {
 }
 
 const forbiddenPaths = [
+  'middleware.js',
   'apps',
   'release',
   'js',
