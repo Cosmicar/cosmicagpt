@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { optimizeBrandDelivery } from './optimize-brand-delivery.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
@@ -27,6 +28,7 @@ function copyAssets(dir) {
   }
 }
 ['marketing', 'brand'].forEach(copyAssets);
+optimizeBrandDelivery(root, out);
 
 // Comprobar que el aislamiento no deja imágenes, CSS, scripts o rutas locales rotos.
 const rewrites = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8')).rewrites;
