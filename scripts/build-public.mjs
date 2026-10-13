@@ -13,7 +13,7 @@ for (const script of ['validate-project-boundaries', 'sync-brand-contacts', 'val
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out);
 const provinces = JSON.parse(fs.readFileSync(path.join(root, 'data/provincias.json'), 'utf8')).provinces;
-const pages = ['index.html', '404.html', 'planes.html', 'plus.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
+const pages = ['index.html', '404.html', 'planes.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
 const files = [...pages, 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
 function copy(file) {
   const target = path.join(out, file);
