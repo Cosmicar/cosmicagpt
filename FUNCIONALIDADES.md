@@ -6,7 +6,7 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 | --- | --- |
 | `/` | Asistencia remota, problemas frecuentes, servicios, reseñas y contacto. |
 | `/planes` | Mercurio, Venus y Planeta X: servicios por intervención. |
-| `/plus` | Cósmica+: membresía para negocios con referencia de USD 19,90 mensuales. |
+| `/plus` y `/plus.html` | Redirigen permanentemente a Cósmica.app. |
 | `/asistencia` y `/asistencia.html` | Guía de conexión por AnyDesk y envío del ID por WhatsApp. |
 | `/serviciotecnico` | Servicio presencial en Ramírez de Velazco 111, San Salvador de Jujuy. |
 | `/soporte-tecnico-remoto-argentina` | Directorio nacional de cobertura remota. |

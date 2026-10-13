@@ -12,10 +12,6 @@
       "destination": "/planes.html"
     },
     {
-      "source": "/plus",
-      "destination": "/plus.html"
-    },
-    {
       "source": "/asistencia",
       "destination": "/asistencia.html"
     },
@@ -49,6 +45,16 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/plus",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
+    {
+      "source": "/plus.html",
+      "destination": "https://app.cosmica.ar/",
+      "permanent": true
+    },
     {
       "source": "/app.html",
       "destination": "https://app.cosmica.ar/",

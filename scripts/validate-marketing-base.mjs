@@ -41,7 +41,6 @@ const provinceFiles = provinces.map(province => `pc-lenta-${province.slug}.html`
 const requiredFiles = [
   'index.html',
   'asistencia.html',
-  'plus.html',
   'planes.html',
   'serviciotecnico.html',
   'template-provincia.html',
@@ -60,7 +59,6 @@ const requiredFiles = [
   'marketing/coverage.css',
   'marketing/province.css',
   'marketing/province.js',
-  'marketing/plus.css',
   'marketing/planes.css',
   'marketing/serviciotecnico.css',
   'marketing/serviciotecnico.js',
@@ -103,15 +101,15 @@ const balancedDocument = (html, file) => {
 const extract = (html, pattern) => html.match(pattern)?.[1]?.trim() || '';
 
 const indexHtml = read('index.html');
+if (/Cósmica\+|USD 19,90|href="\/plus"/.test(indexHtml)) fail('index: conserva la membresía retirada');
 const assistanceHtml = read('asistencia.html');
-const plusHtml = read('plus.html');
 const plansHtml = read('planes.html');
+if (/Cósmica\+|USD 19,90|href="\/plus"/.test(plansHtml)) fail('planes: conserva la membresía retirada');
 const localServiceHtml = read('serviciotecnico.html');
 const homeJs = read('marketing/home.js');
 const provinceCss = read('marketing/province.css');
 balancedDocument(indexHtml, 'index.html');
 balancedDocument(assistanceHtml, 'asistencia.html');
-balancedDocument(plusHtml, 'plus.html');
 balancedDocument(plansHtml, 'planes.html');
 balancedDocument(localServiceHtml, 'serviciotecnico.html');
 
@@ -132,7 +130,6 @@ const indexPatterns = [
   /src="\/marketing\/home\.js"/,
   /src="\/marketing\/hero-client\.webp"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
-  /href="\/plus"/,
   /id="problemas"/,
   /id="planes"/,
   /id="seguridad"/,
@@ -142,8 +139,6 @@ const indexPatterns = [
   /src="\/brand\/services\/mercurio\.svg"/,
   /src="\/brand\/services\/venus\.svg"/,
   /src="\/brand\/services\/planeta-x\.svg"/,
-  /USD 19,90/,
-  /¿Tenés un negocio\? Eso es Cósmica\+\./,
   /https:\/\/app\.cosmica\.ar/,
   /5493883298736/
 ];
@@ -163,24 +158,6 @@ const assistancePatterns = [
 ];
 for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fail(`asistencia.html: falta ${pattern}`);
 
-const plusPatterns = [
-  /<link rel="canonical" href="https:\/\/cosmica\.ar\/plus">/,
-  /href="\/marketing\/plus\.css(?:\?v=[^"]+)?"/,
-  /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
-  /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
-  /href="\/site\.webmanifest\?v=10"/,
-  /Cósmica App Pro incluida/,
-  /USD 19,90/,
-  /importe vigente en pesos/,
-  /id="conversion"/,
-  /BCRA/,
-  /Mercurio, Venus y Planeta X/,
-  /5493883298736/
-];
-for (const pattern of plusPatterns) if (!pattern.test(plusHtml)) fail(`plus.html: falta ${pattern}`);
-if (/\$49\.900\s*(?:al|\/)?\s*mes/i.test(plusHtml)) fail('plus.html: conserva el precio mensual anterior de Cósmica+');
-if (/cafecito\.app\/cosmica/i.test(plusHtml)) fail('plus.html: conserva un checkout directo con precio potencialmente desactualizado');
-
 const plansPatterns = [
   /<link rel="canonical" href="https:\/\/cosmica\.ar\/planes">/,
   /href="\/marketing\/planes\.css(?:\?v=[^"]+)?"/,
@@ -194,8 +171,6 @@ const plansPatterns = [
   /src="\/brand\/services\/mercurio\.svg"/,
   /src="\/brand\/services\/venus\.svg"/,
   /src="\/brand\/services\/planeta-x\.svg"/,
-  /Cósmica\+ no es el cuarto servicio/,
-  /USD 19,90/,
   /Windows 11/,
   /Garantía de 90 días/,
   /"@type":"Service"/,
@@ -240,8 +215,9 @@ for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'c
 }
 
 const vercelConfig = JSON.parse(read('vercel.json'));
-if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/plus' && rewrite.destination === '/plus.html')) {
-  fail('vercel.json: falta la reescritura directa de /plus');
+for (const source of ['/plus', '/plus.html']) {
+  const redirect = vercelConfig.redirects?.find(item => item.source === source);
+  if (!redirect || redirect.destination !== 'https://app.cosmica.ar/' || redirect.permanent !== true) fail(`vercel.json: ${source} debe redirigir a la aplicación`);
 }
 if (!vercelConfig.rewrites?.some(rewrite => rewrite.source === '/planes' && rewrite.destination === '/planes.html')) {
   fail('vercel.json: falta la reescritura directa de /planes');
@@ -305,9 +281,9 @@ for (const province of provinces) {
 
 const sitemap = read('sitemap.xml');
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-if (sitemapUrls.length !== 30) fail(`sitemap: se esperaban 30 URLs y hay ${sitemapUrls.length}`);
-if ((sitemap.match(/<lastmod>/g) || []).length !== 30) fail('sitemap: faltan lastmod');
-if (!sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: falta Cósmica+');
+if (sitemapUrls.length !== 29) fail(`sitemap: se esperaban 29 URLs y hay ${sitemapUrls.length}`);
+if ((sitemap.match(/<lastmod>/g) || []).length !== 29) fail('sitemap: faltan lastmod');
+if (sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: no indexar la membresía retirada');
 if (!sitemapUrls.includes('https://cosmica.ar/planes')) fail('sitemap: falta la landing de planes');
 if (!sitemapUrls.includes('https://cosmica.ar/serviciotecnico')) fail('sitemap: falta la landing de servicio técnico en Jujuy');
 for (const province of provinces) {
@@ -330,4 +306,4 @@ if (failMessages.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ Home, servicios, Cósmica+, servicio técnico local, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);
+console.log(`\n✓ Home, servicios, Cósmica.app, servicio técnico local, asistencia, hub y ${provinces.length} páginas provinciales validadas.`);

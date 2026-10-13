@@ -30,8 +30,6 @@ const requiredFiles = [
   'brand/official/icons/favicon-c-v10.ico',
   'favicon.ico',
   'site.webmanifest',
-  'plus.html',
-  'marketing/plus.css',
 ];
 
 for (const relativePath of requiredFiles) {
