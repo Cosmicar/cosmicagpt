@@ -1,3 +1,10 @@
+## 2026-10-13 · Retiro comercial de Cósmica+
+
+- Se retira la membresía Cósmica+ y su precio de referencia en USD de la oferta pública.
+- `/plus` y `/plus.html` redirigen permanentemente a Cósmica.app. La portada y `/planes` ahora enlazan al software Free/PRO.
+- Se excluyen la página retirada y sus estilos del build, se actualizan sitemap y validaciones. Los servicios técnicos Mercurio, Venus y Planeta X continúan por intervención.
+- No modifica planes, cobros, suscripciones ni datos de Supabase. Las entradas históricas que siguen debajo conservan su valor documental, no describen ofertas vigentes.
+
 # Cósmica · Cambios de la web pública
 
 Este archivo corresponde a `Cosmicar/cosmicagpt`. Los cambios operativos de Cósmica.app se consultan en su propio repositorio.
