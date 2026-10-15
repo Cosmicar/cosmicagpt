@@ -54,7 +54,6 @@ const forbiddenPaths = [
   'core',
   'services',
   'views',
-  'docs',
   'panel.html',
   'login.html',
   'estado.html',
@@ -76,6 +75,21 @@ for (const legacyPath of forbiddenPaths) {
     fail(`El repositorio público no puede contener el legado: ${legacyPath}`);
   }
 }
+
+// Los casos de soporte son referencias Markdown internas, nunca código de la app.
+// build-public.mjs usa una lista de publicación que excluye este directorio.
+function validateSupportDocs(dir = 'docs') {
+  if (!fs.existsSync(dir)) return;
+  const allowedDirectories = new Set(['docs/soporte', 'docs/soporte/casos']);
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = `${dir}/${entry.name}`;
+    if (entry.isDirectory() && allowedDirectories.has(file)) validateSupportDocs(file);
+    else if (!(entry.isFile() && /^docs\/soporte\/casos\/[^/]+\.md$/.test(file))) {
+      fail(`Documentación fuera del alcance público permitido: ${file}`);
+    }
+  }
+}
+validateSupportDocs();
 
 const readme = fs.readFileSync('README.md', 'utf8');
 for (const required of ['www.cosmica.ar', 'app.cosmica.ar', 'Cosmicar/cosmica-app', 'rama autorizada', 'legado eliminado']) {

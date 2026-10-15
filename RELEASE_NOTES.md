@@ -1,3 +1,10 @@
+## 2026-10-15· Fotografías de marketing
+
+- Reemplaza las tres fotos de portada por una serie editorial generada con una modelo adulta: presentación, consulta y trabajo resuelto. Paleta carmesí, luz natural y mayor resolución; no representa a una clienta ni integrante real del equipo.
+- Entrega WebP optimizados, variante de 640 px para el hero y proporción completa en la foto de confianza para conservar rostro y postura. El hero compartido mejora también la cobertura provincial.
+- Corrige el bloqueo de build introducido por `docs/soporte/casos`: admite únicamente Markdown en esa ubicación interna y mantiene su exclusión de `dist`. Continúan prohibidos código y rutas de la aplicación.
+- Prompts, activos y criterios de entrega en `MARKETING_IMAGENES.md`. Sin cambios de marca, servicios, tarifas o producto.
+
 ## 2026-10-13 · Retiro comercial de Cósmica+
 
 - Se retira la membresía Cósmica+ y su precio de referencia en USD de la oferta pública.
