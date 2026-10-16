@@ -1,3 +1,11 @@
+## 2026-10-16 · Planes de servicio técnico: presentación y elección renovadas
+
+- Rediseño editorial de `/planes` con la identidad A1.1 y continuidad con la nueva página de asistencia. Mantiene las ilustraciones secundarias de los tres servicios y los logotipos oficiales originales.
+- Los precios siguen sin cambios: Mercurio ARS 24.900, Venus ARS 35.900 y Planeta X desde ARS 49.900, por intervención. No son suscripciones y no incluyen licencias comerciales de terceros salvo indicación.
+- Hero más directo con resumen de precios, orientación accesible para síntomas (sin diagnóstico automático), tarjeta de WhatsApp contextualizada, comparación horizontal accesible en móvil, secciones de confianza y preguntas frecuentes.
+- Los metadatos FAQ JSON-LD reflejan las mismas respuestas visibles, sin afirmar "el más elegido" sin evidencia. Cósmica.app continúa separada de los servicios técnicos.
+- Agrega `tests/plans.test.mjs` al build junto con las otras pruebas. Sin cambios de producto, plan PRO, base de datos, usuarios ni permisos.
+
 ## 2026-10-16 · Asistencia remota: página renovada
 
 - Rediseño visual de `/asistencia.html` con identidad A1.1, hero editorial con fotografía existente optimizada, mensajes de confianza, tres tarjetas de conexión, contraste y comportamiento responsive.

@@ -174,7 +174,7 @@ const plansPatterns = [
   /Windows 11/,
   /Garantía de 90 días/,
   /"@type":"Service"/,
-  /"@type":"FAQPage"/,
+  /"@type"\s*:\s*"FAQPage"/,
   /5493883298736/
 ];
 for (const pattern of plansPatterns) if (!pattern.test(plansHtml)) fail(`planes.html: falta ${pattern}`);
@@ -291,7 +291,7 @@ for (const province of provinces) {
   if (!sitemapUrls.includes(url)) fail(`sitemap: falta ${province.name}`);
 }
 
-for (const file of ['marketing/home.js', 'marketing/assistance.js', 'marketing/province.js', 'marketing/serviciotecnico.js', 'generar-provincias.js']) {
+for (const file of ['marketing/home.js', 'marketing/assistance.js', 'marketing/planes-guide.js', 'marketing/province.js', 'marketing/serviciotecnico.js', 'generar-provincias.js']) {
   const source = read(file);
   try {
     new Function(source);
