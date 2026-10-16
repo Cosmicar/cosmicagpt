@@ -99,7 +99,16 @@
     showToast('Se abrió WhatsApp. Revisá y enviá el mensaje para contactar al técnico.');
   });
 
-  const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const reset = document.getElementById('resetGuide');
+  if (reset) reset.addEventListener('click', () => {
+    completed.clear();
+    renderProgress();
+    persistProgress();
+    showToast('Guía reiniciada. Empezá nuevamente desde el paso 1.');
+  });
+
+  const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const mobileAlert = document.getElementById('mobileAlert');
   if (mobile && mobileAlert) mobileAlert.hidden = false;
   const copyLink = document.getElementById('copyLink');
