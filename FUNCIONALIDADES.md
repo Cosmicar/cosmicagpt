@@ -5,7 +5,7 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 | Ruta | Función |
 | --- | --- |
 | `/` | Asistencia remota, problemas frecuentes, servicios, reseñas y contacto. |
-| `/planes` | Mercurio, Venus y Planeta X: servicios por intervención. |
+| `/planes` | Servicios Mercurio, Venus y Planeta X por intervención, precios en ARS, orientador de síntomas no diagnóstico, comparativa móvil, FAQ coherente con SEO y contacto contextualizado por WhatsApp. |
 | `/plus` y `/plus.html` | Redirigen permanentemente a Cósmica.app. |
 | `/asistencia` y `/asistencia.html` | Guía visual de 3 pasos: descarga oficial de AnyDesk, preparación de la conexión, ID opcional validado y contacto por WhatsApp. Aviso móvil, seguridad, alternativa RustDesk y progreso accesible. |
 | `/serviciotecnico` | Servicio presencial en Ramírez de Velazco 111, San Salvador de Jujuy. |
