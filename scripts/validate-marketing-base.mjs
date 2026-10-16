@@ -147,7 +147,7 @@ for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.h
 const assistancePatterns = [
   /href="\/marketing\/assistance\.css"/,
   /src="\/marketing\/assistance\.js"/,
-  /src="\/marketing\/assistance-client\.webp"/,
+  /src="\/marketing\/problem-client\.webp"/,
   /src="\/marketing\/assistance-technician\.webp"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
   /id="downloadAnydesk"/,

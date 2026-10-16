@@ -1,67 +1,125 @@
 (() => {
-  const brandScript = '/marketing/brand-v2.js';
-  if (!document.querySelector(`script[src="${brandScript}"]`)) {
-    const script = document.createElement('script');
-    script.src = brandScript;
-    script.defer = true;
-    document.head.appendChild(script);
-  }
-
+  const totalSteps = 3;
+  const storageKey = 'cosmica_assistance_progress';
+  const pageUrl = 'https://cosmica.ar/asistencia.html';
+  const supportWhatsApp = '5493883298736';
   const completed = new Set();
   const progressBar = document.getElementById('progressBar');
+  const progressTrack = document.getElementById('progressTrack');
   const progressLabel = document.getElementById('progressLabel');
   const toast = document.getElementById('toast');
 
-  const showToast = message => {
+  function showToast(message) {
+    if (!toast) return;
     toast.textContent = message;
     toast.classList.add('show');
     clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
-  };
-
-  const completeStep = step => {
-    if (![1, 2, 3].includes(step)) return;
+    showToast.timer = setTimeout(() => toast.classList.remove('show'), 3400);
+  }
+  function renderProgress() {
+    document.querySelectorAll('[data-step]').forEach(card => {
+      const step = Number(card.dataset.step);
+      const done = completed.has(step);
+      card.classList.toggle('completed', done);
+      const value = card.querySelector('.number-value');
+      if (value) value.textContent = done ? '✓' : String(step);
+      const confirmation = card.querySelector('.step-complete');
+      if (confirmation) {
+        confirmation.setAttribute('aria-pressed', String(done));
+        confirmation.textContent = done ? 'Descarga confirmada ✓' : 'Ya lo descargué ✓';
+      }
+    });
+    if (progressBar) progressBar.style.width = String(completed.size / totalSteps * 100) + '%';
+    if (progressLabel) progressLabel.textContent = String(completed.size) + ' de ' + String(totalSteps) + ' pasos';
+    if (progressTrack) progressTrack.setAttribute('aria-valuenow', String(completed.size));
+  }
+  function persistProgress() {
+    try { localStorage.setItem(storageKey, JSON.stringify([...completed])); }
+    catch (_) { /* La guía funciona incluso si el almacenamiento está bloqueado. */ }
+  }
+  function completeStep(step) {
+    if (![1, 2, 3].includes(step) || completed.has(step)) return;
     completed.add(step);
-    const card = document.querySelector(`[data-step="${step}"]`);
-    card.classList.add('completed');
-    card.querySelector('.number-value').textContent = '✓';
-    const count = completed.size;
-    progressBar.style.width = `${count / 3 * 100}%`;
-    progressLabel.textContent = `${count} de 3 pasos`;
-    try {
-      localStorage.setItem('cosmica_assistance_progress', JSON.stringify([...completed]));
-    } catch (_) { /* La guía sigue funcionando si el navegador bloquea el almacenamiento. */ }
-  };
+    renderProgress();
+    persistProgress();
+  }
 
   try {
-    const saved = JSON.parse(localStorage.getItem('cosmica_assistance_progress') || '[]');
-    if (Array.isArray(saved)) saved.forEach(completeStep);
-  } catch (_) {}
+    const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    if (Array.isArray(saved)) saved.forEach(value => {
+      if (Number.isInteger(value) && value >= 1 && value <= totalSteps) completed.add(value);
+    });
+  } catch (_) { /* Ignorar estados corruptos. */ }
+  renderProgress();
 
-  document.getElementById('downloadAnydesk').addEventListener('click', () => {
+  const download = document.getElementById('downloadAnydesk');
+  if (download) download.addEventListener('click', () => {
+    showToast('Se abrió el sitio oficial de AnyDesk. Confirmá el paso cuando termine la descarga.');
+  });
+  const downloaded = document.getElementById('downloadConfirmed');
+  if (downloaded) downloaded.addEventListener('click', () => {
     completeStep(1);
-    showToast('Abrimos el sitio de AnyDesk. Descargá el archivo y abrilo.');
+    showToast('Perfecto. Ahora abrí el archivo descargado.');
   });
-  document.getElementById('openedButton').addEventListener('click', () => {
+  const opened = document.getElementById('openedButton');
+  if (opened) opened.addEventListener('click', () => {
     completeStep(2);
-    showToast('Perfecto. Ahora buscá el ID que muestra AnyDesk.');
-    document.querySelector('[data-step="3"]').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('Ahora buscá el número de identificación en AnyDesk.');
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelector('[data-step="3"]')?.scrollIntoView({
+      behavior: reduced ? 'auto' : 'smooth', block: 'nearest'
+    });
   });
-  document.getElementById('sendId').addEventListener('click', () => completeStep(3));
 
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  if (isMobile) document.getElementById('mobileAlert').style.display = 'block';
-  const pageUrl = 'https://cosmica.ar/asistencia.html';
-  document.getElementById('copyLink').addEventListener('click', async () => {
+  const idInput = document.getElementById('supportId');
+  const idFeedback = document.getElementById('idFeedback');
+  const sendId = document.getElementById('sendId');
+  if (idInput) idInput.addEventListener('input', () => {
+    idInput.removeAttribute('aria-invalid');
+    if (idFeedback) idFeedback.textContent = '';
+  });
+  if (sendId) sendId.addEventListener('click', event => {
+    const raw = idInput?.value.trim() || '';
+    const digits = raw.replace(/[\s.-]/g, '');
+    // El ID es opcional: también puede ingresarse manualmente en WhatsApp.
+    if (raw && (!/^[\d\s.-]+$/.test(raw) || digits.length < 6 || digits.length > 12)) {
+      event.preventDefault();
+      if (idInput) {
+        idInput.setAttribute('aria-invalid', 'true');
+        idInput.focus();
+      }
+      if (idFeedback) idFeedback.textContent = 'Revisá el ID: usá entre 6 y 12 dígitos, sin letras.';
+      return;
+    }
+    const message = digits
+      ? 'Hola, ya abrí AnyDesk para recibir asistencia de Cósmica. Mi ID es: ' + digits + '.'
+      : 'Hola, ya abrí AnyDesk y necesito ayuda para continuar. Mi ID es: ';
+    sendId.href = 'https://wa.me/' + supportWhatsApp + '?text=' + encodeURIComponent(message);
+    completeStep(3);
+    showToast('Se abrió WhatsApp. Revisá y enviá el mensaje para contactar al técnico.');
+  });
+
+  const reset = document.getElementById('resetGuide');
+  if (reset) reset.addEventListener('click', () => {
+    completed.clear();
+    renderProgress();
+    persistProgress();
+    showToast('Guía reiniciada. Empezá nuevamente desde el paso 1.');
+  });
+
+  const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const mobileAlert = document.getElementById('mobileAlert');
+  if (mobile && mobileAlert) mobileAlert.hidden = false;
+  const copyLink = document.getElementById('copyLink');
+  if (copyLink) copyLink.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(pageUrl);
-      showToast('Enlace copiado. Abrilo en la computadora.');
-    } catch (_) {
-      window.prompt('Copiá este enlace:', pageUrl);
-    }
+      showToast('Enlace copiado. Abrilo en la computadora que necesita asistencia.');
+    } catch (_) { window.prompt('Copiá este enlace para abrirlo desde la computadora:', pageUrl); }
   });
-  document.getElementById('sendLink').href = `https://wa.me/?text=${encodeURIComponent(`Abrí este enlace en la computadora: ${pageUrl}`)}`;
-  document.getElementById('sendLink').target = '_blank';
-  document.getElementById('sendLink').rel = 'noopener noreferrer';
-  document.getElementById('year').textContent = new Date().getFullYear();
+  const sendLink = document.getElementById('sendLink');
+  if (sendLink) sendLink.href = 'https://wa.me/?text=' + encodeURIComponent('Abrí esta guía de Cósmica desde la computadora: ' + pageUrl);
+  const year = document.getElementById('year');
+  if (year) year.textContent = String(new Date().getFullYear());
 })();
