@@ -1,3 +1,10 @@
+## 2026-10-16 · Asistencia remota: página renovada
+
+- Rediseño visual de `/asistencia.html` con identidad A1.1, hero editorial con fotografía existente optimizada, mensajes de confianza, tres tarjetas de conexión, contraste y comportamiento responsive.
+- El cliente puede completar un ID de AnyDesk opcional y llevarlo al mensaje de WhatsApp. Validación local de 6–12 dígitos: el ID nunca se guarda en el navegador, en GA4 ni en el servidor. Si no lo escribe, puede completar el mensaje directamente en WhatsApp.
+- El progreso deja de asumir que una descarga sucedió sólo por abrir el enlace: requiere confirmación explícita del usuario. Se conserva el almacenamiento local tolerante a errores, el aviso móvil, la descarga oficial, RustDesk como alternativa y la salida de soporte humano.
+- Pruebas de regresión `tests/assistance.test.mjs` incluidas en `npm run build` junto con las verificaciones generales. Sin cambios de precios, Supabase, aplicación, permisos ni datos de clientes.
+
 ## 2026-10-15· Fotografías de marketing
 
 - Reemplaza las tres fotos de portada por una serie editorial generada con una modelo adulta: presentación, consulta y trabajo resuelto. Paleta carmesí, luz natural y mayor resolución; no representa a una clienta ni integrante real del equipo.
