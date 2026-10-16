@@ -37,7 +37,7 @@ function createElement(id = '') {
 function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = false } = {}) {
   const idNames = ['progressBar', 'progressTrack', 'progressLabel', 'toast',
     'downloadAnydesk', 'downloadConfirmed', 'openedButton', 'supportId',
-    'idFeedback', 'sendId', 'mobileAlert', 'copyLink', 'sendLink', 'year'];
+    'idFeedback', 'sendId', 'mobileAlert', 'copyLink', 'sendLink', 'year', 'resetGuide'];
   const els = Object.fromEntries(idNames.map(name => [name, createElement(name)]));
   els.mobileAlert.hidden = true;
   const cards = [1, 2, 3].map(step => {
@@ -76,7 +76,7 @@ function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = fa
 test('HTML mantiene la ruta segura de asistencia y los activos oficiales', () => {
   for (const token of [
     'id="downloadAnydesk"', 'id="downloadConfirmed"', 'id="openedButton"',
-    'id="sendId"', 'id="supportId"', 'id="progressTrack"',
+    'id="sendId"', 'id="supportId"', 'id="progressTrack"', 'id="resetGuide"',
     '/brand/official/cosmica-logo-light.png?v=10',
     '/marketing/assistance.css', '/marketing/assistance.js',
     'anydesk.com/es/downloads/windows', '/marketing/problem-client.webp',
@@ -138,6 +138,13 @@ test('Restauración de progreso y almacenamiento bloqueado no rompen la guía', 
   const blocked = setup({ storageThrows: true });
   blocked.els.downloadConfirmed.click();
   assert.equal(blocked.els.progressLabel.textContent, '1 de 3 pasos');
+});
+
+test('Se reinicia el avance para otra asistencia', () => {
+  const { els } = setup({ saved: '[1,2,3]' });
+  assert.equal(els.progressLabel.textContent, '3 de 3 pasos');
+  els.resetGuide.click();
+  assert.equal(els.progressLabel.textContent, '0 de 3 pasos');
 });
 
 test('En celular aparece guía para continuar desde la PC', () => {
