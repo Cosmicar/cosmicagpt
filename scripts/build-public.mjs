@@ -6,7 +6,7 @@ import { optimizeBrandDelivery } from './optimize-brand-delivery.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
-execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs', 'tests/assistance.test.mjs'], { cwd: root, stdio: 'inherit' });
 for (const script of ['validate-project-boundaries', 'sync-brand-contacts', 'validate-marketing', 'sync-brand-markup', 'check-brand-official']) {
   execFileSync(process.execPath, [path.join(root, `scripts/${script}.mjs`)], { cwd: root, stdio: 'inherit' });
 }
