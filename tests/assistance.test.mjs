@@ -79,7 +79,7 @@ test('HTML mantiene la ruta segura de asistencia y los activos oficiales', () =>
     'id="sendId"', 'id="supportId"', 'id="progressTrack"',
     '/brand/official/cosmica-logo-light.png?v=10',
     '/marketing/assistance.css', '/marketing/assistance.js',
-    'anydesk.com/es/downloads/windows', '/marketing/assistance-client.webp',
+    'anydesk.com/es/downloads/windows', '/marketing/problem-client.webp',
     'noopener noreferrer', 'aria-labelledby', 'prefers'
   ].filter(token => token !== 'prefers')) {
     assert.ok(html.includes(token), 'Falta contrato: ' + token);
