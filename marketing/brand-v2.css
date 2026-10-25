@@ -565,3 +565,7 @@
 .hero .status-pill { color: #A7E8CC; background: #162B28; border-color: #38544D; }
 .hero .status-pill[data-open="false"] { color: #F6D49A; background: #30291F; border-color: #625136; }
 .hero .status-pill[data-open="false"] .status-dot::after { animation: none; }
+
+/* Cósmica BOX: acceso desde la navegación pública, sin pago directo fuera de /box */
+.header .nav-links .cosmica-box-nav{color:#E1063A!important;font-weight:900!important}
+@media (min-width:1051px){.header .nav-links{gap:clamp(10px,1.2vw,16px)}.header .nav-links a{font-size:13px}.header .nav-actions .btn{padding-inline:12px}}
