@@ -6,15 +6,15 @@ import { optimizeBrandDelivery } from './optimize-brand-delivery.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
-execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs', 'tests/assistance.test.mjs', 'tests/plans.test.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs', 'tests/assistance.test.mjs', 'tests/plans.test.mjs', 'tests/box.test.mjs'], { cwd: root, stdio: 'inherit' });
 for (const script of ['validate-project-boundaries', 'sync-brand-contacts', 'validate-marketing', 'sync-brand-markup', 'check-brand-official']) {
   execFileSync(process.execPath, [path.join(root, `scripts/${script}.mjs`)], { cwd: root, stdio: 'inherit' });
 }
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out);
 const provinces = JSON.parse(fs.readFileSync(path.join(root, 'data/provincias.json'), 'utf8')).provinces;
-const pages = ['index.html', '404.html', 'planes.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
-const files = [...pages, 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
+const pages = ['index.html', 'box.html', '404.html', 'planes.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
+const files = [...pages, 'box.css', 'box/muestrario-real.jpg', 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
 function copy(file) {
   const target = path.join(out, file);
   fs.mkdirSync(path.dirname(target), { recursive: true });

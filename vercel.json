@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/box",
+      "destination": "/box.html"
+    },
+    {
       "source": "/serviciotecnico",
       "destination": "/serviciotecnico.html"
     },
