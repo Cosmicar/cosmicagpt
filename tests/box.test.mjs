@@ -46,14 +46,19 @@ test('Catálogo Cósmica BOX ofrece Fiestas y pack Stickers de 96 sin mezclar pa
   assert.match(box,/id="combos"/);
   assert.match(box,/48 de Mujeres y 48 de Hombres/);
   assert.match(box,/PACK COMPLETO · 96 DISEÑOS/);
-  assert.match(box,/Consultar precio y entrega/);
+  assert.match(box, /\$2\.990 ARS/);
   assert.match(box,/href="\/box\/stickers"/);
   assert.match(stickers,/96 stickers originales/);
   assert.match(stickers,/48 Stickers Mujeres/);
   assert.match(stickers,/48 Stickers Hombres/);
   assert.match(stickers,/12 hojas A4/);
-  assert.match(stickers,/Consultar por WhatsApp/);
-  assert.equal(stickers.includes('mpago.la'),false,'No activar enlace de precio desconocido');
+  assert.match(stickers,/Comprar con Mercado Pago/);
+  assert.match(stickers,/Ya pagué · Coordinar entrega por WhatsApp/);
+  assert.match(stickers,/\$2\.990/);
+  assert.equal(stickers.split('https://mpago.la/2WJXvzH').length-1,1,'Stickers debe tener solo un link de pago propio');
+  assert.equal(box.includes('https://mpago.la/2WJXvzH'),false,'El link directo de Stickers no debe estar en portada');
+  assert.equal(stickers.includes('mpago.la/12rSj12'),false,'No mezclar enlaces de ambos productos');
+  assert.ok(stickers.indexOf('https://mpago.la/2WJXvzH')>stickers.indexOf('id="consultar"'));
   for(const name of ['stickers-96-general.jpg','stickers-96-mujeres.jpg','stickers-96-hombres.jpg']){
     const url=new URL('box/'+name,root);
     assert.ok(fs.existsSync(url),'Falta imagen '+name);
