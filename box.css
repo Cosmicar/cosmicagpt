@@ -6,3 +6,29 @@
 /* Paso pospago: avisar sin exponer comprobantes ni automatizar la entrega */
 .afterpay{display:block;margin-top:16px;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;text-align:center;font-size:13px;font-weight:800;text-decoration:none}
 .afterpay:hover{border-color:#E1063A;background:rgba(225,6,58,.1)}
+
+/* Catálogo de combos Cósmica BOX · productos reales, disponibilidad por pack */
+.catalog{padding:77px 0 85px;scroll-margin-top:20px}
+.catalog-intro{max-width:770px;margin-bottom:31px}
+.catalog-intro h2,.pack-detail-heading h2{font-size:clamp(32px,4.9vw,54px);letter-spacing:-.055em;line-height:1.1;margin:12px 0 16px}
+.catalog-intro>p:last-child,.pack-detail-heading>p:last-child{font-size:16px;color:#adb6c7}
+.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:23px}
+.catalog-card{display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,.17);border-radius:24px;background:linear-gradient(140deg,#1e2533,#151a25);box-shadow:0 24px 64px rgba(0,0,0,.26)}
+.catalog-cover{height:298px;position:relative;overflow:hidden;background:#111622;border-bottom:1px solid rgba(255,255,255,.12)}
+.catalog-cover img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+.stickers-cover img{object-position:center 33%}
+.catalog-status{position:absolute;left:17px;top:17px;padding:9px 13px;border-radius:99px;font-size:11px;font-weight:900;letter-spacing:.05em;box-shadow:0 10px 26px #0006}
+.catalog-status.available{background:#e1063a;color:#fff}
+.catalog-status.pilot{background:#27364a;color:#fff;border:1px solid #ffffff55}
+.catalog-body{display:flex;flex-direction:column;flex:1;padding:28px 29px 30px}
+.catalog-eyebrow{font-size:11px;letter-spacing:.12em;color:#ff88a6;font-weight:850}
+.catalog-body h3{font-size:30px;letter-spacing:-.045em;line-height:1.13;margin:8px 0 13px}
+.catalog-body>p:not(.catalog-eyebrow){font-size:15px;line-height:1.6;color:#c0c7d4}
+.catalog-price{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid #ffffff22;margin-top:auto;padding:19px 0 18px}
+.catalog-price strong{font-size:21px;color:#fff}
+.catalog-price span{font-size:12px;color:#b0bac8}
+.catalog-body .btn{width:100%;min-height:52px}
+.catalog-upcoming{color:#aeb7c7;font-size:13px;margin-top:24px}
+.pack-detail-heading{border-top:1px solid var(--line);padding:37px 0 3px;scroll-margin-top:25px}
+:focus-visible{outline:3px solid #ff9bb6;outline-offset:3px}
+@media(max-width:760px){.catalog{padding:53px 0 60px}.catalog-grid{grid-template-columns:1fr;gap:18px}.catalog-cover{height:250px}.catalog-body{padding:22px}.catalog-body h3{font-size:28px}.pack-detail-heading{padding:34px 0 4px}}

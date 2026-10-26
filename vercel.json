@@ -8,6 +8,14 @@
       "destination": "/box.html"
     },
     {
+      "source": "/box/stickers",
+      "destination": "/stickers-preview.html"
+    },
+    {
+      "source": "/box/stickers-preview",
+      "destination": "/stickers-preview.html"
+    },
+    {
       "source": "/serviciotecnico",
       "destination": "/serviciotecnico.html"
     },

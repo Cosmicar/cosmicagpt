@@ -40,3 +40,22 @@ test('La compilación y ruta /box incluyen todos los recursos necesarios', () =>
   assert.ok(vercel.rewrites.some((entry) => entry.source === '/box' && entry.destination === '/box.html'));
   assert.match(read('sitemap.xml'), /https:\/\/cosmica\.ar\/box/);
 });
+
+test('Catálogo Cósmica BOX muestra Fiestas disponible y Stickers como piloto', () => {
+  const stickers = read('stickers-preview.html');
+  const img = new URL('box/stickers-preview.jpg', root);
+  assert.match(box, /id="combos"/);
+  assert.match(box, /Stickers con actitud/);
+  assert.match(box, /PILOTO · 8 DISEÑOS/);
+  assert.match(box, /Sin precio ni venta habilitada/);
+  assert.match(box, /href="\/box\/stickers"/);
+  assert.match(stickers, /8 STICKERS DE MUESTRA/);
+  assert.match(stickers, /Consultar por la muestra en WhatsApp/);
+  assert.ok(!stickers.includes('mpago.la/12rSj12'));
+  assert.ok(fs.existsSync(img) && fs.statSync(img).size > 100000);
+  assert.ok(build.includes("'stickers-preview.html'"));
+  assert.ok(build.includes("'box/stickers-preview.jpg'"));
+  assert.ok(vercel.rewrites.some(x => x.source === '/box/stickers' && x.destination === '/stickers-preview.html'));
+  assert.match(read('sitemap.xml'), /https:\/\/cosmica\.ar\/box\/stickers/);
+  assert.match(style, /\.catalog-grid/);
+});
