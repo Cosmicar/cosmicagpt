@@ -14,7 +14,7 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out);
 const provinces = JSON.parse(fs.readFileSync(path.join(root, 'data/provincias.json'), 'utf8')).provinces;
 const pages = ['index.html', 'box.html', 'stickers-preview.html', '404.html', 'planes.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
-const files = [...pages, 'box.css', 'box/muestrario-real.jpg', 'box/stickers-preview.jpg', 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
+const files = [...pages, 'box.css', 'box/muestrario-real.jpg', 'box/stickers-preview.jpg', 'box/stickers-96-general.jpg', 'box/stickers-96-mujeres.jpg', 'box/stickers-96-hombres.jpg', 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
 function copy(file) {
   const target = path.join(out, file);
   fs.mkdirSync(path.dirname(target), { recursive: true });
