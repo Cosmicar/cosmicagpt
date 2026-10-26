@@ -41,21 +41,27 @@ test('La compilación y ruta /box incluyen todos los recursos necesarios', () =>
   assert.match(read('sitemap.xml'), /https:\/\/cosmica\.ar\/box/);
 });
 
-test('Catálogo Cósmica BOX muestra Fiestas disponible y Stickers como piloto', () => {
-  const stickers = read('stickers-preview.html');
-  const img = new URL('box/stickers-preview.jpg', root);
-  assert.match(box, /id="combos"/);
-  assert.match(box, /Stickers con actitud/);
-  assert.match(box, /PILOTO · 8 DISEÑOS/);
-  assert.match(box, /Sin precio ni venta habilitada/);
-  assert.match(box, /href="\/box\/stickers"/);
-  assert.match(stickers, /8 STICKERS DE MUESTRA/);
-  assert.match(stickers, /Consultar por la muestra en WhatsApp/);
-  assert.ok(!stickers.includes('mpago.la/12rSj12'));
-  assert.ok(fs.existsSync(img) && fs.statSync(img).size > 100000);
+test('Catálogo Cósmica BOX ofrece Fiestas y pack Stickers de 96 sin mezclar pagos', () => {
+  const stickers=read('stickers-preview.html');
+  assert.match(box,/id="combos"/);
+  assert.match(box,/48 de Mujeres y 48 de Hombres/);
+  assert.match(box,/PACK COMPLETO · 96 DISEÑOS/);
+  assert.match(box,/Consultar precio y entrega/);
+  assert.match(box,/href="\/box\/stickers"/);
+  assert.match(stickers,/96 stickers originales/);
+  assert.match(stickers,/48 Stickers Mujeres/);
+  assert.match(stickers,/48 Stickers Hombres/);
+  assert.match(stickers,/12 hojas A4/);
+  assert.match(stickers,/Consultar por WhatsApp/);
+  assert.equal(stickers.includes('mpago.la'),false,'No activar enlace de precio desconocido');
+  for(const name of ['stickers-96-general.jpg','stickers-96-mujeres.jpg','stickers-96-hombres.jpg']){
+    const url=new URL('box/'+name,root);
+    assert.ok(fs.existsSync(url),'Falta imagen '+name);
+    assert.ok(fs.statSync(url).size>200000);
+    assert.ok(build.includes("'box/"+name+"'"));
+  }
   assert.ok(build.includes("'stickers-preview.html'"));
-  assert.ok(build.includes("'box/stickers-preview.jpg'"));
-  assert.ok(vercel.rewrites.some(x => x.source === '/box/stickers' && x.destination === '/stickers-preview.html'));
-  assert.match(read('sitemap.xml'), /https:\/\/cosmica\.ar\/box\/stickers/);
-  assert.match(style, /\.catalog-grid/);
+  assert.ok(vercel.rewrites.some(x => x.source==='/box/stickers' && x.destination==='/stickers-preview.html'));
+  assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/stickers/);
+  assert.match(style,/\.catalog-grid/);
 });
