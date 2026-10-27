@@ -100,21 +100,26 @@ test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
  assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/calendarios-2027/);
 });
 
-test('Calendarios anime 2027 V3 con feriados y sin marcas, sin cobro Mignon',()=>{
+test('Calendarios Anime 2027 V3 disponibles a 4990 con compra identificada por WhatsApp',()=>{
  const cal=read('calendarios-2027.html');
  const image=new URL('box/calendarios-anime-2027-v3-feriados.jpg',root);
  assert.match(box,/COMBO 04 · CALENDARIOS ANIME A4/);
+ assert.match(box,/DISPONIBLE · ANIME 2027/);
  assert.match(box,/href="\/box\/calendarios-2027#anime"/);
- assert.match(box,/Sin precio ni compra habilitada/);
- assert.match(box,/feriados nacionales de Argentina y sin marcas/);
+ assert.match(box,/Dos versiones · entrega digital manual/);
  assert.match(cal,/id="anime"/);
+ assert.match(cal,/id="anime-compra"/);
  assert.match(cal,/12 calendarios tradicionales de pared/);
  assert.match(cal,/24 páginas A4 entre ambas ediciones/);
  assert.match(cal,/20 de noviembre puede trasladarse/);
  assert.match(cal,/Decreto 614\/2025/);
  assert.match(cal,/no están incluidos en el combo de \$4\.990/);
- assert.match(cal,/Consultar por Anime 2027/);
+ assert.match(cal,/Comprar Anime por WhatsApp · \$4\.990/);
+ assert.match(cal,/Te compartimos el enlace de pago correspondiente a/);
+ assert.match(cal,/corresponde a otro kit/);
  assert.ok(fs.existsSync(image)&&fs.statSync(image).size>200000);
  assert.ok(build.includes("'box/calendarios-anime-2027-v3-feriados.jpg'"));
- assert.equal(cal.split('https://mpago.la/1sKw9Mo').length-1,1,'No duplicar links Mignon');
+ assert.equal(cal.split('https://mpago.la/1sKw9Mo').length-1,1,'Mignon MP link exclusivo');
+ assert.equal(box.includes('https://mpago.la/1sKw9Mo'),false,'Catalogo no publica MP');
+ assert.equal(cal.includes('https://mpago.la/2WJXvzH'),false,'No incluir pago Stickers');
 });
