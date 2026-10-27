@@ -12,6 +12,10 @@
       "destination": "/box.html"
     },
     {
+      "source": "/box/stickers-ia",
+      "destination": "/stickers-ia.html"
+    },
+    {
       "source": "/box/stickers",
       "destination": "/stickers-preview.html"
     },
