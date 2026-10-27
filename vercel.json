@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/box/calendarios-2027",
+      "destination": "/calendarios-2027.html"
+    },
+    {
       "source": "/box",
       "destination": "/box.html"
     },
