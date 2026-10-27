@@ -70,3 +70,24 @@ test('Catálogo Cósmica BOX ofrece Fiestas y pack Stickers de 96 sin mezclar pa
   assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/stickers/);
   assert.match(style,/\.catalog-grid/);
 });
+
+test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
+ const cal=read('calendarios-2027.html');
+ const asset=new URL('box/calendarios-mignon-2027.jpg',root);
+ assert.match(box,/COMBO 03 · CALENDARIOS PARA IMPRIMIR/);
+ assert.match(box,/PRÓXIMAMENTE · EN REVISIÓN/);
+ assert.match(box,/href="\/box\/calendarios-2027"/);
+ assert.match(cal,/22 calendarios de tres formatos|22 piezas en tres formatos/);
+ assert.match(cal,/12 mensuales/);
+ assert.match(cal,/6 bimestrales/);
+ assert.match(cal,/4 trimestrales/);
+ assert.match(cal,/PowerPoint/);
+ assert.match(cal,/Sin envío físico/);
+ assert.match(cal,/Aún no disponible para compra/);
+ assert.equal(cal.includes('mpago.la'),false);
+ assert.ok(fs.existsSync(asset) && fs.statSync(asset).size > 200000);
+ assert.ok(build.includes("'calendarios-2027.html'"));
+ assert.ok(build.includes("'box/calendarios-mignon-2027.jpg'"));
+ assert.ok(vercel.rewrites.some(x=>x.source==='/box/calendarios-2027'&&x.destination==='/calendarios-2027.html'));
+ assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/calendarios-2027/);
+});
