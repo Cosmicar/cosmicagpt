@@ -123,3 +123,25 @@ test('Calendarios Anime 2027 V3 disponibles a 4990 con compra identificada por W
  assert.equal(box.includes('https://mpago.la/1sKw9Mo'),false,'Catalogo no publica MP');
  assert.equal(cal.includes('https://mpago.la/2WJXvzH'),false,'No incluir pago Stickers');
 });
+
+test('Cósmica BOX Stickers IA 48 como combo 05 en revisión sin enlaces de cobro',()=>{
+ const ia=read('stickers-ia.html');
+ const image=new URL('box/stickers-ia-48-muestrario.jpg',root);
+ assert.match(box,/COMBO 05 · FORMAS Y FRASES DE IA/);
+ assert.match(box,/Stickers IA · Formas y frases/);
+ assert.match(box,/href="\/box\/stickers-ia"/);
+ assert.match(box,/Sin precio ni venta habilitada/);
+ assert.match(ia,/48 stickers originales/);
+ assert.match(ia,/Bots y asistentes/);
+ assert.match(ia,/Formas de IA/);
+ assert.match(ia,/Humor y prompts/);
+ assert.match(ia,/Ideas y trabajo/);
+ assert.match(ia,/seis hojas A4/);
+ assert.match(ia,/No hay enlace de Mercado Pago para este combo/);
+ assert.equal(ia.includes('mpago.la'),false,'No dar checkout sin precio autorizado');
+ assert.ok(fs.existsSync(image)&&fs.statSync(image).size>100000);
+ assert.ok(build.includes("'stickers-ia.html'"));
+ assert.ok(build.includes("'box/stickers-ia-48-muestrario.jpg'"));
+ assert.ok(vercel.rewrites.some(x=>x.source==='/box/stickers-ia' && x.destination==='/stickers-ia.html'));
+ assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/stickers-ia/);
+});
