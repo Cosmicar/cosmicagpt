@@ -100,19 +100,21 @@ test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
  assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/calendarios-2027/);
 });
 
-test('Calendarios anime 2027 tienen muestrario propio y no usan el cobro del kit Mignon',()=>{
+test('Calendarios anime 2027 V3 con feriados y sin marcas, sin cobro Mignon',()=>{
  const cal=read('calendarios-2027.html');
- const image=new URL('box/calendarios-anime-2027-muestrario.jpg',root);
+ const image=new URL('box/calendarios-anime-2027-v3-feriados.jpg',root);
  assert.match(box,/COMBO 04 · CALENDARIOS ANIME A4/);
  assert.match(box,/href="\/box\/calendarios-2027#anime"/);
  assert.match(box,/Sin precio ni compra habilitada/);
+ assert.match(box,/feriados nacionales de Argentina y sin marcas/);
  assert.match(cal,/id="anime"/);
  assert.match(cal,/12 calendarios tradicionales de pared/);
- assert.match(cal,/12 ilustraciones originales estilo anime/);
- assert.match(cal,/No marcan feriados ni fases lunares/);
+ assert.match(cal,/24 páginas A4 entre ambas ediciones/);
+ assert.match(cal,/20 de noviembre puede trasladarse/);
+ assert.match(cal,/Decreto 614\/2025/);
  assert.match(cal,/no están incluidos en el combo de \$4\.990/);
  assert.match(cal,/Consultar por Anime 2027/);
  assert.ok(fs.existsSync(image)&&fs.statSync(image).size>200000);
- assert.ok(build.includes("'box/calendarios-anime-2027-muestrario.jpg'"));
+ assert.ok(build.includes("'box/calendarios-anime-2027-v3-feriados.jpg'"));
  assert.equal(cal.split('https://mpago.la/1sKw9Mo').length-1,1,'No duplicar links Mignon');
 });
