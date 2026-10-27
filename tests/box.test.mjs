@@ -75,7 +75,8 @@ test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
  const cal=read('calendarios-2027.html');
  const asset=new URL('box/calendarios-mignon-2027.jpg',root);
  assert.match(box,/COMBO 03 · CALENDARIOS PARA IMPRIMIR/);
- assert.match(box,/PRÓXIMAMENTE · EN REVISIÓN/);
+ assert.match(box,/DISPONIBLE · UNIVERSO 2027/);
+ assert.match(box,/\$4\.990 ARS/);
  assert.match(box,/href="\/box\/calendarios-2027"/);
  assert.match(cal,/22 calendarios de tres formatos|22 piezas en tres formatos/);
  assert.match(cal,/12 mensuales/);
@@ -83,8 +84,15 @@ test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
  assert.match(cal,/4 trimestrales/);
  assert.match(cal,/PowerPoint/);
  assert.match(cal,/Sin envío físico/);
- assert.match(cal,/Aún no disponible para compra/);
- assert.equal(cal.includes('mpago.la'),false);
+ assert.match(cal,/Comprar con Mercado Pago/);
+ assert.match(cal,/\$4\.990/);
+ assert.match(cal,/Ya pagué · Coordinar entrega por WhatsApp/);
+ assert.equal(cal.split('https://mpago.la/1sKw9Mo').length-1,1,'Un solo link MP específico de Calendarios');
+ assert.equal(box.includes('https://mpago.la/1sKw9Mo'),false,'No incluir Link MP directo en catálogo');
+ assert.equal(cal.includes('mpago.la/12rSj12'),false,'No confundir Link de Fiestas');
+ assert.equal(cal.includes('mpago.la/2WJXvzH'),false,'No confundir Link de Stickers');
+ assert.match(cal,/feriados turísticos/);
+ assert.match(cal,/entrega del ZIP es manual/);
  assert.ok(fs.existsSync(asset) && fs.statSync(asset).size > 200000);
  assert.ok(build.includes("'calendarios-2027.html'"));
  assert.ok(build.includes("'box/calendarios-mignon-2027.jpg'"));
