@@ -11,15 +11,21 @@ function schema(type) {
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   return blocks.map(([,json]) => JSON.parse(json)).find(item => item['@type'] === type);
 }
-test('Los precios de los tres servicios y el marcado coinciden', () => {
+test('Los servicios se cotizan sin importes fijos y el SEO mantiene los tres nombres', () => {
   const data = schema('Service');
-  const expected = { Mercurio:'24900', Venus:'35900', 'Planeta X':'49900' };
-  assert.deepEqual(Object.fromEntries(data.offers.map(offer => [offer.name, offer.price])), expected);
-  for (const [name,price] of Object.entries(expected)) {
-    const pesos = '$' + Number(price).toLocaleString('es-AR');
-    assert.ok(html.includes(pesos), name + ' no incluye precio ' + pesos);
+  assert.deepEqual(data.offers.map(offer => offer.name), ['Mercurio', 'Venus', 'Planeta X']);
+  for (const offer of data.offers) {
+    assert.equal(offer.price, undefined);
+    assert.equal(offer.priceCurrency, undefined);
+    assert.ok(offer.url.startsWith('https://cosmica.ar/planes#'));
   }
-  assert.ok(html.includes('Desde $49.900'));
+  for (const price of ['$24.900', '$35.900', '$49.900', '24900', '35900', '49900']) {
+    assert.equal(html.includes(price), false, 'No publicar importe ' + price);
+  }
+  assert.ok((html.match(/Consultar precio/g) ?? []).length >= 6);
+  assert.ok(html.includes('CONSULTAR PRECIO PRO'));
+  assert.ok(html.includes('Rubro%3A') && html.includes('Cantidad%20de%20usuarios'));
+  assert.ok(html.includes('>Empezar gratis</a>'));
   assert.ok(!html.includes('Cósmica+'));
   assert.ok(html.includes('https://app.cosmica.ar/'));
 });

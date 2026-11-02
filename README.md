@@ -22,7 +22,7 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 - Home de servicios técnicos.
 - Flujo de asistencia remota.
 - Servicios por intervención **Mercurio**, **Venus** y **Planeta X** en `/planes`.
-- Cósmica.app ofrece planes Free y PRO. Cósmica+ queda retirada como propuesta comercial; la antigua URL `/plus` debe redirigir a Cósmica.app.
+- Cósmica.app mantiene Free accesible sin cotización; PRO se presenta comercialmente como **CONSULTAR PRECIO PRO**, con propuesta según negocio y adaptaciones especiales cotizadas aparte. El precio operativo y las suscripciones existentes del SaaS no se modifican desde esta web. Cósmica+ queda retirada; `/plus` redirige a Cósmica.app.
 - Contacto por WhatsApp.
 - Directorio nacional y páginas provinciales.
 - SEO, sitemap y datos estructurados.

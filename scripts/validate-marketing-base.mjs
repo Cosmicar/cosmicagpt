@@ -113,16 +113,18 @@ balancedDocument(assistanceHtml, 'asistencia.html');
 balancedDocument(plansHtml, 'planes.html');
 balancedDocument(localServiceHtml, 'serviciotecnico.html');
 
-const currentPlanPrices = ['$24.900', '$35.900', '$49.900'];
-const retiredPlanPrices = ['$19.900', '$29.900', '$39.900'];
-for (const price of currentPlanPrices) {
-  if (!indexHtml.includes(price)) fail(`index.html: falta el precio vigente ${price}`);
-  if (!plansHtml.includes(price)) fail(`planes.html: falta el precio vigente ${price}`);
+// La web cotiza los servicios y PRO sin montos fijos; los productos BOX son independientes.
+const forbiddenServicePrices = ['$24.900', '$35.900', '$49.900', '$19.900', '$29.900', '$39.900', '"price":"24900"', '"price":"35900"', '"price":"49900"'];
+for (const [file, markup] of [['index.html', indexHtml], ['planes.html', plansHtml]]) {
+  for (const price of forbiddenServicePrices) {
+    if (markup.includes(price)) fail(`${file}: conserva un precio fijo ${price}`);
+  }
+  if (!markup.includes('CONSULTAR PRECIO PRO')) fail(`${file}: falta CTA PRO`);
+  if (!markup.includes('https://app.cosmica.ar')) fail(`${file}: falta alta Free`);
+  if (!markup.includes('Consultar precio')) fail(`${file}: falta consulta de servicios`);
 }
-for (const price of retiredPlanPrices) {
-  if (indexHtml.includes(price)) fail(`index.html: conserva el precio anterior ${price}`);
-  if (plansHtml.includes(price)) fail(`planes.html: conserva el precio anterior ${price}`);
-}
+if (!indexHtml.includes('data-source="pro-consulta"')) fail('index.html: falta atribución de consulta PRO');
+if (!plansHtml.includes('Rubro%3A') || !plansHtml.includes('Cantidad%20de%20usuarios')) fail('planes.html: falta consulta PRO contextualizada');
 
 const indexPatterns = [
   /<title>[^<]+<\/title>/,
@@ -262,10 +264,10 @@ for (const province of provinces) {
   if (!html.includes('/soporte-tecnico-remoto-argentina.html')) fail(`${file}: falta enlace al hub nacional`);
   if (!html.includes('Nuestra base física está en San Salvador de Jujuy')) fail(`${file}: no aclara la base física real`);
   if (!html.includes('/marketing/province.css?v=20260813-1')) fail(`${file}: no referencia el diseño provincial vigente`);
-  if (!html.includes('Servicios desde $24.900')) fail(`${file}: falta el precio inicial vigente de servicios`);
+  if (!html.includes('Consultar precio del servicio')) fail(`${file}: falta consulta previa de servicio`);
   if (!html.includes('Ver Mercurio, Venus y Planeta X')) fail(`${file}: falta enlace al catálogo de servicios vigente`);
   if (!html.includes('href="/planes"')) fail(`${file}: el catálogo de servicios no apunta a /planes`);
-  if (retiredPlanPrices.some(price => html.includes(price))) fail(`${file}: conserva un precio anterior`);
+  if (forbiddenServicePrices.some(price => html.includes(price))) fail(`${file}: conserva un precio fijo de servicios`);
 
   const cityMatches = province.cities.filter(city => html.includes(city));
   if (cityMatches.length < 3) fail(`${file}: faltan ciudades de referencia`);
