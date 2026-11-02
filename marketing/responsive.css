@@ -62,6 +62,7 @@
       .final-cta { padding: 35px 25px; border-radius: 27px; }
       .final-actions { display: grid; }
       .app-strip { align-items: flex-start; flex-direction: column; }
+      .app-strip-actions { justify-content:flex-start; width:100%; }
       .footer-top, .footer-bottom { flex-direction: column; }
       .footer-links { justify-content: flex-start; }
       .footer { padding-bottom: 112px; }
