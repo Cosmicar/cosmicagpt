@@ -5,12 +5,14 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 | Ruta | Función |
 | --- | --- |
 | `/` | Asistencia remota, problemas frecuentes, servicios, reseñas y contacto. |
-| `/planes` | Servicios Mercurio, Venus y Planeta X por intervención, precios en ARS, orientador de síntomas no diagnóstico, comparativa móvil, FAQ coherente con SEO y contacto contextualizado por WhatsApp. |
+| `/planes` | Servicios Mercurio, Venus y Planeta X por intervención, cotización individual previa, orientador de síntomas no diagnóstico, comparativa móvil, FAQ coherente con SEO y contacto contextualizado por WhatsApp. |
 | `/plus` y `/plus.html` | Redirigen permanentemente a Cósmica.app. |
 | `/asistencia` y `/asistencia.html` | Guía visual de 3 pasos: descarga oficial de AnyDesk, preparación de la conexión, ID opcional validado y contacto por WhatsApp. Aviso móvil, seguridad, alternativa RustDesk y progreso accesible. |
 | `/serviciotecnico` | Servicio presencial en Ramírez de Velazco 111, San Salvador de Jujuy. |
 | `/soporte-tecnico-remoto-argentina` | Directorio nacional de cobertura remota. |
 | `/pc-lenta-{provincia}` y variantes `.html` | 24 páginas provinciales generadas desde plantillas y datos. |
+
+La comunicación de Cósmica.app conserva Free con acceso directo y presenta **CONSULTAR PRECIO PRO** mediante WhatsApp, evaluando rubro, usuarios y funcionalidades. Las adaptaciones adicionales se cotizan por separado; esta web no modifica la suscripción ni el precio interno del SaaS. Cósmica BOX conserva los valores de sus productos digitales independientes.
 
 La web incorpora metadatos, datos estructurados, sitemap, robots, recursos oficiales de marca y enlaces de WhatsApp contextualizados. El build integra GA4 `G-LM3ZVTL6YW` en las páginas públicas (excepto 404), solo para los dominios productivos. Registra visitas y eventos `whatsapp_click` y `assistance_click` mediante una etiqueta directa, sin GTM adicional. Los eventos propios no incluyen mensajes ni IDs de asistencia. La recepción debe comprobarse en Tiempo real de GA4.
 
