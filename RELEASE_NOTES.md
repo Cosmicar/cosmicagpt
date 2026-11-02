@@ -1,3 +1,10 @@
+## 2026-11-02 · Navegación de portada compacta y adaptable
+
+- En `/`, se priorizan Servicios, Planes, Cósmica BOX y Cósmica.app. Cómo funciona, Reseñas, Taller en Jujuy y Preguntas pasan al desplegable accesible **Más**; todos conservan sus destinos.
+- La barra de escritorio baja a 64 px con acciones compactas. Entre tablet y móvil se ofrece menú desplazable, con acceso a asistencia y a WhatsApp; en pantallas estrechas se evita competir con el logo.
+- `Más` se cierra al navegar, pulsar Escape o tocar fuera. Se añadió prueba de regresión en el build.
+- Sin cambios de tarifas Mercurio/Venus/Planeta X, contrato Free/PRO, ventas Cósmica BOX, marca A1.1, SEO ni servicios del sistema.
+
 ## 2026-11-02 · Ajuste de alcance: cotización PRO solamente para Cósmica.app
 
 - Se restauran exactamente los precios públicos, textos, enlaces y datos estructurados de los servicios Mercurio, Venus y Planeta X, incluidos portada, /planes, las páginas provinciales y sus pruebas. La cotización personalizada no aplica a estos servicios.

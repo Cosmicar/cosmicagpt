@@ -1,93 +1,164 @@
-/* Ajuste específico del encabezado: agrupa navegación y acciones sin perder legibilidad. */
+/* Navegación compacta de la portada. La marca A1.1 y los CTA conservan sus activos. */
+.header .nav-more { position: relative; min-width: 0; }
+.header .nav-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 7px;
+  border-radius: 9px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.2;
+  white-space: nowrap;
+  list-style: none;
+  cursor: pointer;
+}
+.header .nav-more > summary::-webkit-details-marker { display: none; }
+.header .nav-more > summary::after {
+  content: "⌄";
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  transform: translateY(-2px);
+}
+.header .nav-more[open] > summary::after { transform: rotate(180deg) translateY(1px); }
+.header .nav-more > summary:hover, .header .nav-more[open] > summary {
+  background: rgba(225, 6, 58, .07);
+  color: #BB0631;
+}
+.header .nav-more > summary:focus-visible {
+  outline: 3px solid var(--carmine, #E1063A);
+  outline-offset: 3px;
+}
+.header .nav-more-menu {
+  position: absolute;
+  z-index: 110;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 215px;
+  display: grid;
+  gap: 0;
+  padding: 8px;
+  background: #FFFDFB;
+  border: 1px solid rgba(15,18,26,.13);
+  border-radius: 14px;
+  box-shadow: 0 18px 38px rgba(15,18,26,.18);
+}
+.header .nav-more:not([open]) > .nav-more-menu { display: none; }
+.header .nav .nav-more-menu a {
+  display: block;
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: #292E3A;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: normal;
+}
+.header .nav .nav-more-menu a:hover,
+.header .nav .nav-more-menu a:focus-visible { background: rgba(225,6,58,.07); }
+.header .nav .nav-whatsapp-mobile { display: none; }
 
 @media (min-width: 1181px) {
   .header .nav {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr) max-content;
-    column-gap: 22px;
-    min-height: 74px;
+    column-gap: 18px;
+    min-height: 64px;
   }
-
-  .header .brand {
-    white-space: nowrap;
+  .header .brand.brand-official > img.brand-official-logo {
+    width: 114px;
+    height: auto;
   }
-
-  .header .nav-links {
+  .header .nav .nav-links {
     min-width: 0;
     justify-content: center;
-    gap: clamp(14px, 1.35vw, 20px);
+    gap: clamp(12px, 1.4vw, 21px);
+    flex-wrap: nowrap;
   }
-
-  .header .nav-links a {
+  .header .nav .nav-links > a {
     white-space: nowrap;
-    font-size: 13px;
+    font-size: 12.5px;
     line-height: 1.2;
   }
-
-  .header .nav-actions {
-    gap: 8px;
-  }
-
-  .header .nav-actions .btn-small {
-    min-height: 40px;
-    padding: 9px 15px;
-    font-size: 13px;
-  }
-
-  .header .nav-actions .btn-small .icon {
-    width: 17px;
-    height: 17px;
-  }
-}
-
-/* Evita una franja intermedia donde los enlaces podrían comprimirse o saltar de línea. */
-@media (min-width: 1051px) and (max-width: 1180px) {
-  .header .nav {
-    gap: 12px;
-  }
-
-  .header .nav-links {
-    display: none;
-  }
-
-  .header .menu-toggle {
-    display: block;
-  }
-
-  .header .nav-actions .btn {
-    display: none;
-  }
-
-  .header .nav-actions .assistance-access {
-    display: inline-flex;
-  }
-
-  .header .nav-assistance-mobile {
-    display: block;
-    color: var(--blue) !important;
-    font-weight: 900 !important;
-  }
-
-  .header .nav-links.open {
-    position: fixed;
-    inset: 78px 16px auto;
-    display: grid;
-    gap: 0;
-    padding: 16px;
-    background: rgba(255, 255, 255, .98);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    box-shadow: var(--shadow-md);
-  }
-
-  .header .nav-links.open a {
-    padding: 15px 10px;
-    border-bottom: 1px solid var(--line);
-    font-size: 16px;
+  .header .nav .nav-actions { gap: 8px; }
+  .header .nav .nav-actions .btn-small {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    line-height: 1.2;
     white-space: nowrap;
   }
+  .header .nav .nav-actions .btn-small .icon { width: 16px; height: 16px; }
+}
 
-  .header .nav-links.open a:last-child {
+/* El encabezado pasa a menú antes de necesitar una segunda fila. */
+@media (min-width: 1051px) and (max-width: 1180px) {
+  .header .nav .nav-links { display: none; }
+  .header .nav .menu-toggle { display: block; }
+  .header .nav .nav-actions .btn { display: none; }
+  .header .nav .nav-actions .assistance-access { display: inline-flex; }
+}
+
+/* Menú accesible y desplazable en tablet y móvil, sin enlaces cortados. */
+@media (max-width: 1180px) {
+  .header .nav { min-height: 66px; gap: 12px; }
+  .header .nav .nav-links.open {
+    position: fixed;
+    inset: 72px 12px auto;
+    display: grid;
+    gap: 0;
+    max-height: calc(100vh - 86px);
+    max-height: calc(100dvh - 86px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 15px;
+    background: rgba(255, 253, 251, .99);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(15,18,26,.17);
+  }
+  .header .nav .nav-links.open > a {
+    display: block;
+    padding: 13px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+    white-space: normal;
+  }
+  .header .nav .nav-more { width: 100%; border-bottom: 1px solid var(--line); }
+  .header .nav .nav-more > summary {
+    display: flex;
+    width: 100%;
+    min-height: 45px;
+    justify-content: space-between;
+    padding: 12px 10px;
+    font-size: 15px;
+  }
+  .header .nav .nav-more-menu {
+    position: static;
+    width: 100%;
+    padding: 4px 6px 8px;
+    background: #F6F3F0;
+    border: 0;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+  .header .nav .nav-more-menu a {
+    padding: 12px 13px;
+    font-size: 14px;
+    white-space: normal;
+  }
+  .header .nav .nav-links.open > .nav-assistance-mobile { display: block; }
+  .header .nav .nav-links.open > .nav-whatsapp-mobile {
+    display: block;
+    color: #C00634;
+    font-weight: 900;
     border-bottom: 0;
   }
+}
+@media (max-width: 560px) {
+  /* La asistencia conserva su acceso en menú y barra inferior. */
+  .header .nav .nav-actions .assistance-access { display: none; }
 }

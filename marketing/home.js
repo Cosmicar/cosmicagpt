@@ -53,6 +53,8 @@
   const header = document.getElementById('header');
   const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.getElementById('navLinks');
+  const moreMenu = document.getElementById('navMore');
+  const moreSummary = moreMenu?.querySelector('summary');
   const status = document.getElementById('serviceStatus');
   const problemNavLink = navLinks?.querySelector('a[href="#problemas"]');
   const plansNavLink = navLinks?.querySelector('a[href="#planes"]');
@@ -76,6 +78,7 @@
   window.addEventListener('scroll', updateHeader, { passive: true });
 
   const closeMenu = () => {
+    if (moreMenu) moreMenu.open = false;
     navLinks?.classList.remove('open');
     menuToggle?.classList.remove('open');
     menuToggle?.setAttribute('aria-expanded', 'false');
@@ -93,11 +96,26 @@
 
   navLinks?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
 
+  document.addEventListener('click', event => {
+    if (moreMenu?.open && !moreMenu.contains(event.target)) moreMenu.open = false;
+  });
+
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && navLinks?.classList.contains('open')) {
+    if (event.key !== 'Escape') return;
+    if (moreMenu?.open) {
+      moreMenu.open = false;
+      moreSummary?.focus();
+      return;
+    }
+    if (navLinks?.classList.contains('open')) {
       closeMenu();
       menuToggle?.focus();
     }
+  });
+
+  // Evita reabrir involuntariamente el menú si cambia el ancho de pantalla.
+  window.matchMedia('(min-width: 1181px)').addEventListener('change', event => {
+    if (event.matches) closeMenu();
   });
 
   if (status) {
