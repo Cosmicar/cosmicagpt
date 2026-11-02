@@ -1,8 +1,8 @@
-## 2026-11-01 · Cotización personalizada y CTA PRO en web pública
+## 2026-11-02 · Ajuste de alcance: cotización PRO solamente para Cósmica.app
 
-- La landing reemplaza importes fijos de Mercurio, Venus y Planeta X por **Consultar precio**, con presupuesto según alcance y confirmación antes de intervenir. Se retiran importes de metadatos y marcado estructurado; el orientador mantiene WhatsApp contextualizado.
-- Los puentes promocionales a Cósmica.app mantienen Free accesible y muestran **CONSULTAR PRECIO PRO** con consulta por WhatsApp sobre rubro, usuarios y necesidades. Las adaptaciones especiales se evalúan y presupuestan por separado.
-- No se alteran precios ni cobros internos de Cósmica.app, contratos existentes, ARCA, Supabase ni ventas independientes de Cósmica BOX. Se actualizan validaciones para impedir reintroducir importes antiguos en estas páginas.
+- Se restauran exactamente los precios públicos, textos, enlaces y datos estructurados de los servicios Mercurio, Venus y Planeta X, incluidos portada, /planes, las páginas provinciales y sus pruebas. La cotización personalizada no aplica a estos servicios.
+- Cósmica.app mantiene Free con alta directa y el botón **CONSULTAR PRECIO PRO** mediante WhatsApp, consultando rubro, usuarios y funcionalidades. Las adaptaciones especiales se presupuestan por separado.
+- No se modifica el precio operativo interno del SaaS ni suscripciones existentes; Cósmica BOX continúa independiente.
 
 ## 2026-10-16 · Planes de servicio técnico: presentación y elección renovadas
 
