@@ -1,9 +1,9 @@
-## 2026-11-07 · Propuesta de asistencia Remotto (sin publicar)
+## 2026-11-07 · Asistencia Remotto · publicación autorizada
 
-- Nueva guía con código del técnico, Remotto Connect y autorización/cierre; se retira el envío de ID desde la web. Remotto pasa a ser principal en portada y cobertura provincial dentro de esta propuesta.
+- Nueva guía con código del técnico, Remotto Connect y autorización/cierre; se retira el envío de ID desde la web. Remotto pasa a ser principal en portada y cobertura provincial.
 - Snippet de Connect Box confirmado en el panel de Remotto; carga voluntaria, iframe aislado, fallo/timeout con descarga oficial y WhatsApp. AnyDesk y RustDesk quedan como contingencias coordinadas.
 - Marca A1.1 original, canonical/rutas y separación web/app preservados. Sin pagos, API, sesiones propias, cambios de órdenes, RLS, Caja o NACHO.
-- Build y 31 pruebas aprobados; sesión real, Android físico y homologación del widget pendientes. El panel consultado no confirma el vencimiento del trial. Diagnóstico y propuesta de órdenes en `ASISTENCIA_REMOTTO.md`.
+- Build y 31 pruebas aprobados; carga real del widget verificada en español; sesión con código válido y Android físico pendientes. Cris autorizó publicar conservando AnyDesk como alternativa. El panel consultado no confirma el vencimiento del trial. Diagnóstico y propuesta de órdenes en `ASISTENCIA_REMOTTO.md`.
 
 ## 2026-11-02 · Navegación de portada compacta y adaptable
 

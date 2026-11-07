@@ -1,11 +1,11 @@
 # Asistencia remota · migración a Remotto
 
-Fecha de diagnóstico: 2026-11-07. Estado: **propuesta en rama; producción no modificada**.
+Fecha de diagnóstico: 2026-11-07. Estado: **publicación de la web autorizada por Cris, con AnyDesk como alternativa**. No equivale a homologación completa de Remotto ni autoriza la fase de órdenes.
 
 ## Fuentes y baseline
 
 - Web: `Cosmicar/cosmicagpt@main`, `6c9cc8c16924a7748f5f7995b5307fbe6a28e1af`. AGENTS, README, FUNCIONALIDADES, RELEASE_NOTES, HTML, CSS, JS, plantilla provincial, build y pruebas.
-- Vercel: proyecto `cosmicagpt`, producción READY `dpl_7hEKq2Kd46FZDfMHFK4fA5VukwmM`, mismo commit. `/asistencia.html` publicada sigue usando AnyDesk. No había PR abierto en la consulta inicial.
+- Vercel: proyecto `cosmicagpt`, producción READY `dpl_7hEKq2Kd46FZDfMHFK4fA5VukwmM`, mismo commit. `/asistencia.html` usaba AnyDesk en este baseline previo a la migración. No había PR abierto en la consulta inicial.
 - App: `Cosmicar/cosmica-app@main`, `a6e169ff7c62be889facfcd5845fdf5c6027c93c`. AGENTS, COSMICA_CONTEXT/PENDING/CHANGELOG, norma visual A1.1, órdenes/detalle, roles y alertas de soporte. Revisados editor remoto, action de conexión, tipos y eventos.
 - Supabase principal ACTIVE_HEALTHY. Consulta exclusivamente de metadatos de `service_orders` y `order_events`; sin lecturas de clientes ni escrituras.
 - Proveedor: [recursos](https://remotto.app/es/recursos), [descargas](https://remotto.app/es/descargas), [ayuda](https://remotto.app/es/ayuda), [personalización](https://remotto.app/es/ayuda/personalizacion) y panel autenticado Mi cuenta → Inicio → Etapa 3.
@@ -39,7 +39,7 @@ El adaptador usa `es` para la atención en español; su renderizado en español 
 
 **Fallo seguro:** error de carga o timeout de 15 s muestra alternativa; la descarga oficial y WhatsApp permanecen en la página incluso sin JavaScript. Una carga tardía no inicializa el widget tras timeout. La interfaz no equipara progreso, apertura de programa o carga de formulario con una sesión conectada. No se instala Agent ni acceso desatendido.
 
-**Verificación real de Preview:** el script de ISL no resultó accesible por descarga directa desde el entorno ni apertura como documento, pero sí cargó como recurso del formulario en el navegador. Se comprobó el widget en español dentro del iframe con sandbox, campo vacío, validación de código requerido y progreso sin conexión. No se ingresaron códigos de sesión ni se ejecutó acceso remoto. No se agrega SRI inventado ni copia del script oficial mutable; se limita al iframe sin acceso al origen padre. El build empaqueta CSS y loader propios dentro del HTML del widget para que el sandbox no dependa de cookies SameSite de la Preview protegida. Comprobar descarga real y sesión supervisada con Cris antes de habilitar producción. No relajar el sandbox sin revisión; si el proveedor exige más privilegios, mantener el flujo de descarga oficial.
+**Verificación real de Preview:** el script de ISL no resultó accesible por descarga directa desde el entorno ni apertura como documento, pero sí cargó como recurso del formulario en el navegador. Se comprobó el widget en español dentro del iframe con sandbox, campo vacío, validación de código requerido y progreso sin conexión. No se ingresaron códigos de sesión ni se ejecutó acceso remoto. No se agrega SRI inventado ni copia del script oficial mutable; se limita al iframe sin acceso al origen padre. El build empaqueta CSS y loader propios dentro del HTML del widget para que el sandbox no dependa de cookies SameSite de la Preview protegida. Cris autorizó publicar la guía y el widget conservando AnyDesk como alternativa. Descarga real y sesión supervisada con código válido siguen pendientes; no se declara una homologación completa. No relajar el sandbox sin revisión; si el proveedor exige más privilegios, mantener el flujo de descarga oficial.
 
 ## Licencia y evaluación
 
@@ -69,6 +69,6 @@ Remotto no confirmó WebAPI2/REST para Base: la documentación de ISL no concede
 - Baseline y propuesta: `npm run build` aprobados, 31 pruebas en la propuesta; separación web/app, marca original, enlaces locales, generación provincial y sitemap verificados.
 - 11 pruebas específicas de asistencia/widget: confirmaciones, restauración/reset, móvil Android simulado, ausencia de carga automática, hosts fijos, fallo de jQuery/ISL y timeout. Pruebas del loader usan stubs: no prueban una sesión real ni disponibilidad remota.
 - Código `3258aba`: Vercel Preview READY y CI GitHub Actions #93 (`42389968713`) aprobado. Verificados renderizado de escritorio (1358 px), vista móvil (390 px, sin desbordes horizontales), carga real del widget aislado en español, campo vacío y rechazo de código requerido, confirmación/reset de progreso y consola sin errores en las vistas verificadas. Iframe de 500 px y título ajustado para no recortar el formulario. No se enviaron códigos aleatorios.
-- Preview verificada: https://cosmicagpt-5fn3j4ylg-cosmicars-projects.vercel.app/asistencia (código `3258aba`, protegida por Vercel). PR borrador: https://github.com/Cosmicar/cosmicagpt/pull/58.
+- Preview verificada: https://cosmicagpt-5fn3j4ylg-cosmicars-projects.vercel.app/asistencia (código `3258aba`, protegida por Vercel). PR de publicación: https://github.com/Cosmicar/cosmicagpt/pull/58.
 - Pendiente: descarga/ejecución real, entrada de código válido supervisada, autorización/cierre, reconexión y Android físico. La vista estrecha no homologa el control remoto de Android. No usar códigos aleatorios que puedan pertenecer a sesiones ajenas.
-- PR en revisión; no merge ni despliegue productivo autorizado. Antes del merge: conciliar main/PR concurrentes, repetir checks si cambian entradas y validar la prueba real. Después de una publicación autorizada: commit servido, HTTP/rutas, recursos, logs y enlace oficial. Rollback por revert del PR; sin migraciones ni sesiones guardadas.
+- Decisión de Cris del 2026-11-07: publicar Remotto como principal, manteniendo AnyDesk como alternativa. Autoriza integrar y desplegar el PR #58 después de los checks; no autoriza pagos, acceso desatendido, sesiones remotas automáticas ni la fase Cósmica.app. La prueba real continúa abierta. Al publicar, verificar commit servido, HTTP/rutas, recursos, consola/logs y enlace oficial. Rollback por revert del PR; sin migraciones ni sesiones guardadas.
