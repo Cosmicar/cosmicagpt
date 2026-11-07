@@ -2,6 +2,10 @@
 
 Fecha de diagnóstico: 2026-11-07. Estado: **publicación de la web autorizada por Cris, con AnyDesk como alternativa**. No equivale a homologación completa de Remotto ni autoriza la fase de órdenes.
 
+## Ajuste de experiencia · 2026-11-07
+
+Cris solicitó que el campo de código esté siempre visible y que la descarga manual quede como alternativa. El formulario oficial ahora se presenta en el bloque inicial, se carga al entrar (sin desplegable ni botón adicional), y se prioriza antes del texto del hero en pantallas de hasta 760 px. La descarga manual queda en un desplegable secundario; AnyDesk/RustDesk se conservan como contingencias. Se informa junto al formulario que carga recursos de Remotto/ISL y jsDelivr al visitar la página. El sandbox, la no persistencia de códigos y la separación web/app siguen iguales. Esta decisión reemplaza el mecanismo de carga voluntaria de #58; no habilita una conexión remota sin código y ejecución del cliente.
+
 ## Fuentes y baseline
 
 - Web: `Cosmicar/cosmicagpt@main`, `6c9cc8c16924a7748f5f7995b5307fbe6a28e1af`. AGENTS, README, FUNCIONALIDADES, RELEASE_NOTES, HTML, CSS, JS, plantilla provincial, build y pruebas.
@@ -15,7 +19,7 @@ Fecha de diagnóstico: 2026-11-07. Estado: **publicación de la web autorizada p
 | Superficie | Antes | Propuesta |
 | --- | --- | --- |
 | `asistencia.html` | Descarga AnyDesk → abrir → enviar ID a WhatsApp | Código del técnico → Remotto Connect → autorización y cierre |
-| `marketing/assistance.js` | ID opcional 6–12 dígitos; progreso | Sin campo de código/ID propio; progreso explícito versionado; carga voluntaria del widget |
+| `marketing/assistance.js` | ID opcional 6–12 dígitos; progreso | Sin campo de código/ID propio; progreso explícito versionado; carga automática del widget visible |
 | `marketing/remotto-connect.{html,js,css}` | No existe | Adaptador mínimo del snippet oficial dentro de iframe aislado |
 | `index.html` | AnyDesk como principal | Remotto Connect |
 | `template-provincia.html` y 24 páginas generadas | AnyDesk como principal | Misma sustitución, sin alterar servicios, precios o SEO |
@@ -35,7 +39,7 @@ El panel de Remotto entrega explícitamente **ISL ConnectBox v2**. Esto confirma
 
 El adaptador usa `es` para la atención en español; su renderizado en español quedó comprobado en Preview. La sesión válida sigue pendiente de homologación. El sitio comercial anuncia Connect Box en Base y separa White Label como adicional. No se contrató ninguno ni se habilitó personalización de la aplicación. Confirmar condiciones de la cuenta al contratar.
 
-**Aislamiento y privacidad:** carga tras un clic explícito con aviso de destinatarios y enlace de privacidad. Iframe `sandbox` con scripts/formularios/ventanas emergentes/descargas, sin `allow-same-origin`, cámara, micrófono ni navegación superior. Bootstrap no afecta el CSS de Cósmica. Sin puente `postMessage`, parámetros de sesión, campos propios de código o GA4 en el iframe. El proveedor recibe los datos de conexión del navegador cuando el cliente elige cargarlo; al conectarse, el código lo procesa ISL. Cósmica persiste sólo números de pasos, nunca código, contraseña o contenido de sesión. No se graba la pantalla.
+**Aislamiento y privacidad:** carga al entrar en la página, autorizada por Cris para simplificar el flujo, con aviso de destinatarios y enlace de privacidad junto al formulario. Iframe `sandbox` con scripts/formularios/ventanas emergentes/descargas, sin `allow-same-origin`, cámara, micrófono ni navegación superior. Bootstrap no afecta el CSS de Cósmica. Sin puente `postMessage`, parámetros de sesión, campos propios de código o GA4 en el iframe. El proveedor recibe los datos de conexión del navegador cuando el cliente elige cargarlo; al conectarse, el código lo procesa ISL. Cósmica persiste sólo números de pasos, nunca código, contraseña o contenido de sesión. No se graba la pantalla.
 
 **Fallo seguro:** error de carga o timeout de 15 s muestra alternativa; la descarga oficial y WhatsApp permanecen en la página incluso sin JavaScript. Una carga tardía no inicializa el widget tras timeout. La interfaz no equipara progreso, apertura de programa o carga de formulario con una sesión conectada. No se instala Agent ni acceso desatendido.
 
@@ -67,7 +71,7 @@ Remotto no confirmó WebAPI2/REST para Base: la documentación de ISL no concede
 ## Validación y publicación
 
 - Baseline y propuesta: `npm run build` aprobados, 31 pruebas en la propuesta; separación web/app, marca original, enlaces locales, generación provincial y sitemap verificados.
-- 11 pruebas específicas de asistencia/widget: confirmaciones, restauración/reset, móvil Android simulado, ausencia de carga automática, hosts fijos, fallo de jQuery/ISL y timeout. Pruebas del loader usan stubs: no prueban una sesión real ni disponibilidad remota.
+- 11 pruebas específicas de asistencia/widget: confirmaciones, restauración/reset, móvil Android simulado, formulario visible sin clic previo, hosts fijos, fallo de jQuery/ISL y timeout. Pruebas del loader usan stubs: no prueban una sesión real ni disponibilidad remota.
 - Código `3258aba`: Vercel Preview READY y CI GitHub Actions #93 (`42389968713`) aprobado. Verificados renderizado de escritorio (1358 px), vista móvil (390 px, sin desbordes horizontales), carga real del widget aislado en español, campo vacío y rechazo de código requerido, confirmación/reset de progreso y consola sin errores en las vistas verificadas. Iframe de 500 px y título ajustado para no recortar el formulario. No se enviaron códigos aleatorios.
 - Preview verificada: https://cosmicagpt-5fn3j4ylg-cosmicars-projects.vercel.app/asistencia (código `3258aba`, protegida por Vercel). PR de publicación: https://github.com/Cosmicar/cosmicagpt/pull/58.
 - Pendiente: descarga/ejecución real, entrada de código válido supervisada, autorización/cierre, reconexión y Android físico. La vista estrecha no homologa el control remoto de Android. No usar códigos aleatorios que puedan pertenecer a sesiones ajenas.

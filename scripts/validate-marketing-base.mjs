@@ -154,13 +154,12 @@ for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.h
 
 const assistancePatterns = [
   /href="\/marketing\/assistance\.css"/,
-  /src="\/marketing\/assistance\.js\?v=remotto-1"/,
-  /src="\/marketing\/problem-client\.webp"/,
+  /src="\/marketing\/assistance\.js\?v=remotto-2"/,
   /src="\/marketing\/assistance-technician\.webp"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
   /id="downloadRemotto"/,
   /id="openedButton"/,
-  /id="loadConnectBox"/,
+  /id="connectBoxFrame"[^>]+src="\/marketing\/remotto-connect\.html"/,
   /remotto\.app\/es\/descargas/,
   /5493883298736/
 ];
