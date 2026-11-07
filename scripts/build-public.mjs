@@ -23,6 +23,17 @@ function copy(file) {
 files.forEach(copy);
 // Documento aislado del widget; no es una página indexable ni carga GA4.
 copy('marketing/remotto-connect.html');
+// El sandbox tiene origen opaco: los recursos propios no deben depender de
+// cookies SameSite de la Preview protegida. Empaquetar sólo este documento
+// con su CSS/loader locales, conservando los scripts oficiales por separado.
+const widgetPath = path.join(out, 'marketing/remotto-connect.html');
+const widgetScript = fs.readFileSync(path.join(root, 'marketing/remotto-connect.js'), 'utf8');
+const widgetStyle = fs.readFileSync(path.join(root, 'marketing/remotto-connect.css'), 'utf8');
+const widgetHtml = fs.readFileSync(widgetPath, 'utf8')
+  .replace('  <link rel="stylesheet" href="/marketing/remotto-connect.css">', `<style>${widgetStyle}</style>`)
+  .replace('  <script src="/marketing/remotto-connect.js" defer></script>', '')
+  .replace('</body>', () => `<script>${widgetScript}</script>\n</body>`);
+fs.writeFileSync(widgetPath, widgetHtml);
 function copyAssets(dir) {
   for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const file = path.join(dir, entry.name);
