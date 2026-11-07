@@ -49,6 +49,8 @@ Windows a Windows: prueba previa satisfactoria informada por Cris; no es una nue
 
 ## Cósmica.app · propuesta mínima pendiente de aprobación
 
+Seguimiento y criterios de aceptación: [issue #496](https://github.com/Cosmicar/cosmica-app/issues/496). No autoriza implementación.
+
 El remoto ya es una modalidad de `service_orders`: `service_type`, `remote_tool`, `remote_id`, `os_version`. El editor admite texto libre; no requiere una base paralela. `updateRemoteConnection` exige `edit:orders`, `assertCanManageOrder` y filtro por tenant. El timeline usa `order_events` (`tenant_id`, `service_order_id`, tipo, título/descripción, autor/fecha, `is_public`). El helper genérico `createOrderEvent` no expresa un guard granular de permiso/asignación en su implementación actual: **no reutilizarlo directamente para nuevas mutaciones sensibles sin verificar y reforzar ese contrato**, coordinando con #477.
 
 Propuesta acotada, sin API:
@@ -66,6 +68,7 @@ Remotto no confirmó WebAPI2/REST para Base: la documentación de ISL no concede
 
 - Baseline y propuesta: `npm run build` aprobados, 31 pruebas en la propuesta; separación web/app, marca original, enlaces locales, generación provincial y sitemap verificados.
 - 11 pruebas específicas de asistencia/widget: confirmaciones, restauración/reset, móvil Android simulado, ausencia de carga automática, hosts fijos, fallo de jQuery/ISL y timeout. Pruebas del loader usan stubs: no prueban una sesión real ni disponibilidad remota.
-- Preview `023f499f`: Vercel READY y CI GitHub Actions #92 aprobado. Verificados renderizado de escritorio, carga real del widget aislado en español y rechazo del código vacío, sin enviar códigos aleatorios. Ajustado espacio del iframe para evitar recortes en pantallas estrechas.
-- Pendiente: QA móvil final de Preview; descarga oficial, entrada de código válido supervisada, autorización/cierre, reconexión y Android físico. No usar códigos aleatorios que puedan pertenecer a sesiones ajenas.
+- Código `3258aba`: Vercel Preview READY y CI GitHub Actions #93 (`42389968713`) aprobado. Verificados renderizado de escritorio (1358 px), vista móvil (390 px, sin desbordes horizontales), carga real del widget aislado en español, campo vacío y rechazo de código requerido, confirmación/reset de progreso y consola sin errores en las vistas verificadas. Iframe de 500 px y título ajustado para no recortar el formulario. No se enviaron códigos aleatorios.
+- Preview verificada: https://cosmicagpt-5fn3j4ylg-cosmicars-projects.vercel.app/asistencia (código `3258aba`, protegida por Vercel). PR borrador: https://github.com/Cosmicar/cosmicagpt/pull/58.
+- Pendiente: descarga/ejecución real, entrada de código válido supervisada, autorización/cierre, reconexión y Android físico. La vista estrecha no homologa el control remoto de Android. No usar códigos aleatorios que puedan pertenecer a sesiones ajenas.
 - PR en revisión; no merge ni despliegue productivo autorizado. Antes del merge: conciliar main/PR concurrentes, repetir checks si cambian entradas y validar la prueba real. Después de una publicación autorizada: commit servido, HTTP/rutas, recursos, logs y enlace oficial. Rollback por revert del PR; sin migraciones ni sesiones guardadas.
