@@ -196,3 +196,10 @@ body.assistance-page {
 @media (prefers-reduced-motion: reduce) {
   .assistance-page *, .assistance-page *::before, .assistance-page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Formulario oficial aislado: Bootstrap no modifica la página de Cósmica. */
+.assistance-page #connectBoxFrame { width: 100%; height: 500px; border: 0; border-radius: 10px; margin-top: 16px; background: #fff; }
+/* Obsidiana de A1.1, conservando superficies claras para la guía. */
+body.assistance-page { background: #0F121A; }
+.assistance-page .quick-info { background: #F6F3F0; }
+.assistance-page .section-intro h2, .assistance-page .section-intro p, .assistance-page .section-intro .section-kicker { color: #F6F3F0; }

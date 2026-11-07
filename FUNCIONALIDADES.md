@@ -7,7 +7,7 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 | `/` | Asistencia remota, problemas frecuentes, servicios, reseñas y contacto. |
 | `/planes` | Servicios Mercurio, Venus y Planeta X por intervención, precios en ARS, orientador de síntomas no diagnóstico, comparativa móvil, FAQ coherente con SEO y contacto contextualizado por WhatsApp. |
 | `/plus` y `/plus.html` | Redirigen permanentemente a Cósmica.app. |
-| `/asistencia` y `/asistencia.html` | Guía visual de 3 pasos: descarga oficial de AnyDesk, preparación de la conexión, ID opcional validado y contacto por WhatsApp. Aviso móvil, seguridad, alternativa RustDesk y progreso accesible. |
+| `/asistencia` y `/asistencia.html` | Código del técnico, Remotto Connect y autorización/cierre. Connect Box oficial de carga voluntaria y aislada; descarga oficial y WhatsApp siempre disponibles. AnyDesk/RustDesk secundarios. Publicación autorizada por Cris el 2026-11-07; prueba supervisada con código válido aún pendiente; ver `ASISTENCIA_REMOTTO.md`. |
 | `/serviciotecnico` | Servicio presencial en Ramírez de Velazco 111, San Salvador de Jujuy. |
 | `/soporte-tecnico-remoto-argentina` | Directorio nacional de cobertura remota. |
 | `/pc-lenta-{provincia}` y variantes `.html` | 24 páginas provinciales generadas desde plantillas y datos. |

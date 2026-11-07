@@ -6,7 +6,7 @@ import { optimizeBrandDelivery } from './optimize-brand-delivery.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
-execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs', 'tests/assistance.test.mjs', 'tests/plans.test.mjs', 'tests/box.test.mjs', 'tests/header.test.mjs'], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, ['--test', 'tests/analytics.test.mjs', 'tests/assistance.test.mjs', 'tests/remotto-connect.test.mjs', 'tests/plans.test.mjs', 'tests/box.test.mjs', 'tests/header.test.mjs'], { cwd: root, stdio: 'inherit' });
 for (const script of ['validate-project-boundaries', 'sync-brand-contacts', 'validate-marketing', 'sync-brand-markup', 'check-brand-official']) {
   execFileSync(process.execPath, [path.join(root, `scripts/${script}.mjs`)], { cwd: root, stdio: 'inherit' });
 }
@@ -14,13 +14,26 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out);
 const provinces = JSON.parse(fs.readFileSync(path.join(root, 'data/provincias.json'), 'utf8')).provinces;
 const pages = ['index.html', 'box.html', 'stickers-preview.html', 'stickers-ia.html', 'calendarios-2027.html', '404.html', 'planes.html', 'asistencia.html', 'serviciotecnico.html', 'soporte-tecnico-remoto-argentina.html', ...provinces.map(p => `pc-lenta-${p.slug}.html`)];
-const files = [...pages, 'box.css', 'box/muestrario-real.jpg', 'box/stickers-preview.jpg', 'box/stickers-96-general.jpg', 'box/stickers-96-mujeres.jpg', 'box/stickers-96-hombres.jpg', 'box/stickers-ia-48-muestrario.jpg', 'box/calendarios-mignon-2027.jpg', 'box/calendarios-anime-2027-muestrario.jpg', 'box/calendarios-anime-2027-v3-feriados.jpg', 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico', 'anydesk-id-ejemplo.png'];
+const files = [...pages, 'box.css', 'box/muestrario-real.jpg', 'box/stickers-preview.jpg', 'box/stickers-96-general.jpg', 'box/stickers-96-mujeres.jpg', 'box/stickers-96-hombres.jpg', 'box/stickers-ia-48-muestrario.jpg', 'box/calendarios-mignon-2027.jpg', 'box/calendarios-anime-2027-muestrario.jpg', 'box/calendarios-anime-2027-v3-feriados.jpg', 'google83d6e45e153aaa85.html', 'robots.txt', 'sitemap.xml', 'llms.txt', 'humans.txt', 'site.webmanifest', 'favicon.ico'];
 function copy(file) {
   const target = path.join(out, file);
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(path.join(root, file), target);
 }
 files.forEach(copy);
+// Documento aislado del widget; no es una página indexable ni carga GA4.
+copy('marketing/remotto-connect.html');
+// El sandbox tiene origen opaco: los recursos propios no deben depender de
+// cookies SameSite de la Preview protegida. Empaquetar sólo este documento
+// con su CSS/loader locales, conservando los scripts oficiales por separado.
+const widgetPath = path.join(out, 'marketing/remotto-connect.html');
+const widgetScript = fs.readFileSync(path.join(root, 'marketing/remotto-connect.js'), 'utf8');
+const widgetStyle = fs.readFileSync(path.join(root, 'marketing/remotto-connect.css'), 'utf8');
+const widgetHtml = fs.readFileSync(widgetPath, 'utf8')
+  .replace('  <link rel="stylesheet" href="/marketing/remotto-connect.css">', `<style>${widgetStyle}</style>`)
+  .replace('  <script src="/marketing/remotto-connect.js" defer></script>', '')
+  .replace('</body>', () => `<script>${widgetScript}</script>\n</body>`);
+fs.writeFileSync(widgetPath, widgetHtml);
 function copyAssets(dir) {
   for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const file = path.join(dir, entry.name);
@@ -49,7 +62,7 @@ function verifyReference(ref, source) {
   if (rewrite) candidates.push(rewrite.destination.slice(1));
   if (!candidates.some(p => fs.existsSync(path.join(out, p)))) throw new Error(`${source}: recurso ausente ${ref}`);
 }
-for (const page of pages) {
+for (const page of [...pages, 'marketing/remotto-connect.html']) {
   const html = fs.readFileSync(path.join(out, page), 'utf8');
   for (const [, ref] of html.matchAll(/(?:href|src)=["']([^"']+)["']/g)) verifyReference(ref, page);
 }
