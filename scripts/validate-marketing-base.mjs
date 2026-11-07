@@ -154,14 +154,14 @@ for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.h
 
 const assistancePatterns = [
   /href="\/marketing\/assistance\.css"/,
-  /src="\/marketing\/assistance\.js"/,
+  /src="\/marketing\/assistance\.js\?v=remotto-1"/,
   /src="\/marketing\/problem-client\.webp"/,
   /src="\/marketing\/assistance-technician\.webp"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
-  /id="downloadAnydesk"/,
+  /id="downloadRemotto"/,
   /id="openedButton"/,
-  /id="sendId"/,
-  /anydesk\.com\/es\/downloads\/windows/,
+  /id="loadConnectBox"/,
+  /remotto\.app\/es\/descargas/,
   /5493883298736/
 ];
 for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fail(`asistencia.html: falta ${pattern}`);

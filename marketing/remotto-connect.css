@@ -1,0 +1,4 @@
+body { margin: 0; padding: 16px; color: #20232B; background: #fff; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; }
+a { color: #A8052C; text-decoration: underline; }
+a:focus-visible { outline: 3px solid #E1063A; outline-offset: 3px; }
+.fallback { margin-top: 18px; font-size: 13px; }

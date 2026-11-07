@@ -20,7 +20,7 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 ## Contenido vigente
 
 - Home de servicios técnicos.
-- Flujo de asistencia remota.
+- Flujo de asistencia remota. La migración propuesta a Remotto, sus límites y gates de publicación se documentan en `ASISTENCIA_REMOTTO.md`.
 - Servicios por intervención **Mercurio**, **Venus** y **Planeta X** en `/planes`.
 - Cósmica.app mantiene Free accesible sin cotización; PRO se presenta comercialmente como **CONSULTAR PRECIO PRO**, con propuesta según negocio y adaptaciones especiales cotizadas aparte. El precio operativo y las suscripciones existentes del SaaS no se modifican desde esta web. Cósmica+ queda retirada; `/plus` redirige a Cósmica.app.
 - Contacto por WhatsApp.

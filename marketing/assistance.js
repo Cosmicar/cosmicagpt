@@ -1,8 +1,7 @@
 (() => {
   const totalSteps = 3;
-  const storageKey = 'cosmica_assistance_progress';
+  const storageKey = 'cosmica_assistance_remotto_progress_v1';
   const pageUrl = 'https://cosmica.ar/asistencia.html';
-  const supportWhatsApp = '5493883298736';
   const completed = new Set();
   const progressBar = document.getElementById('progressBar');
   const progressTrack = document.getElementById('progressTrack');
@@ -23,11 +22,6 @@
       card.classList.toggle('completed', done);
       const value = card.querySelector('.number-value');
       if (value) value.textContent = done ? '✓' : String(step);
-      const confirmation = card.querySelector('.step-complete');
-      if (confirmation) {
-        confirmation.setAttribute('aria-pressed', String(done));
-        confirmation.textContent = done ? 'Descarga confirmada ✓' : 'Ya lo descargué ✓';
-      }
     });
     if (progressBar) progressBar.style.width = String(completed.size / totalSteps * 100) + '%';
     if (progressLabel) progressLabel.textContent = String(completed.size) + ' de ' + String(totalSteps) + ' pasos';
@@ -52,56 +46,36 @@
   } catch (_) { /* Ignorar estados corruptos. */ }
   renderProgress();
 
-  const download = document.getElementById('downloadAnydesk');
-  if (download) download.addEventListener('click', () => {
-    showToast('Se abrió el sitio oficial de AnyDesk. Confirmá el paso cuando termine la descarga.');
-  });
-  const downloaded = document.getElementById('downloadConfirmed');
-  if (downloaded) downloaded.addEventListener('click', () => {
-    completeStep(1);
-    showToast('Perfecto. Ahora abrí el archivo descargado.');
-  });
-  const opened = document.getElementById('openedButton');
-  if (opened) opened.addEventListener('click', () => {
-    completeStep(2);
-    showToast('Ahora buscá el número de identificación en AnyDesk.');
-    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.querySelector('[data-step="3"]')?.scrollIntoView({
-      behavior: reduced ? 'auto' : 'smooth', block: 'nearest'
+  // Confirmaciones de guía, nunca detección ni control de una sesión remota.
+  const confirmations = [['codeConfirmed', 1], ['openedButton', 2], ['readyConfirmed', 3]];
+  confirmations.forEach(([id, step]) => {
+    const button = document.getElementById(id);
+    if (button) button.addEventListener('click', () => {
+      completeStep(step);
+      button.setAttribute('aria-pressed', 'true');
+      showToast('Paso confirmado. La guía no comprueba el estado de la conexión.');
     });
+    if (button) button.setAttribute('aria-pressed', String(completed.has(step)));
   });
 
-  const idInput = document.getElementById('supportId');
-  const idFeedback = document.getElementById('idFeedback');
-  const sendId = document.getElementById('sendId');
-  if (idInput) idInput.addEventListener('input', () => {
-    idInput.removeAttribute('aria-invalid');
-    if (idFeedback) idFeedback.textContent = '';
+  const download = document.getElementById('downloadRemotto');
+  if (download) download.addEventListener('click', () => {
+    showToast('En el sitio oficial, elegí Remotto Connect para el cliente.');
   });
-  if (sendId) sendId.addEventListener('click', event => {
-    const raw = idInput?.value.trim() || '';
-    const digits = raw.replace(/[\s.-]/g, '');
-    // El ID es opcional: también puede ingresarse manualmente en WhatsApp.
-    if (raw && (!/^[\d\s.-]+$/.test(raw) || digits.length < 6 || digits.length > 12)) {
-      event.preventDefault();
-      if (idInput) {
-        idInput.setAttribute('aria-invalid', 'true');
-        idInput.focus();
-      }
-      if (idFeedback) idFeedback.textContent = 'Revisá el ID: usá entre 6 y 12 dígitos, sin letras.';
-      return;
-    }
-    const message = digits
-      ? 'Hola, ya abrí AnyDesk para recibir asistencia de Cósmica. Mi ID es: ' + digits + '.'
-      : 'Hola, ya abrí AnyDesk y necesito ayuda para continuar. Mi ID es: ';
-    sendId.href = 'https://wa.me/' + supportWhatsApp + '?text=' + encodeURIComponent(message);
-    completeStep(3);
-    showToast('Se abrió WhatsApp. Revisá y enviá el mensaje para contactar al técnico.');
+  const loadConnectBox = document.getElementById('loadConnectBox');
+  const connectBoxFrame = document.getElementById('connectBoxFrame');
+  if (loadConnectBox && connectBoxFrame) loadConnectBox.addEventListener('click', () => {
+    // Sin códigos en URLs, sin terceros antes de este clic y sin bridge de datos.
+    connectBoxFrame.src = '/marketing/remotto-connect.html';
+    connectBoxFrame.hidden = false;
+    loadConnectBox.setAttribute('aria-expanded', 'true');
+    loadConnectBox.hidden = true;
   });
 
   const reset = document.getElementById('resetGuide');
   if (reset) reset.addEventListener('click', () => {
     completed.clear();
+    confirmations.forEach(([id]) => document.getElementById(id)?.setAttribute('aria-pressed', 'false'));
     renderProgress();
     persistProgress();
     showToast('Guía reiniciada. Empezá nuevamente desde el paso 1.');
