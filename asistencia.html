@@ -41,11 +41,11 @@
     <section class="connect-hero" aria-labelledby="hero-title">
       <div class="hero-content">
         <span class="eyebrow"><span class="eyebrow-mark" aria-hidden="true"></span> Asistencia remota de Cósmica</span>
-        <h1 id="hero-title">Volvé a disfrutar de tu PC. <span>Nos conectamos para ayudarte.</span></h1>
-        <p>Estés donde estés en Argentina, podés recibir ayuda sin llevar tu computadora al taller. Te mostramos cómo preparar la conexión en <strong>tres pasos claros</strong>.</p>
+        <h1 id="hero-title">Ingresá tu código. <span>Nos conectamos para ayudarte.</span></h1>
+        <p>Si ya coordinaste con nuestro técnico, escribí el código que te dio en el formulario de Remotto. Después, abrí el archivo que se descargue y seguí sus indicaciones.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#pasos">Empezar la conexión <span aria-hidden="true">↓</span></a>
-          <a class="btn btn-hero-secondary" href="https://wa.me/5493883298736?text=Hola%2C%20necesito%20que%20me%20gu%C3%ADen%20con%20la%20asistencia%20remota." target="_blank" rel="noopener noreferrer">Prefiero que me guíen</a>
+          <a class="btn btn-primary" href="#conectar">Ingresar mi código <span aria-hidden="true">↓</span></a>
+          <a class="btn btn-hero-secondary" href="https://wa.me/5493883298736?text=Hola%2C%20necesito%20que%20me%20gu%C3%ADen%20con%20la%20asistencia%20remota." target="_blank" rel="noopener noreferrer">Necesito un código</a>
         </div>
         <ul class="hero-trust" aria-label="Ventajas de la asistencia">
           <li><span aria-hidden="true">✓</span> Vos autorizás la conexión</li>
@@ -53,10 +53,13 @@
           <li><span aria-hidden="true">✓</span> Podés finalizarla cuando quieras</li>
         </ul>
       </div>
-      <figure class="hero-visual">
-        <img src="/marketing/problem-client.webp" alt="Persona revisando su notebook antes de recibir asistencia remota" width="960" height="768" fetchpriority="high" decoding="async">
-        <figcaption><span class="visual-dot" aria-hidden="true"></span> Te acompañamos durante el proceso</figcaption>
-      </figure>
+      <section class="hero-connect" id="conectar" aria-labelledby="connect-title">
+        <span class="section-kicker">CONECTATE CON CÓSMICA</span>
+        <h2 id="connect-title">¿Ya tenés tu código?</h2>
+        <p>Ingresá el código de sesión que te dio nuestro técnico.</p>
+        <iframe id="connectBoxFrame" src="/marketing/remotto-connect.html" title="Formulario oficial de Remotto para ingresar el código de sesión" sandbox="allow-scripts allow-forms allow-popups allow-downloads" referrerpolicy="no-referrer" loading="eager"></iframe>
+        <p class="provider-note">Formulario de Remotto / ISL Online. Se carga al abrir esta página y utiliza recursos de ISL Online y jsDelivr. Cósmica no guarda tu código. <a href="https://remotto.app/es/privacidad" target="_blank" rel="noopener noreferrer">Privacidad de Remotto ↗</a></p>
+      </section>
     </section>
 
     <section class="quick-info" aria-label="Lo que necesitás antes de empezar">
@@ -88,24 +91,20 @@
       <div class="steps" id="pasos">
         <article class="step" data-step="1" aria-labelledby="step1-title">
           <div class="step-header"><span class="number"><span class="number-value">1</span></span><span class="step-tag">CÓDIGO DEL TÉCNICO</span></div>
-          <h3 id="step1-title">Empezamos con un código</h3>
+          <h3 id="step1-title">Recibí tu código</h3>
           <p>Coordiná la asistencia con Cósmica. Nuestro técnico te entrega el código temporal de Remotto; no es una contraseña de tu computadora.</p>
-          <a class="btn btn-primary step-primary" href="https://wa.me/5493883298736?text=Hola%2C%20quiero%20coordinar%20una%20asistencia%20con%20Remotto%20y%20recibir%20el%20c%C3%B3digo%20del%20t%C3%A9cnico." target="_blank" rel="noopener noreferrer">Pedir mi código por WhatsApp ↗</a>
+          <a class="btn btn-outline step-primary" href="https://wa.me/5493883298736?text=Hola%2C%20quiero%20coordinar%20una%20asistencia%20con%20Remotto%20y%20recibir%20el%20c%C3%B3digo%20del%20t%C3%A9cnico." target="_blank" rel="noopener noreferrer">Pedir mi código por WhatsApp ↗</a>
           <button class="step-complete" type="button" id="codeConfirmed" aria-pressed="false">Ya tengo el código ✓</button>
-          <details><summary>Ya tengo el código: conectarme desde acá</summary><div class="detail-content">
-            <p>El formulario oficial de Remotto / ISL Online prepara la descarga para tu sesión. Al cargarlo, tu navegador contacta a ISL Online y jsDelivr. El código se ingresa en ese formulario; Cósmica no lo guarda ni lo envía a su analítica.</p>
-            <p><a href="https://remotto.app/es/privacidad" target="_blank" rel="noopener noreferrer">Privacidad de Remotto ↗</a></p>
-            <button class="btn btn-outline" type="button" id="loadConnectBox" aria-controls="connectBoxFrame" aria-expanded="false">Cargar formulario de Remotto</button>
-            <iframe id="connectBoxFrame" title="Formulario oficial de Remotto para ingresar el código de sesión" sandbox="allow-scripts allow-forms allow-popups allow-downloads" referrerpolicy="no-referrer" hidden></iframe>
-            <p>Si el formulario no carga o no descarga el archivo, usá la <a href="https://remotto.app/es/descargas" target="_blank" rel="noopener noreferrer">descarga oficial de Remotto Connect ↗</a> y escribí el código en el programa. También podés pedirnos ayuda por WhatsApp.</p>
-          </div></details>
+          <a class="connection-link" href="#conectar">Ya tengo el código: ir al formulario ↑</a>
         </article>
 
         <article class="step" data-step="2" aria-labelledby="step2-title">
           <div class="step-header"><span class="number"><span class="number-value">2</span></span><span class="step-tag">REMOTTO CONNECT</span></div>
-          <h3 id="step2-title">Descargá y abrí Connect</h3>
-          <p>Si el formulario ya descargó el archivo, abrilo. Si no, entrá al sitio oficial y elegí <strong>Remotto Connect, para el cliente</strong>. No elijas Desk + Agent ni acceso desatendido para esta asistencia.</p>
-          <a class="btn btn-primary step-primary" id="downloadRemotto" href="https://remotto.app/es/descargas" target="_blank" rel="noopener noreferrer">Ir a la descarga oficial ↗</a>
+          <h3 id="step2-title">Abrí el archivo de la sesión</h3>
+          <p>Al ingresar tu código y elegir Unirse, el formulario prepara el archivo de la sesión. Abrilo en la computadora que vamos a revisar.</p>
+          <details class="manual-download"><summary>Descarga manual (alternativa)</summary><div class="detail-content"><p>Si el formulario no descarga el archivo, elegí <strong>Remotto Connect, para el cliente</strong>, en el sitio oficial. Después ingresá el código en el programa. Para esta asistencia puntual no elijas Desk + Agent ni acceso desatendido.</p>
+          <a class="btn btn-outline step-primary" id="downloadRemotto" href="https://remotto.app/es/descargas" target="_blank" rel="noopener noreferrer">Descarga manual de Remotto Connect ↗</a>
+          </div></details>
           <button class="btn btn-outline step-primary" id="openedButton" type="button" aria-pressed="false">Ya abrí Remotto Connect ✓</button>
           <p class="micro-hint">En Windows, <strong>Ctrl + J</strong> muestra las descargas. Verificá el origen del archivo y su editor antes de ejecutarlo. Connect es el cliente de asistencia puntual.</p>
         </article>
@@ -135,6 +134,6 @@
 
   <footer class="site-footer"><div class="container footer-inner"><span>© <span id="year">2026</span> Cósmica · Asistencia remota en Argentina</span><span><a href="/">Inicio</a> · <a href="/planes">Servicios técnicos</a> · <a href="mailto:hola@cosmica.ar">hola@cosmica.ar</a></span></div></footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="/marketing/assistance.js?v=remotto-1" defer></script>
+  <script src="/marketing/assistance.js?v=remotto-2" defer></script>
 </body>
 </html>

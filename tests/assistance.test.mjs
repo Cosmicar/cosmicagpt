@@ -37,11 +37,9 @@ function createElement(id = '') {
 function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = false } = {}) {
   const idNames = ['progressBar', 'progressTrack', 'progressLabel', 'toast',
     'downloadRemotto', 'codeConfirmed', 'openedButton', 'readyConfirmed',
-    'loadConnectBox', 'connectBoxFrame', 'mobileAlert', 'copyLink', 'sendLink', 'year', 'resetGuide'];
+    'connectBoxFrame', 'mobileAlert', 'copyLink', 'sendLink', 'year', 'resetGuide'];
   const els = Object.fromEntries(idNames.map(name => [name, createElement(name)]));
   els.mobileAlert.hidden = true;
-  els.connectBoxFrame.hidden = true;
-  els.loadConnectBox.hidden = false;
   const cards = [1, 2, 3].map(step => {
     const el = createElement();
     el.dataset.step = String(step);
@@ -77,9 +75,9 @@ function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = fa
 
 test('Remotto principal, contingencias secundarias, marca y rutas conservadas', () => {
   for (const token of ['id="downloadRemotto"', 'id="codeConfirmed"', 'id="readyConfirmed"',
-    'id="loadConnectBox"', 'id="connectBoxFrame"', 'id="progressTrack"',
+    'id="connectBoxFrame"', 'id="progressTrack"',
     '/brand/official/cosmica-logo-light.png?v=10', '/marketing/assistance.css',
-    '/marketing/assistance.js?v=remotto-1', 'https://remotto.app/es/descargas',
+    '/marketing/assistance.js?v=remotto-2', 'https://remotto.app/es/descargas',
     'https://cosmica.ar/asistencia.html', 'id="alternativas"',
     'sandbox="allow-scripts allow-forms allow-popups allow-downloads"',
     'referrerpolicy="no-referrer"', 'https://remotto.app/es/privacidad']) {
@@ -87,7 +85,7 @@ test('Remotto principal, contingencias secundarias, marca y rutas conservadas', 
   }
   const primary = html.split('id="alternativas"')[0];
   assert.doesNotMatch(primary, /AnyDesk|RustDesk|supportId|sendId/);
-  assert.doesNotMatch(html, /<script[^>]+src="https:|<iframe[^>]+src=/);
+  assert.doesNotMatch(html, /<script[^>]+src="https:/);
   assert.doesNotMatch(script, /supportId|sendId|remote_id|fetch\(/);
 });
 
@@ -110,15 +108,17 @@ test('Los pasos requieren confirmación explícita y guardan sólo números', ()
   assert.ok(writes.every(([key]) => key === 'cosmica_assistance_remotto_progress_v1'));
 });
 
-test('Connect Box sólo carga tras el clic y nunca recibe códigos ni parámetros', () => {
-  const { els } = setup();
-  assert.equal(els.connectBoxFrame.src, undefined);
-  assert.equal(els.connectBoxFrame.hidden, true);
-  els.loadConnectBox.click();
-  assert.equal(els.connectBoxFrame.src, '/marketing/remotto-connect.html');
-  assert.equal(els.connectBoxFrame.hidden, false);
-  assert.equal(els.loadConnectBox.hidden, true);
-  assert.equal(els.progressLabel.textContent, '0 de 3 pasos');
+test('Código visible al entrar y descarga manual como alternativa', () => {
+  const frame = html.match(/<iframe[^>]+id="connectBoxFrame"[^>]*>/)?.[0];
+  assert.ok(frame);
+  assert.match(frame, /src="\/marketing\/remotto-connect\.html"/);
+  assert.match(frame, /loading="eager"/);
+  assert.doesNotMatch(frame, /hidden|loading="lazy"/);
+  assert.ok(html.indexOf('id="connectBoxFrame"') < html.indexOf('<details'));
+  assert.doesNotMatch(html + script, /loadConnectBox|Cargar formulario/);
+  assert.match(html, /<details class="manual-download"><summary>Descarga manual \(alternativa\)<\/summary>/);
+  assert.match(html, /href="#conectar">Ingresar mi código/);
+  assert.equal(setup().els.progressLabel.textContent, '0 de 3 pasos');
 });
 
 test('Restauración de progreso y almacenamiento bloqueado no rompen la guía', () => {

@@ -62,15 +62,6 @@
   if (download) download.addEventListener('click', () => {
     showToast('En el sitio oficial, elegí Remotto Connect para el cliente.');
   });
-  const loadConnectBox = document.getElementById('loadConnectBox');
-  const connectBoxFrame = document.getElementById('connectBoxFrame');
-  if (loadConnectBox && connectBoxFrame) loadConnectBox.addEventListener('click', () => {
-    // Sin códigos en URLs, sin terceros antes de este clic y sin bridge de datos.
-    connectBoxFrame.src = '/marketing/remotto-connect.html';
-    connectBoxFrame.hidden = false;
-    loadConnectBox.setAttribute('aria-expanded', 'true');
-    loadConnectBox.hidden = true;
-  });
 
   const reset = document.getElementById('resetGuide');
   if (reset) reset.addEventListener('click', () => {

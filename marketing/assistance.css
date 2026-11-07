@@ -203,3 +203,20 @@ body.assistance-page {
 body.assistance-page { background: #0F121A; }
 .assistance-page .quick-info { background: #F6F3F0; }
 .assistance-page .section-intro h2, .assistance-page .section-intro p, .assistance-page .section-intro .section-kicker { color: #F6F3F0; }
+
+/* Código de sesión visible desde el bloque inicial; descarga manual secundaria. */
+.assistance-page .hero-connect { align-self: start; min-width: 0; margin: 30px; padding: 24px; border-radius: 22px; background: #FFFFFF; color: #20232B; scroll-margin-top: 20px; }
+.assistance-page .hero-connect h2 { margin: 8px 0; font-size: 27px; line-height: 1.2; letter-spacing: -.03em; }
+.assistance-page .hero-connect p { margin: 0; font-size: 14px; line-height: 1.6; color: #565C66; }
+.assistance-page .hero-connect .provider-note { font-size: 11px; line-height: 1.6; }
+.assistance-page .hero-connect a, .assistance-page .connection-link { color: #A8052C; text-decoration: underline; text-underline-offset: 3px; }
+.assistance-page .connection-link { font-size: 12px; font-weight: 750; margin-top: 20px; }
+.assistance-page .hero-connect #connectBoxFrame { height: 360px; margin-top: 8px; }
+@media (max-width: 760px) {
+  .assistance-page .hero-connect { margin: 0 18px 22px; padding: 18px; }
+  .assistance-page .hero-connect #connectBoxFrame { height: 420px; }
+}
+
+@media (max-width: 760px) {
+  .assistance-page .hero-connect { order: -1; margin-top: 18px; }
+}

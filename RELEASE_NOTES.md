@@ -1,3 +1,9 @@
+## 2026-11-07 · Código de sesión visible y descarga manual alternativa
+
+- Connect Box pasa al bloque inicial y se carga automáticamente, sin desplegable ni botón de carga. En móvil se muestra antes del texto introductorio.
+- El técnico entrega el código y el cliente lo ingresa directamente. La descarga manual queda como alternativa secundaria; AnyDesk/RustDesk se conservan para contingencias.
+- Se mantiene el formulario oficial aislado, el aviso de terceros y la privacidad de los códigos. Sin cambios operativos de la aplicación.
+
 ## 2026-11-07 · Asistencia Remotto · publicación autorizada
 
 - Nueva guía con código del técnico, Remotto Connect y autorización/cierre; se retira el envío de ID desde la web. Remotto pasa a ser principal en portada y cobertura provincial.
