@@ -1,3 +1,11 @@
+## 2026-11-10 · Corrección de contraste de precios en /planes
+
+- Corrige la regresión visual: las tarjetas oscuras de Mercurio, Venus y Planeta X mostraban el importe casi negro porque `planes-refresh.css` aplicaba un color previsto para fondos claros.
+- Agrega la regla específica para tarjetas del bloque `#detalle` con texto blanco cálido `#F6F3F0`, sin alterar estilos de variantes claras ni los valores de las tarifas.
+- Versiona la carga de `planes-refresh.css` para evitar reutilizar CSS anterior en caché del navegador.
+- Agrega prueba de regresión de contraste, jerarquía de CSS, presencia de las 3 tarifas y enlaces de hoja de estilos.
+- No cambia rutas SEO, redirecciones, Remotto, Cósmica.app ni el tema navideño.
+
 ## 2026-11-10 · Edición estacional de fin de año en la landing
 
 - La home incorpora acentos festivos discretos en carmesí/obsidiana/blanco cálido y cintillo de consulta remota para el cierre de año, sin alterar el logotipo A1.1.
