@@ -23,6 +23,24 @@ test('Los precios de los tres servicios y el marcado coinciden', () => {
   assert.ok(!html.includes('Cósmica+'));
   assert.ok(html.includes('https://app.cosmica.ar/'));
 });
+test('Precios visibles en tarjetas oscuras de Mercurio, Venus y Planeta X', () => {
+  // La capa A1.1 aporta fondo obsidiana; el refresco posterior necesita
+  // una regla explícita de contraste (evitar color #0F121A heredado).
+  const brand = fs.readFileSync(new URL('../marketing/brand-v2.css', import.meta.url), 'utf8');
+  assert.match(brand, /#detalle \.service-card\s*\{[\s\S]*?background\s*:/);
+  const darkPrice = css.match(/\.plans-page #detalle \.service-card \.service-price strong\s*\{([^}]+)\}/)?.[1];
+  assert.ok(darkPrice, 'Falta sobreescritura para las tarjetas oscuras');
+  assert.match(darkPrice, /color:\s*#F6F3F0\s*;/i);
+  assert.doesNotMatch(darkPrice, /#0F121A/i);
+  assert.match(html, /href="\/marketing\/planes-refresh\.css\?v=20261110-contrast1"/);
+  assert.ok(html.indexOf('/marketing/brand-v2.css') < html.indexOf('/marketing/planes-refresh.css'));
+  for (const id of ['mercurio', 'venus', 'planeta-x']) {
+    const section = html.match(new RegExp('<article class="service-card[^"]*" id="' + id + '"[\\s\\S]*?<\\/article>'))?.[0];
+    assert.ok(section, 'Falta tarjeta ' + id);
+    assert.match(section, /class="service-price"><strong>(?:Desde )?\$[0-9.]+<\/strong>/);
+  }
+});
+
 test('PRO se cotiza por consulta y Free conserva alta directa', () => {
   assert.ok(html.includes('CONSULTAR PRECIO PRO'));
   assert.ok(html.includes('Rubro%3A'));
