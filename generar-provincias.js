@@ -9,7 +9,7 @@ const coverageTemplate = fs.readFileSync(path.join(root, 'template-cobertura.htm
 const provider = {
   '@type': 'ComputerRepair',
   name: 'Cósmica',
-  url: 'https://cosmica.ar/',
+  url: 'https://www.cosmica.ar/',
   telephone: '+5493883298736',
   address: {
     '@type': 'PostalAddress',
@@ -34,18 +34,18 @@ const relatedFor = province => {
 };
 
 const schemasFor = province => {
-  const url = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
+  const url = `https://www.cosmica.ar/pc-lenta-${province.slug}.html`;
   return {
     service: {
       '@context':'https://schema.org','@type':'Service',
       name:`Soporte técnico remoto para computadoras en ${province.name}`,
       serviceType:'Asistencia técnica remota de computadoras',description:province.summary,url,
       areaServed:{'@type':'AdministrativeArea',name:`${province.name}, Argentina`},provider,
-      availableChannel:{'@type':'ServiceChannel',serviceUrl:'https://cosmica.ar/asistencia.html',servicePhone:{'@type':'ContactPoint',telephone:'+5493883298736',contactType:'customer support',areaServed:'AR',availableLanguage:'Spanish'}}
+      availableChannel:{'@type':'ServiceChannel',serviceUrl:'https://www.cosmica.ar/asistencia.html',servicePhone:{'@type':'ContactPoint',telephone:'+5493883298736',contactType:'customer support',areaServed:'AR',availableLanguage:'Spanish'}}
     },
     breadcrumb: {'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[
-      {'@type':'ListItem',position:1,name:'Inicio',item:'https://cosmica.ar/'},
-      {'@type':'ListItem',position:2,name:'Cobertura nacional',item:'https://cosmica.ar/soporte-tecnico-remoto-argentina.html'},
+      {'@type':'ListItem',position:1,name:'Inicio',item:'https://www.cosmica.ar/'},
+      {'@type':'ListItem',position:2,name:'Cobertura nacional',item:'https://www.cosmica.ar/soporte-tecnico-remoto-argentina.html'},
       {'@type':'ListItem',position:3,name:province.name,item:url}
     ]},
     faq: {'@context':'https://schema.org','@type':'FAQPage',mainEntity:[
@@ -71,14 +71,27 @@ for (const province of provinces) {
 }
 
 const allProvinceLinks = provinces.map(province => `<a href="/pc-lenta-${province.slug}.html"><strong>${escapeHtml(province.name)}</strong><span>Soporte técnico remoto</span></a>`).join('');
-const coverageSchema = {'@context':'https://schema.org','@type':'Service',name:'Soporte técnico remoto en Argentina',serviceType:'Asistencia técnica remota de computadoras',url:'https://cosmica.ar/soporte-tecnico-remoto-argentina.html',areaServed:{'@type':'Country',name:'Argentina'},provider};
-const coverageBreadcrumb = {'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Inicio',item:'https://cosmica.ar/'},{'@type':'ListItem',position:2,name:'Cobertura nacional',item:'https://cosmica.ar/soporte-tecnico-remoto-argentina.html'}]};
+const coverageSchema = {'@context':'https://schema.org','@type':'Service',name:'Soporte técnico remoto en Argentina',serviceType:'Asistencia técnica remota de computadoras',url:'https://www.cosmica.ar/soporte-tecnico-remoto-argentina.html',areaServed:{'@type':'Country',name:'Argentina'},provider};
+const coverageBreadcrumb = {'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Inicio',item:'https://www.cosmica.ar/'},{'@type':'ListItem',position:2,name:'Cobertura nacional',item:'https://www.cosmica.ar/soporte-tecnico-remoto-argentina.html'}]};
 const coverageHtml = replaceTokens(coverageTemplate,{'{{ALL_PROVINCE_LINKS}}':allProvinceLinks,'{{HUB_SCHEMA}}':jsonLd(coverageSchema),'{{HUB_BREADCRUMB}}':jsonLd(coverageBreadcrumb)});
 fs.writeFileSync(path.join(root,'soporte-tecnico-remoto-argentina.html'),minifyHtml(coverageHtml));
 
-const urls = [['/','1.0'],['/planes','0.9'],['/serviciotecnico','0.9'],['/asistencia.html','0.8'],['/soporte-tecnico-remoto-argentina.html','0.9'],...provinces.map(province => [`/pc-lenta-${province.slug}.html`,'0.7'])];
-const sitemap = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',...urls.map(([url,priority]) => `  <url><loc>https://cosmica.ar${url}</loc><lastmod>${updatedAt}</lastmod><priority>${priority}</priority></url>`),'</urlset>',''].join('\n');
+// El build regenera este archivo. Conservar las 33 URLs canónicas,
+ // incluidas las 4 rutas de Cósmica BOX, sin redirects ni variantes duplicadas.
+const urls = [
+  ['/','1.0',updatedAt],
+  ['/box','0.8','2026-10-26'],
+  ['/box/calendarios-2027','0.6','2026-10-26'],
+  ['/box/stickers','0.6','2026-10-26'],
+  ['/box/stickers-ia','0.6','2026-10-27'],
+  ['/planes','0.9',updatedAt],
+  ['/serviciotecnico','0.9',updatedAt],
+  ['/asistencia.html','0.8',updatedAt],
+  ['/soporte-tecnico-remoto-argentina.html','0.9',updatedAt],
+  ...provinces.map(province => [`/pc-lenta-${province.slug}.html`,'0.7',updatedAt])
+];
+const sitemap = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',...urls.map(([url,priority,lastmod]) => `  <url><loc>https://www.cosmica.ar${url}</loc><lastmod>${lastmod}</lastmod><priority>${priority}</priority></url>`),'</urlset>',''].join('\n');
 fs.writeFileSync(path.join(root,'sitemap.xml'),sitemap);
-fs.writeFileSync(path.join(root,'robots.txt'),'User-agent: *\nAllow: /\n\nSitemap: https://cosmica.ar/sitemap.xml\n');
-fs.writeFileSync(path.join(root,'llms.txt'),'# Cósmica\n\nSoporte técnico remoto para computadoras en Argentina.\nBase física: Ramírez de Velazco 111, San Salvador de Jujuy.\nServicio técnico presencial en Jujuy: https://cosmica.ar/serviciotecnico\nPlanes de servicio: https://cosmica.ar/planes\nCobertura nacional: https://cosmica.ar/soporte-tecnico-remoto-argentina.html\n');
+fs.writeFileSync(path.join(root,'robots.txt'),'User-agent: *\nAllow: /\n\nSitemap: https://www.cosmica.ar/sitemap.xml\n');
+fs.writeFileSync(path.join(root,'llms.txt'),'# Cósmica\n\nSoporte técnico remoto para computadoras en Argentina.\nBase física: Ramírez de Velazco 111, San Salvador de Jujuy.\nServicio técnico presencial en Jujuy: https://www.cosmica.ar/serviciotecnico\nPlanes de servicio: https://www.cosmica.ar/planes\nCobertura nacional: https://www.cosmica.ar/soporte-tecnico-remoto-argentina.html\n');
 console.log(`✓ Generadas ${provinces.length} páginas provinciales, el directorio nacional y el sitemap.`);
