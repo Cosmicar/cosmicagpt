@@ -78,7 +78,7 @@ test('Remotto principal, contingencias secundarias, marca y rutas conservadas', 
     'id="connectBoxFrame"', 'id="progressTrack"',
     '/brand/official/cosmica-logo-light.png?v=10', '/marketing/assistance.css',
     '/marketing/assistance.js?v=remotto-2', 'https://remotto.app/es/descargas',
-    'https://cosmica.ar/asistencia.html', 'id="alternativas"',
+    'https://www.cosmica.ar/asistencia.html', 'id="alternativas"',
     'sandbox="allow-scripts allow-forms allow-popups allow-downloads"',
     'referrerpolicy="no-referrer"', 'https://remotto.app/es/privacidad']) {
     assert.ok(html.includes(token), 'Falta contrato: ' + token);
