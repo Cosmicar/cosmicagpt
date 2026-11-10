@@ -94,6 +94,12 @@
 .plans-page .service-card header > p { min-height:91px; font-size:.88rem; color:#535B66; line-height:1.58; }
 .plans-page .service-price { display:block; margin:25px 0 19px; }
 .plans-page .service-price strong { display:block; font-size:2.35rem; color:#0F121A; letter-spacing:-.055em; }
+/* En #detalle las tarjetas usan fondo obsidiana (brand-v2.css).
+   Mantener los importes legibles aunque la tarjeta clara sea la variante base. */
+.plans-page #detalle .service-card .service-price strong {
+  color: #F6F3F0;
+}
+
 .plans-page .service-price span { display:block; margin-top:8px; color:#565C67; font-size:.7rem; letter-spacing:.07em; }
 .plans-page .service-fit { background:#F7F4F2; border-radius:12px; font-size:.83rem; line-height:1.58; padding:15px; color:#525A65; }
 .plans-page .service-fit b { margin-bottom:4px; }
