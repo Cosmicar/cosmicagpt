@@ -1,3 +1,12 @@
+## 2026-11-10 · Asistencia remota primero: captación móvil y claridad
+
+- Se prioriza la asistencia remota integral sobre un servicio único de reseteo; no se crean nuevas landings de impresoras.
+- Encabezado móvil ofrece acceso a WhatsApp visible sin abrir el menú, con nombre accesible y área táctil de 44 px.
+- Portada separa consulta y diagnóstico inicial de ingreso de código para sesiones ya coordinadas. Explica alcance, presupuesto y consentimiento antes de conectarse, sin prometer resolución en todos los casos.
+- Barra inferior móvil prioriza consulta por WhatsApp y conserva acceso a Remotto; respeta safe-area, foco de teclado y pantallas apaisadas.
+- Conserva metadatos canónicos, tarifas de los tres servicios, estructura de navegación, navegación a Cósmica.app, GA4 y redirecciones. No cambia la guía segura ni el widget de Remotto.
+- Auditoría y mediciones recomendadas en `AUDITORIA_REMOTA_MOBILE_2026-11-10.md`. Nueva regresión `tests/remote-mobile.test.mjs` integrada a `npm run build`.
+
 ## 2026-11-10 · Consistencia SEO y sitemap (PR aislado)
 
 - Unifica `https://www.cosmica.ar/` como URL pública canónica del sitio, coherente con la redirección del dominio raíz.
