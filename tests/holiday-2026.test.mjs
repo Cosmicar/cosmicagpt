@@ -51,6 +51,7 @@ test('Portada conserva marca y separa consulta estacional de ingreso de código'
   assert.match(html, /data-message="Hola Cósmica, quiero consultar por asistencia remota o mantenimiento/);
   assert.ok(html.indexOf('class="holiday-2026-ribbon wa-link"') < html.indexOf('id="serviceStatus"'));
   assert.match(html, /Fin de año sin interrupciones/);
+  assert.match(html, /class="holiday-2026-mark"[^>]*>🎄</);
   assert.match(html, /Prepará tu PC para diciembre/);
   assert.match(html, /href="\/asistencia\.html" aria-label="Ya coordiné asistencia: ingresar mi código de Remotto"/);
   assert.match(html, /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/);
