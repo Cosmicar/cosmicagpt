@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0F121A">
   <meta name="description" content="Soporte técnico remoto en toda Argentina. Solucionamos PC lentas, virus, errores de Windows, impresoras e instalación de programas sin que salgas de tu casa.">
   <meta name="google-site-verification" content="a_WPu3pZOtWbwIJqEDdWJe4FjCkszq_5uLmH6iJEJXs">
-  <meta property="og:title" content="Cósmica | Tu PC vuelve a funcionar hoy">
+  <meta property="og:title" content="Cósmica | Asistencia técnica remota en Argentina">
   <meta property="og:description" content="Soporte técnico remoto en toda Argentina. Atención rápida, segura y sin traslados.">
   <meta property="og:image" content="https://www.cosmica.ar/brand/official/cover-facebook.png?v=10">
   <meta property="og:image:width" content="1640">
@@ -14,11 +14,28 @@
   <meta property="og:url" content="https://www.cosmica.ar/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Cósmica | Tu PC vuelve a funcionar hoy">
+  <meta name="twitter:title" content="Cósmica | Asistencia técnica remota en Argentina">
   <meta name="twitter:description" content="Reparamos tu PC a distancia, con atención en toda Argentina.">
   <meta name="twitter:image" content="https://www.cosmica.ar/brand/official/cover-x.png?v=10">
   <link rel="canonical" href="https://www.cosmica.ar/">
   <title>Cósmica | Soporte técnico remoto en toda Argentina</title>
+  <script id="holiday-2026-activation">
+    (() => {
+      // Fin de año 2026, según el calendario de Jujuy. No queda activo en enero.
+      const parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/Argentina/Jujuy',
+          year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date()).map(({ type, value }) => [type, value])
+      );
+      const year = Number(parts.year);
+      const month = Number(parts.month);
+      const day = Number(parts.day);
+      if (year === 2026 && ((month === 11 && day >= 10) || month === 12)) {
+        document.documentElement.classList.add('holiday-2026-active');
+      }
+    })();
+  </script>
 
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ComputerRepair","name":"Cósmica","url":"https://www.cosmica.ar","telephone":"+5493883298736","email":"hola@cosmica.ar","areaServed":"AR","address":{"@type":"PostalAddress","streetAddress":"Ramírez de Velazco 111","addressLocality":"San Salvador de Jujuy","addressRegion":"Jujuy","addressCountry":"AR"},"description":"Soporte técnico remoto en toda Argentina, reparación de PC, optimización de Windows, eliminación de virus, instalación de programas y asistencia para impresoras.","sameAs":["https://www.facebook.com/somoscosmica","https://www.instagram.com/somoscosmica.ar","https://x.com/somoscosmica","https://www.threads.net/@somoscosmica.ar"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Necesito llevar la computadora al taller?","acceptedAnswer":{"@type":"Answer","text":"Para los problemas que pueden resolverse a distancia, no. Te conectamos mediante una herramienta segura y trabajamos directamente en tu equipo. Si detectamos una falla física, te lo informamos."}},{"@type":"Question","name":"¿Cómo sé si mi problema puede resolverse remotamente?","acceptedAnswer":{"@type":"Answer","text":"Nos contás qué sucede por WhatsApp. Con unas preguntas rápidas evaluamos el caso y te decimos si conviene asistencia remota o revisión presencial."}},{"@type":"Question","name":"¿Pueden conectarse sin mi permiso?","acceptedAnswer":{"@type":"Answer","text":"No. Vos abrís la aplicación y autorizás la conexión. Además, ves la pantalla durante toda la sesión y podés finalizarla cuando quieras."}},{"@type":"Question","name":"¿Cuánto tarda una reparación?","acceptedAnswer":{"@type":"Answer","text":"Depende del problema y del estado del equipo. Muchos trabajos se completan dentro de la misma sesión. Antes de empezar te explicamos qué vamos a hacer."}},{"@type":"Question","name":"¿Atienden fuera de Jujuy?","acceptedAnswer":{"@type":"Answer","text":"Sí. La asistencia remota está disponible en toda Argentina. Nuestra base operativa se encuentra en San Salvador de Jujuy."}}]}</script>
@@ -31,6 +48,7 @@
   <link rel="stylesheet" href="/marketing/refinements.css">
 <link rel="stylesheet" href="/marketing/brand-v2.css?v=10">
   <link rel="stylesheet" href="/marketing/header-polish.css">
+  <link rel="stylesheet" href="/marketing/holiday-2026.css">
 <script src="/marketing/brand-v2.js" defer></script>
 <link rel="icon" type="image/png" sizes="16x16" href="/brand/official/icons/cosmica-c-v10-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/brand/official/icons/cosmica-c-v10-32.png">
@@ -59,7 +77,7 @@
             <a href="#preguntas">Preguntas</a>
           </div>
         </details>
-        <a class="nav-assistance-mobile" href="/asistencia.html">Iniciar asistencia</a>
+        <a class="nav-assistance-mobile" href="/asistencia.html">Ya coordiné: ingresar código</a>
         <a class="nav-whatsapp-mobile wa-link" href="https://wa.me/5493883298736" data-source="mobile-menu" data-message="Hola, necesito hablar con un técnico.">Hablar con un técnico</a>
       </div>
 
@@ -68,9 +86,9 @@
           <svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>
           Asistencia
         </a>
-        <a class="btn btn-primary btn-small wa-link" href="https://wa.me/5493883298736" data-source="nav" data-message="Hola, necesito ayuda con mi computadora.">
+        <a class="btn btn-primary btn-small wa-link" href="https://wa.me/5493883298736" data-source="nav" data-message="Hola, necesito ayuda con mi computadora." aria-label="Consultar por WhatsApp con un técnico de Cósmica">
           <svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-chat"></use></svg>
-          Hablar con un técnico
+          <span class="nav-whatsapp-label">Hablar con un técnico</span>
         </a>
         <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navLinks">
           <span></span><span></span><span></span>
@@ -83,26 +101,32 @@
     <section class="hero" id="inicio">
       <div class="container hero-grid">
         <div>
+          <a class="holiday-2026-ribbon wa-link" href="https://wa.me/5493883298736" data-source="holiday-hero" data-message="Hola Cósmica, quiero consultar por asistencia remota o mantenimiento para terminar el año sin problemas.">
+            <span class="holiday-2026-mark" aria-hidden="true">🎄</span>
+            <span class="holiday-2026-ribbon-copy"><strong>Fin de año sin interrupciones.</strong> <span>Prepará tu PC para diciembre.</span></span>
+            <span class="holiday-2026-ribbon-action">Consultanos <span aria-hidden="true">›</span></span>
+          </a>
+
           <div class="status-pill">
             <span class="status-dot" aria-hidden="true"></span>
             <span id="serviceStatus">Atención todos los días de 7:00 a 00:00</span>
           </div>
 
-          <h1>Tu PC vuelve a funcionar <span class="gradient-text">hoy.</span></h1>
-          <p class="hero-copy">Solucionamos computadoras lentas, virus, errores de Windows, impresoras e instalación de programas <strong>a distancia y frente a tus ojos</strong>. Sin traslados, sin vueltas y con atención en toda Argentina.</p>
+          <h1>¿Tu PC falla? <span class="gradient-text">Te ayudamos a distancia.</span></h1>
+          <p class="hero-copy">¿Tu PC está lenta, tiene virus, errores de Windows o problemas con programas e impresoras? <strong>Contanos qué pasa por WhatsApp.</strong> Evaluamos si podemos resolverlo a distancia, confirmamos el alcance y el precio antes de comenzar y nos conectamos sólo con tu permiso. Atendemos en toda Argentina.</p>
 
           <div class="hero-actions">
-            <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="hero-primary" data-message="Hola, quiero resolver un problema con mi PC. ¿Me pueden ayudar?">
+            <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="hero-primary" data-message="Hola, quiero consultar si pueden ayudarme a distancia con mi computadora.">
               <svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-chat"></use></svg>
-              Resolver mi problema ahora
+              Consultar mi caso por WhatsApp
             </a>
-            <a class="btn btn-secondary assistance-access" href="/asistencia.html">
+            <a class="btn btn-secondary assistance-access" href="/asistencia.html" aria-label="Ya coordiné asistencia: ingresar mi código de Remotto">
               <svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>
-              Iniciar asistencia remota
+              Ya tengo código
             </a>
           </div>
 
-          <a class="hero-tertiary" href="#problemas">Todavía no coordinaste: contanos qué le pasa a tu PC</a>
+          <a class="hero-tertiary" href="#problemas">Ver qué problemas podemos resolver a distancia</a>
 
           <div class="hero-proof" aria-label="Señales de confianza">
             <span><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-check"></use></svg>Desde $24.900</span>
@@ -199,7 +223,7 @@
         </div>
         <div class="center step-actions">
           <a class="btn btn-dark wa-link" href="https://wa.me/5493883298736" data-source="how-it-works" data-message="Hola, quiero saber si pueden resolver mi problema a distancia.">Consultar mi caso<svg class="icon"><use href="/marketing/icons.svg#i-arrow"></use></svg></a>
-          <a class="btn btn-secondary assistance-access" href="/asistencia.html"><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>Ya coordiné: iniciar asistencia</a>
+          <a class="btn btn-secondary assistance-access" href="/asistencia.html"><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>Ya coordiné: ingresar mi código</a>
         </div>
       </div>
     </section>
@@ -371,10 +395,10 @@
       <div class="container">
         <div class="final-cta reveal">
           <div class="final-cta-content">
-            <div><h2>Dejá de pelearte con tu PC.</h2><p>Contanos qué pasa y te decimos el camino más rápido para solucionarlo.</p></div>
+            <div><span class="holiday-2026-footer-note">✦ Cerrá el año con tu tecnología funcionando</span><h2>Dejá de pelearte con tu PC.</h2><p>Contanos qué pasa y te decimos el camino más rápido para solucionarlo.</p></div>
             <div class="final-actions">
               <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="final-cta" data-message="Hola, necesito solucionar un problema con mi PC.">Hablar por WhatsApp</a>
-              <a class="btn btn-secondary assistance-access" href="/asistencia.html">Iniciar asistencia remota</a>
+              <a class="btn btn-secondary assistance-access" href="/asistencia.html">Ya tengo código</a>
             </div>
           </div>
         </div>
@@ -404,11 +428,11 @@
     </div>
   </footer>
 
-  <div class="mobile-sticky" aria-label="Accesos rápidos">
-    <div><span>¿Ya coordinaste?</span><strong>Iniciá la asistencia o escribinos</strong></div>
+  <div class="mobile-sticky" aria-label="Accesos de asistencia remota">
+    <div class="mobile-sticky-copy"><span>¿Tu computadora tiene un problema?</span><strong>Consultanos desde cualquier provincia</strong></div>
     <div class="mobile-sticky-actions">
-      <a class="btn btn-secondary assistance-access" href="/asistencia.html"><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>Asistencia</a>
-      <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="mobile-sticky" data-message="Hola, necesito ayuda con mi PC."><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-chat"></use></svg>WhatsApp</a>
+      <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="mobile-sticky" data-message="Hola, necesito consultar si pueden ayudarme a distancia con mi PC."><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-chat"></use></svg>WhatsApp</a>
+      <a class="btn btn-secondary assistance-access" href="/asistencia.html"><svg class="icon" aria-hidden="true"><use href="/marketing/icons.svg#i-monitor"></use></svg>Tengo código</a>
     </div>
   </div>
 

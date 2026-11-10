@@ -1,3 +1,20 @@
+## 2026-11-10 · Edición estacional de fin de año en la landing
+
+- La home incorpora acentos festivos discretos en carmesí/obsidiana/blanco cálido y cintillo de consulta remota para el cierre de año, sin alterar el logotipo A1.1.
+- El cintillo y el mensaje junto al CTA final sólo se muestran entre el 10/11 y el 31/12/2026 según la fecha de Jujuy; el 1/1/2027 se ocultan automáticamente. Se activa la clase de tema antes del primer pintado para evitar saltos por JavaScript diferido.
+- Enlace WhatsApp con mensaje de consulta específico, usando la infraestructura de atribución existente `wa-link` y `data-source=holiday-hero`.
+- Nada de landing de reset, descuentos inventados, garantías nuevas, precios alterados, cambios de Remotto, redirecciones, canonical ni Cósmica.app.
+- Se incluye la hoja `marketing/holiday-2026.css` y regresión de límites de fechas, marca y rutas `tests/holiday-2026.test.mjs`.
+
+## 2026-11-10 · Asistencia remota primero: captación móvil y claridad
+
+- Se prioriza la asistencia remota integral sobre un servicio único de reseteo; no se crean nuevas landings de impresoras.
+- Encabezado móvil ofrece acceso a WhatsApp visible sin abrir el menú, con nombre accesible y área táctil de 44 px.
+- Portada separa consulta y diagnóstico inicial de ingreso de código para sesiones ya coordinadas. Explica alcance, presupuesto y consentimiento antes de conectarse, sin prometer resolución en todos los casos.
+- Barra inferior móvil prioriza consulta por WhatsApp y conserva acceso a Remotto; respeta safe-area, foco de teclado y pantallas apaisadas.
+- Conserva metadatos canónicos, tarifas de los tres servicios, estructura de navegación, navegación a Cósmica.app, GA4 y redirecciones. No cambia la guía segura ni el widget de Remotto.
+- Auditoría y mediciones recomendadas en `AUDITORIA_REMOTA_MOBILE_2026-11-10.md`. Nueva regresión `tests/remote-mobile.test.mjs` integrada a `npm run build`.
+
 ## 2026-11-10 · Consistencia SEO y sitemap (PR aislado)
 
 - Unifica `https://www.cosmica.ar/` como URL pública canónica del sitio, coherente con la redirección del dominio raíz.
