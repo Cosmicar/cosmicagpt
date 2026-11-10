@@ -147,7 +147,7 @@ const indexPatterns = [
   /src="\/brand\/services\/mercurio\.svg"/,
   /src="\/brand\/services\/venus\.svg"/,
   /src="\/brand\/services\/planeta-x\.svg"/,
-  /https:\/\/app\.cosmica\.ar/,
+  /https:\/\/app\.www\.cosmica\.ar/,
   /5493883298736/
 ];
 for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.html: falta ${pattern}`);
@@ -166,7 +166,7 @@ const assistancePatterns = [
 for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fail(`asistencia.html: falta ${pattern}`);
 
 const plansPatterns = [
-  /<link rel="canonical" href="https:\/\/cosmica\.ar\/planes">/,
+  /<link rel="canonical" href="https:\/\/www\.cosmica\.ar\/planes">/,
   /href="\/marketing\/planes\.css(?:\?v=[^"]+)?"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
   /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
@@ -190,7 +190,7 @@ for (const retiredName of ['Bronce', 'Oro', 'Platinum']) {
 }
 
 const localServicePatterns = [
-  /<link rel="canonical" href="https:\/\/cosmica\.ar\/serviciotecnico">/,
+  /<link rel="canonical" href="https:\/\/www\.cosmica\.ar\/serviciotecnico">/,
   /href="\/marketing\/serviciotecnico\.css(?:\?v=[^"]+)?"/,
   /src="\/marketing\/serviciotecnico\.js(?:\?v=[^"]+)?"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
@@ -260,7 +260,7 @@ for (const province of provinces) {
   if (seenDescriptions.has(description)) fail(`${file}: meta description duplicada`);
   seenDescriptions.add(description);
 
-  const expectedCanonical = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
+  const expectedCanonical = `https://www.cosmica.ar/pc-lenta-${province.slug}.html`;
   if (canonical !== expectedCanonical) fail(`${file}: canonical incorrecto`);
   if (!h1.includes(province.name)) fail(`${file}: el H1 no incluye la provincia`);
   if (!html.includes('"@type":"Service"')) fail(`${file}: falta schema Service`);
@@ -288,13 +288,19 @@ for (const province of provinces) {
 
 const sitemap = read('sitemap.xml');
 const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
-if (sitemapUrls.length !== 29) fail(`sitemap: se esperaban 29 URLs y hay ${sitemapUrls.length}`);
-if ((sitemap.match(/<lastmod>/g) || []).length !== 29) fail('sitemap: faltan lastmod');
-if (sitemapUrls.includes('https://cosmica.ar/plus')) fail('sitemap: no indexar la membresía retirada');
-if (!sitemapUrls.includes('https://cosmica.ar/planes')) fail('sitemap: falta la landing de planes');
-if (!sitemapUrls.includes('https://cosmica.ar/serviciotecnico')) fail('sitemap: falta la landing de servicio técnico en Jujuy');
+if (sitemapUrls.length !== 33) fail(`sitemap: se esperaban 33 URLs y hay ${sitemapUrls.length}`);
+if ((sitemap.match(/<lastmod>/g) || []).length !== 33) fail('sitemap: faltan lastmod');
+if (sitemapUrls.includes('https://www.cosmica.ar/plus')) fail('sitemap: no indexar la membresía retirada');
+if (!sitemapUrls.includes('https://www.cosmica.ar/planes')) fail('sitemap: falta la landing de planes');
+if (!sitemapUrls.includes('https://www.cosmica.ar/serviciotecnico')) fail('sitemap: falta la landing de servicio técnico en Jujuy');
+if (new Set(sitemapUrls).size !== sitemapUrls.length) fail('sitemap: URLs duplicadas');
+if (sitemapUrls.some(url => !url.startsWith('https://www.cosmica.ar/'))) fail('sitemap: URLs fuera de www.cosmica.ar');
+for (const boxRoute of ['/box','/box/calendarios-2027','/box/stickers','/box/stickers-ia']) {
+  if (!sitemapUrls.includes(`https://www.cosmica.ar${boxRoute}`)) fail(`sitemap: falta Cósmica BOX ${boxRoute}`);
+}
+if (!read('robots.txt').includes('Sitemap: https://www.cosmica.ar/sitemap.xml')) fail('robots.txt: sitemap no canónico');
 for (const province of provinces) {
-  const url = `https://cosmica.ar/pc-lenta-${province.slug}.html`;
+  const url = `https://www.cosmica.ar/pc-lenta-${province.slug}.html`;
   if (!sitemapUrls.includes(url)) fail(`sitemap: falta ${province.name}`);
 }
 
