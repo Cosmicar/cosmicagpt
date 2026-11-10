@@ -147,7 +147,7 @@ const indexPatterns = [
   /src="\/brand\/services\/mercurio\.svg"/,
   /src="\/brand\/services\/venus\.svg"/,
   /src="\/brand\/services\/planeta-x\.svg"/,
-  /https:\/\/app\.www\.cosmica\.ar/,
+  /https:\/\/app\.cosmica\.ar/,
   /5493883298736/
 ];
 for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.html: falta ${pattern}`);
