@@ -19,6 +19,23 @@
   <meta name="twitter:image" content="https://www.cosmica.ar/brand/official/cover-x.png?v=10">
   <link rel="canonical" href="https://www.cosmica.ar/">
   <title>Cósmica | Soporte técnico remoto en toda Argentina</title>
+  <script id="holiday-2026-activation">
+    (() => {
+      // Fin de año 2026, según el calendario de Jujuy. No queda activo en enero.
+      const parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/Argentina/Jujuy',
+          year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date()).map(({ type, value }) => [type, value])
+      );
+      const year = Number(parts.year);
+      const month = Number(parts.month);
+      const day = Number(parts.day);
+      if (year === 2026 && ((month === 11 && day >= 10) || month === 12)) {
+        document.documentElement.classList.add('holiday-2026-active');
+      }
+    })();
+  </script>
 
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"ComputerRepair","name":"Cósmica","url":"https://www.cosmica.ar","telephone":"+5493883298736","email":"hola@cosmica.ar","areaServed":"AR","address":{"@type":"PostalAddress","streetAddress":"Ramírez de Velazco 111","addressLocality":"San Salvador de Jujuy","addressRegion":"Jujuy","addressCountry":"AR"},"description":"Soporte técnico remoto en toda Argentina, reparación de PC, optimización de Windows, eliminación de virus, instalación de programas y asistencia para impresoras.","sameAs":["https://www.facebook.com/somoscosmica","https://www.instagram.com/somoscosmica.ar","https://x.com/somoscosmica","https://www.threads.net/@somoscosmica.ar"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Necesito llevar la computadora al taller?","acceptedAnswer":{"@type":"Answer","text":"Para los problemas que pueden resolverse a distancia, no. Te conectamos mediante una herramienta segura y trabajamos directamente en tu equipo. Si detectamos una falla física, te lo informamos."}},{"@type":"Question","name":"¿Cómo sé si mi problema puede resolverse remotamente?","acceptedAnswer":{"@type":"Answer","text":"Nos contás qué sucede por WhatsApp. Con unas preguntas rápidas evaluamos el caso y te decimos si conviene asistencia remota o revisión presencial."}},{"@type":"Question","name":"¿Pueden conectarse sin mi permiso?","acceptedAnswer":{"@type":"Answer","text":"No. Vos abrís la aplicación y autorizás la conexión. Además, ves la pantalla durante toda la sesión y podés finalizarla cuando quieras."}},{"@type":"Question","name":"¿Cuánto tarda una reparación?","acceptedAnswer":{"@type":"Answer","text":"Depende del problema y del estado del equipo. Muchos trabajos se completan dentro de la misma sesión. Antes de empezar te explicamos qué vamos a hacer."}},{"@type":"Question","name":"¿Atienden fuera de Jujuy?","acceptedAnswer":{"@type":"Answer","text":"Sí. La asistencia remota está disponible en toda Argentina. Nuestra base operativa se encuentra en San Salvador de Jujuy."}}]}</script>
@@ -31,6 +48,7 @@
   <link rel="stylesheet" href="/marketing/refinements.css">
 <link rel="stylesheet" href="/marketing/brand-v2.css?v=10">
   <link rel="stylesheet" href="/marketing/header-polish.css">
+  <link rel="stylesheet" href="/marketing/holiday-2026.css">
 <script src="/marketing/brand-v2.js" defer></script>
 <link rel="icon" type="image/png" sizes="16x16" href="/brand/official/icons/cosmica-c-v10-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/brand/official/icons/cosmica-c-v10-32.png">
@@ -83,6 +101,12 @@
     <section class="hero" id="inicio">
       <div class="container hero-grid">
         <div>
+          <a class="holiday-2026-ribbon wa-link" href="https://wa.me/5493883298736" data-source="holiday-hero" data-message="Hola Cósmica, quiero consultar por asistencia remota o mantenimiento para terminar el año sin problemas.">
+            <span class="holiday-2026-mark" aria-hidden="true">✦</span>
+            <span class="holiday-2026-ribbon-copy"><strong>Fin de año sin interrupciones.</strong> <span>Prepará tu PC para diciembre.</span></span>
+            <span class="holiday-2026-ribbon-action">Consultanos <span aria-hidden="true">›</span></span>
+          </a>
+
           <div class="status-pill">
             <span class="status-dot" aria-hidden="true"></span>
             <span id="serviceStatus">Atención todos los días de 7:00 a 00:00</span>
@@ -371,7 +395,7 @@
       <div class="container">
         <div class="final-cta reveal">
           <div class="final-cta-content">
-            <div><h2>Dejá de pelearte con tu PC.</h2><p>Contanos qué pasa y te decimos el camino más rápido para solucionarlo.</p></div>
+            <div><span class="holiday-2026-footer-note">✦ Cerrá el año con tu tecnología funcionando</span><h2>Dejá de pelearte con tu PC.</h2><p>Contanos qué pasa y te decimos el camino más rápido para solucionarlo.</p></div>
             <div class="final-actions">
               <a class="btn btn-primary wa-link" href="https://wa.me/5493883298736" data-source="final-cta" data-message="Hola, necesito solucionar un problema con mi PC.">Hablar por WhatsApp</a>
               <a class="btn btn-secondary assistance-access" href="/asistencia.html">Ya tengo código</a>
