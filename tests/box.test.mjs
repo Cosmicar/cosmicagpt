@@ -38,7 +38,7 @@ test('La compilación y ruta /box incluyen todos los recursos necesarios', () =>
   assert.ok(build.includes("'box.css'"));
   assert.ok(build.includes("'box/muestrario-real.jpg'"));
   assert.ok(vercel.rewrites.some((entry) => entry.source === '/box' && entry.destination === '/box.html'));
-  assert.match(read('sitemap.xml'), /https:\/\/cosmica\.ar\/box/);
+  assert.match(read('sitemap.xml'), /https:\/\/www\.cosmica\.ar\/box/);
 });
 
 test('Catálogo Cósmica BOX ofrece Fiestas y pack Stickers de 96 sin mezclar pagos', () => {
@@ -67,7 +67,7 @@ test('Catálogo Cósmica BOX ofrece Fiestas y pack Stickers de 96 sin mezclar pa
   }
   assert.ok(build.includes("'stickers-preview.html'"));
   assert.ok(vercel.rewrites.some(x => x.source==='/box/stickers' && x.destination==='/stickers-preview.html'));
-  assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/stickers/);
+  assert.match(read('sitemap.xml'),/https:\/\/www\.cosmica\.ar\/box\/stickers/);
   assert.match(style,/\.catalog-grid/);
 });
 
@@ -97,7 +97,7 @@ test('Calendarios Mignon 2027 en catálogo como próximo combo, sin cobro',()=>{
  assert.ok(build.includes("'calendarios-2027.html'"));
  assert.ok(build.includes("'box/calendarios-mignon-2027.jpg'"));
  assert.ok(vercel.rewrites.some(x=>x.source==='/box/calendarios-2027'&&x.destination==='/calendarios-2027.html'));
- assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/calendarios-2027/);
+ assert.match(read('sitemap.xml'),/https:\/\/www\.cosmica\.ar\/box\/calendarios-2027/);
 });
 
 test('Calendarios Anime 2027 V3 disponibles a 4990 con compra identificada por WhatsApp',()=>{
@@ -143,5 +143,5 @@ test('Cósmica BOX Stickers IA 48 como combo 05 en revisión sin enlaces de cobr
  assert.ok(build.includes("'stickers-ia.html'"));
  assert.ok(build.includes("'box/stickers-ia-48-muestrario.jpg'"));
  assert.ok(vercel.rewrites.some(x=>x.source==='/box/stickers-ia' && x.destination==='/stickers-ia.html'));
- assert.match(read('sitemap.xml'),/https:\/\/cosmica\.ar\/box\/stickers-ia/);
+ assert.match(read('sitemap.xml'),/https:\/\/www\.cosmica\.ar\/box\/stickers-ia/);
 });
