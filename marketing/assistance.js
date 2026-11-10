@@ -1,7 +1,7 @@
 (() => {
   const totalSteps = 3;
   const storageKey = 'cosmica_assistance_remotto_progress_v1';
-  const pageUrl = 'https://cosmica.ar/asistencia.html';
+  const pageUrl = 'https://www.cosmica.ar/asistencia.html';
   const completed = new Set();
   const progressBar = document.getElementById('progressBar');
   const progressTrack = document.getElementById('progressTrack');
