@@ -48,10 +48,10 @@ function ensureOfficialHead(source) {
     .replace(/<link\b[^>]*rel=(["'])manifest\1[^>]*>\s*/gi, '')
     .replace(/\/marketing\/brand-v2\.css\?v=\d+/g, BRAND_CSS)
     .replace(/(<meta\s+name=(["'])theme-color\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$1#0F121A$4')
-    .replace(/(<meta\s+property=(["'])og:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}$4`)
+    .replace(/(<meta\s+property=(["'])og:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://www.cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}$4`)
     .replace(/(<meta\s+property=(["'])og:image:width\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$11640$4')
     .replace(/(<meta\s+property=(["'])og:image:height\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, '$1624$4')
-    .replace(/(<meta\s+name=(["'])twitter:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://cosmica.ar/brand/official/cover-x.png?v=${BRAND_VERSION}$4`);
+    .replace(/(<meta\s+name=(["'])twitter:image\2\s+content=(["']))[^"']+(["'][^>]*>)/gi, `$1https://www.cosmica.ar/brand/official/cover-x.png?v=${BRAND_VERSION}$4`);
 
   const additions = [
     `<link rel="icon" type="image/png" sizes="16x16" href="${ICON_ROOT}/cosmica-c-v10-16.png">`,
@@ -82,7 +82,7 @@ for (const relativePath of htmlFiles) {
   updated = ensureOfficialHead(updated);
   updated = updated
     .replaceAll('🚀', '')
-    .replaceAll('https://cosmica.ar/preview.jpg', `https://cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}`);
+    .replaceAll('https://www.cosmica.ar/preview.jpg', `https://www.cosmica.ar/brand/official/cover-facebook.png?v=${BRAND_VERSION}`);
 
   upgradedBrands += beforeBrands;
 
