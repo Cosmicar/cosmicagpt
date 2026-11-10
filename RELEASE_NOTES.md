@@ -1,3 +1,11 @@
+## 2026-11-10 · Edición estacional de fin de año en la landing
+
+- La home incorpora acentos festivos discretos en carmesí/obsidiana/blanco cálido y cintillo de consulta remota para el cierre de año, sin alterar el logotipo A1.1.
+- El cintillo y el mensaje junto al CTA final sólo se muestran entre el 10/11 y el 31/12/2026 según la fecha de Jujuy; el 1/1/2027 se ocultan automáticamente. Se activa la clase de tema antes del primer pintado para evitar saltos por JavaScript diferido.
+- Enlace WhatsApp con mensaje de consulta específico, usando la infraestructura de atribución existente `wa-link` y `data-source=holiday-hero`.
+- Nada de landing de reset, descuentos inventados, garantías nuevas, precios alterados, cambios de Remotto, redirecciones, canonical ni Cósmica.app.
+- Se incluye la hoja `marketing/holiday-2026.css` y regresión de límites de fechas, marca y rutas `tests/holiday-2026.test.mjs`.
+
 ## 2026-11-10 · Asistencia remota primero: captación móvil y claridad
 
 - Se prioriza la asistencia remota integral sobre un servicio único de reseteo; no se crean nuevas landings de impresoras.
