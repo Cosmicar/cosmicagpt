@@ -77,4 +77,35 @@ function verifyAssets(dir) {
 }
 ['marketing'].forEach(verifyAssets);
 for (const [, url] of fs.readFileSync(path.join(out, 'sitemap.xml'), 'utf8').matchAll(/<loc>(.*?)<\/loc>/g)) verifyReference(new URL(url).pathname, 'sitemap.xml');
+// Verificar el artefacto final DESPUÉS del generador y la sincronización de marca.
+const canonicalRoutes = new Map([
+  ['index.html','/'],
+  ['box.html','/box'],
+  ['calendarios-2027.html','/box/calendarios-2027'],
+  ['stickers-preview.html','/box/stickers'],
+  ['stickers-ia.html','/box/stickers-ia'],
+  ['planes.html','/planes'],
+  ['serviciotecnico.html','/serviciotecnico'],
+  ['asistencia.html','/asistencia.html'],
+  ['soporte-tecnico-remoto-argentina.html','/soporte-tecnico-remoto-argentina.html'],
+  ...provinces.map(p => [`pc-lenta-${p.slug}.html`, `/pc-lenta-${p.slug}.html`])
+]);
+const publishedCanonicals = new Set();
+for (const [page, route] of canonicalRoutes) {
+  const html = fs.readFileSync(path.join(out,page), 'utf8');
+  const links = [...html.matchAll(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/gi)];
+  const expected = `https://www.cosmica.ar${route}`;
+  if (links.length !== 1 || links[0][1] !== expected) throw new Error(`${page}: canonical incorrecto (esperado ${expected})`);
+  if (/https:\/\/cosmica\.ar(?:\/|["'])/.test(html)) throw new Error(`${page}: URL absoluta sin www`);
+  publishedCanonicals.add(expected);
+}
+const finalSitemap = fs.readFileSync(path.join(out,'sitemap.xml'),'utf8');
+const finalUrls = [...finalSitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+if (publishedCanonicals.size !== 33 || finalUrls.length !== 33 ||
+    new Set(finalUrls).size !== 33 || finalUrls.some(url => !publishedCanonicals.has(url))) {
+  throw new Error('sitemap.xml debe reflejar exactamente 33 canonicals publicados');
+}
+if (!fs.readFileSync(path.join(out,'robots.txt'),'utf8').includes('Sitemap: https://www.cosmica.ar/sitemap.xml')) {
+  throw new Error('robots.txt no apunta al sitemap canónico');
+}
 console.log(`✓ Salida pública aislada: ${pages.length} páginas, recursos locales y sitemap verificados.`);

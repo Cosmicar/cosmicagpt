@@ -1,3 +1,11 @@
+## 2026-11-10 · Consistencia SEO y sitemap (PR aislado)
+
+- Unifica `https://www.cosmica.ar/` como URL pública canónica del sitio, coherente con la redirección del dominio raíz.
+- Corrige la generación de sitemap para conservar las cuatro URLs Cósmica BOX y las 24 páginas provinciales: 33 rutas canónicas.
+- Actualiza canonical, OG, schema, robots, el generador y la sincronización de marca. Añade controles de `dist` posteriores al build que comprueban canonical y sitemap sin variantes redundantes.
+- No modifica `vercel.json`, `app.cosmica.ar`, Remotto, compras, precios, GA4, marca, ni la producción.
+- Validación final en Google Search Console queda pendiente de publicar y de consultar las URL efectivamente excluidas.
+
 ## 2026-11-07 · Código de sesión visible y descarga manual alternativa
 
 - Connect Box pasa al bloque inicial y se carga automáticamente, sin desplegable ni botón de carga. En móvil se muestra antes del texto introductorio.

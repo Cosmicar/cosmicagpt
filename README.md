@@ -6,7 +6,7 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 
 | Dominio | Función | Repositorio | Rama de producción |
 | --- | --- | --- | --- |
-| `www.cosmica.ar` / `cosmica.ar` | Servicios, asistencia remota, marketing y cobertura nacional | `Cosmicar/cosmicagpt` | `main` |
+| `www.cosmica.ar` (canónico; `cosmica.ar` redirige) | Servicios, asistencia remota, marketing y cobertura nacional | `Cosmicar/cosmicagpt` | `main` |
 | `app.cosmica.ar` | Cósmica.app para talleres y comercios | `Cosmicar/cosmica-app` | `main` |
 
 ## Reglas de separación
@@ -25,7 +25,7 @@ Este repositorio contiene exclusivamente la web institucional y comercial de Có
 - Cósmica.app mantiene Free accesible sin cotización; PRO se presenta comercialmente como **CONSULTAR PRECIO PRO**, con propuesta según negocio y adaptaciones especiales cotizadas aparte. El precio operativo y las suscripciones existentes del SaaS no se modifican desde esta web. Cósmica+ queda retirada; `/plus` redirige a Cósmica.app.
 - Contacto por WhatsApp.
 - Directorio nacional y páginas provinciales.
-- SEO, sitemap y datos estructurados.
+- SEO, sitemap y datos estructurados: las direcciones absolutas públicas, canonical y sitemap usan `https://www.cosmica.ar/`. Las redirecciones históricas de la aplicación permanecen en `vercel.json`.
 
 ## Validación
 
