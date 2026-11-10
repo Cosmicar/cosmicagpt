@@ -1,6 +1,6 @@
 /* TEAM */
 Empresa: Cósmica Online
-Web: https://cosmica.ar
+Web: https://www.cosmica.ar
 Soporte: asistencia@cosmica.ar
 
 /* MISSION */
