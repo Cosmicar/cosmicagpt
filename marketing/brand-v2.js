@@ -80,7 +80,6 @@
     { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${ICON_ROOT}/cosmica-c-v10-32.png` },
     { rel: 'icon', type: 'image/x-icon', href: `${ICON_ROOT}/favicon-c-v10.ico` },
     { rel: 'apple-touch-icon', sizes: '180x180', href: `${ICON_ROOT}/cosmica-c-v10-180.png` },
-    { rel: 'manifest', href: `/site.webmanifest?v=${BRAND_VERSION}` },
   ]) {
     const link = document.createElement('link');
     Object.entries(icon).forEach(([name, value]) => link.setAttribute(name, value));

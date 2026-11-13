@@ -61,6 +61,7 @@ const forbiddenPaths = [
   'indexold1.html',
   'firebase-messaging-sw.js',
   'manifest.json',
+  'site.webmanifest',
   'sw.js',
   'MIGRATION_RUNBOOK.md',
   'SYSTEM_OVERVIEW.md',
