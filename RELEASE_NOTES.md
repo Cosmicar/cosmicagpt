@@ -1,3 +1,7 @@
+## 2026-11-13 · Instalación de Cósmica.app
+
+- La web pública deja de anunciar una PWA propia. El sitio de instalación del sistema es `app.cosmica.ar`.
+
 ## 2026-11-10 · Corrección de contraste de precios en /planes
 
 - Corrige la regresión visual: las tarjetas oscuras de Mercurio, Venus y Planeta X mostraban el importe casi negro porque `planes-refresh.css` aplicaba un color previsto para fondos claros.

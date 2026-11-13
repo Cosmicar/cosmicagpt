@@ -70,7 +70,6 @@ const requiredFiles = [
   'brand/services/mercurio.svg',
   'brand/services/venus.svg',
   'brand/services/planeta-x.svg',
-  'site.webmanifest',
   'favicon.ico',
   'brand/official/icons/cosmica-c-v10-16.png',
   'brand/official/icons/cosmica-c-v10-32.png',
@@ -171,7 +170,6 @@ const plansPatterns = [
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
   /href="\/brand\/official\/icons\/cosmica-c-v10-16\.png"/,
   /href="\/brand\/official\/icons\/favicon-c-v10\.ico"/,
-  /href="\/site\.webmanifest\?v=10"/,
   /id="mercurio"/,
   /id="venus"/,
   /id="planeta-x"/,
@@ -214,12 +212,6 @@ if (!provinceCss.includes('A1.1 2026-08-13')) fail('province.css: falta la capa 
 if (!provinceCss.includes('body[data-province] .province-hero')) fail('province.css: falta el hero provincial alineado con la home');
 if (!provinceCss.includes('var(--carmine)') || !provinceCss.includes('var(--obsidian)')) fail('province.css: faltan tokens principales A1.1');
 if (!provinceCss.includes('prefers-reduced-motion')) fail('province.css: falta resguardo de movimiento reducido');
-
-const manifest = JSON.parse(read('site.webmanifest'));
-if (manifest.theme_color !== '#0F121A' || manifest.background_color !== '#0F121A') fail('site.webmanifest: colores de marca incorrectos');
-for (const [size, file] of [['192x192', 'cosmica-c-v10-192.png'], ['512x512', 'cosmica-c-v10-512.png']]) {
-  if (!manifest.icons?.some(icon => icon.sizes === size && icon.src.endsWith(file))) fail(`site.webmanifest: falta el icono ${size}`);
-}
 
 const vercelConfig = JSON.parse(read('vercel.json'));
 for (const source of ['/plus', '/plus.html']) {

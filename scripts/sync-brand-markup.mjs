@@ -58,7 +58,6 @@ function ensureOfficialHead(source) {
     `<link rel="icon" type="image/png" sizes="32x32" href="${ICON_ROOT}/cosmica-c-v10-32.png">`,
     `<link rel="icon" type="image/x-icon" href="${ICON_ROOT}/favicon-c-v10.ico">`,
     `<link rel="apple-touch-icon" sizes="180x180" href="${ICON_ROOT}/cosmica-c-v10-180.png">`,
-    `<link rel="manifest" href="/site.webmanifest?v=${BRAND_VERSION}">`,
   ];
   if (!updated.includes('/marketing/brand-v2.css')) {
     additions.push(`<link rel="stylesheet" href="${BRAND_CSS}">`);

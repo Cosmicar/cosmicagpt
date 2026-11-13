@@ -29,7 +29,6 @@ const requiredFiles = [
   'brand/official/README.md',
   'brand/official/icons/favicon-c-v10.ico',
   'favicon.ico',
-  'site.webmanifest',
 ];
 
 for (const relativePath of requiredFiles) {
@@ -90,7 +89,6 @@ for (const relativePath of publicFiles) {
     '/brand/official/icons/cosmica-c-v10-32.png',
     '/brand/official/icons/favicon-c-v10.ico',
     '/brand/official/icons/cosmica-c-v10-180.png',
-    '/site.webmanifest?v=10',
     '/marketing/brand-v2.css?v=10',
     '/marketing/brand-v2.js',
   ]) {
@@ -129,7 +127,6 @@ const contracts = {
     'cosmica-logo-${variant}.png',
     'cosmica-c-v10-16.png',
     'cosmica-c-v10-180.png',
-    'site.webmanifest',
   ],
   'scripts/sync-brand-markup.mjs': [
     "const BRAND_VERSION = '10'",
