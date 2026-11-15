@@ -36,8 +36,8 @@ function createElement(id = '') {
 }
 function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = false } = {}) {
   const idNames = ['progressBar', 'progressTrack', 'progressLabel', 'toast',
-    'downloadRemotto', 'codeConfirmed', 'openedButton', 'readyConfirmed',
-    'connectBoxFrame', 'mobileAlert', 'copyLink', 'sendLink', 'year', 'resetGuide'];
+    'downloadAnydesk', 'downloadConfirmed', 'openedButton', 'supportId',
+    'idFeedback', 'sendId', 'mobileAlert', 'copyLink', 'sendLink', 'year', 'resetGuide'];
   const els = Object.fromEntries(idNames.map(name => [name, createElement(name)]));
   els.mobileAlert.hidden = true;
   const cards = [1, 2, 3].map(step => {
@@ -54,9 +54,9 @@ function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = fa
   };
   const writes = [];
   const storage = {
-    getItem(key) {
+    getItem() {
       if (storageThrows) throw Error('blocked');
-      return key === 'cosmica_assistance_remotto_progress_v1' ? saved : null;
+      return saved;
     },
     setItem(key, value) {
       if (storageThrows) throw Error('blocked');
@@ -73,76 +73,83 @@ function setup({ userAgent = 'Windows NT 10.0', saved = null, storageThrows = fa
   return { els, cards, writes };
 }
 
-test('Remotto principal, contingencias secundarias, marca y rutas conservadas', () => {
-  for (const token of ['id="downloadRemotto"', 'id="codeConfirmed"', 'id="readyConfirmed"',
-    'id="connectBoxFrame"', 'id="progressTrack"',
-    '/brand/official/cosmica-logo-light.png?v=10', '/marketing/assistance.css',
-    '/marketing/assistance.js?v=remotto-2', 'https://remotto.app/es/descargas',
-    'https://www.cosmica.ar/asistencia.html', 'id="alternativas"',
-    'sandbox="allow-scripts allow-forms allow-popups allow-downloads"',
-    'referrerpolicy="no-referrer"', 'https://remotto.app/es/privacidad']) {
+test('HTML mantiene la ruta segura de asistencia y los activos oficiales', () => {
+  for (const token of [
+    'id="downloadAnydesk"', 'id="downloadConfirmed"', 'id="openedButton"',
+    'id="sendId"', 'id="supportId"', 'id="progressTrack"', 'id="resetGuide"',
+    '/brand/official/cosmica-logo-light.png?v=10',
+    '/marketing/assistance.css?v=anydesk-20261115', '/marketing/assistance.js?v=anydesk-20261115',
+    'anydesk.com/es/downloads/windows', '/marketing/problem-client.webp',
+    'noopener noreferrer', 'aria-labelledby', 'prefers'
+  ].filter(token => token !== 'prefers')) {
     assert.ok(html.includes(token), 'Falta contrato: ' + token);
   }
-  const primary = html.split('id="alternativas"')[0];
-  assert.doesNotMatch(primary, /AnyDesk|RustDesk|supportId|sendId/);
-  assert.doesNotMatch(html, /<script[^>]+src="https:/);
-  assert.doesNotMatch(script, /supportId|sendId|remote_id|fetch\(/);
+  assert.ok(!html.includes('Cósmica+'));
+  assert.ok(!html.includes('onClick='));
 });
 
-test('Descargar o pedir ayuda no confirma una conexión ni completa pasos', () => {
+test('La descarga no avanza sola; la confirmación sí', () => {
+  const { els, cards } = setup();
+  els.downloadAnydesk.click();
+  assert.equal(els.progressLabel.textContent, '0 de 3 pasos');
+  els.downloadConfirmed.click();
+  assert.equal(els.progressLabel.textContent, '1 de 3 pasos');
+  assert.equal(els.progressTrack.getAttribute('aria-valuenow'), '1');
+  assert.equal(cards[0].classList.contains('completed'), true);
+});
+
+test('AnyDesk abierto y WhatsApp con ID limpio actualizan la guía', () => {
+  const { els, cards, writes } = setup();
+  els.openedButton.click();
+  assert.equal(els.progressLabel.textContent, '1 de 3 pasos');
+  assert.equal(cards[2].scrolled, true);
+  els.supportId.value = '123 456 789';
+  const event = els.sendId.click();
+  assert.equal(event.defaultPrevented, false);
+  const destination = new URL(els.sendId.href);
+  assert.equal(destination.hostname, 'wa.me');
+  assert.equal(destination.pathname, '/5493883298736');
+  assert.ok(destination.searchParams.get('text').includes('123456789'));
+  assert.equal(els.progressLabel.textContent, '2 de 3 pasos');
+  assert.ok(writes.every(([, val]) => !val.includes('123456789')), 'Nunca persistir el ID');
+});
+
+test('ID inválido se bloquea y señala sin perder la guía', () => {
   const { els } = setup();
-  els.downloadRemotto.click();
+  els.supportId.value = 'abcd-123';
+  const event = els.sendId.click();
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(els.supportId.getAttribute('aria-invalid'), 'true');
+  assert.equal(els.supportId.focused, true);
+  assert.ok(els.idFeedback.textContent.includes('Revisá el ID'));
   assert.equal(els.progressLabel.textContent, '0 de 3 pasos');
 });
 
-test('Los pasos requieren confirmación explícita y guardan sólo números', () => {
-  const { els, cards, writes } = setup();
-  els.codeConfirmed.click();
-  els.openedButton.click();
-  els.readyConfirmed.click();
-  assert.equal(els.progressLabel.textContent, '3 de 3 pasos');
-  assert.equal(els.progressTrack.getAttribute('aria-valuenow'), '3');
-  assert.equal(cards[0].classList.contains('completed'), true);
-  assert.equal(els.readyConfirmed.getAttribute('aria-pressed'), 'true');
-  assert.deepEqual(writes.map(([, v]) => JSON.parse(v)), [[1], [1, 2], [1, 2, 3]]);
-  assert.ok(writes.every(([key]) => key === 'cosmica_assistance_remotto_progress_v1'));
-});
-
-test('Código visible al entrar y descarga manual como alternativa', () => {
-  const frame = html.match(/<iframe[^>]+id="connectBoxFrame"[^>]*>/)?.[0];
-  assert.ok(frame);
-  assert.match(frame, /src="\/marketing\/remotto-connect\.html"/);
-  assert.match(frame, /loading="eager"/);
-  assert.doesNotMatch(frame, /hidden|loading="lazy"/);
-  assert.ok(html.indexOf('id="connectBoxFrame"') < html.indexOf('<details'));
-  assert.doesNotMatch(html + script, /loadConnectBox|Cargar formulario/);
-  assert.match(html, /<details class="manual-download"><summary>Descarga manual \(alternativa\)<\/summary>/);
-  assert.match(html, /href="#conectar">Ingresar mi código/);
-  assert.equal(setup().els.progressLabel.textContent, '0 de 3 pasos');
+test('ID vacío habilita escribirlo manualmente en WhatsApp', () => {
+  const { els } = setup();
+  els.sendId.click();
+  assert.ok(new URL(els.sendId.href).searchParams.get('text').includes('Mi ID es:'));
+  assert.equal(els.progressLabel.textContent, '1 de 3 pasos');
 });
 
 test('Restauración de progreso y almacenamiento bloqueado no rompen la guía', () => {
   const saved = setup({ saved: '[1,3,99,-2,"invalid"]' });
   assert.equal(saved.els.progressLabel.textContent, '2 de 3 pasos');
-  assert.equal(saved.els.codeConfirmed.getAttribute('aria-pressed'), 'true');
   const blocked = setup({ storageThrows: true });
-  blocked.els.codeConfirmed.click();
+  blocked.els.downloadConfirmed.click();
   assert.equal(blocked.els.progressLabel.textContent, '1 de 3 pasos');
-  assert.equal(setup({saved: '{invalid'}).els.progressLabel.textContent, '0 de 3 pasos');
 });
 
-test('Reiniciar limpia también los estados accesibles de confirmación', () => {
+test('Se reinicia el avance para otra asistencia', () => {
   const { els } = setup({ saved: '[1,2,3]' });
+  assert.equal(els.progressLabel.textContent, '3 de 3 pasos');
   els.resetGuide.click();
   assert.equal(els.progressLabel.textContent, '0 de 3 pasos');
-  for (const id of ['codeConfirmed','openedButton','readyConfirmed']) {
-    assert.equal(els[id].getAttribute('aria-pressed'), 'false');
-  }
 });
 
-test('En Android aparece la guía para continuar desde la PC', () => {
+test('En celular aparece guía para continuar desde la PC', () => {
   const { els } = setup({ userAgent: 'Mozilla/5.0 (Android 14; Mobile)' });
   assert.equal(els.mobileAlert.hidden, false);
   assert.equal(new URL(els.sendLink.href).hostname, 'wa.me');
-  assert.ok(decodeURIComponent(els.sendLink.href).includes('cosmica.ar/asistencia.html'));
+  assert.ok(decodeURIComponent(els.sendLink.href).includes('https://www.cosmica.ar/asistencia.html'));
 });

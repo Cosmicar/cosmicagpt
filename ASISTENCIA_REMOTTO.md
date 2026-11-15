@@ -1,6 +1,6 @@
 # Asistencia remota · migración a Remotto
 
-Fecha de diagnóstico: 2026-11-07. Estado: **publicación de la web autorizada por Cris, con AnyDesk como alternativa**. No equivale a homologación completa de Remotto ni autoriza la fase de órdenes.
+Fecha de diagnóstico: 2026-11-07. Estado al 2026-11-15: **Remotto en pausa por decisión de Cris. AnyDesk vuelve a ser la herramienta principal de la web pública.** Las secciones siguientes documentan el período anterior con Remotto.
 
 ## Ajuste de experiencia · 2026-11-07
 
