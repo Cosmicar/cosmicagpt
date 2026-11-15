@@ -1,3 +1,9 @@
+## 2026-11-15 · Vuelve la asistencia con AnyDesk
+
+- Se recupera la guía anterior de AnyDesk con descarga oficial, apertura y envío del ID por WhatsApp. RustDesk queda como respaldo coordinado.
+- Se actualizan los accesos y textos de la portada y la cobertura provincial. El formulario de Remotto se retira de la web pública mientras se pausa ese servicio.
+- Se mantienen las URLs canónicas, el sitemap, la navegación móvil y la edición estacional.
+
 ## 2026-11-13 · Instalación de Cósmica.app
 
 - La web pública deja de anunciar una PWA propia. El sitio de instalación del sistema es `app.cosmica.ar`.

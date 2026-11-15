@@ -4,10 +4,10 @@ Revisado: 2026-09-15. Repositorio: `Cosmicar/cosmicagpt`, rama canónica: `main`
 
 | Ruta | Función |
 | --- | --- |
-| `/` | Asistencia remota como servicio principal; consulta por WhatsApp desde el encabezado móvil, evaluación de alcance y precio antes de la conexión, acceso separado para clientes que ya tienen código, problemas frecuentes, planes y contacto. Edición estacional de fin de año 2026 visible sólo entre el 10/11 y el 31/12 (hora de Jujuy), con identidad oficial y CTA contextual sin cambiar tarifas ni SEO. |
+| `/` | Asistencia remota como servicio principal; consulta por WhatsApp desde el encabezado móvil, evaluación de alcance y precio antes de la conexión, acceso separado para clientes que ya coordinaron la asistencia, problemas frecuentes, planes y contacto. Edición estacional de fin de año 2026 visible sólo entre el 10/11 y el 31/12 (hora de Jujuy), con identidad oficial y CTA contextual sin cambiar tarifas ni SEO. |
 | `/planes` | Servicios Mercurio, Venus y Planeta X por intervención, precios en ARS, orientador de síntomas no diagnóstico, comparativa móvil, FAQ coherente con SEO y contacto contextualizado por WhatsApp. |
 | `/plus` y `/plus.html` | Redirigen permanentemente a Cósmica.app. |
-| `/asistencia` y `/asistencia.html` | Código del técnico, Remotto Connect y autorización/cierre. Connect Box oficial visible en el bloque inicial y cargado automáticamente, con aislamiento; descarga manual como alternativa y WhatsApp disponible. AnyDesk/RustDesk secundarios. Publicación autorizada por Cris el 2026-11-07; prueba supervisada con código válido aún pendiente; ver `ASISTENCIA_REMOTTO.md`. |
+| `/asistencia` y `/asistencia.html` | Descarga oficial de AnyDesk para Windows, apertura del programa y envío del ID por WhatsApp. El cliente autoriza y puede detener la conexión. RustDesk queda disponible como alternativa coordinada. |
 | `/serviciotecnico` | Servicio presencial en Ramírez de Velazco 111, San Salvador de Jujuy. |
 | `/soporte-tecnico-remoto-argentina` | Directorio nacional de cobertura remota. |
 | `/pc-lenta-{provincia}` y variantes `.html` | 24 páginas provinciales generadas desde plantillas y datos. |

@@ -28,12 +28,12 @@ test('Portada distingue consulta previa de una sesion remota ya coordinada', () 
   assert.match(hero, /nos conectamos sólo con tu permiso/);
   assert.match(hero, /data-source="hero-primary"[^>]*data-message="Hola, quiero consultar/);
   assert.match(hero, /Consultar mi caso por WhatsApp/);
-  assert.match(hero, /href="\/asistencia\.html" aria-label="Ya coordiné asistencia: ingresar mi código de Remotto"/);
-  assert.match(hero, /Ya tengo código/);
-  assert.ok(hero.indexOf('data-source="hero-primary"') < hero.indexOf('Ya tengo código'));
+  assert.match(hero, /href="\/asistencia\.html" aria-label="Ya coordiné asistencia: abrir la guía de AnyDesk"/);
+  assert.match(hero, /Ya coordiné asistencia/);
+  assert.ok(hero.indexOf('data-source="hero-primary"') < hero.indexOf('Ya coordiné asistencia'));
 });
 
-test('Barra inferior prioriza consultas e identifica el flujo de codigo', () => {
+test('Barra inferior prioriza consultas e identifica el flujo de conexión', () => {
   assert.match(dock, /Accesos de asistencia remota/);
   assert.match(dock, /data-source="mobile-sticky"[^>]*data-message="Hola, necesito consultar/);
   assert.match(dock, /href="\/asistencia\.html"/);

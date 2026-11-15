@@ -152,14 +152,15 @@ const indexPatterns = [
 for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.html: falta ${pattern}`);
 
 const assistancePatterns = [
-  /href="\/marketing\/assistance\.css"/,
-  /src="\/marketing\/assistance\.js\?v=remotto-2"/,
+  /href="\/marketing\/assistance\.css\?v=anydesk-20261115"/,
+  /src="\/marketing\/assistance\.js\?v=anydesk-20261115"/,
+  /src="\/marketing\/problem-client\.webp"/,
   /src="\/marketing\/assistance-technician\.webp"/,
   /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/,
-  /id="downloadRemotto"/,
+  /id="downloadAnydesk"/,
   /id="openedButton"/,
-  /id="connectBoxFrame"[^>]+src="\/marketing\/remotto-connect\.html"/,
-  /remotto\.app\/es\/descargas/,
+  /id="sendId"/,
+  /anydesk\.com\/es\/downloads\/windows/,
   /5493883298736/
 ];
 for (const pattern of assistancePatterns) if (!pattern.test(assistanceHtml)) fail(`asistencia.html: falta ${pattern}`);
