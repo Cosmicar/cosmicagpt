@@ -111,3 +111,22 @@ test('Sin scripts, las opciones llevan al servicio correspondiente',()=>{
   for(const slug of ['mercurio','venus','planeta-x'])
     assert.ok(html.includes('href="#'+slug+'" class="chooser-option" data-plan-choice="'+slug+'"'));
 });
+
+test('La portada destaca Venus antes de los problemas, con consulta clara y diseño adaptable', () => {
+  const home = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const cssVenus = fs.readFileSync(new URL('../marketing/venus-feature.css', import.meta.url), 'utf8');
+  const feature = home.match(/<section class="venus-home" id="venus-destacado"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(feature, 'Falta el bloque promocional Venus');
+  assert.ok(home.indexOf('id="venus-destacado"') < home.indexOf('id="problemas"'));
+  for (const value of [
+    'Más que una limpieza: una puesta a punto completa.',
+    '$35.900', 'ARS · por intervención remota',
+    'Todo lo incluido en Mercurio', 'Mantenimiento completo de Windows',
+    'Corrección de errores comunes', 'Optimización según el uso de tu PC',
+    '/brand/services/venus.svg', 'href="/planes#venus"',
+    'data-source="venus-destacado"', 'Consultar mantenimiento integral'
+  ]) assert.ok(feature.includes(value), 'Falta contrato Venus: ' + value);
+  assert.ok(home.includes('/marketing/venus-feature.css?v=20261127'));
+  assert.match(cssVenus, /@media \(max-width: 760px\)/);
+  assert.doesNotMatch(feature, /(?:Pedí|Pida) tu Venus/i);
+});
