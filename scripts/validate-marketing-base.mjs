@@ -152,7 +152,7 @@ const indexPatterns = [
 for (const pattern of indexPatterns) if (!pattern.test(indexHtml)) fail(`index.html: falta ${pattern}`);
 
 const assistancePatterns = [
-  /href="\/marketing\/assistance\.css\?v=anydesk-20261115"/,
+  /href="\/marketing\/assistance\.css\?v=anydesk-20261127"/,
   /src="\/marketing\/assistance\.js\?v=anydesk-20261115"/,
   /src="\/marketing\/problem-client\.webp"/,
   /src="\/marketing\/assistance-technician\.webp"/,

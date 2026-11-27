@@ -50,7 +50,9 @@ body.assistance-page {
 .assistance-page .connect-hero h1 span { display: block; color: #FF7999; }
 .assistance-page .connect-hero p { margin: 0; max-width: 530px; color: #E1DBDF; font-size: 15.5px; line-height: 1.72; }
 .assistance-page .connect-hero p strong { color: #FFFFFF; }
-.assistance-page .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 25px; }
+.assistance-page .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 11px; margin-top: 25px; }
+.assistance-page .hero-id-link { padding-block: 8px; color: #F6F3F0; text-decoration: underline; text-underline-offset: 4px; font-size: 13px; }
+.assistance-page .hero-id-link:hover { color: #FF93AE; }
 .assistance-page .btn { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 49px; padding: 12px 20px; border-radius: 12px; border: 1px solid transparent; font-size: 13px; line-height: 1.25; font-weight: 800; text-align: center; transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .assistance-page .btn:hover { transform: translateY(-1px); }
 .assistance-page .btn-primary { color: #FFFFFF; background: var(--as-carmine); border-color: var(--as-carmine); box-shadow: 0 9px 24px rgba(225,6,58,.18); }
@@ -94,11 +96,11 @@ body.assistance-page {
 .assistance-page .mobile-alert p { margin: 0; font-size: 13px; color: #5E4E55; }
 .assistance-page .mobile-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 15px; }
 
-.assistance-page .steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; scroll-margin-top: 18px; }
+.assistance-page .steps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; scroll-margin-top: 18px; }
 .assistance-page .step { min-width: 0; display: flex; flex-direction: column; padding: 24px 22px; border: 1px solid #E1DFDD; border-radius: 21px; background: #FFFFFF; box-shadow: 0 12px 32px rgba(15,18,26,.04); transition: border-color .2s ease, box-shadow .2s ease; }
 .assistance-page .step:hover { border-color: #D0C9C9; box-shadow: 0 16px 36px rgba(15,18,26,.06); }
 .assistance-page .step.completed { border-color: #AFCBBB; }
-.assistance-page .step-final { border-color: #E8B6C3; box-shadow: 0 12px 35px rgba(225,6,58,.055); }
+.assistance-page .step-final { grid-column: 1 / -1; width: min(700px, 100%); justify-self: center; scroll-margin-top: 24px; border-color: #E8B6C3; box-shadow: 0 12px 35px rgba(225,6,58,.055); }
 .assistance-page .step-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 21px; }
 .assistance-page .number { width: 47px; height: 47px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid #F3CCD5; border-radius: 13px; color: #AF1037; background: #FFF0F3; font-size: 17px; font-weight: 900; }
 .assistance-page .step.completed .number { color: #1D5E3D; background: #E8F4EC; border-color: #BDDBC7; }

@@ -28,16 +28,16 @@ test('Portada distingue consulta previa de una sesion remota ya coordinada', () 
   assert.match(hero, /nos conectamos sólo con tu permiso/);
   assert.match(hero, /data-source="hero-primary"[^>]*data-message="Hola, quiero consultar/);
   assert.match(hero, /Consultar mi caso por WhatsApp/);
-  assert.match(hero, /href="\/asistencia\.html" aria-label="Ya coordiné asistencia: abrir la guía de AnyDesk"/);
-  assert.match(hero, /Ya coordiné asistencia/);
-  assert.ok(hero.indexOf('data-source="hero-primary"') < hero.indexOf('Ya coordiné asistencia'));
+  assert.match(hero, /href="\/asistencia\.html" aria-label="Descargar AnyDesk: abrir la guía de asistencia"/);
+  assert.match(hero, /Descargar AnyDesk/);
+  assert.ok(hero.indexOf('data-source="hero-primary"') < hero.indexOf('Descargar AnyDesk'));
 });
 
 test('Barra inferior prioriza consultas e identifica el flujo de conexión', () => {
   assert.match(dock, /Accesos de asistencia remota/);
   assert.match(dock, /data-source="mobile-sticky"[^>]*data-message="Hola, necesito consultar/);
   assert.match(dock, /href="\/asistencia\.html"/);
-  assert.ok(dock.indexOf('data-source="mobile-sticky"') < dock.indexOf('Tengo código'));
+  assert.ok(dock.indexOf('data-source="mobile-sticky"') < dock.indexOf('AnyDesk'));
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /mobile-sticky-actions \.btn[\s\S]*?min-height:\s*48px/);
   assert.match(css, /@media \(max-width: 1180px\) and \(max-height: 540px\)/);
