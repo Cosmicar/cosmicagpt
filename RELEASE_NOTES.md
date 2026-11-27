@@ -1,3 +1,10 @@
+## 2026-11-27 · Venus gana protagonismo en la portada
+
+- Una sección editorial de Venus aparece después de las señales de confianza y antes de las consultas por síntomas, con la ilustración SVG existente, su precio público de $35.900 y sus prestaciones verificadas.
+- El llamado a la acción es **«Consultar mantenimiento integral»**; se evita la frase ambigua «Pedí tu Venus». Conserva WhatsApp con atribución `data-source` y acceso a `/planes#venus`.
+- Hoja de estilo acotada a `#venus-destacado`, adaptable a móvil, sin scripts adicionales ni alterar el logo oficial A1.1.
+- Se mantienen los tres servicios, tarifas, reglas de compatibilidad, SEO, asistencia AnyDesk, Cósmica.app y rutas públicas. Prueba de regresión agregada a la batería de planes.
+
 ## 2026-11-15 · Vuelve la asistencia con AnyDesk
 
 - Se recupera la guía anterior de AnyDesk con descarga oficial, apertura y envío del ID por WhatsApp. RustDesk queda como respaldo coordinado.
