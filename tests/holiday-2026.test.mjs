@@ -53,7 +53,7 @@ test('Portada conserva marca y separa consulta estacional de asistencia ya coord
   assert.match(html, /Fin de año sin interrupciones/);
   assert.match(html, /class="holiday-2026-mark"[^>]*>🎄</);
   assert.match(html, /Prepará tu PC para diciembre/);
-  assert.match(html, /href="\/asistencia\.html" aria-label="Ya coordiné asistencia: abrir la guía de AnyDesk"/);
+  assert.match(html, /href="\/asistencia\.html" aria-label="Descargar AnyDesk: abrir la guía de asistencia"/);
   assert.match(html, /src="\/brand\/official\/cosmica-logo-light\.png\?v=10"/);
   assert.match(html, /src="\/brand\/official\/cosmica-logo-dark\.png\?v=10"/);
   assert.doesNotMatch(html, /Rally de Navidad|reset-almohadillas\.html|promoción válida para siempre/i);

@@ -1,3 +1,9 @@
+## 2026-11-27 · Descarga de AnyDesk visible desde el inicio
+
+- La guía de asistencia abre con el botón oficial **Descargar AnyDesk para Windows**, antes de la fotografía y de los pasos.
+- El campo opcional para enviar el ID queda debajo de descarga y apertura, con acceso directo «¿Ya abriste AnyDesk? Enviá tu ID». Se aclara que prepara un mensaje de WhatsApp y que la autorización ocurre en AnyDesk.
+- Los accesos de portada nombran AnyDesk y dejan de pedir un código de sesión. Se conservan la campaña Venus, SEO, progreso, validación local del ID y alternativa RustDesk.
+
 ## 2026-11-27 · Venus gana protagonismo en la portada
 
 - Una sección editorial de Venus aparece después de las señales de confianza y antes de las consultas por síntomas, con la ilustración SVG existente, su precio público de $35.900 y sus prestaciones verificadas.

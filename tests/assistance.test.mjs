@@ -78,7 +78,7 @@ test('HTML mantiene la ruta segura de asistencia y los activos oficiales', () =>
     'id="downloadAnydesk"', 'id="downloadConfirmed"', 'id="openedButton"',
     'id="sendId"', 'id="supportId"', 'id="progressTrack"', 'id="resetGuide"',
     '/brand/official/cosmica-logo-light.png?v=10',
-    '/marketing/assistance.css?v=anydesk-20261115', '/marketing/assistance.js?v=anydesk-20261115',
+    '/marketing/assistance.css?v=anydesk-20261127', '/marketing/assistance.js?v=anydesk-20261115',
     'anydesk.com/es/downloads/windows', '/marketing/problem-client.webp',
     'noopener noreferrer', 'aria-labelledby', 'prefers'
   ].filter(token => token !== 'prefers')) {
@@ -86,6 +86,13 @@ test('HTML mantiene la ruta segura de asistencia y los activos oficiales', () =>
   }
   assert.ok(!html.includes('Cósmica+'));
   assert.ok(!html.includes('onClick='));
+  const hero = html.match(/<section class="connect-hero"[\s\S]*?<\/section>/)?.[0];
+  assert.match(hero, /class="btn btn-primary" id="downloadAnydesk" href="https:\/\/anydesk\.com\/es\/downloads\/windows\?dv=win_exe"/);
+  assert.match(hero, /Descargar AnyDesk para Windows/);
+  assert.match(hero, /href="#enviar-id"/);
+  assert.doesNotMatch(hero, /id="supportId"/);
+  assert.ok(html.indexOf('id="enviar-id" data-step="3"') > html.indexOf('id="openedButton"'));
+
 });
 
 test('La descarga no avanza sola; la confirmación sí', () => {
